@@ -7,5 +7,9 @@
 	<classpathentry kind="lib" path="input/libinclude/javassist.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/guice-3.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/javax.inject.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/slf4j-api-1.6.4-sources.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/slf4j-api-1.6.4.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/slf4j-ext-1.6.4-sources.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/slf4j-ext-1.6.4.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>
