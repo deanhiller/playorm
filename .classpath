@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="input/javasrc"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/activation.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/asm-attrs.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/asm.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/astranslator-1.5.9.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/cglib-2.1.3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-beanutils.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-collections-20070818.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-digester.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-fileupload-1.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-lang-2.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/commons-logging-1.0.4.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/concurrent-1.3.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/connector.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/cxf-2.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/ehcache-1.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/ejb3-persistence.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/FastInfoset-1.2.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/geronimo-annotation_1.0_spec-1.1.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/geronimo-stax-api_1.0_spec-1.0.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/geronimo-ws-metadata_2.0_spec-1.1.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/gwt-user.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/gwtext.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/gwtmocklib.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/hibernate-annotations.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/hibernate-commons-annotations.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/hibernate-entitymanager.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/hibernate-validator.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/hibernate3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/iText-2.1.3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaas.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jacc-1_0-fr.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/javassist.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaxb-api-2.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaxb-impl-2.1.9.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaxen-1.1-beta-7.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaxrs-api.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jaxws-api.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-archive-browsing.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-cache.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-common.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-el.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-jmx.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jboss-system.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jcommon-1.0.15.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jdbc2_0-stdext.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jetty-6.1.15.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jetty-util-6.1.15.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jfreechart-1.0.12-experimental.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jfreechart-1.0.12-swt.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jfreechart-1.0.12.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jgroups-2.2.8.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jstl.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/jta.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/log4jdbc4-1.2alpha1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/mail.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/neethi-2.0.4.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/oscache-2.1.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/persistence-api.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/postgresql-8.1-405.jdbc3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/proxool-0.8.3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/resteasy-jaxrs.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/saaj-api-1.3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/saaj-impl-1.3.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/slf4j-api-1.5.6.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/slf4j-jdk14-1.5.6.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/spring-beans-2.5.5.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/spring-context-2.5.5.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/spring-core-2.5.5.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/standard.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/swarmcache-1.0rc2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/syndiag2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/urlrewrite-3.1.0dean.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/versioncheck.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/wsdl4j-1.6.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/wss4j-1.5.6.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/wstx-asl-3.2.6.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/xerces-2.6.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/xml-resolver-1.2.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/XmlSchema-1.4.4.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/ejb-api.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/junit.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/mocklib3.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/selenium-java-client-driver.jar"/>
+	<classpathentry kind="lib" path="input/libexclude/testng.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="input/libexclude/tomcatlib/c3p0-0.9.1.2.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/joda-time-1.6.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-debug.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-mail.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-pdf.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-remoting.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-resteasy.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam-ui.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jboss-seam.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jsf-api.jar" sourcepath="/jsf">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jsf-facelets.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/jsf-impl.jar" sourcepath="/jsf">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/richfaces-api.jar" sourcepath="/richfaces">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/richfaces-impl.jar" sourcepath="/richfaces">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libinclude/richfaces-ui.jar" sourcepath="/richfaces">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libexclude/phaseTracker.jar">
+		<attributes>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="input/libexclude/servlet-api.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/commons-httpclient-3.1.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/api"/>
+	<classpathentry kind="output" path="eclipsegen"/>
+</classpath>

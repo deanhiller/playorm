@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<ruleset name="Custom ruleset" xmlns="http://pmd.sf.net/ruleset/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pmd.sf.net/ruleset/1.0.0 http://pmd.sf.net/ruleset_xml_schema.xsd"
+	xsi:noNamespaceSchemaLocation="http://pmd.sf.net/ruleset_xml_schema.xsd">
+
+	<description>This ruleset checks my code for bad stuff</description>
+
+	<!--  Below are some examples of defining rulesets
+		We'll use the entire 'strings' ruleset
+		<rule ref="rulesets/strings.xml" />
+		
+		Here's some rules we'll specify one at a time
+		<rule ref="rulesets/unusedcode.xml/UnusedLocalVariable" />
+		<rule ref="rulesets/unusedcode.xml/UnusedPrivateField" />
+		<rule ref="rulesets/imports.xml/DuplicateImports" />
+		<rule ref="rulesets/basic.xml/UnnecessaryConversionTemporary" />
+		
+		We want to customize this rule a bit, change the message and raise the priority 
+		<rule ref="rulesets/basic.xml/EmptyCatchBlock"
+		message="Must handle exceptions">
+		<priority>2</priority>
+		</rule>
+		
+		Now we'll customize a rule's property value 
+		<rule ref="rulesets/codesize.xml/CyclomaticComplexity">
+		<properties>
+		<property name="reportLevel" value="5" />
+		</properties>
+		</rule>
+		
+		Note we want everything from braces.xml except WhileLoopsMustUseBraces 
+		<rule ref="rulesets/braces.xml">
+		<exclude name="WhileLoopsMustUseBraces" />
+		</rule>
+		
+	-->
+		<rule ref="rulesets/naming.xml/LongVariable">
+		<properties>
+			<property name="minimum" value="50" />
+		</properties>
+		</rule>	
+			
+	<rule ref="rulesets/basic.xml"/>
+	<rule ref="rulesets/optimizations.xml">
+		<!-- using .toString instead of adding an empty string results in nullpointerexceptions
+		     so I prefer ""+object...then if the object is null, null is printed instead of nullpointerexception -->
+		<exclude name="AddEmptyString"/>
+		<exclude name="MethodArgumentCouldBeFinal" />
+		<exclude name="LocalVariableCouldBeFinal"/>
+		
+	</rule>
+	<!--
+	<rule ref="rulesets/braces.xml">
+		<exclude name="ForLoopsMustUseBraces"/>
+		<exclude name="IfElseStmtsMustUseBraces"/>
+		<exclude name="IfStmtsMustUseBraces"/>
+	</rule>
+	-->
+	<rule ref="rulesets/clone.xml"/>
+	<rule ref="rulesets/codesize.xml">
+		<!-- I would love to use this but appears not to be working.  IT says the complexity is 2 and should break at 7
+		     and causes a break with just 2 so I am confused by the error message -->
+		<exclude name="CyclomaticComplexity"/>
+	</rule>
+	<rule ref="rulesets/controversial.xml">
+		<exclude name="DataflowAnomalyAnalysis"/>
+		<exclude name="CallSuperInConstructor"/>
+		<exclude name="UnusedModifier"/>
+		<exclude name="AtLeastOneConstructor"/>
+		<exclude name="OnlyOneReturn"/>
+		<exclude name="SingularField"/>
+	</rule>
+	<rule ref="rulesets/coupling.xml"/>
+	<rule ref="rulesets/design.xml">
+		<exclude name="ImmutableField"/>
+		<exclude name="UncommentedEmptyMethod"/>
+	</rule>
+	<!-- rule ref="rulesets/favorites.xml"/> -->
+	<rule ref="rulesets/finalizers.xml"/>
+	<rule ref="rulesets/imports.xml"/>
+	<rule ref="rulesets/javabeans.xml">
+		<!-- Quite annoying since it flags private fields that are returned from methods, otherwise would be quite nice -->
+		<exclude name="BeanMembersShouldSerialize"/>
+	</rule>
+	<rule ref="rulesets/junit.xml">
+		<exclude name="JUnitAssertionsShouldIncludeMessage"/>
+	</rule>
+	<rule ref="rulesets/logging-java.xml">
+		<exclude name="MoreThanOneLogger"/>
+	</rule>
+	<!-- rule ref="rulesets/naming.xml">
+		<exclude name="ShortVariable"/>
+	</rule-->
+	<rule ref="rulesets/scratchpad.xml">
+		<exclude name="DataflowAnomalyAnalysis"/>
+	</rule>
+	<rule ref="rulesets/strictexception.xml">
+		<!-- while they are correct, it is convenient to just have JUnit tests throw Exception -->
+		<exclude name="SignatureDeclareThrowsException"/>
+		<!--  unfortunately, we have seen the JVM throw catchable Errors and we want to log and record those -->
+		<exclude name="AvoidCatchingThrowable"/>
+		<exclude name="AvoidThrowingRawExceptionTypes"/>
+	</rule>
+	<rule ref="rulesets/strings.xml"/>
+	<rule ref="rulesets/sunsecure.xml"/>
+	<rule ref="rulesets/typeresolution.xml"/>
+	<rule ref="rulesets/unusedcode.xml"/>
+	<rule ref="rulesets/j2ee.xml"/>	
+	<rule ref="rulesets/basic-jsf.xml"/>
+	<rule ref="rulesets/basic-jsp.xml"/>
+	
+
+	
+</ruleset>

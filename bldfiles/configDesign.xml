@@ -1,0 +1,27 @@
+<design>
+
+<!-- Use this tool to create your package design which the build will compare with the
+     actual package dependencies.  It will then tell you what parts of the code violate
+	 the following package design.
+
+	 See the documentation of the ant-contrib project to fill in the package design here
+     ant-contrib is at http://sourceforge.net/projects/ant-contrib.  Currently, this
+	 template is using a version from the CVS head, and the docs are up to date on the
+	 CVS head, but not in the latest download yet as I have not asked for a new release
+	 on ant-contrib yet(wanted to finish a few more things), but this is stable and works.
+	 I just want to add one more feature-->
+
+<!-- should erase the following... -->
+<package name="default" package="default package" subpackages="include" needdepends="false"/>
+
+
+<!-- should use something like this instead on a per project basis -->
+<!--package name="api"     package="biz.xsoftware.api" subpackages="include"/>
+<package name="testapi" package="biz.xsoftware.test" subpackages="include" depends="api"/>
+<package name="impl"    package="biz.xsoftware.impl" subpackages="include" depends="api"/-->
+
+<!-- Use the following to depend on junit and mocklib -->
+<!--package name="junit" package="junit" subpackages="include" needdeclarations="false"/>
+<package name="mocklib" package="biz.xsoftware.mock" subpackages="include" needdeclarations="false"/-->
+
+</design>

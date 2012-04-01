@@ -1,0 +1,12 @@
+junit.awtui
+junit.extensions
+junit.framework
+junit.runner
+junit.samples
+junit.samples.money
+junit.swingui
+junit.tests
+junit.tests.extensions
+junit.tests.framework
+junit.tests.runner
+junit.textui
