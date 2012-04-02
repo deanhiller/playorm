@@ -7,6 +7,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import com.alvazan.orm.api.anno.Embeddable;
+import com.alvazan.orm.api.anno.NoSqlEntity;
 import com.google.inject.Provider;
 
 public class ClassInspector {
@@ -25,6 +27,19 @@ public class ClassInspector {
 	}
 	
 	private void scanClass(MetaClass<?> meta) {
+		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
+		Embeddable embeddable = meta.getMetaClass().getAnnotation(Embeddable.class);
+		if(noSqlEntity != null) {
+			String colFamily = noSqlEntity.columnfamily();
+			if("".equals(colFamily))
+				colFamily = meta.getMetaClass().getSimpleName()+"s";
+			meta.setColumnFamily(colFamily);
+		} else if(embeddable != null) {
+			//nothing to do at this point
+		} else {
+			throw new RuntimeException("bug, someone added an annotation but didn't add an else if here");
+		}
+		
 		scanFields(meta);
 	}
 	private void scanFields(MetaClass<?> meta) {

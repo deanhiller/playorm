@@ -6,25 +6,33 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.alvazan.nosql.spi.NoSqlSession;
+import com.alvazan.nosql.spi.Row;
 import com.alvazan.orm.api.Index;
 import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.api.NoSqlEntityManager;
+import com.alvazan.orm.impl.meta.MetaClass;
+import com.alvazan.orm.impl.meta.MetaInfo;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	@Inject 
 	private NoSqlSession session;
+	@Inject
+	private MetaInfo metaInfo;
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(Object entity) {
-		List<Object> entities = new ArrayList<Object>();
-		entities.add(entity);
-		putAll(entities);
+		MetaClass metaClass = metaInfo.getMetaClass(entity);
+		Row row = metaClass.translateToRow(entity);
+		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
 
 	@Override
 	public void putAll(List<Object> entities) {
-		
+		for(Object entity : entities) {
+			put(entity);
+		}
 	}
 
 	@Override
