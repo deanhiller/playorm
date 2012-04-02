@@ -16,7 +16,7 @@ public class MyClassAnnotationDiscoveryListener implements
 	private static final Logger log = LoggerFactory.getLogger(MyClassAnnotationDiscoveryListener.class);
 
 	@Inject
-	private InspectorClass metaInfo; 
+	private InspectorClass inspectorClass; 
 
 	@Override
 	public String[] supportedAnnotations() {
@@ -31,7 +31,7 @@ public class MyClassAnnotationDiscoveryListener implements
 			Class clazz = Class.forName(clazzName);
 			
 			
-			metaInfo.addClass(clazz);
+			inspectorClass.addClass(clazz);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}

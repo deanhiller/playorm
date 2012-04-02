@@ -18,7 +18,7 @@ public class TestBasic {
 	@Before
 	public void setup() {
 		factory = Bootstrap.createWithInMemoryDb();
-		factory.scanForEntities("com.alvazan.test.db");
+		factory.setup(null, "com.alvazan.test.db");
 	}
 	
 	@Test

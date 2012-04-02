@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.alvazan.nosql.spi.Column;
+import com.alvazan.orm.api.Converter;
 
 public class MetaField {
 
@@ -26,9 +27,10 @@ public class MetaField {
 		return col;
 	}
 
-	public void setup(Field field2, String colName) {
+	void setup(Field field2, String colName, Converter converter) {
 		this.field = field2;
 		this.field.setAccessible(true);
 		this.columnName = colName;
+		this.converter = converter;
 	}
 }

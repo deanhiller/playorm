@@ -2,14 +2,17 @@ package com.alvazan.orm.impl.base;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
+import com.alvazan.orm.impl.meta.InspectorField;
 import com.google.inject.Provider;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
@@ -23,6 +26,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@Inject
 	private MyClassAnnotationDiscoveryListener listener;
 	@Inject
+	private InspectorField inspectorField;
+	@Inject
 	private ClasspathDiscoverer discoverer; 
 	private boolean isScanned;
 	
@@ -33,10 +38,13 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		return entityMgrProvider.get();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public void scanForEntities(String... packages) {
+	public void setup(Map<Class, Converter> converters, String... packages) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");
+		
+		inspectorField.setCustomConverters(converters);
 		
 		List<String> temp = new ArrayList<String>();
 		for(String p : packages) {

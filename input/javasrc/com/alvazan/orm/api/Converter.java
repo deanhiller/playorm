@@ -1,4 +1,4 @@
-package com.alvazan.orm.impl.meta;
+package com.alvazan.orm.api;
 
 public interface Converter {
 
