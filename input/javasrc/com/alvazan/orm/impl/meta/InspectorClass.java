@@ -8,11 +8,18 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.anno.Embeddable;
+import com.alvazan.orm.api.anno.Id;
+import com.alvazan.orm.api.anno.ManyToOne;
 import com.alvazan.orm.api.anno.NoSqlEntity;
+import com.alvazan.orm.api.anno.OneToMany;
+import com.alvazan.orm.api.anno.OneToOne;
+import com.alvazan.orm.api.anno.Transient;
 import com.google.inject.Provider;
 
-public class ClassInspector {
+public class InspectorClass {
 
+	@Inject
+	private InspectorField inspectorField;
 	@Inject
 	private Provider<MetaClass<?>> classMetaProvider;
 	@Inject
@@ -49,17 +56,36 @@ public class ClassInspector {
 		
 		for(Field[] fieldArray : fields) {
 			for(Field field : fieldArray) {
-				inspectField(field);
+				inspectField(meta, field);
 			}
 		}
 	}
 
-	private void inspectField(Field field) {
+	private void inspectField(MetaClass<?> metaClass, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
-				Modifier.isStatic(field.getModifiers()))
+				Modifier.isStatic(field.getModifiers()) ||
+				field.isAnnotationPresent(Transient.class))
 			return;
 		
+		if(field.isAnnotationPresent(Id.class)) {
+			MetaIdField idField = inspectorField.processId(field);
+			metaClass.setIdField(idField);
+			return;
+		}
 		
+		MetaField metaField;
+		if(field.isAnnotationPresent(ManyToOne.class))
+			metaField = inspectorField.processToOne(field);
+		else if(field.isAnnotationPresent(OneToOne.class))
+			metaField = inspectorField.processToOne(field);
+		else if(field.isAnnotationPresent(OneToMany.class))
+			metaField = inspectorField.processOneToMany(field);
+		else if(field.isAnnotationPresent(Embeddable.class))
+			metaField = inspectorField.processEmbeddable(field);
+		else
+			metaField = inspectorField.processColumn(field);
+		
+		metaClass.addMetaField(metaField);
 	}
 	
 	@SuppressWarnings("rawtypes")

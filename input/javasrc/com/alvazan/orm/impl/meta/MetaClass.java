@@ -1,31 +1,65 @@
 package com.alvazan.orm.impl.meta;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.alvazan.nosql.spi.Column;
 import com.alvazan.nosql.spi.Row;
 
 public class MetaClass<T> {
 
 	private Class<T> metaClass;
 	private String columnFamily;
-
-	public void setMetaClass(Class<T> clazz) {
+	
+	private MetaIdField idField;
+	private List<MetaField> fields = new ArrayList<MetaField>();
+	
+	void setMetaClass(Class<T> clazz) {
 		this.metaClass = clazz;
 	}
 
-	public Class<T> getMetaClass() {
+	Class<T> getMetaClass() {
 		return metaClass;
 	}
 
-	public Row translateToRow(Object entity) {
-		// TODO Auto-generated method stub
-		return null;
+	public T translateFromRow(Row row) {
+		T inst = ReflectionUtil.create(metaClass);
+		String key = row.getKey();
+		idField.fillInId(inst, key);
+
+		Map<String, Column> columns = row.getColumns();
+		for(MetaField field : fields) {
+			field.translateFromColumn(columns, inst);
+		}
+		return inst;
+	}
+	
+	public RowToPersist translateToRow(Object entity) {
+		String id = idField.fillInOrCheckForId(entity);
+		RowToPersist row = new RowToPersist();
+		row.setKey(id);
+		
+		for(MetaField m : fields) {
+			Column col = m.translateToColumn(entity);
+			row.getColumns().add(col);
+		}
+		
+		return row;
 	}
 
 	public String getColumnFamily() {
 		return columnFamily;
 	}
-	public void setColumnFamily(String colFamily) {
+	void setColumnFamily(String colFamily) {
 		this.columnFamily = colFamily;
 	}
 
-	
+	void addMetaField(MetaField field) {
+		fields.add(field);
+	}
+
+	void setIdField(MetaIdField field) {
+		this.idField = field;
+	}
 }

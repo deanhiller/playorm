@@ -12,6 +12,7 @@ import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaInfo;
+import com.alvazan.orm.impl.meta.RowToPersist;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
@@ -24,7 +25,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public void put(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity);
-		Row row = metaClass.translateToRow(entity);
+		RowToPersist row = metaClass.translateToRow(entity);
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
 

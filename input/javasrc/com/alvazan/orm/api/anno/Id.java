@@ -15,5 +15,11 @@ public @interface Id {
 	Class targetEntity() default void.class;
 
 	Class<? extends KeyGenerator> generation() default UniqueKeyGenerator.class;
+	
+	/**
+	 * true to use the KeyGenerator supplied in generation attribute, false to 
+	 * manually set the key value every time.
+	 */
+	boolean usegenerator() default true;
 }
 

@@ -35,7 +35,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	}
 	
 	@Override
-	public Object generateNewKey(Object entity) {
+	public String generateNewKey(Object entity) {
 		return generateKey();
 	}
 	
