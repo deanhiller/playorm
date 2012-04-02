@@ -4,7 +4,7 @@ import com.alvazan.orm.api.anno.Id;
 import com.alvazan.orm.api.anno.NoSqlEntity;
 
 @NoSqlEntity
-public class Account {
+public class Account extends AccountSuper{
 
 	@Id
 	private String id;

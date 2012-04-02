@@ -1,5 +1,8 @@
 package com.alvazan.test;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import junit.framework.Assert;
 
 import com.alvazan.orm.api.Bootstrap;
@@ -12,10 +15,13 @@ public class TestBasic {
 
 	private NoSqlEntityManagerFactory factory;
 
+	@Before
 	public void setup() {
-		factory = Bootstrap.getSingleton();
+		factory = Bootstrap.createWithInMemoryDb();
+		factory.scanForEntities("com.alvazan.test.db");
 	}
 	
+	@Test
 	public void testBasic() {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		

@@ -1,7 +1,12 @@
 package com.alvazan.orm.impl.bindings;
 
+import com.alvazan.orm.api.NoSqlEntityManager;
+import com.alvazan.orm.api.NoSqlEntityManagerFactory;
+import com.alvazan.orm.impl.base.BaseEntityManagerFactoryImpl;
+import com.alvazan.orm.impl.base.BaseEntityManagerImpl;
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import com.google.inject.name.Names;
 
 public class ProductionBindings implements Module {
 
@@ -11,7 +16,12 @@ public class ProductionBindings implements Module {
 	 */
 	@Override
 	public void configure(Binder binder) {
-		
+		binder.bind(NoSqlEntityManagerFactory.class)
+        	.annotatedWith(Names.named("baseFactory"))
+        	.to(BaseEntityManagerFactoryImpl.class);
+		binder.bind(NoSqlEntityManager.class)
+			.annotatedWith(Names.named("baseManager"))
+			.to(BaseEntityManagerImpl.class);
 	}
 
 }

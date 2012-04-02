@@ -2,22 +2,13 @@ package com.alvazan.orm.api;
 
 import java.util.List;
 
+import com.alvazan.orm.impl.base.BaseEntityManagerImpl;
+import com.google.inject.ImplementedBy;
+
+@ImplementedBy(BaseEntityManagerImpl.class)
 public interface NoSqlEntityManager {
 
-	/**
-	 * Some programmers I have met think random == unique.  It does NOT.  Generate 11 random
-	 * numbers between 1 and 10 and the 11th "randomly generated number will match one of the
-	 * previous 10 meaning it is NOT unique.  That said, we could have used
-	 * http://johannburkard.de/blog/programming/java/Java-UUID-generators-compared.html
-	 * to generate UUID's here but instead we wanted smaller keys so we use the following method
-	 * for generation which WILL be unique within a cluster of machines with unique ips.  The
-	 * algorithm is VERY simple host-specialtimestamp where special timestamp is time in 
-	 * millis BUT in the case where two people called this method on the same machine, the last
-	 * timestamp given was stored so we increment by one such that there will never be 
-	 * a non-unique key.  
-	 * 
-	 * @return
-	 */
+
 	//public String generateUniqueKey();
 	
 	public void put(Object entity);
@@ -26,7 +17,7 @@ public interface NoSqlEntityManager {
 	
 	public <T> T find(Class<T> entityType, Object key);
 	
-	public <T> List<T> findAll(Class<T> entityType, List<Object> keys);
+	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<Object> keys);
 	
 	public <T> T getReference(Class<T> entityType, Object key);
 	
