@@ -52,6 +52,18 @@ public class Converters {
 			return in.readUTF();
 		}
 	}
+	
+	public static class ShortConverter extends AbstractConverter {
+		@Override
+		protected void write(DataOutputStream out, Object value) throws IOException {
+			out.writeShort((Short) value);
+		}
+		@Override
+		protected Object read(DataInputStream in) throws IOException {
+			return in.readShort();
+		}
+	}
+	
 	public static class IntConverter extends AbstractConverter {
 		@Override
 		protected void write(DataOutputStream out, Object value) throws IOException {
@@ -63,6 +75,28 @@ public class Converters {
 		}
 	}
 
+	public static class LongConverter extends AbstractConverter {
+		@Override
+		protected void write(DataOutputStream out, Object value) throws IOException {
+			out.writeLong((Long) value);
+		}
+		@Override
+		protected Object read(DataInputStream in) throws IOException {
+			return in.readLong();
+		}
+	}
+	
+	public static class FloatConverter extends AbstractConverter {
+		@Override
+		protected void write(DataOutputStream out, Object value) throws IOException {
+			out.writeFloat((Float) value);
+		}
+		@Override
+		protected Object read(DataInputStream in) throws IOException {
+			return in.readFloat();
+		}
+	}
+	
 	public static class DoubleConverter extends AbstractConverter {
 		@Override
 		protected void write(DataOutputStream out, Object value)

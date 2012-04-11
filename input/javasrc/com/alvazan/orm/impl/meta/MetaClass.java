@@ -15,6 +15,13 @@ public class MetaClass<T> {
 	private MetaIdField idField;
 	private List<MetaField> fields = new ArrayList<MetaField>();
 	
+	
+	@Override
+	public String toString() {
+		return "MetaClass [metaClass=" + metaClass + ", columnFamily="
+				+ columnFamily + "]";
+	}
+
 	void setMetaClass(Class<T> clazz) {
 		this.metaClass = clazz;
 	}
@@ -52,14 +59,20 @@ public class MetaClass<T> {
 		return columnFamily;
 	}
 	void setColumnFamily(String colFamily) {
+		if(colFamily == null)
+			throw new IllegalArgumentException("colFamily cannot be null");
 		this.columnFamily = colFamily;
 	}
 
 	void addMetaField(MetaField field) {
+		if(field == null)
+			throw new IllegalArgumentException("field cannot be null");
 		fields.add(field);
 	}
 
 	void setIdField(MetaIdField field) {
+		if(field == null)
+			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
 	}
 }

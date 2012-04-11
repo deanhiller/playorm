@@ -59,7 +59,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         // Add class annotation listener (optional)
         discoverer.addAnnotationListener(listener);
         // Fire it
-        discoverer.discover();		
+        discoverer.discover();	
+        isScanned = true;
 	}
 
 	private static class OurFilter implements Filter {
@@ -70,7 +71,9 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 		@Override
 		public boolean accepts(String filename) {
-			return true;
+			if(filename.endsWith(".class"))
+				return true;
+			return false;
 		}
 	}
 }

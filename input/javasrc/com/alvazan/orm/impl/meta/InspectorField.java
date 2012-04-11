@@ -20,18 +20,24 @@ public class InspectorField {
 	@Inject
 	private Provider<MetaField> metaProvider;
 	@SuppressWarnings("rawtypes")
-	private Map<Class, Converter> customConverters;
+	private Map<Class, Converter> customConverters = new HashMap<Class, Converter>();
 	@SuppressWarnings("rawtypes")
 	private Map<Class, Converter> stdConverters = new HashMap<Class, Converter>();
 	
 	public InspectorField() {
+		stdConverters.put(short.class, new Converters.ShortConverter());
+		stdConverters.put(Short.class, new Converters.ShortConverter());
 		stdConverters.put(int.class, new Converters.IntConverter());
 		stdConverters.put(Integer.class, new Converters.IntConverter());
+		stdConverters.put(long.class, new Converters.LongConverter());
+		stdConverters.put(Long.class, new Converters.LongConverter());
+		stdConverters.put(float.class, new Converters.FloatConverter());
+		stdConverters.put(Float.class, new Converters.FloatConverter());
 		stdConverters.put(double.class, new Converters.DoubleConverter());
 		stdConverters.put(Double.class, new Converters.DoubleConverter());
 		stdConverters.put(byte.class, new Converters.ByteConverter());
 		stdConverters.put(Byte.class, new Converters.ByteConverter());
-		
+		stdConverters.put(String.class, new Converters.StringConverter());
 	}
 	
 	public MetaIdField processId(Field field) {
@@ -46,7 +52,7 @@ public class InspectorField {
 			gen = ReflectionUtil.create(generation);
 		}
 		
-		metaField.setup(field, !idAnno.usegenerator(), gen);
+		metaField.setup(field, idAnno.usegenerator(), gen);
 		
 		return metaField;
 	}
@@ -61,14 +67,14 @@ public class InspectorField {
 		}
 		
 		Converter converter = null;
-		if(!NoConversion.class.isAssignableFrom(col.customConverter())) {
+		if(col != null && !NoConversion.class.isAssignableFrom(col.customConverter())) {
 			converter = ReflectionUtil.create(col.customConverter()); 
 		} else if(customConverters.get(field.getType()) != null) {
 			converter = customConverters.get(field.getType());
 		} else if(stdConverters.get(field.getType()) != null){
 			converter = stdConverters.get(field.getType());
 		} else {
-			throw new IllegalArgumentException("No converter found for field="+field+" in class="
+			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
 					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
 							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
 							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
@@ -97,6 +103,9 @@ public class InspectorField {
 
 	@SuppressWarnings("rawtypes")
 	public void setCustomConverters(Map<Class, Converter> converters) {
+		if(converters == null)
+			return; //nothing to do
+		
 		this.customConverters = converters;
 	}
 

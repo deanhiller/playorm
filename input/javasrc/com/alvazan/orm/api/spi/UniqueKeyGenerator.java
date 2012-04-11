@@ -29,7 +29,13 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		try {
 			createHostName();
 		} catch(Throwable e) {
-			log.warn("Could not create a ip needed for unique key gen", e);
+			log.warn("Could not create a ip needed for unique key gen.\n" +
+					"PLEASE if you are on linux configure it properly and\n" +
+					" run this simple code to test(this code fails right" +
+					" now returning localhost instead of the hostname!!!)\n" +
+					"InetAddress local = InetAddress.getLocalHost();\n" +
+					"String hostname = local.getHostName();", e);
+			
 			throw new RuntimeException(e);
 		}
 	}
@@ -51,7 +57,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		InetAddress local = InetAddress.getLocalHost();
 		ipAddress = local.getHostName();
 		if(ipAddress.contains("localhost"))
-			throw new RuntimeException("call to InetAddress.getLocalHost.getHostname() == localhost.  This must be fixed or unique keys will not be generated");
+			throw new RuntimeException("Call to InetAddress.getLocalHost().getHostname() == localhost.  This must be fixed(you are most likely on linux!!) or unique keys will not be generated");
 	}
 
 }

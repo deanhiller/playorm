@@ -6,6 +6,7 @@ import org.junit.Test;
 import junit.framework.Assert;
 
 import com.alvazan.orm.api.Bootstrap;
+import com.alvazan.orm.api.DbTypeEnum;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Account;
@@ -17,7 +18,7 @@ public class TestBasic {
 
 	@Before
 	public void setup() {
-		factory = Bootstrap.createWithInMemoryDb();
+		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY);
 		factory.setup(null, "com.alvazan.test.db");
 	}
 	

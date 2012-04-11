@@ -12,6 +12,12 @@ public class MetaField {
 	private String columnName;
 	private Converter converter;
 
+	
+	@Override
+	public String toString() {
+		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
+	}
+
 	public void translateFromColumn(Map<String, Column> columns, Object entity) {
 		Column column = columns.get(columnName);
 		Object value = converter.convertFromNoSql(column.getValue());
