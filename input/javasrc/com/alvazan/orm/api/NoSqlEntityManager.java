@@ -3,11 +3,19 @@ package com.alvazan.orm.api;
 import java.util.List;
 
 import com.alvazan.orm.layer1.base.BaseEntityManagerImpl;
+import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.google.inject.ImplementedBy;
 
 @ImplementedBy(BaseEntityManagerImpl.class)
 public interface NoSqlEntityManager {
 
+	/**
+	 * Retrieve underlying interface to write raw columns to.  This works the same as the NoSqlEntityManager
+	 * in that you must call flush to execute all the calls to persist.
+	 * 
+	 * @return 
+	 */
+	public NoSqlSession getSession();
 
 	//public String generateUniqueKey();
 	

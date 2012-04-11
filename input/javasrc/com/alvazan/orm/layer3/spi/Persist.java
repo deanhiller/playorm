@@ -6,7 +6,16 @@ import java.util.List;
 public class Persist implements Action {
 	private String colFamily;
 	private String rowKey;
+	private long timestamp;
 	private List<Column> columns;
+	
+	
+	public long getTimestamp() {
+		return timestamp;
+	}
+	public void setTimestamp(long timestamp) {
+		this.timestamp = timestamp;
+	}
 	public String getColFamily() {
 		return colFamily;
 	}

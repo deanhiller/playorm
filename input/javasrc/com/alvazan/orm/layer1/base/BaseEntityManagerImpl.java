@@ -66,4 +66,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return null;
 	}
 
+	@Override
+	public NoSqlSession getSession() {
+		return session;
+	}
+
 }

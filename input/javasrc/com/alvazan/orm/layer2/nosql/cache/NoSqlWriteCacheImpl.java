@@ -52,6 +52,22 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public void flush() {
+		long time = System.currentTimeMillis();
+		for(Action action : actions) {
+			insertTime((Persist)action, time);
+		}
+		
 		rawSession.sendChanges(actions);		
+	}
+
+	private void insertTime(Action action, long time) {
+		if(action instanceof Persist) {
+			((Persist)action).setTimestamp(time);
+		}
+	}
+
+	@Override
+	public NoSqlRawSession getRawSession() {
+		return rawSession;
 	}
 }

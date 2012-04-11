@@ -10,12 +10,16 @@ public class NoSqlDatabase {
 
 	private Map<String, Table> nameToTable = new HashMap<String, Table>();
 	
-	public Table getTable(String name) {
+	public Table findOrCreateTable(String name) {
 		Table table = nameToTable.get(name);
 		if(table == null) {
 			table = new Table();
 			nameToTable.put(name, table);
 		}
 		return table;
+	}
+
+	public Table findTable(String name) {
+		return nameToTable.get(name);
 	}
 }

@@ -6,7 +6,15 @@ import java.util.List;
 public class Remove implements Action {
 	private String colFamily;
 	private String rowKey;
+	private RemoveEnum action;
 	private List<String> columns;
+	
+	public RemoveEnum getAction() {
+		return action;
+	}
+	public void setAction(RemoveEnum action) {
+		this.action = action;
+	}
 	public String getColFamily() {
 		return colFamily;
 	}

@@ -8,6 +8,7 @@ import javax.inject.Named;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
 import com.alvazan.orm.layer3.spi.Column;
+import com.alvazan.orm.layer3.spi.NoSqlRawSession;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 
@@ -44,6 +45,11 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Override
 	public void flush() {
 		session.flush();
+	}
+
+	@Override
+	public NoSqlRawSession getRawSession() {
+		return session.getRawSession();
 	}
 
 }
