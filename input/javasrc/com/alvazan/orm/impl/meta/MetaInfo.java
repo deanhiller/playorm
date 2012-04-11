@@ -5,7 +5,7 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
-import com.alvazan.nosql.spi.Row;
+import com.alvazan.orm.layer2.nosql.Row;
 
 @Singleton
 public class MetaInfo {

@@ -1,4 +1,4 @@
-package com.alvazan.orm.impl.base;
+package com.alvazan.orm.layer1.base;
 
 import java.util.ArrayList;
 import java.util.List;

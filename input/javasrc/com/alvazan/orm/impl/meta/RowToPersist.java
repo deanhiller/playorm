@@ -3,7 +3,7 @@ package com.alvazan.orm.impl.meta;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.nosql.spi.Column;
+import com.alvazan.orm.layer3.spi.Column;
 
 public class RowToPersist {
 	private String key;

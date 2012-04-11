@@ -2,7 +2,7 @@ package com.alvazan.orm.api;
 
 import java.util.Map;
 
-import com.alvazan.orm.impl.base.BaseEntityManagerFactoryImpl;
+import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.ImplementedBy;
 
 @ImplementedBy(BaseEntityManagerFactoryImpl.class)

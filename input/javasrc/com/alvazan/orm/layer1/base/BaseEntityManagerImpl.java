@@ -1,22 +1,22 @@
-package com.alvazan.orm.impl.base;
+package com.alvazan.orm.layer1.base;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
-import com.alvazan.nosql.spi.NoSqlSession;
-import com.alvazan.nosql.spi.Row;
 import com.alvazan.orm.api.Index;
 import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.RowToPersist;
+import com.alvazan.orm.layer2.nosql.NoSqlSession;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
-	@Inject 
+	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
 	@Inject
 	private MetaInfo metaInfo;

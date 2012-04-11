@@ -3,8 +3,8 @@ package com.alvazan.orm.impl.meta;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import com.alvazan.nosql.spi.Column;
 import com.alvazan.orm.api.Converter;
+import com.alvazan.orm.layer3.spi.Column;
 
 public class MetaField {
 

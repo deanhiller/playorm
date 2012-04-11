@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.nosql.spi.Column;
-import com.alvazan.nosql.spi.Row;
+import com.alvazan.orm.layer2.nosql.Row;
+import com.alvazan.orm.layer3.spi.Column;
 
 public class MetaClass<T> {
 

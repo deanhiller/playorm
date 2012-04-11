@@ -1,4 +1,4 @@
-package com.alvazan.nosql.spi;
+package com.alvazan.orm.layer3.spi;
 
 public class Column {
 	private String name;
