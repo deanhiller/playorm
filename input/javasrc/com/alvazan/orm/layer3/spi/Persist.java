@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Persist implements Action {
 	private String colFamily;
-	private String rowKey;
+	private byte[] rowKey;
 	private long timestamp;
 	private List<Column> columns;
 	
@@ -22,10 +22,10 @@ public class Persist implements Action {
 	public void setColFamily(String colFamily) {
 		this.colFamily = colFamily;
 	}
-	public String getRowKey() {
+	public byte[] getRowKey() {
 		return rowKey;
 	}
-	public void setRowKey(String rowKey) {
+	public void setRowKey(byte[] rowKey) {
 		this.rowKey = rowKey;
 	}
 	public List<Column> getColumns() {

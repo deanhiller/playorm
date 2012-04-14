@@ -2,44 +2,64 @@ package com.alvazan.orm.impl.meta;
 
 import java.lang.reflect.Field;
 
+import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.spi.KeyGenerator;
+import com.alvazan.orm.layer2.nosql.Row;
 
 public class MetaIdField {
 
-	private Field field;
+	protected Field field;
+	private String columnName;
+	private Converter converter;
+	
 	private boolean useGenerator;
 	private KeyGenerator generator;
-	
-	//This only exists here to be symetrical with fillInOrCheckId which is called
-	//during persist.  This method is called during reads!!!
-	//In the future, if we have more id translation, this class could explode with code
-	public void fillInId(Object entity, String id) {
-		ReflectionUtil.putFieldValue(entity, field, id);
+
+	@Override
+	public String toString() {
+		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
+	}
+
+	public void translateFromRow(Row row, Object entity) {
+		byte[] rowKey = row.getKey();
+		Object value = convertIdFromNoSql(rowKey);
+		ReflectionUtil.putFieldValue(entity, field, value);
 	}
 	
-	public String fillInOrCheckForId(Object entity) {
+	public void translateToRow(Object entity, RowToPersist row) {
+		Object value = ReflectionUtil.fetchFieldValue(entity, field);
+		Object id = fetchFinalId(value);
+		byte[] byteVal = convertIdToNoSql(id);
+		row.setKey(byteVal);
+	}
+
+	private Object fetchFinalId(Object entity) {
 		Object id = ReflectionUtil.fetchFieldValue(entity, field);
 		if(!useGenerator) {
 			if(id == null)
 				throw new IllegalArgumentException("Entity has @NoSqlEntity(usegenerator=false) but this entity has no id="+entity);
-			return (String)id;
+			return id;
 		} else if(id != null)
-			return (String)id;
+			return id;
 		
-		String newId = generator.generateNewKey(entity);
+		Object newId = generator.generateNewKey(entity);
 		ReflectionUtil.putFieldValue(entity, field, newId);
 		return newId;
 	}
 
-	void setField(Field field2) {
-		this.field = field2;
-		this.field.setAccessible(true);
-	}
-
-	public void setup(Field field2, boolean useGenerator, KeyGenerator gen) {
+	public void setup(Field field2, String colName, boolean useGenerator, KeyGenerator gen, Converter converter) {
 		this.field = field2;
 		this.field.setAccessible(true);
 		this.useGenerator = useGenerator;
 		this.generator = gen;
+		this.converter = converter;
 	}
+
+	public Object convertIdFromNoSql(byte[] key) {
+		return converter.convertFromNoSql(key);
+	}
+	public byte[] convertIdToNoSql(Object typedKey) {
+		return converter.convertToNoSql(typedKey);
+	}
+
 }

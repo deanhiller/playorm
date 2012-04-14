@@ -21,16 +21,18 @@ public class InspectorClass {
 	@Inject
 	private InspectorField inspectorField;
 	@Inject
-	private Provider<MetaClass<?>> classMetaProvider;
-	@Inject
 	private MetaInfo metaInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class clazz) {
-		MetaClass<?> classMeta = classMetaProvider.get();
+		//NOTE: We scan linearly with NO recursion BUT when we hit an object like Activity.java
+		//that has a reference to Account.java and so the MetaClass of Activity has fields and that
+		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
+		//of MetaClass that will be filled in here when Account gets scanned(if it gets scanned
+		//after Activity that is).  You can open call heirarchy on findOrCreateMetaClass ;).
+		MetaClass<?> classMeta = metaInfo.findOrCreate(clazz);
 		classMeta.setMetaClass(clazz);
 		scanClass(classMeta);
-		metaInfo.addMeta(clazz, classMeta);
 	}
 	
 	private void scanClass(MetaClass<?> meta) {
@@ -75,9 +77,9 @@ public class InspectorClass {
 		
 		MetaField metaField;
 		if(field.isAnnotationPresent(ManyToOne.class))
-			metaField = inspectorField.processToOne(field);
+			metaField = inspectorField.processManyToOne(field);
 		else if(field.isAnnotationPresent(OneToOne.class))
-			metaField = inspectorField.processToOne(field);
+			metaField = inspectorField.processOneToOne(field);
 		else if(field.isAnnotationPresent(OneToMany.class))
 			metaField = inspectorField.processOneToMany(field);
 		else if(field.isAnnotationPresent(Embeddable.class))

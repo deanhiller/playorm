@@ -19,16 +19,16 @@ public class InMemorySession implements NoSqlRawSession {
 	private NoSqlDatabase database;
 	
 	@Override
-	public List<Row> find(String colFamily, List<String> keys) {
+	public List<Row> find(String colFamily, List<byte[]> keys) {
 		List<Row> rows = new ArrayList<Row>();
-		for(String key : keys) {
+		for(byte[] key : keys) {
 			Row row = findRow(colFamily, key);
 			rows.add(row);
 		}
 		return rows;
 	}
 
-	private Row findRow(String colFamily, String key) {
+	private Row findRow(String colFamily, byte[] key) {
 		Table table = database.findTable(colFamily);
 		if(table == null)
 			return null;

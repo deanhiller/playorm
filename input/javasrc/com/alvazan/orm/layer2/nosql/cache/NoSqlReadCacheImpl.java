@@ -16,22 +16,22 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	private NoSqlSession session;
 	
 	@Override
-	public void persist(String colFamily, String rowKey, List<Column> columns) {
+	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
 		session.persist(colFamily, rowKey, columns);
 	}
 
 	@Override
-	public void remove(String colFamily, String rowKey) {
+	public void remove(String colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
 	}
 
 	@Override
-	public void remove(String colFamily, String rowKey, List<String> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, List<String> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
 	}
 
 	@Override
-	public List<Row> find(String colFamily, List<String> rowKeys) {
+	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
 		//READ FROM CACHE HERE to skip reading from database?
 		List<Row> rows = session.find(colFamily, rowKeys);
 		//We can cache stuff here....

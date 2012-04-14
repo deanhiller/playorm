@@ -5,14 +5,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.UniqueKeyGenerator;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Id {
-    @SuppressWarnings("rawtypes")
-	Class targetEntity() default void.class;
+    String columnName() default ""; 
+    
+//    @SuppressWarnings("rawtypes")
+//	Class targetEntity() default void.class;
 
 	Class<? extends KeyGenerator> generation() default UniqueKeyGenerator.class;
 	
@@ -21,5 +24,13 @@ public @interface Id {
 	 * manually set the key value every time.
 	 */
 	boolean usegenerator() default true;
+	
+	/**
+	 * You can supply your own converter for a field here which will override all
+	 * standard conversions even for primitives.  You just translate back and
+	 * forth from the byte[] for us and we wire that in.
+	 * @return
+	 */
+	Class<? extends Converter> customConverter() default NoConversion.class;	
 }
 

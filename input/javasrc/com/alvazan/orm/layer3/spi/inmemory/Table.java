@@ -9,21 +9,28 @@ public class Table {
 
 	private Map<String, Row> keyToRow = new HashMap<String, Row>();
 	
-	public Row findOrCreateRow(String key) {
+	public Row findOrCreateRow(byte[] key) {
 		Row row = keyToRow.get(key);
 		if(row == null) {
 			row = new Row();
-			keyToRow.put(key, row);
+			String strValue = convert(key);
+			keyToRow.put(strValue, row);
 		}
 		return row;
 	}
 
-	public void removeRow(String rowKey) {
-		keyToRow.remove(rowKey);
+	private String convert(byte[] key) {
+		String s = new String(key);
+		return s;
 	}
 
-	public Row getRow(String key) {
-		return keyToRow.get(key);
+	public void removeRow(byte[] rowKey) {
+		String strValue = convert(rowKey);
+		keyToRow.remove(strValue);
 	}
 
+	public Row getRow(byte[] rowKey) {
+		String strValue = convert(rowKey);
+		return keyToRow.get(strValue);
+	}
 }

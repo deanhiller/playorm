@@ -20,7 +20,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	private List<Action> actions = new ArrayList<Action>();
 	
 	@Override
-	public void persist(String colFamily, String rowKey, List<Column> columns) {
+	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
 		Persist persist = new Persist();
 		persist.setColFamily(colFamily);
 		persist.setRowKey(rowKey);
@@ -29,7 +29,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void remove(String colFamily, String rowKey) {
+	public void remove(String colFamily, byte[] rowKey) {
 		Remove remove = new Remove();
 		remove.setColFamily(colFamily);
 		remove.setRowKey(rowKey);
@@ -37,7 +37,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public void remove(String colFamily, String rowKey, List<String> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, List<String> columnNames) {
 		Remove remove = new Remove();
 		remove.setColFamily(colFamily);
 		remove.setRowKey(rowKey);
@@ -46,7 +46,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public List<Row> find(String colFamily, List<String> keys) {
+	public List<Row> find(String colFamily, List<byte[]> keys) {
 		return rawSession.find(colFamily, keys);
 	}
 

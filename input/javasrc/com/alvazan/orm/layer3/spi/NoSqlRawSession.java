@@ -6,7 +6,7 @@ import com.alvazan.orm.layer2.nosql.Row;
 
 public interface NoSqlRawSession {
 	
-	public List<Row> find(String colFamily, List<String> key);
+	public List<Row> find(String colFamily, List<byte[]> key);
 	
 	/**
 	 * Action is subclassed by Remove and Persist and will be executed

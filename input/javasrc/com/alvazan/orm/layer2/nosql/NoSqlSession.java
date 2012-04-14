@@ -20,7 +20,7 @@ public interface NoSqlSession {
 	 */
 	public NoSqlRawSession getRawSession();
 	
-	public void persist(String colFamily, String rowKey, List<Column> columns);
+	public void persist(String colFamily, byte[] rowKey, List<Column> columns);
 
 	/**
 	 * Remove entire row.
@@ -28,7 +28,7 @@ public interface NoSqlSession {
 	 * @param colFamily
 	 * @param rowKey
 	 */
-	public void remove(String colFamily, String rowKey);
+	public void remove(String colFamily, byte[] rowKey);
 	
 	/**
 	 * Remove specific columns from a row
@@ -37,9 +37,9 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @param columns
 	 */
-	public void remove(String colFamily, String rowKey, List<String> columnNames);
+	public void remove(String colFamily, byte[] rowKey, List<String> columnNames);
 	
-	public List<Row> find(String colFamily, List<String> rowKeys);
+	public List<Row> find(String colFamily, List<byte[]> rowKeys);
 	
 	public void flush();
 

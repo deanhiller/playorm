@@ -6,12 +6,12 @@ import java.util.List;
 import com.alvazan.orm.layer3.spi.Column;
 
 public class RowToPersist {
-	private String key;
+	private byte[] key;
 	private List<Column> columns = new ArrayList<Column>();
-	public String getKey() {
+	public byte[] getKey() {
 		return key;
 	}
-	public void setKey(String key) {
+	public void setKey(byte[] key) {
 		this.key = key;
 	}
 	public List<Column> getColumns() {

@@ -32,8 +32,7 @@ public class MetaClass<T> {
 
 	public T translateFromRow(Row row) {
 		T inst = ReflectionUtil.create(metaClass);
-		String key = row.getKey();
-		idField.fillInId(inst, key);
+		idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
 		for(MetaField field : fields) {
@@ -43,12 +42,12 @@ public class MetaClass<T> {
 	}
 	
 	public RowToPersist translateToRow(Object entity) {
-		String id = idField.fillInOrCheckForId(entity);
 		RowToPersist row = new RowToPersist();
-		row.setKey(id);
+		idField.translateToRow(entity, row);
 		
 		for(MetaField m : fields) {
-			Column col = m.translateToColumn(entity);
+			Column col = new Column();
+			m.translateToColumn(entity, col);
 			row.getColumns().add(col);
 		}
 		
@@ -74,5 +73,13 @@ public class MetaClass<T> {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
+	}
+
+	public Object convertIdFromNoSql(byte[] value) {
+		return idField.convertIdFromNoSql(value);
+	}
+
+	public byte[] convertIdToNoSql(Object value) {
+		return idField.convertIdToNoSql(value);
 	}
 }

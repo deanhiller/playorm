@@ -9,7 +9,7 @@ import com.alvazan.orm.layer3.spi.NoSqlRawSession;
 public class HadoopSession implements NoSqlRawSession {
 
 	@Override
-	public List<Row> find(String colFamily, List<String> key) {
+	public List<Row> find(String colFamily, List<byte[]> key) {
 		return null;
 	}
 

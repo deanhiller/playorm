@@ -6,12 +6,12 @@ import java.util.Map;
 import com.alvazan.orm.layer3.spi.Column;
 
 public class Row {
-	private String key;
+	private byte[] key;
 	private Map<String, Column> columns = new HashMap<String, Column>();
-	public String getKey() {
+	public byte[] getKey() {
 		return key;
 	}
-	public void setKey(String key) {
+	public void setKey(byte[] key) {
 		this.key = key;
 	}
 	public Map<String, Column> getColumns() {

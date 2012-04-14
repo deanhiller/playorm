@@ -2,6 +2,6 @@ package com.alvazan.orm.api.spi;
 
 public interface KeyGenerator {
 
-	public String generateNewKey(Object entity);
+	public Object generateNewKey(Object entity);
 	
 }

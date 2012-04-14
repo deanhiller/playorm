@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ManyToOne {
-    @SuppressWarnings("rawtypes")
-	Class targetEntity() default void.class;
+	String columnName() default "";
 }
 
