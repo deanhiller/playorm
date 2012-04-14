@@ -22,19 +22,19 @@ public class MetaIdField {
 
 	public void translateFromRow(Row row, Object entity) {
 		byte[] rowKey = row.getKey();
-		Object value = convertIdFromNoSql(rowKey);
+		Object value = converter.convertFromNoSql(rowKey);
 		ReflectionUtil.putFieldValue(entity, field, value);
 	}
 	
 	public void translateToRow(Object entity, RowToPersist row) {
-		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		Object id = fetchFinalId(value);
-		byte[] byteVal = convertIdToNoSql(id);
+		Object idInEntity = ReflectionUtil.fetchFieldValue(entity, field);
+		Object id = fetchFinalId(idInEntity, entity);
+		byte[] byteVal = converter.convertToNoSql(id);
 		row.setKey(byteVal);
 	}
 
-	private Object fetchFinalId(Object entity) {
-		Object id = ReflectionUtil.fetchFieldValue(entity, field);
+	private Object fetchFinalId(Object idInEntity, Object entity) {
+		Object id = idInEntity;
 		if(!useGenerator) {
 			if(id == null)
 				throw new IllegalArgumentException("Entity has @NoSqlEntity(usegenerator=false) but this entity has no id="+entity);
@@ -55,11 +55,18 @@ public class MetaIdField {
 		this.converter = converter;
 	}
 
-	public Object convertIdFromNoSql(byte[] key) {
-		return converter.convertFromNoSql(key);
+	public byte[] convertProxyToId(Object value) {
+		Object id = ReflectionUtil.fetchFieldValue(value, field);
+		return converter.convertToNoSql(id);
 	}
-	public byte[] convertIdToNoSql(Object typedKey) {
-		return converter.convertToNoSql(typedKey);
+
+	public Object convertIdToProxy(byte[] id) {
+		Object entityId = converter.convertFromNoSql(id);
+		return createProxy(entityId);
+	}
+
+	private Object createProxy(Object entityId) {
+		throw new UnsupportedOperationException("not implemented yet, use javassist");
 	}
 
 }

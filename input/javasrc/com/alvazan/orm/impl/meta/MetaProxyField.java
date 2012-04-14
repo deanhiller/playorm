@@ -20,13 +20,15 @@ public class MetaProxyField implements MetaField {
 
 	public void translateFromColumn(Map<String, Column> columns, Object entity) {
 		Column column = columns.get(columnName);
-		Object value = classMeta.convertIdFromNoSql(column.getValue());
-		ReflectionUtil.putFieldValue(entity, field, value);
+		Object proxy = classMeta.convertIdToProxy(column.getValue());
+		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
 	public void translateToColumn(Object entity, Column col) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		byte[] byteVal = classMeta.convertIdToNoSql(value);
+		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
+		//the database is the ID inside this Account.java object!!!!
+		byte[] byteVal = classMeta.convertProxyToId(value);
 		col.setName(columnName);
 		col.setValue(byteVal);
 	}

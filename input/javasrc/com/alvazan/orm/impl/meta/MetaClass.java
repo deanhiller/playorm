@@ -75,11 +75,11 @@ public class MetaClass<T> {
 		this.idField = field;
 	}
 
-	public Object convertIdFromNoSql(byte[] value) {
-		return idField.convertIdFromNoSql(value);
+	public Object convertIdToProxy(byte[] id) {
+		return idField.convertIdToProxy(id);
 	}
 
-	public byte[] convertIdToNoSql(Object value) {
-		return idField.convertIdToNoSql(value);
+	public byte[] convertProxyToId(Object value) {
+		return idField.convertProxyToId(value);
 	}
 }
