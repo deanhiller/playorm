@@ -54,7 +54,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public void flush() {
 		long time = System.currentTimeMillis();
 		for(Action action : actions) {
-			insertTime((Persist)action, time);
+			insertTime(action, time);
 		}
 		
 		rawSession.sendChanges(actions);		

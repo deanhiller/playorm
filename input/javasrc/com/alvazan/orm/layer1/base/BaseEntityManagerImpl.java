@@ -13,6 +13,7 @@ import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.RowToPersist;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
+import com.alvazan.orm.layer2.nosql.Row;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
@@ -24,7 +25,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void put(Object entity) {
-		MetaClass metaClass = metaInfo.getMetaClass(entity);
+		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
 		RowToPersist row = metaClass.translateToRow(entity);
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
@@ -39,19 +40,39 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public <T> T find(Class<T> entityType, Object key) {
 		List<Object> keys = new ArrayList<Object>();
+		keys.add(key);
 		List<KeyValue<T>> entities = findAll(entityType, keys);
 		return entities.get(0).getValue();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<Object> keys) {
+		if(keys == null)
+			throw new IllegalArgumentException("keys list cannot be null");
+		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
+		List<byte[]> noSqlKeys = new ArrayList<byte[]>();
+		for(Object k : keys) {
+			byte[] key = meta.convertIdToNoSql(k);
+			noSqlKeys.add(key);
+		}
 		
-		return null;
+		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
+		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
+		List<Row> rows = session.find(meta.getColumnFamily(), noSqlKeys);
+		
+		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
+		for(Row row : rows) {
+			KeyValue<T> keyVal = meta.translateFromRow(row);
+			keyValues.add(keyVal);
+		}
+		
+		return keyValues;
 	}
 	
 	@Override
 	public void flush() {
-		//No-op, the base layer is immediate with no caching writes to be written all at once
+		session.flush();
 	}
 
 	@Override

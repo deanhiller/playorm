@@ -20,10 +20,11 @@ public class MetaIdField {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromRow(Row row, Object entity) {
+	public Object translateFromRow(Row row, Object entity) {
 		byte[] rowKey = row.getKey();
-		Object value = converter.convertFromNoSql(rowKey);
-		ReflectionUtil.putFieldValue(entity, field, value);
+		Object entityId = converter.convertFromNoSql(rowKey);
+		ReflectionUtil.putFieldValue(entity, field, entityId);
+		return entityId;
 	}
 	
 	public void translateToRow(Object entity, RowToPersist row) {
@@ -56,17 +57,26 @@ public class MetaIdField {
 	}
 
 	public byte[] convertProxyToId(Object value) {
+		if(value == null)
+			return null;
 		Object id = ReflectionUtil.fetchFieldValue(value, field);
 		return converter.convertToNoSql(id);
 	}
 
 	public Object convertIdToProxy(byte[] id) {
+		if(id == null)
+			return null;
 		Object entityId = converter.convertFromNoSql(id);
 		return createProxy(entityId);
 	}
 
 	private Object createProxy(Object entityId) {
 		throw new UnsupportedOperationException("not implemented yet, use javassist");
+		//return null;
+	}
+
+	public byte[] convertIdToNoSql(Object entityId) {
+		return converter.convertToNoSql(entityId);
 	}
 
 }

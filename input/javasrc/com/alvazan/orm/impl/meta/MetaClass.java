@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.layer2.nosql.Row;
 import com.alvazan.orm.layer3.spi.Column;
 
@@ -30,15 +31,19 @@ public class MetaClass<T> {
 		return metaClass;
 	}
 
-	public T translateFromRow(Row row) {
+	public KeyValue<T> translateFromRow(Row row) {
 		T inst = ReflectionUtil.create(metaClass);
-		idField.translateFromRow(row, inst);
+		Object key = idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
 		for(MetaField field : fields) {
 			field.translateFromColumn(columns, inst);
 		}
-		return inst;
+		
+		KeyValue<T> keyVal = new KeyValue<T>();
+		keyVal.setKey(key);
+		keyVal.setValue(inst);
+		return keyVal;
 	}
 	
 	public RowToPersist translateToRow(Object entity) {
@@ -81,5 +86,9 @@ public class MetaClass<T> {
 
 	public byte[] convertProxyToId(Object value) {
 		return idField.convertProxyToId(value);
+	}
+
+	public byte[] convertIdToNoSql(Object entityId) {
+		return idField.convertIdToNoSql(entityId);
 	}
 }

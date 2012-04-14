@@ -14,6 +14,7 @@ public class Table {
 		if(row == null) {
 			row = new Row();
 			String strValue = convert(key);
+			row.setKey(key);
 			keyToRow.put(strValue, row);
 		}
 		return row;

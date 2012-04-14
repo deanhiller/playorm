@@ -21,6 +21,22 @@ public class TestBasic {
 		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY);
 		factory.setup(null, "com.alvazan.test.db");
 	}
+	@Test
+	public void testActivityHasNullAccount() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+
+		//Activity has null reference to account
+		Activity act = new Activity();
+		act.setName("asdfsdf");
+		act.setNumTimes(3);
+		
+		mgr.put(act);
+		mgr.flush();
+		
+		Activity activityResult = mgr.find(Activity.class, act.getId());
+		Assert.assertEquals(act.getName(), activityResult.getName());
+		Assert.assertEquals(act.getNumTimes(), activityResult.getNumTimes());		
+	}
 	
 	@Test
 	public void testBasic() {

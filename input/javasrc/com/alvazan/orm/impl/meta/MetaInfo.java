@@ -16,13 +16,12 @@ public class MetaInfo {
 	private Map<Class, MetaClass> classToClassMeta = new HashMap<Class, MetaClass>();
 	
 	@SuppressWarnings("rawtypes")
-	public MetaClass getMetaClass(Object entity) {
-		Class clazz = entity.getClass();
+	public MetaClass getMetaClass(Class clazz) {
 		MetaClass metaClass = classToClassMeta.get(clazz);
 		return metaClass;
 	}
 
-	public MetaClass<?> findOrCreate(Class<?> clazz) {
+	MetaClass<?> findOrCreate(Class<?> clazz) {
 		MetaClass<?> metaClass = classToClassMeta.get(clazz);
 		if(metaClass != null)
 			return metaClass;
