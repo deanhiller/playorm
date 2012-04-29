@@ -32,7 +32,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 
 	@Override
 	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
-		//READ FROM CACHE HERE to skip reading from database?
+		//READ FROM CACHE HERE to skip reading from database.
+		//All Proxies read from this find method too so they can get cache hits when you have a large 
+		//object graph and fill themselves in properly
 		List<Row> rows = session.find(colFamily, rowKeys);
 		//We can cache stuff here....
 		cacheRows(rows);

@@ -14,12 +14,11 @@ import com.alvazan.orm.api.anno.NoSqlEntity;
 import com.alvazan.orm.api.anno.OneToMany;
 import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.anno.Transient;
-import com.google.inject.Provider;
 
-public class InspectorClass {
+public class ScannerForClass {
 
 	@Inject
-	private InspectorField inspectorField;
+	private ScannerForField inspectorField;
 	@Inject
 	private MetaInfo metaInfo;
 	

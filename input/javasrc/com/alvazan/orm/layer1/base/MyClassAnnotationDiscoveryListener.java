@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.anno.Embeddable;
 import com.alvazan.orm.api.anno.NoSqlEntity;
-import com.alvazan.orm.impl.meta.InspectorClass;
+import com.alvazan.orm.impl.meta.ScannerForClass;
 import com.impetus.annovention.listener.ClassAnnotationDiscoveryListener;
 
 public class MyClassAnnotationDiscoveryListener implements
@@ -16,7 +16,7 @@ public class MyClassAnnotationDiscoveryListener implements
 	private static final Logger log = LoggerFactory.getLogger(MyClassAnnotationDiscoveryListener.class);
 
 	@Inject
-	private InspectorClass inspectorClass; 
+	private ScannerForClass inspectorClass; 
 
 	@Override
 	public String[] supportedAnnotations() {

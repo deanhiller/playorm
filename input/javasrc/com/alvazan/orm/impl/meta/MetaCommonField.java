@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.alvazan.orm.api.Converter;
+import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer3.spi.Column;
 
 public class MetaCommonField implements MetaField {
@@ -16,7 +17,7 @@ public class MetaCommonField implements MetaField {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromColumn(Map<String, Column> columns, Object entity) {
+	public void translateFromColumn(Map<String, Column> columns, Object entity, NoSqlSession session) {
 		Column column = columns.get(columnName);
 		Object value = converter.convertFromNoSql(column.getValue());
 		ReflectionUtil.putFieldValue(entity, field, value);

@@ -63,7 +63,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
 		for(Row row : rows) {
-			KeyValue<T> keyVal = meta.translateFromRow(row);
+			KeyValue<T> keyVal = meta.translateFromRow(row, session);
 			keyValues.add(keyVal);
 		}
 		
@@ -90,6 +90,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public NoSqlSession getSession() {
 		return session;
+	}
+
+	@Override
+	public Object getKey(Object entity) {
+		MetaClass<?> metaClass = metaInfo.getMetaClass(entity.getClass());
+		return metaClass.fetchId(entity);
 	}
 
 }

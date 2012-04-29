@@ -30,6 +30,14 @@ public interface NoSqlEntityManager {
 	public <T> T getReference(Class<T> entityType, Object key);
 	
 	/**
+	 * Mainly for framework code but a nice way to get the key of an unknown entity
+	 * where you don't care about the entity but just need the key
+	 * @param entity
+	 * @return
+	 */
+	public Object getKey(Object entity);
+	
+	/**
 	 * Unlike RDBMS, there are no transactions, BUT all the calls to putAll are cached
 	 * in-memory into flush is called.  This allows us to easily queue up all writes to
 	 * the datastore and time how long all the writes take.  It is also a bit more likely

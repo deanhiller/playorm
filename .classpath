@@ -23,5 +23,7 @@
 	<classpathentry kind="lib" path="input/libinclude/logback-classic-1.0.1.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/logback-core-1.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/logback-core-1.0.1.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0-javadoc.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>

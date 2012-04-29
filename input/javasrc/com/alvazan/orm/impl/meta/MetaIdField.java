@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.spi.KeyGenerator;
@@ -14,6 +15,7 @@ public class MetaIdField {
 	
 	private boolean useGenerator;
 	private KeyGenerator generator;
+	private Method method;
 
 	@Override
 	public String toString() {
@@ -48,35 +50,25 @@ public class MetaIdField {
 		return newId;
 	}
 
-	public void setup(Field field2, String colName, boolean useGenerator, KeyGenerator gen, Converter converter) {
+	public void setup(Field field2, Method idMethod, String colName, boolean useGenerator, KeyGenerator gen, Converter converter) {
 		this.field = field2;
+		this.method = idMethod;
 		this.field.setAccessible(true);
 		this.useGenerator = useGenerator;
 		this.generator = gen;
 		this.converter = converter;
 	}
 
-	public byte[] convertProxyToId(Object value) {
-		if(value == null)
-			return null;
-		Object id = ReflectionUtil.fetchFieldValue(value, field);
-		return converter.convertToNoSql(id);
+	public Converter getConverter() {
+		return converter;
 	}
 
-	public Object convertIdToProxy(byte[] id) {
-		if(id == null)
-			return null;
-		Object entityId = converter.convertFromNoSql(id);
-		return createProxy(entityId);
+	public Field getField() {
+		return field;
 	}
 
-	private Object createProxy(Object entityId) {
-		throw new UnsupportedOperationException("not implemented yet, use javassist");
-		//return null;
-	}
-
-	public byte[] convertIdToNoSql(Object entityId) {
-		return converter.convertToNoSql(entityId);
+	public Method getIdMethod() {
+		return method;
 	}
 
 }

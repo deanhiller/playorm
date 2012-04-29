@@ -1,8 +1,13 @@
 package com.alvazan.orm.impl.meta;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
 
 import javax.inject.Inject;
 
@@ -16,7 +21,7 @@ import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.spi.KeyGenerator;
 import com.google.inject.Provider;
 
-public class InspectorField {
+public class ScannerForField {
 
 	@Inject
 	private MetaInfo metaInfo;
@@ -32,7 +37,7 @@ public class InspectorField {
 	@SuppressWarnings("rawtypes")
 	private Map<Class, Converter> stdConverters = new HashMap<Class, Converter>();
 	
-	public InspectorField() {
+	public ScannerForField() {
 		stdConverters.put(short.class, new Converters.ShortConverter());
 		stdConverters.put(Short.class, new Converters.ShortConverter());
 		stdConverters.put(int.class, new Converters.IntConverter());
@@ -51,6 +56,8 @@ public class InspectorField {
 	public MetaIdField processId(Field field) {
 		if(!String.class.isAssignableFrom(field.getType()))
 			throw new IllegalArgumentException("The id is not of type String and has to be.  field="+field+" in class="+field.getDeclaringClass());
+		
+		Method idMethod = getIdMethod(field);
 		
 		Id idAnno = field.getAnnotation(Id.class);
 		MetaIdField metaField = idMetaProvider.get();
@@ -71,7 +78,7 @@ public class InspectorField {
 		
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, colName, idAnno.usegenerator(), gen, converter);
+			metaField.setup(field, idMethod, colName, idAnno.usegenerator(), gen, converter);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -82,6 +89,30 @@ public class InspectorField {
 							" or finally if we missed a standard converter, we need to add it in file InspectorField.java" +
 							" in the constructor and it is trivial code(and we can copy the existing pattern)");
 		}		 
+	}
+
+	private Method getIdMethod(Field field) {
+		String name = field.getName();
+		String newName = name.substring(0,1).toUpperCase() + name.substring(1);
+		String methodName = "get"+newName; 
+		
+		Class<?> declaringClass = field.getDeclaringClass();
+		try {
+			Method method = declaringClass.getDeclaredMethod(methodName);
+			if(!method.getReturnType().equals(field.getType()))
+				throw new IllegalArgumentException("The method="+declaringClass.getName()+"."+methodName+" must" +
+						" return the type="+field.getType().getName()+" but instead returns="+method.getReturnType().getName());
+			
+			return method;
+		} catch (SecurityException e) {
+			throw new RuntimeException("security issue on looking up method="+declaringClass.getName()+"."+methodName, e);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalArgumentException("You are missing a method "+declaringClass.getName()+"."+methodName
+					+"  This method exists as when you call it on a proxy, we make sure we do NOT hit the database" +
+					" and instead just return the id that is inside the proxy.  Without this, we can't tell the" +
+					" difference between a call to getName(where we have to hit the db and fill the proxy in) and" +
+					" a call to just getting the id", e);
+		}
 	}
 
 	public MetaField processColumn(Field field) {
@@ -170,7 +201,41 @@ public class InspectorField {
 		
 		MetaProxyField metaField = metaProxyProvider.get();
 		MetaClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		
+		if(classMeta.getProxyClass() == null) {
+			//We only need to create the proxy the first time we hit the metaclass
+			//as many others could be referencing it as well.
+			createAndSetProxy(field, classMeta);
+		}
+		 
 		metaField.setup(field, colName, classMeta);
 		return metaField;
 	}
+
+	private void createAndSetProxy(Field field, MetaClass<?> classMeta) {
+		Class<?> fieldType = field.getType();
+		ProxyFactory f = new ProxyFactory();
+		f.setSuperclass(fieldType);
+		f.setInterfaces(new Class[] {NoSqlProxy.class});
+		f.setFilter(new MethodFilter() {
+			public boolean isHandled(Method m) {
+				// ignore finalize()
+				return !m.getName().equals("finalize");
+			}
+		});
+		Class<?> clazz = f.createClass();
+		testInstanceCreation(field, clazz);
+		classMeta.setProxyClass(clazz);
+	}
+	
+	private Proxy testInstanceCreation(Field field, Class<?> clazz) {
+		try {
+			Proxy inst = (Proxy) clazz.newInstance();
+			return inst;
+		} catch (InstantiationException e) {
+			throw new RuntimeException("Could not create proxy for type="+field.getType(), e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Could not create proxy for type="+field.getType(), e);
+		}		
+	}	
 }

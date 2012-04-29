@@ -14,6 +14,7 @@ import com.alvazan.test.db.Activity;
 
 public class TestBasic {
 
+	private static final String ACCOUNT_NAME = "dean";
 	private NoSqlEntityManagerFactory factory;
 
 	@Before
@@ -39,11 +40,27 @@ public class TestBasic {
 	}
 	
 	@Test
-	public void testBasic() {
+	public void testWriteReadProxy() {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		
+		Activity activity = readWriteBasic(mgr);
+		
+		//This is the proxy object
+		Account account = activity.getAccount();
+		//This will cause a load from the database
+		Assert.assertEquals(ACCOUNT_NAME, account.getName());
+	}
+	
+	@Test
+	public void testWriteReadBasic() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		readWriteBasic(mgr);
+	}
+	
+	private Activity readWriteBasic(NoSqlEntityManager mgr) {
 		Account acc = new Account();
-		acc.setName("dean");
+		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5);
 		
 		mgr.put(acc);
@@ -58,11 +75,14 @@ public class TestBasic {
 		mgr.flush();
 		
 		Account accountResult = mgr.find(Account.class, acc.getId());
-		Assert.assertEquals(acc.getName(), accountResult.getName());
+		Assert.assertEquals(ACCOUNT_NAME, accountResult.getName());
 		Assert.assertEquals(acc.getUsers(), accountResult.getUsers());
 		
 		Activity activityResult = mgr.find(Activity.class, act.getId());
 		Assert.assertEquals(act.getName(), activityResult.getName());
 		Assert.assertEquals(act.getNumTimes(), activityResult.getNumTimes());
+		Assert.assertEquals(acc.getId(), activityResult.getAccount().getId());
+		
+		return activityResult;
 	}
 }

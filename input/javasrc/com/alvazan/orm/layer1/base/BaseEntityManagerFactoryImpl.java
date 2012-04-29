@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
-import com.alvazan.orm.impl.meta.InspectorField;
+import com.alvazan.orm.impl.meta.ScannerForField;
 import com.google.inject.Provider;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
@@ -26,7 +26,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@Inject
 	private MyClassAnnotationDiscoveryListener listener;
 	@Inject
-	private InspectorField inspectorField;
+	private ScannerForField inspectorField;
 	@Inject
 	private ClasspathDiscoverer discoverer; 
 	private boolean isScanned;

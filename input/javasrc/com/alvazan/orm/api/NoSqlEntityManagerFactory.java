@@ -18,6 +18,7 @@ public interface NoSqlEntityManagerFactory {
 	 * @param converters
 	 * @param packages
 	 */
+	@SuppressWarnings("rawtypes")
 	public void setup(Map<Class, Converter> converters, String ... packages);
 	
 	public NoSqlEntityManager createEntityManager();
