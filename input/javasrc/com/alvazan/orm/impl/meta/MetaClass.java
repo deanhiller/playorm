@@ -15,12 +15,12 @@ public class MetaClass<T> {
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
 	//will be a subclass of metaClass field above!!
-	private Class<?> proxyClass;
+	private Class<T> proxyClass;
 	
 	private String columnFamily;
 	
-	private MetaIdField idField;
-	private List<MetaField> fields = new ArrayList<MetaField>();
+	private MetaIdField<T> idField;
+	private List<MetaField<T>> fields = new ArrayList<MetaField<T>>();
 
 	public Object fetchId(Object entity) {
 		return ReflectionUtil.fetchFieldValue(entity, idField.getField());
@@ -46,22 +46,22 @@ public class MetaClass<T> {
 	 * @param inst The object OR the proxy to be filled in
 	 * @return The key of the entity object
 	 */
-	Object fillInInstance(Row row, NoSqlSession session, Object inst) {
+	Object fillInInstance(Row row, NoSqlSession session, T inst) {
 		Object key = idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
-		for(MetaField field : fields) {
+		for(MetaField<T> field : fields) {
 			field.translateFromColumn(columns, inst, session);
 		}
 		
 		return key;
 	}
 	
-	public RowToPersist translateToRow(Object entity) {
+	public RowToPersist translateToRow(T entity) {
 		RowToPersist row = new RowToPersist();
 		idField.translateToRow(entity, row);
 		
-		for(MetaField m : fields) {
+		for(MetaField<T> m : fields) {
 			Column col = new Column();
 			m.translateToColumn(entity, col);
 			row.getColumns().add(col);
@@ -93,23 +93,23 @@ public class MetaClass<T> {
 		return metaClass;
 	}
 	
-	void addMetaField(MetaField field) {
+	void addMetaField(MetaField<T> field) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		fields.add(field);
 	}
 
-	void setIdField(MetaIdField field) {
+	void setIdField(MetaIdField<T> field) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
 	}
 
-	MetaIdField getIdField() {
+	public MetaIdField<T> getIdField() {
 		return idField;
 	}
 	
-	void setProxyClass(Class<?> proxyClass) {
+	void setProxyClass(Class<T> proxyClass) {
 		this.proxyClass = proxyClass;
 	}
 

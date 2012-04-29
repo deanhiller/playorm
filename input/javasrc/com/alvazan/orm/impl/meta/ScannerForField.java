@@ -5,10 +5,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import javassist.util.proxy.MethodFilter;
-import javassist.util.proxy.Proxy;
-import javassist.util.proxy.ProxyFactory;
-
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.Converter;
@@ -21,8 +17,8 @@ import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.spi.KeyGenerator;
 import com.google.inject.Provider;
 
+@SuppressWarnings("rawtypes")
 public class ScannerForField {
-
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
@@ -32,9 +28,7 @@ public class ScannerForField {
 	@Inject
 	private Provider<MetaProxyField> metaProxyProvider;
 	
-	@SuppressWarnings("rawtypes")
 	private Map<Class, Converter> customConverters = new HashMap<Class, Converter>();
-	@SuppressWarnings("rawtypes")
 	private Map<Class, Converter> stdConverters = new HashMap<Class, Converter>();
 	
 	public ScannerForField() {
@@ -53,23 +47,20 @@ public class ScannerForField {
 		stdConverters.put(String.class, new Converters.StringConverter());
 	}
 	
-	public MetaIdField processId(Field field) {
+	@SuppressWarnings("unchecked")
+	public <T> MetaIdField<T> processId(Field field, MetaClass<T> metaClass) {
 		if(!String.class.isAssignableFrom(field.getType()))
 			throw new IllegalArgumentException("The id is not of type String and has to be.  field="+field+" in class="+field.getDeclaringClass());
 		
 		Method idMethod = getIdMethod(field);
 		
 		Id idAnno = field.getAnnotation(Id.class);
-		MetaIdField metaField = idMetaProvider.get();
+		MetaIdField<T> metaField = idMetaProvider.get();
 		KeyGenerator gen = null;
 		if(idAnno.usegenerator()) {
 			Class<? extends KeyGenerator> generation = idAnno.generation();
 			gen = ReflectionUtil.create(generation);
 		}
-		
-		String colName = field.getName();
-		if(!"".equals(idAnno.columnName()))
-			colName = idAnno.columnName();
 		
 		Class<?> type = field.getType();
 		Converter converter = null;
@@ -78,8 +69,8 @@ public class ScannerForField {
 		
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, idMethod, colName, idAnno.usegenerator(), gen, converter);
-			return metaField;			
+			metaField.setup(field, idMethod, idAnno.usegenerator(), gen, converter, metaClass);
+			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
 					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
@@ -162,7 +153,6 @@ public class ScannerForField {
 		throw new UnsupportedOperationException("not implemented yet");
 	}
 
-	@SuppressWarnings("rawtypes")
 	public void setCustomConverters(Map<Class, Converter> converters) {
 		if(converters == null)
 			return; //nothing to do
@@ -192,6 +182,7 @@ public class ScannerForField {
 		return processToOne(field, colName);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public MetaField processToOne(Field field, String colName) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner
@@ -201,41 +192,9 @@ public class ScannerForField {
 		
 		MetaProxyField metaField = metaProxyProvider.get();
 		MetaClass<?> classMeta = metaInfo.findOrCreate(field.getType());
-		
-		if(classMeta.getProxyClass() == null) {
-			//We only need to create the proxy the first time we hit the metaclass
-			//as many others could be referencing it as well.
-			createAndSetProxy(field, classMeta);
-		}
 		 
 		metaField.setup(field, colName, classMeta);
 		return metaField;
 	}
 
-	private void createAndSetProxy(Field field, MetaClass<?> classMeta) {
-		Class<?> fieldType = field.getType();
-		ProxyFactory f = new ProxyFactory();
-		f.setSuperclass(fieldType);
-		f.setInterfaces(new Class[] {NoSqlProxy.class});
-		f.setFilter(new MethodFilter() {
-			public boolean isHandled(Method m) {
-				// ignore finalize()
-				return !m.getName().equals("finalize");
-			}
-		});
-		Class<?> clazz = f.createClass();
-		testInstanceCreation(field, clazz);
-		classMeta.setProxyClass(clazz);
-	}
-	
-	private Proxy testInstanceCreation(Field field, Class<?> clazz) {
-		try {
-			Proxy inst = (Proxy) clazz.newInstance();
-			return inst;
-		} catch (InstantiationException e) {
-			throw new RuntimeException("Could not create proxy for type="+field.getType(), e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException("Could not create proxy for type="+field.getType(), e);
-		}		
-	}	
 }

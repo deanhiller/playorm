@@ -40,6 +40,19 @@ public class TestBasic {
 	}
 	
 	@Test
+	public void testGetReference() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		Activity activity = readWriteBasic(mgr);
+		
+		Activity reference = mgr.getReference(Activity.class, activity.getId());
+		
+		//Any calls to reference causes call to database(or cache) to fill the object in
+		Assert.assertEquals(activity.getName(), reference.getName());
+		Assert.assertEquals(activity.getNumTimes(), reference.getNumTimes());
+	}
+	
+	@Test
 	public void testWriteReadProxy() {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		

@@ -1,9 +1,14 @@
 package com.alvazan.orm.impl.meta;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
 
 import javax.inject.Inject;
 
@@ -23,15 +28,48 @@ public class ScannerForClass {
 	private MetaInfo metaInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public void addClass(Class clazz) {
+	public void addClass(Class<?> clazz) {
 		//NOTE: We scan linearly with NO recursion BUT when we hit an object like Activity.java
 		//that has a reference to Account.java and so the MetaClass of Activity has fields and that
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
 		//of MetaClass that will be filled in here when Account gets scanned(if it gets scanned
 		//after Activity that is).  You can open call heirarchy on findOrCreateMetaClass ;).
-		MetaClass<?> classMeta = metaInfo.findOrCreate(clazz);
+		MetaClass classMeta = metaInfo.findOrCreate(clazz);
 		classMeta.setMetaClass(clazz);
+		createAndSetProxy(classMeta);
 		scanClass(classMeta);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> void createAndSetProxy(MetaClass<T> classMeta) {
+		Class<T> fieldType = classMeta.getMetaClass();
+		ProxyFactory f = new ProxyFactory();
+		f.setSuperclass(fieldType);
+		f.setInterfaces(new Class[] {NoSqlProxy.class});
+		f.setFilter(new MethodFilter() {
+			public boolean isHandled(Method m) {
+				// ignore finalize()
+				return !m.getName().equals("finalize");
+			}
+		});
+		Class<T> clazz = f.createClass();
+		testInstanceCreation(clazz);
+		
+		classMeta.setProxyClass(clazz);
+	}
+	
+	/**
+	 * An early test so we get errors on startup instead of waiting until runtime(ie. fail as fast as we can)
+	 */
+	private Proxy testInstanceCreation(Class<?> clazz) {
+		try {
+			Proxy inst = (Proxy) clazz.newInstance();
+			return inst;
+		} catch (InstantiationException e) {
+			throw new RuntimeException("Could not create proxy for type="+clazz, e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException("Could not create proxy for type="+clazz, e);
+		}
 	}
 	
 	private void scanClass(MetaClass<?> meta) {
@@ -62,6 +100,7 @@ public class ScannerForClass {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void inspectField(MetaClass<?> metaClass, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
@@ -69,7 +108,7 @@ public class ScannerForClass {
 			return;
 		
 		if(field.isAnnotationPresent(Id.class)) {
-			MetaIdField idField = inspectorField.processId(field);
+			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);
 			return;
 		}

@@ -7,7 +7,7 @@ import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer3.spi.Column;
 
-public class MetaCommonField implements MetaField {
+public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	protected Field field;
 	private String columnName;
 	private Converter converter;
@@ -17,13 +17,13 @@ public class MetaCommonField implements MetaField {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromColumn(Map<String, Column> columns, Object entity, NoSqlSession session) {
+	public void translateFromColumn(Map<String, Column> columns, OWNER entity, NoSqlSession session) {
 		Column column = columns.get(columnName);
 		Object value = converter.convertFromNoSql(column.getValue());
 		ReflectionUtil.putFieldValue(entity, field, value);
 	}
 	
-	public void translateToColumn(Object entity, Column col) {
+	public void translateToColumn(OWNER entity, Column col) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
 		byte[] byteVal = converter.convertToNoSql(value);
 		col.setName(columnName);

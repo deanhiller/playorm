@@ -12,8 +12,6 @@ import com.alvazan.orm.api.spi.UniqueKeyGenerator;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Id {
-    String columnName() default ""; 
-    
 //    @SuppressWarnings("rawtypes")
 //	Class targetEntity() default void.class;
 

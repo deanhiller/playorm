@@ -5,11 +5,13 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import com.alvazan.orm.api.Index;
 import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.impl.meta.MetaClass;
+import com.alvazan.orm.impl.meta.MetaIdField;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.RowToPersist;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
@@ -21,6 +23,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	private NoSqlSession session;
 	@Inject
 	private MetaInfo metaInfo;
+	@SuppressWarnings("rawtypes")
+	@Inject
+	private Provider<IndexImpl> indexProvider; 
 	
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -75,16 +80,22 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		session.flush();
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public <T> Index<T> getIndex(Class<T> forEntity, String indexName) {
-		// TODO Auto-generated method stub
-		return null;
+		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
+		IndexImpl indexImpl = indexProvider.get();
+		indexImpl.setMeta(metaClass);
+		indexImpl.setIndexName(indexName);
+		return indexImpl;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getReference(Class<T> entityType, Object key) {
-		// TODO Auto-generated method stub
-		return null;
+		MetaClass<T> metaClass = metaInfo.getMetaClass(entityType);
+		MetaIdField field = metaClass.getIdField();
+		return (T) field.convertIdToProxy(session, key);
 	}
 
 	@Override

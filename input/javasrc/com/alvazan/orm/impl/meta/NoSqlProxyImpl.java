@@ -14,16 +14,16 @@ import com.alvazan.orm.api.RowNotFoundException;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
 
-public class NoSqlProxyImpl implements MethodHandler {
+public class NoSqlProxyImpl<T> implements MethodHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(NoSqlProxyImpl.class);
 	private NoSqlSession session;
 	private Object entityId;
 	private Method idMethod;
-	private MetaClass<?> classMeta;
+	private MetaClass<T> classMeta;
 	private boolean isInitialized = false;
 	
-	public NoSqlProxyImpl(NoSqlSession session, MetaClass<?> classMeta, Object entityId) {
+	public NoSqlProxyImpl(NoSqlSession session, MetaClass<T> classMeta, Object entityId) {
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;
@@ -36,19 +36,24 @@ public class NoSqlProxyImpl implements MethodHandler {
 	 * @param superClassMethod - The method that is on the superclass like Account.java
 	 * @param subclassProxyMethod - The method that is on the proxy like Account_$$_javassist_0
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object invoke(Object self, Method superClassMethod, Method subclassProxyMethod, Object[] args)
+	public Object invoke(Object selfArg, Method superClassMethod, Method subclassProxyMethod, Object[] args)
 			throws Throwable {
+		T self = (T)selfArg;
 		if(log.isTraceEnabled()) {
 			log.trace("name="+superClassMethod.getName()+"  superClass type="+superClassMethod.getDeclaringClass());
 			log.trace("name="+subclassProxyMethod.getName()+" proxy type="+subclassProxyMethod.getDeclaringClass());
 		}
 		
+		//Here we shortcut as we do not need to go to the database...
 		if(idMethod.equals(superClassMethod))
 			return entityId;
 
+		//Any other method that is called, toString, getHashCode, getName, someMethod() all end up
+		//loading the objects fields from the database in case those methods use those fields
 		if(!isInitialized) {
-			MetaIdField idField = classMeta.getIdField();
+			MetaIdField<T> idField = classMeta.getIdField();
 			Converter converter = idField.getConverter();
 			byte[] rowKey = converter.convertToNoSql(entityId);
 			List<byte[]> rowKeys = new ArrayList<byte[]>();
