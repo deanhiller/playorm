@@ -12,7 +12,7 @@ import com.alvazan.orm.api.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
-public class TestBasic {
+public class TestOrmBasic {
 
 	private static final String ACCOUNT_NAME = "dean";
 	private NoSqlEntityManagerFactory factory;

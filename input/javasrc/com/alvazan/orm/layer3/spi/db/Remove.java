@@ -1,20 +1,19 @@
-package com.alvazan.orm.layer3.spi;
+package com.alvazan.orm.layer3.spi.db;
 
 import java.util.List;
 
 
-public class Persist implements Action {
+public class Remove implements Action {
 	private String colFamily;
 	private byte[] rowKey;
-	private long timestamp;
-	private List<Column> columns;
+	private RemoveEnum action;
+	private List<String> columns;
 	
-	
-	public long getTimestamp() {
-		return timestamp;
+	public RemoveEnum getAction() {
+		return action;
 	}
-	public void setTimestamp(long timestamp) {
-		this.timestamp = timestamp;
+	public void setAction(RemoveEnum action) {
+		this.action = action;
 	}
 	public String getColFamily() {
 		return colFamily;
@@ -28,10 +27,10 @@ public class Persist implements Action {
 	public void setRowKey(byte[] rowKey) {
 		this.rowKey = rowKey;
 	}
-	public List<Column> getColumns() {
+	public List<String> getColumns() {
 		return columns;
 	}
-	public void setColumns(List<Column> columns) {
-		this.columns = columns;
+	public void setColumns(List<String> columnNames) {
+		this.columns = columnNames;
 	}
 }

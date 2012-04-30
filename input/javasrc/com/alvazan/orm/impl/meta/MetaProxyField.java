@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.Column;
+import com.alvazan.orm.layer3.spi.db.Column;
 
 public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 
@@ -49,7 +49,7 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		if(value == null)
 			return null;
 		MetaIdField<PROXY> idField = classMeta.getIdField();
-		Object id = ReflectionUtil.fetchFieldValue(value, idField.getField());
+		Object id = classMeta.fetchId(value);
 		Converter converter = idField.getConverter();
 		return converter.convertToNoSql(id);
 	}	
@@ -59,5 +59,16 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		this.field.setAccessible(true);
 		this.columnName = colName;
 		this.classMeta = classMeta;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void translateToIndexFormat(OWNER entity,
+			Map<String, String> indexFormat) {
+		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
+		MetaIdField<PROXY> idField = classMeta.getIdField();
+		Converter converter = idField.getConverter();
+		String idStr = converter.convertToIndexFormat(value);
+		indexFormat.put(columnName, idStr);
 	}
 }

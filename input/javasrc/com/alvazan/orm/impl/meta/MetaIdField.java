@@ -11,7 +11,7 @@ import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
 
 //NOTE: T is the entity type NOT the type of the id!!!
-public class MetaIdField<T> {
+public class MetaIdField<OWNER> {
 
 	protected Field field;
 	private Converter converter;
@@ -19,28 +19,28 @@ public class MetaIdField<T> {
 	private boolean useGenerator;
 	private KeyGenerator generator;
 	private Method method;
-	private MetaClass<T> metaClass;
+	private MetaClass<OWNER> metaClass;
 
 	@Override
 	public String toString() {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ ")";
 	}
 
-	public Object translateFromRow(Row row, T entity) {
+	public Object translateFromRow(Row row, OWNER entity) {
 		byte[] rowKey = row.getKey();
 		Object entityId = converter.convertFromNoSql(rowKey);
 		ReflectionUtil.putFieldValue(entity, field, entityId);
 		return entityId;
 	}
 	
-	public void translateToRow(T entity, RowToPersist row) {
+	public void translateToRow(OWNER entity, RowToPersist row) {
 		Object idInEntity = ReflectionUtil.fetchFieldValue(entity, field);
 		Object id = fetchFinalId(idInEntity, entity);
 		byte[] byteVal = converter.convertToNoSql(id);
 		row.setKey(byteVal);
 	}
 
-	private Object fetchFinalId(Object idInEntity, T entity) {
+	private Object fetchFinalId(Object idInEntity, OWNER entity) {
 		Object id = idInEntity;
 		if(!useGenerator) {
 			if(id == null)
@@ -54,7 +54,7 @@ public class MetaIdField<T> {
 		return newId;
 	}
 
-	public void setup(Field field2, Method idMethod, boolean useGenerator, KeyGenerator gen, Converter converter, MetaClass<T> metaClass) {
+	public void setup(Field field2, Method idMethod, boolean useGenerator, KeyGenerator gen, Converter converter, MetaClass<OWNER> metaClass) {
 		this.field = field2;
 		this.method = idMethod;
 		this.field.setAccessible(true);
@@ -77,19 +77,20 @@ public class MetaIdField<T> {
 		return method;
 	}
 
-	public T convertIdToProxy(NoSqlSession session, Object entityId) {
+	public OWNER convertIdToProxy(NoSqlSession session, Object entityId) {
 		if(entityId == null)
 			return null;
-		T proxy = createProxy(entityId, session);
+		OWNER proxy = createProxy(entityId, session);
 		ReflectionUtil.putFieldValue(proxy, field, entityId);
 		return proxy;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private T createProxy(Object entityId, NoSqlSession session) {
+	private OWNER createProxy(Object entityId, NoSqlSession session) {
 		Class<?> subclassProxyClass = metaClass.getProxyClass();
 		Proxy inst = (Proxy) ReflectionUtil.create(subclassProxyClass);
-		inst.setHandler(new NoSqlProxyImpl<T>(session, metaClass, entityId));
-		return (T) inst;
+		inst.setHandler(new NoSqlProxyImpl<OWNER>(session, metaClass, entityId));
+		return (OWNER) inst;
 	}
+
 }

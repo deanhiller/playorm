@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer3.spi.inmemory;
+package com.alvazan.orm.layer3.spi.db.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +7,11 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.alvazan.orm.layer2.nosql.Row;
-import com.alvazan.orm.layer3.spi.Action;
-import com.alvazan.orm.layer3.spi.Column;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
-import com.alvazan.orm.layer3.spi.Persist;
-import com.alvazan.orm.layer3.spi.Remove;
+import com.alvazan.orm.layer3.spi.db.Action;
+import com.alvazan.orm.layer3.spi.db.Column;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Persist;
+import com.alvazan.orm.layer3.spi.db.Remove;
 
 public class InMemorySession implements NoSqlRawSession {
 

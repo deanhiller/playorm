@@ -3,7 +3,7 @@ package com.alvazan.orm.layer2.nosql;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.layer3.spi.Column;
+import com.alvazan.orm.layer3.spi.db.Column;
 
 public class Row {
 	private byte[] key;

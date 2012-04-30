@@ -1,10 +1,10 @@
-package com.alvazan.orm.layer3.spi.cassandra;
+package com.alvazan.orm.layer3.spi.db.cassandra;
 
 import java.util.List;
 
 import com.alvazan.orm.layer2.nosql.Row;
-import com.alvazan.orm.layer3.spi.Action;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Action;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
 
 public class CassandraSession implements NoSqlRawSession {
 

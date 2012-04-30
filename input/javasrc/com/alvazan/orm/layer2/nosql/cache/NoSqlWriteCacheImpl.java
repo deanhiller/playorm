@@ -1,23 +1,34 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
-import com.alvazan.orm.layer3.spi.Action;
-import com.alvazan.orm.layer3.spi.Column;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
-import com.alvazan.orm.layer3.spi.Persist;
-import com.alvazan.orm.layer3.spi.Remove;
+import com.alvazan.orm.layer3.spi.db.Action;
+import com.alvazan.orm.layer3.spi.db.Column;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Persist;
+import com.alvazan.orm.layer3.spi.db.Remove;
+import com.alvazan.orm.layer3.spi.index.IndexAdd;
+import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
+import com.alvazan.orm.layer3.spi.index.IndexRemove;
+import com.alvazan.orm.layer3.spi.index.IndexRemoveImpl;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Inject
 	private NoSqlRawSession rawSession;
+	@Inject
+	private IndexReaderWriter indexWriter;
+	
+	private Map<String, List<? extends IndexRemove>> removeFromIndex = new HashMap<String, List<? extends IndexRemove>>(); 
 	private List<Action> actions = new ArrayList<Action>();
+	private Map<String, List<IndexAdd>> addToIndex = new HashMap<String, List<IndexAdd>>();
 	
 	@Override
 	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
@@ -53,11 +64,16 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public void flush() {
 		long time = System.currentTimeMillis();
+		
 		for(Action action : actions) {
 			insertTime(action, time);
 		}
-		
-		rawSession.sendChanges(actions);		
+
+		//REMOVE from index BEFORE removing the entity.  ie. If we do the reverse, you do a query and get
+		//an id of entity that is about to be removed and if removed before you, you don't get the entity
+		indexWriter.sendRemoves(removeFromIndex);
+		rawSession.sendChanges(actions);
+		indexWriter.sendAdds(addToIndex);
 	}
 
 	private void insertTime(Action action, long time) {
@@ -69,5 +85,43 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public NoSqlRawSession getRawSession() {
 		return rawSession;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public void removeFromIndex(String indexName, String id) {
+		IndexRemoveImpl remove = new IndexRemoveImpl();
+		remove.setId(id);
+		List removeActions = findCreateList(indexName, removeFromIndex);
+		removeActions.add(remove);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public void addToIndex(String indexName, Map<String, String> item) {
+		IndexAdd add = new IndexAdd();
+		add.setItem(item);
+		
+		List removeActions = findCreateList(indexName, removeFromIndex);
+		List addActions = findCreateList(indexName, addToIndex);
+		//ironically, we have to remove it form the index as well as the old data in the index has
+		//most likely changed...
+		removeActions.add(add);
+		addActions.add(add);
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private List findCreateList(String indexName, Map indexToList) {
+		List actions = (List) indexToList.get(indexName);
+		if(actions == null) {
+			actions = new ArrayList();
+			indexToList.put(indexName, actions);
+		}
+		return actions;
+	}
+	
+	@Override
+	public IndexReaderWriter getRawIndex() {
+		return indexWriter;
 	}
 }

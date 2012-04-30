@@ -1,14 +1,16 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
-import com.alvazan.orm.layer3.spi.Column;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Column;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 
@@ -52,6 +54,21 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Override
 	public NoSqlRawSession getRawSession() {
 		return session.getRawSession();
+	}
+
+	@Override
+	public void removeFromIndex(String indexName, String id) {
+		session.removeFromIndex(indexName, id);
+	}
+
+	@Override
+	public void addToIndex(String indexName, Map<String, String> item) {
+		session.addToIndex(indexName, item);
+	}
+
+	@Override
+	public IndexReaderWriter getRawIndex() {
+		return session.getRawIndex();
 	}
 
 }

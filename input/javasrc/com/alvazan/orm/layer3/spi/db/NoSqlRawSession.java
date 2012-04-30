@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer3.spi;
+package com.alvazan.orm.layer3.spi.db;
 
 import java.util.List;
 

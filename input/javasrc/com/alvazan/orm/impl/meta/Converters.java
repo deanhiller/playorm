@@ -39,6 +39,15 @@ public class Converters {
 			}
 		}
 		protected abstract Object read(DataInputStream in) throws IOException;
+		
+		@Override
+		public boolean isIndexingSupported() {
+			return false;
+		}
+		@Override
+		public String convertToIndexFormat(Object value) {
+			return null;
+		}
 	}
 	
 	public static class StringConverter extends AbstractConverter {
@@ -50,6 +59,14 @@ public class Converters {
 		@Override
 		protected Object read(DataInputStream in) throws IOException {
 			return in.readUTF();
+		}
+		@Override
+		public boolean isIndexingSupported() {
+			return true;
+		}
+		@Override
+		public String convertToIndexFormat(Object value) {
+			return (String) value;
 		}
 	}
 	

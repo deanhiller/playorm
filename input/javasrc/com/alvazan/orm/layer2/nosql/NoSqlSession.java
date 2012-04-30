@@ -1,10 +1,12 @@
 package com.alvazan.orm.layer2.nosql;
 
 import java.util.List;
+import java.util.Map;
 
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
-import com.alvazan.orm.layer3.spi.Column;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Column;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.google.inject.ImplementedBy;
 
 @ImplementedBy(NoSqlWriteCacheImpl.class)
@@ -19,6 +21,16 @@ public interface NoSqlSession {
 	 * @return
 	 */
 	public NoSqlRawSession getRawSession();
+	
+	/**
+	 * Retrieves the rawest interfaces that all the indexing providers implement(in-memory, solr, etc) BUT
+	 * be warned as any methods you called are executed immediately.  there is NO flush method, so you may
+	 * want to call flush to persit your entities BEFORE adding to the index OR remove from the index BEFORE
+	 * calling flush on your removal of entities from the database.
+	 * 
+	 * @return
+	 */
+	public IndexReaderWriter getRawIndex();
 	
 	public void persist(String colFamily, byte[] rowKey, List<Column> columns);
 
@@ -40,6 +52,9 @@ public interface NoSqlSession {
 	public void remove(String colFamily, byte[] rowKey, List<String> columnNames);
 	
 	public List<Row> find(String colFamily, List<byte[]> rowKeys);
+	
+	public void removeFromIndex(String indexName, String id);
+	public void addToIndex(String indexName, Map<String, String> item);
 	
 	public void flush();
 

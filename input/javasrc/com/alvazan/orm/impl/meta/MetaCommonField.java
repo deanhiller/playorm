@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.Column;
+import com.alvazan.orm.layer3.spi.db.Column;
 
 public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	protected Field field;
@@ -35,5 +35,13 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 		this.field.setAccessible(true);
 		this.columnName = colName;
 		this.converter = converter;
+	}
+
+	@Override
+	public void translateToIndexFormat(OWNER entity,
+			Map<String, String> indexFormat) {
+		Object value = ReflectionUtil.fetchFieldValue(entity, field);
+		String indexValue = converter.convertToIndexFormat(value);
+		indexFormat.put(columnName, indexValue);
 	}
 }

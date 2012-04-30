@@ -27,7 +27,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Inject
 	private Provider<IndexImpl> indexProvider; 
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void put(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
@@ -87,6 +87,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		IndexImpl indexImpl = indexProvider.get();
 		indexImpl.setMeta(metaClass);
 		indexImpl.setIndexName(indexName);
+		indexImpl.setSession(session);
 		return indexImpl;
 	}
 
@@ -94,8 +95,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public <T> T getReference(Class<T> entityType, Object key) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(entityType);
-		MetaIdField field = metaClass.getIdField();
-		return (T) field.convertIdToProxy(session, key);
+		MetaIdField<T> field = metaClass.getIdField();
+		return field.convertIdToProxy(session, key);
 	}
 
 	@Override
@@ -103,9 +104,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return session;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Object getKey(Object entity) {
-		MetaClass<?> metaClass = metaInfo.getMetaClass(entity.getClass());
+		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
 		return metaClass.fetchId(entity);
 	}
 

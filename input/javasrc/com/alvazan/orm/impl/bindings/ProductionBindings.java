@@ -4,9 +4,11 @@ import com.alvazan.orm.api.DbTypeEnum;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
-import com.alvazan.orm.layer3.spi.NoSqlRawSession;
-import com.alvazan.orm.layer3.spi.cassandra.CassandraSession;
-import com.alvazan.orm.layer3.spi.inmemory.InMemorySession;
+import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.cassandra.CassandraSession;
+import com.alvazan.orm.layer3.spi.db.inmemory.InMemorySession;
+import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
+import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
@@ -31,6 +33,7 @@ public class ProductionBindings implements Module {
 			break;
 		case IN_MEMORY:
 			binder.bind(NoSqlRawSession.class).to(InMemorySession.class);
+			binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class);
 			break;
 		default:
 			throw new RuntimeException("bug, unsupported database type="+type);

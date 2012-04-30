@@ -6,4 +6,11 @@ public interface Converter {
 
 	Object convertFromNoSql(byte[] value);
 
+	boolean isIndexingSupported();
+	
+	/**
+	 * If isIndexingSupported is true, you must implement this method.  If false, you can throw unsupported operationException
+	 * with this method as we will never call it
+	 */
+	String convertToIndexFormat(Object value);
 }

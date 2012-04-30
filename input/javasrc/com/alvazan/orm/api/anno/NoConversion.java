@@ -11,4 +11,12 @@ public class NoConversion implements Converter {
 	public Object convertFromNoSql(byte[] value) {
 		return null;
 	}
+	@Override
+	public boolean isIndexingSupported() {
+		return false;
+	}
+	@Override
+	public String convertToIndexFormat(Object value) {
+		throw new UnsupportedOperationException();
+	}
 }
