@@ -14,7 +14,8 @@ import com.alvazan.orm.api.anno.NoSqlQuery;
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select ENTITY b FROM TABLE WHERE b.users >= :from and b.users < :to"),
 	@NoSqlQuery(name="findAll", query="select ENTITY d FROM TABLE"),
-	@NoSqlQuery(name="findAnd", query="select ENTITY a FROM TABLE WHERE a.name=:name and a.isActive=:active")
+	@NoSqlQuery(name="findAnd", query="select ENTITY a FROM TABLE WHERE a.name=:name and a.isActive=:active"),
+	@NoSqlQuery(name="findOr", query="select ENTITY a FROM TABLE WHERE a.name=:name or a.isActive=:active")
 })
 public class Account extends AccountSuper{
 
@@ -70,7 +71,7 @@ public class Account extends AccountSuper{
 
 	public static List<Account> findOr(Index<Account> index, String name,
 			boolean active) {
-		Query<Account> query = index.getNamedQuery("findAnd");
+		Query<Account> query = index.getNamedQuery("findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();		
