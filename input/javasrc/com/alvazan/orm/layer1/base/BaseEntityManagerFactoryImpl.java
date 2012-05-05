@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer1.base;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,15 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         // Add class annotation listener (optional)
         discoverer.addAnnotationListener(listener);
         // Fire it
-        discoverer.discover();	
+        discoverer.discover();
+        
+        if(log.isTraceEnabled()) {
+        	URL[] resources = discoverer.findResources();
+        	for(URL res : resources) {
+        		log.trace("jar="+res);
+        	}
+        }
+        
         isScanned = true;
 	}
 
@@ -71,6 +80,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 		@Override
 		public boolean accepts(String filename) {
+			if(filename.startsWith("com/alvazan"))
+				log.info("filename="+filename);
 			if(filename.endsWith(".class"))
 				return true;
 			return false;

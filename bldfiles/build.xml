@@ -593,7 +593,7 @@ class file exists.  The classpath is=${search.classpath}
 		<mkdir dir="${junit.results}" />
 
 		<pathconvert property="junit.classpath" pathsep=":">
-			<path refid="classpath.application" />
+			<path refid="testall.classpath" />
 		</pathconvert>
 
 		<echo message="About to run JUnit tests..." />
@@ -603,7 +603,7 @@ class file exists.  The classpath is=${search.classpath}
 		<echo message="classpath=${junit.classpath}" />
 
 		<!-- must be forked for instrumentation to work!!! -->
-		<junit fork="no" dir="${basedir}" haltonfailure="yes" failureproperty="is.test.fail" printsummary="withOutAndErr">
+		<junit fork="yes" dir="${basedir}" haltonfailure="yes" failureproperty="is.test.fail" printsummary="withOutAndErr">
 			<classpath>
 				<path refid="testall.classpath" />
 			</classpath>
@@ -810,6 +810,7 @@ class file exists.  The classpath is=${search.classpath}
 ***********************************************************************
 -->
 	<target name="checkstyle" depends="compile" description="Runs checkstyle against the code">
+		<mkdir dir="${reports}"/>
 		<echo message="MAX CHECKSTYLE ERRORS ALLOWED=${max.errors}"/>
 		<checkstyle config="bldfiles/configCheckstyle.xml" maxErrors="${max.errors}" maxWarnings="${max.errors}">
 			<classpath>

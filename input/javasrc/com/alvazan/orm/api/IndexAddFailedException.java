@@ -6,22 +6,26 @@ import java.util.Map;
 public class IndexAddFailedException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
-	private List<IndexErrorInfo> errors;
+	private final List<IndexErrorInfo> errors;
 
 	public IndexAddFailedException() {
 		super();
+		errors = null;
 	}
 
 	public IndexAddFailedException(String message, Throwable cause) {
 		super(message, cause);
+		errors = null;
 	}
 
 	public IndexAddFailedException(String message) {
 		super(message);
+		errors = null;
 	}
 
 	public IndexAddFailedException(Throwable cause) {
 		super(cause);
+		errors = null;
 	}
 
 	public IndexAddFailedException(List<IndexErrorInfo> exceptions) {

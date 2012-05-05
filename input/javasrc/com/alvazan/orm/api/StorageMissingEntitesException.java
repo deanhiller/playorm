@@ -6,10 +6,11 @@ import java.util.List;
 public class StorageMissingEntitesException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
-	private List foundElements;
+	private final List foundElements;
 
 	public StorageMissingEntitesException() {
 		super();
+		foundElements = null;
 	}
 	public StorageMissingEntitesException(List foundElements, String message) {
 		super(message);

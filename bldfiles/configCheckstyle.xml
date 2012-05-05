@@ -101,7 +101,7 @@
            <property name="max" value="700"/>
         </module>
         <module name="LineLength">
-           <property name="max" value="150"/>
+           <property name="max" value="300"/>
         </module>
         <module name="MethodLength">
            <property name="max" value="75"/>
@@ -126,7 +126,7 @@
 
         <!-- Modifier Checks                                    -->
         <!-- See http://checkstyle.sf.net/config_modifiers.html -->
-        <module name="ModifierOrder"/>
+        <!--  module name="ModifierOrder"/-->
         <!--module name="RedundantModifier"/-->
 
 
@@ -169,8 +169,8 @@
         <!-- Checks for class design                         -->
         <!-- See http://checkstyle.sf.net/config_design.html -->
         <!--module name="DesignForExtension"/-->
-        <module name="FinalClass"/>
-        <module name="HideUtilityClassConstructor"/>
+        <!-- module name="FinalClass"/>
+        <module name="HideUtilityClassConstructor"/-->
         <module name="InterfaceIsType"/>
         <module name="VisibilityModifier">
 		   <property name="protectedAllowed" value="true"/>

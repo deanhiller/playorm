@@ -5,22 +5,26 @@ import java.util.List;
 public class IndexDeleteFailedException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
-	private List<IndexErrorInfo> errors;
+	private final List<IndexErrorInfo> errors;
 
 	public IndexDeleteFailedException() {
 		super();
+		errors = null;
 	}
 
 	public IndexDeleteFailedException(String message, Throwable cause) {
 		super(message, cause);
+		errors = null;
 	}
 
 	public IndexDeleteFailedException(String message) {
 		super(message);
+		errors = null;
 	}
 
 	public IndexDeleteFailedException(Throwable cause) {
 		super(cause);
+		errors = null;
 	}
 
 	public IndexDeleteFailedException(List<IndexErrorInfo> exceptions) {

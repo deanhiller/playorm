@@ -11,13 +11,11 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
@@ -63,7 +61,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	}
 
 	private void removeAllFromIndex(String indexName,
-			List<? extends IndexRemove> removes) throws ParseException, CorruptIndexException, LockObtainFailedException, IOException {
+			List<? extends IndexRemove> removes) throws ParseException, IOException {
 		RAMDirectory index = findOrCreate(indexName);
 		
 		String queryStr = createQuery(removes);
@@ -124,7 +122,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 		return info;
 	}
 
-	private void addToIndex(String indexName, List<IndexAdd> adds) throws CorruptIndexException, LockObtainFailedException, IOException {
+	private void addToIndex(String indexName, List<IndexAdd> adds) throws IOException {
 		RAMDirectory index = findOrCreate(indexName);
 		synchronized(index) {
 			boolean success = false;

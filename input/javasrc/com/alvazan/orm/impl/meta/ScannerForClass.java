@@ -12,6 +12,9 @@ import javassist.util.proxy.ProxyFactory;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.anno.Embeddable;
 import com.alvazan.orm.api.anno.Id;
 import com.alvazan.orm.api.anno.ManyToOne;
@@ -22,6 +25,8 @@ import com.alvazan.orm.api.anno.Transient;
 
 public class ScannerForClass {
 
+	private static final Logger log = LoggerFactory.getLogger(ScannerForClass.class);
+	
 	@Inject
 	private ScannerForField inspectorField;
 	@Inject
@@ -29,6 +34,7 @@ public class ScannerForClass {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
+		log.info("scanning class="+clazz);
 		//NOTE: We scan linearly with NO recursion BUT when we hit an object like Activity.java
 		//that has a reference to Account.java and so the MetaClass of Activity has fields and that
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
@@ -81,6 +87,7 @@ public class ScannerForClass {
 				colFamily = meta.getMetaClass().getSimpleName()+"s";
 			meta.setColumnFamily(colFamily);
 		} else if(embeddable != null) {
+			log.trace("nothing to do yet here until we implement");
 			//nothing to do at this point
 		} else {
 			throw new RuntimeException("bug, someone added an annotation but didn't add an else if here");

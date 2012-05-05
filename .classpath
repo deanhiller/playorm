@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="input/javasrc"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="input/libinclude/annovention-0.1.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/annovention-0.1.jar" sourcepath="C:/AAROOT/gitrepos/annovention-read-only/src/main/java"/>
 	<classpathentry kind="lib" path="input/libinclude/javassist.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/guice-3.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/javax.inject.jar"/>
