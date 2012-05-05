@@ -156,7 +156,6 @@
 		<pathconvert dirsep="/" pathsep=" " property="temp.somepath" refid="junit.lib" setonempty="true" />
 		<echo message="junit.lib=${temp.somepath}" />
 
-		<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask" classpathref="junit.lib" />
 		<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antcontrib.lib" />
 		<!--taskdef resource="emma_ant.properties" classpathref="emma.lib" /-->
 
@@ -589,13 +588,56 @@ class file exists.  The classpath is=${search.classpath}
 		</cobertura-instrument>
 
 	</target>
-	
+
+	<target name="testall" depends="compile" description="Run ALL junit and abbot tests after compiling code">
+		<mkdir dir="${junit.results}" />
+
+		<pathconvert property="junit.classpath" pathsep=":">
+			<path refid="classpath.application" />
+		</pathconvert>
+
+		<echo message="About to run JUnit tests..." />
+		<echo message="pattern1=${junit.pattern1}" />
+		<!--echo message="pattern2=${junit.pattern2}" /-->
+		<echo message="current directory=${basedir}" />
+		<echo message="classpath=${junit.classpath}" />
+
+		<!-- must be forked for instrumentation to work!!! -->
+		<junit fork="no" dir="${basedir}" haltonfailure="yes" failureproperty="is.test.fail" printsummary="withOutAndErr">
+			<classpath>
+				<path refid="testall.classpath" />
+			</classpath>
+			<jvmarg value="-Djar.name=${jardist}/${jar.name}" />
+			<jvmarg value="-Dversion=${version}" />
+            <jvmarg value="-Dautobuild=true"/>
+			<formatter type="plain" usefile="false"/>
+			<formatter type="xml" />
+
+			<batchtest todir="${junit.results}">
+				<fileset dir="${build}">
+					<patternset>
+						<include name="biz/xsoftware/manifest/Test*.class" />
+						<include name="${junit.pattern1}" />
+						<!--include name="${junit.pattern2}" /-->
+						<exclude name="**/*$$*.class" />
+					</patternset>
+				</fileset>
+			</batchtest>
+		</junit>
+
+		<!-- not used because this is good for automated build but bad for developer.
+			 Developer doesn't want to look through 100 test cases to see which one 
+			 is failing. To use this gain haltonfailure above needs to be off-->
+		<!-- after all tests are run, this makes the build fail-->
+		<fail if="is.test.fail" />
+
+	</target>
 	<!-- 
 ***********************************************************************
               TEST ALL TARGET
 ***********************************************************************
 -->
-	<target name="testall" depends="instrument" description="Run ALL junit and abbot tests after compiling code">
+	<target name="testallcoverage" depends="instrument" description="Run ALL junit and abbot tests after compiling code">
 		<mkdir dir="${junit.results}" />
 
 		<pathconvert property="junit.classpath" pathsep=":">

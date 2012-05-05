@@ -126,6 +126,18 @@ public class Converters {
 		}
 	}
 	
+	public static class BooleanConverter extends AbstractConverter {
+		@Override
+		protected void write(DataOutputStream out, Object value)
+				throws IOException {
+			out.writeBoolean((Boolean) value);
+		}
+		@Override
+		protected Object read(DataInputStream in) throws IOException {
+			return in.readBoolean();
+		}
+	}
+	
 	public static class ByteConverter extends AbstractConverter {
 		@Override
 		protected void write(DataOutputStream out, Object value)
