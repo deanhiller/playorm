@@ -453,8 +453,6 @@
 	<target name="forprod">
 		<mkdir dir="${webstuff}/WEB-INF"/>
 		
-		<copy tofile="${webstuff}/WEB-INF/components.xml" file="${webroot}/WEB-INF/components.prod.xml"/>
-		
 	</target>
 	
 	<target name="war" depends="jar" if="run.war.target" description="Builds a war file">

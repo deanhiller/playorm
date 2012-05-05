@@ -13,7 +13,9 @@ import com.alvazan.orm.api.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findGreaterThanNumTimes", query="xxxxxx")
+	@NoSqlQuery(name="findBetween", query="select ENTITY e FROM TABLE WHERE e.numTimes >= :from and e.numTimes < :to"),
+	@NoSqlQuery(name="findUnique", query="select ENTITY e FROM TABLE WHERE e.uniqueColumn = :unique")
+	
 })
 public class Activity {
 
@@ -22,6 +24,9 @@ public class Activity {
 	
 	@ManyToOne
 	private Account account;
+	
+	@Indexed
+	private String uniqueColumn;
 	
 	@Indexed
 	private String name;
@@ -54,6 +59,15 @@ public class Activity {
 		this.name = name;
 	}
 
+	
+	public String getUniqueColumn() {
+		return uniqueColumn;
+	}
+
+	public void setUniqueColumn(String uniqueColumn) {
+		this.uniqueColumn = uniqueColumn;
+	}
+
 	public long getNumTimes() {
 		return numTimes;
 	}
@@ -70,9 +84,16 @@ public class Activity {
 		this.somethingElse = somethingElse;
 	}
 
-	public static List<Activity> findByGreaterThanNumTimes(Index<Activity> index, int numTimes) {
-		Query<Activity> query = index.getNamedQuery("findGreaterThanNumTimes");
-		query.setParameter("num", numTimes);
+	public static List<Activity> findBetween(Index<Activity> index, int from, int to) {
+		Query<Activity> query = index.getNamedQuery("findBetween");
+		query.setParameter("from", from);
+		query.setParameter("to", to);
 		return query.getResultList();
+	}
+	
+	public static Activity findSingleResult(Index<Activity> index, String key) {
+		Query<Activity> query = index.getNamedQuery("findUnique");
+		query.setParameter("val", key);
+		return query.getSingleObject();
 	}
 }

@@ -74,7 +74,7 @@ public class TestOrmBasic {
 	private Activity readWriteBasic(NoSqlEntityManager mgr) {
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
-		acc.setUsers(5);
+		acc.setIndexedValue(5.0f);
 		
 		mgr.put(acc);
 		
@@ -89,7 +89,7 @@ public class TestOrmBasic {
 		
 		Account accountResult = mgr.find(Account.class, acc.getId());
 		Assert.assertEquals(ACCOUNT_NAME, accountResult.getName());
-		Assert.assertEquals(acc.getUsers(), accountResult.getUsers());
+		Assert.assertEquals(acc.getIndexedValue(), accountResult.getIndexedValue());
 		
 		Activity activityResult = mgr.find(Activity.class, act.getId());
 		Assert.assertEquals(act.getName(), activityResult.getName());
