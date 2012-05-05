@@ -1,9 +1,6 @@
-nosqlORM wants to be the first ORM layer with full indexing AND joins in a noSQL environment.  What has not caught on yet in the nosql world is that you CAN do joins with select statements.  The
-problem with scalability on old RDBMS systems is really the indexing is not broken up.  If you want to scale, you want to be able to grow a table to 1 trillion rows BUT you can't have one index for
-that table.  You can however have 1 billion indexes and scale just fine.  Within this indexing framework, you can do joins.  
+nosqlORM wants to be the first ORM layer with full indexing AND joins in a noSQL environment.  What has not caught on yet in the nosql world is that you CAN do joins with select statements.  The problem with scalability on old RDBMS systems is really the indexing is not broken up.  If you want to scale, you want to be able to grow a table to 1 trillion rows BUT you can't have one index for that table.  You can however have 1 billion indexes and scale just fine.  Within this indexing framework, you can do joins.  
 
-Basically, it is sort of like having virtual databases.  We explored this concept and succeeded in two spaces already which is why we are developing this solutions.  First imagine a simple system
-of performance accounting and reporting and you have an Account table with Activities in your RDBMS and those activities also have securities.  In this model there are two views of the virtual datbase.
+Basically, it is sort of like having virtual databases.  We explored this concept and succeeded in two spaces already which is why we are developing this solutions.  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your RDBMS and those activities also have securities.  In this model there are two views of the virtual datbase.
 
 The first one is that we had 1 billion rows in the activity table and 1 million accounts so we created one million indexes.  Let's say we also have a small 50 row table of securityType.  We can get the index we want to query like so
 
