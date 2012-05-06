@@ -26,6 +26,20 @@ This is another virtual view like looking into an RDBMS.
 
 So what about the denormalization hype in noSQL?  Well, be careful.  I was on one project where one request was taking 80 seconds and by re-normalizing all their data and not repeating so much of it, I brought the query down to 200ms.  Behind the scenes the denormalization was causing 1 megabyte of data to be written on the request which denormalization avoided.  Denormalization can be good but partitioning of your indexes and not denormalizing the data is yet another way to solve similar issues.
 
+What Joins would look like
+
+(We currently don't support joins but the indexing library we are using does have joins so we just need to add it)
+Taking our previous example of the million indexes we have by acount or the huge amount of indexes we have by security, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those million indexes by account or and of the security indexes like so
+
+IndexInfo info = new IndexInfo(ActivityTypeInfo.class, "/onlyoneactivityTypeIndexSinceTableIsSmall");
+//NOTE: mgr.getIndex takes the primary index first!!! and then a varargs of the indexes we need to join with after that
+Index index = mgr.getIndex(Activity.class, "/activity/bysecurity/"+security.getId(), info);
+Query query = index.getNamedQuery("findWithJoinQuery");
+query.setParameter("activityValue", 5); //This is a value in our Activity table
+query.setParameter("vendor", "companyX"); //This is a value in our ActivityTypeInfo table
+List<Activity> activity = query.getResultList();
+
+
 Transactions
 
 So, what about transactions.  Well, we firmly believe that "could" exist as well within virtual databases.  At this point, we don't have any support for this but we have support for a full unit of work.  All work you do with the NoSQLEntityManager is cached until you flush much like the hibernate concept(ie. we borrowed it from them of course).  This way, we hope noSQL systems will eventually start supporting a unit of work concept where we can either have all that work written to the proper consistency level or rolled back.  Currently there is no known support for this unit of work, but our design is based so systems that do support it can wire
