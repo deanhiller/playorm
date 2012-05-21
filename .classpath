@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="input/javasrc"/>
+	<classpathentry kind="src" path="output/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="input/libinclude/annovention-0.1.jar" sourcepath="C:/AAROOT/gitrepos/annovention-read-only/src/main/java"/>
 	<classpathentry kind="lib" path="input/libinclude/javassist.jar"/>
@@ -25,5 +26,6 @@
 	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0-javadoc.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/junit-4.10.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/antlr-3.4-complete-no-antlrv2.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>

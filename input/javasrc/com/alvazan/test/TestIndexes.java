@@ -13,8 +13,10 @@ import com.alvazan.orm.api.DbTypeEnum;
 import com.alvazan.orm.api.Index;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.Query;
 import com.alvazan.orm.api.StorageMissingEntitesException;
 import com.alvazan.orm.api.TooManyResultException;
+import com.alvazan.orm.api.TypeMismatchException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
@@ -31,6 +33,43 @@ public class TestIndexes {
 	@Test
 	public void testEmpty() {
 		log.info("empty so test passes for now");
+	}
+	
+	//@Test
+	public void testFailureOnTypeMismatch() {
+		NoSqlEntityManagerFactory factory = setup();
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		Activity act = new Activity();
+		act.setName("hello");
+		act.setUniqueColumn("notunique");
+		act.setNumTimes(5);
+		mgr.put(act);
+		Activity act2 = new Activity();
+		act2.setUniqueColumn(act.getUniqueColumn());
+		act2.setName("hello");
+		act2.setNumTimes(4);
+		mgr.put(act2);
+		
+		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		index.addToIndex(act);
+		index.addToIndex(act2);
+		
+		double from = 100;
+		Query<Activity> query = index.getNamedQuery("findBetween");
+		try {
+			query.setParameter("from", from);
+			Assert.fail("Should have throw TypeMismatchException and did not");
+		} catch(TypeMismatchException e) {
+			log.info("This is expected to fail due to type mismatch");
+		}
+		
+		try {
+			query.setParameter("noExistKey", 200);
+			Assert.fail("Should have thrown IllegalArgument since noExistKey is not a parameter in this query");
+		} catch(IllegalArgumentException e) {
+			log.info("this is expected");
+		}
 	}
 	
 	//@Test
@@ -74,7 +113,7 @@ public class TestIndexes {
 	}
 	
 	//@Test
-	public void testTwoQueriesSameNameDifferenceEntitiesAllowed() {
+	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		NoSqlEntityManagerFactory factory = setup();
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		

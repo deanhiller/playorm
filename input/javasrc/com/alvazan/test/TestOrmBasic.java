@@ -1,9 +1,9 @@
 package com.alvazan.test;
 
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import junit.framework.Assert;
 
 import com.alvazan.orm.api.Bootstrap;
 import com.alvazan.orm.api.DbTypeEnum;

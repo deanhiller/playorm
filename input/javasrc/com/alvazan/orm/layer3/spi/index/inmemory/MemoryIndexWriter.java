@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
@@ -25,10 +27,16 @@ import com.alvazan.orm.api.IndexErrorInfo;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
+import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
 
-	private Map<String, RAMDirectory> nameToIndex = new ConcurrentHashMap<String, RAMDirectory>();
+	@Inject
+	private Indice indice;
+	@Inject
+	private Provider<QueryFactory> factory;
+	@Inject
+	private Provider<SpiQueryInfo> infoFactory;
 	
 	@Override
 	public void sendRemoves(Map<String, List<? extends IndexRemove>> removeFromIndex) {
@@ -62,7 +70,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
 	private void removeAllFromIndex(String indexName,
 			List<? extends IndexRemove> removes) throws ParseException, IOException {
-		RAMDirectory index = findOrCreate(indexName);
+		RAMDirectory index = indice.findOrCreate(indexName);
 		
 		String queryStr = createQuery(removes);
 		Analyzer analyzer = new KeywordAnalyzer();		
@@ -123,7 +131,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	}
 
 	private void addToIndex(String indexName, List<IndexAdd> adds) throws IOException {
-		RAMDirectory index = findOrCreate(indexName);
+		RAMDirectory index = indice.findOrCreate(indexName);
 		synchronized(index) {
 			boolean success = false;
 			IndexWriter writer = null;
@@ -172,16 +180,13 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
         return doc;
     }
-	
-	private RAMDirectory findOrCreate(String indexName) {
-		//synchronize on the name so we are not creating this twice on accident
-		synchronized(indexName.intern()) {
-			RAMDirectory ramDirectory = nameToIndex.get(indexName);
-			if(ramDirectory == null) {
-				ramDirectory = new RAMDirectory();
-				nameToIndex.put(indexName, ramDirectory);
-			}
-			return ramDirectory;
-		}
+
+	@Override
+	public SpiIndexQueryFactory createQueryFactory(String query) {
+		SpiQueryInfo info = infoFactory.get();
+		info.setup(query);
+		QueryFactory queryFactory = factory.get();
+		queryFactory.setup(info);
+		return queryFactory;
 	}
 }

@@ -2,16 +2,26 @@ package com.alvazan.orm.layer1.base;
 
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.Index;
+import com.alvazan.orm.api.JoinInfo;
 import com.alvazan.orm.api.Query;
 import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaIdField;
+import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.MetaQuery;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
+import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 
 public class IndexImpl<T> implements Index<T> {
 
+	@Inject
+	private MetaInfo metaInfo;
+	@Inject
+	private Provider<QueryAdapter> adapterFactory;
 	private MetaClass<T> metaClass;
 	private String indexName;
 	private NoSqlSession session;
@@ -31,11 +41,14 @@ public class IndexImpl<T> implements Index<T> {
 		session.removeFromIndex(indexName, indexId);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Query<T> getNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
-		
-		return null;
+		QueryAdapter<T> adapter = adapterFactory.get();
+		SpiIndexQuery indexQuery = metaQuery.getFactory().createQuery(indexName);
+		adapter.setup(metaQuery, indexQuery);
+		return adapter;
 	}
 
 	public void setMeta(MetaClass<T> metaClass) {
@@ -48,5 +61,10 @@ public class IndexImpl<T> implements Index<T> {
 
 	public void setSession(NoSqlSession session) {
 		this.session = session;
+	}
+
+	@Override
+	public Query<T> getNamedQueryJoin(String name, JoinInfo... info) {
+		throw new UnsupportedOperationException("We do not support joins just yet");
 	}
 }

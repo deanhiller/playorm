@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javassist.util.proxy.MethodFilter;
@@ -11,6 +12,7 @@ import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +21,26 @@ import com.alvazan.orm.api.anno.Embeddable;
 import com.alvazan.orm.api.anno.Id;
 import com.alvazan.orm.api.anno.ManyToOne;
 import com.alvazan.orm.api.anno.NoSqlEntity;
+import com.alvazan.orm.api.anno.NoSqlQueries;
+import com.alvazan.orm.api.anno.NoSqlQuery;
 import com.alvazan.orm.api.anno.OneToMany;
 import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.anno.Transient;
+import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
+import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
 
 public class ScannerForClass {
 
 	private static final Logger log = LoggerFactory.getLogger(ScannerForClass.class);
 	
 	@Inject
+	private IndexReaderWriter indexes;
+	@Inject
 	private ScannerForField inspectorField;
 	@Inject
 	private MetaInfo metaInfo;
+	@Inject
+	private Provider<MetaQuery<?>> metaQueryFactory;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
@@ -44,8 +54,34 @@ public class ScannerForClass {
 		classMeta.setMetaClass(clazz);
 		createAndSetProxy(classMeta);
 		scanClass(classMeta);
+		
+		setupQueryStuff(clazz, classMeta);
 	}
 	
+	private void setupQueryStuff(Class<?> clazz, MetaClass classMeta) {
+		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
+		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);
+		List<NoSqlQuery> theQueries = new ArrayList<NoSqlQuery>();
+		if(annotation2 != null) {
+			NoSqlQuery[] queries = annotation2.value();
+			List<NoSqlQuery> asList = Arrays.asList(queries);
+			theQueries.addAll(asList);
+		}
+		if(annotation != null)
+			theQueries.add(annotation);
+
+		for(NoSqlQuery query : theQueries) {
+			createQueryAndAdd(classMeta, query);
+		}
+	}
+
+	private void createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
+		SpiIndexQueryFactory factory = indexes.createQueryFactory(query.query());
+		MetaQuery<?> metaQuery = metaQueryFactory.get();
+		metaQuery.setFactory(factory);
+		classMeta.addQuery(query.name(), metaQuery);
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> void createAndSetProxy(MetaClass<T> classMeta) {
 		Class<T> fieldType = classMeta.getMetaClass();

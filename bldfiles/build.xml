@@ -54,6 +54,15 @@
 		</fileset>
 	</path>
 
+	<path id="antlr.lib">
+		<fileset dir="${tool.dir}/antlr">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${lib}">
+			<include name="antlr*.jar"/>
+		</fileset>
+	</path>
+	
 	<!-- directory that contains codecoverage jars -->
 	<property name="codecoverage.dir" value="${tool.dir}/codecoverage" />
 	<path id="codecoverage.classpath">
@@ -165,6 +174,8 @@
 				<taskdef name="checkstyle" classname="com.puppycrawl.tools.checkstyle.CheckStyleTask" classpathref="checkstyle.lib"/>
 		<taskdef name="pmd" classname="net.sourceforge.pmd.ant.PMDTask" classpathref="pmd.lib"/>
 
+		
+		
 		<taskdef name="bundleinfo" classname="org.knopflerfish.ant.taskdefs.bundle.BundleInfoTask" classpathref="osgi.ant.lib" />
 		<taskdef name="bundlemanifest" classname="org.knopflerfish.ant.taskdefs.bundle.BundleManifestTask" classpathref="osgi.ant.lib" />
 		<taskdef name="bundlehtml" classname="org.knopflerfish.ant.taskdefs.bundle.BundleHTMLExtractorTask" classpathref="osgi.ant.lib" />
@@ -202,12 +213,26 @@
 
 	</target>
 
+	<target name="generateparser" depends="create-src">
+		<java classname="org.antlr.Tool" fork="true" failonerror="true">
+			<classpath >
+				<path refid="antlr.lib" />
+			</classpath>
+			<arg value="-verbose"/>
+		    <arg value="-make"/>
+			<arg value="-report"/>
+		    <arg value="-o"/>
+		    <arg path="${gen.src}"/>
+		    <arg path="${schemas}/NoSql.g"/>
+		</java>
+	</target>
+	
 	<!-- 
 ***********************************************************************
               COMPILE TARGET
 ***********************************************************************
 -->
-	<target name="compile" depends="create-src">
+	<target name="compile" depends="generateparser">
 		<mkdir dir="${build}" />
 
 		<pathconvert property="compile.classpath" pathsep=":">

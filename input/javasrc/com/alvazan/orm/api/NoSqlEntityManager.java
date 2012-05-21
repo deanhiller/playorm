@@ -68,4 +68,5 @@ public interface NoSqlEntityManager {
 	 * @return
 	 */
 	public <T> Index<T> getIndex(Class<T> forEntity, String indexName);
+	
 }

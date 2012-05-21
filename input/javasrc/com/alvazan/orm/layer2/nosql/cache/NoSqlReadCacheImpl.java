@@ -66,6 +66,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		session.addToIndex(indexName, item);
 	}
 
+	
+	
 	@Override
 	public IndexReaderWriter getRawIndex() {
 		return session.getRawIndex();

@@ -124,4 +124,5 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public IndexReaderWriter getRawIndex() {
 		return indexWriter;
 	}
+
 }

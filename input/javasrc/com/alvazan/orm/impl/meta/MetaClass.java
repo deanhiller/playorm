@@ -138,8 +138,12 @@ public class MetaClass<T> {
 
 	public MetaQuery<T> getNamedQuery(String name) {
 		MetaQuery<T> query = queryInfo.get(name);
-//		if(query == null)
-//			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+this.metaClass.getName());
+		if(query == null)
+			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+this.metaClass.getName());
 		return query;
+	}
+
+	public void addQuery(String name, MetaQuery<T> metaQuery) {
+		queryInfo.put(name, metaQuery);
 	}
 }
