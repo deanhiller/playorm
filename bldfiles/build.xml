@@ -129,6 +129,7 @@
 		</fileset>
 	</path>
 
+	
 	<path id="classes.classpath">
 		<pathelement location="${build}" />
 	</path>
@@ -222,7 +223,7 @@
 		    <arg value="-make"/>
 			<arg value="-report"/>
 		    <arg value="-o"/>
-		    <arg path="${gen.src}"/>
+		    <arg path="${gen.src}/com/alvazan/orm/parser/antlr"/>
 		    <arg path="${schemas}/NoSql.g"/>
 		</java>
 	</target>
@@ -238,7 +239,16 @@
 		<pathconvert property="compile.classpath" pathsep=":">
 			<path refid="tool.and.lib" />
 		</pathconvert>
-
+		
+		<echo message="Compiling generated sources in ${gen.src}" />
+		<echo message="Putting the class files in ${build}" />
+		<echo message="classpath=${compile.classpath}" />
+		<javac srcdir="${gen.src}" destdir="${build}" deprecation="yes" debug="on">
+			<classpath>
+				<path refid="tool.and.lib" />
+			</classpath>
+		</javac>
+		
 		<echo message="Compiling files in ${javacode}" />
 		<echo message="Putting the class files in ${build}" />
 		<echo message="classpath=${compile.classpath}" />

@@ -101,7 +101,7 @@ public class ScannerForClass {
 	}
 	
 	/**
-	 * An early test so we get errors on startup instead of waiting until runtime(ie. fail as fast as we can)
+	 * An early test so we get errors on startup instead of waiting until runtime(a.k.a fail as fast as we can)
 	 */
 	private Proxy testInstanceCreation(Class<?> clazz) {
 		try {
