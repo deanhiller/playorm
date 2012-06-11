@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SpiIndexQuery {
 
-	public void setParameter(String name, Object value);
+	public void setParameter(String parameterName, Object value);
 
 	@SuppressWarnings("rawtypes")
 	public List getResultList();

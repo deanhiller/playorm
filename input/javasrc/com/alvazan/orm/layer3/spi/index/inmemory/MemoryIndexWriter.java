@@ -24,6 +24,7 @@ import org.apache.lucene.util.Version;
 import com.alvazan.orm.api.IndexAddFailedException;
 import com.alvazan.orm.api.IndexDeleteFailedException;
 import com.alvazan.orm.api.IndexErrorInfo;
+import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
@@ -182,9 +183,9 @@ public class MemoryIndexWriter implements IndexReaderWriter {
     }
 
 	@Override
-	public SpiIndexQueryFactory createQueryFactory(String query) {
+	public SpiIndexQueryFactory createQueryFactory(MetaClass metaClass,String query) {
 		SpiQueryInfo info = infoFactory.get();
-		info.setup(query);
+		info.setup(metaClass,query);
 		QueryFactory queryFactory = factory.get();
 		queryFactory.setup(info);
 		return queryFactory;

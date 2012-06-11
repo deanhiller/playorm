@@ -5,9 +5,14 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
+import com.alvazan.orm.parser.tree.FilterAttribute;
+import com.alvazan.orm.parser.tree.FilterExpression;
+import com.alvazan.orm.parser.tree.FilterParameter;
 import com.alvazan.orm.parser.tree.FromClause;
 import com.alvazan.orm.parser.tree.SelectClause;
 import com.alvazan.orm.parser.tree.WhereClause;
@@ -19,6 +24,10 @@ import com.alvazan.orm.parser.tree.WhereClause;
  * @author Huai Jiang
  */
 public class NoSqlTreeParser {
+	
+	
+	private static final Logger log = LoggerFactory.getLogger(NoSqlTreeParser.class);
+	
 
     public static QueryContext parse(String query) {
     	CommonTree tree = parseTree(query);
@@ -68,9 +77,42 @@ public class NoSqlTreeParser {
     }
 
     
+    //TODO not finish yet
     private static WhereClause parseWhereClause(CommonTree tree) {
-    	//TODO
-    	return null;
+    	List<CommonTree> childrenList = tree.getChildren();
+    	WhereClause where = new WhereClause();
+    	 if (childrenList != null && childrenList.size() > 0) {
+	            for (CommonTree child : childrenList) {
+	                switch (child.getType()) {
+	                    case NoSqlLexer.AND:
+	                    case NoSqlLexer.OR:
+	                    	log.info("where type:"+child.getType());
+	                    	WhereClause subExpression = parseWhereClause(child);
+	                    	
+	                    	break;
+	                    case NoSqlLexer.EQ:
+	                    case NoSqlLexer.NE:
+	                    case NoSqlLexer.GT:
+	                    case NoSqlLexer.LT:
+	                    case NoSqlLexer.GE:
+	                    case NoSqlLexer.LE:
+	                    	log.info("where type:"+child.getType());
+	                    	FilterAttribute attribute = new FilterAttribute();
+	                    	attribute.setAttributeName(child.getChild(0).getText());
+	                    	FilterParameter parameter = new FilterParameter();
+	                    	parameter.setParameter(child.getChild(1).getChild(0).getText());
+	                    	FilterExpression expression = new FilterExpression();
+	                    	expression.setLeftNode(attribute);
+	                    	expression.setRightNode(parameter);
+	                    	where.setExpression(expression);
+	                    	where.getParameterMap().put("key", parameter.getParameter());
+	                    	break;
+	                    default:
+	                        break;
+	                }
+	            }
+	        }
+		return where;
 	}
 
 	private static FromClause parseFromClause(CommonTree tree) {

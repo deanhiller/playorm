@@ -34,5 +34,6 @@ public class TestQueryParser {
 		Assert.assertEquals(1, entities.size());
 		Assert.assertEquals("table_a", entities.get(0));
 		
+		
 	}
 }

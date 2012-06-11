@@ -9,7 +9,8 @@ public class SpiIndexQueryImpl implements SpiIndexQuery {
 	private SpiQueryInfo info;
 
 	@Override
-	public void setParameter(String name, Object value) {
+	public void setParameter(String paraMeterName, Object value) {
+		
 	}
 
 	@Override

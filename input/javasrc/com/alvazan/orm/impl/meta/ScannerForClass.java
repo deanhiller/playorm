@@ -76,9 +76,10 @@ public class ScannerForClass {
 	}
 
 	private void createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
-		SpiIndexQueryFactory factory = indexes.createQueryFactory(query.query());
+		SpiIndexQueryFactory factory = indexes.createQueryFactory(classMeta,query.query());
 		MetaQuery<?> metaQuery = metaQueryFactory.get();
 		metaQuery.setFactory(factory);
+		//we do lazy verify.
 		classMeta.addQuery(query.name(), metaQuery);
 	}
 
