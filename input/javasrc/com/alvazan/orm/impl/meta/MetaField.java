@@ -13,4 +13,9 @@ public interface MetaField<OWNER> {
 	public void translateToColumn(OWNER entity, Column col);
 
 	public void translateToIndexFormat(OWNER entity, Map<String, String> indexFormat);
+	
+	public String getFieldName();
+	
+	public Class<?> getFieldType();
+	
 }

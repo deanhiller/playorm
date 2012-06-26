@@ -29,6 +29,7 @@ import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
+import com.alvazan.orm.layer3.spi.index.SpiQueryInfo;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
 

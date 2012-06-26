@@ -1,6 +1,5 @@
 package com.alvazan.orm.parser;
 
-import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.parser.tree.FromClause;
 import com.alvazan.orm.parser.tree.SelectClause;
 import com.alvazan.orm.parser.tree.WhereClause;
@@ -16,7 +15,7 @@ public class QueryContext {
 	private SelectClause selectClause;
 	private FromClause fromClause;
 	private WhereClause whereClause;
-	private MetaClass metaClass;
+
 
 	
 	
@@ -48,11 +47,10 @@ public class QueryContext {
 		
 	}
 
-	public void setup(MetaClass metaClass) {
-		
-		
-		
-		
+
+
+	public void verifyAndUpdateEntity() {
+		//TODO
 	}
 	
 }

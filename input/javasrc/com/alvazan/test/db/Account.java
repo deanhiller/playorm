@@ -12,10 +12,10 @@ import com.alvazan.orm.api.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findBetween", query="select ENTITY b FROM TABLE WHERE b.users >= :from and b.users < :to"),
-	@NoSqlQuery(name="findAll", query="select ENTITY d FROM TABLE"),
-	@NoSqlQuery(name="findAnd", query="select ENTITY a FROM TABLE WHERE a.name=:name and a.isActive=:active"),
-	@NoSqlQuery(name="findOr", query="select ENTITY a FROM TABLE WHERE a.name=:name or a.isActive=:active")
+	@NoSqlQuery(name="findBetween", query="select * from Account b where b.users >= :begin and b.users < :end"),
+	@NoSqlQuery(name="findAll", query="select *  from Account d"),
+	@NoSqlQuery(name="findAnd", query="select *  FROM Account a WHERE a.name=:name and a.isActive=:active"),
+	@NoSqlQuery(name="findOr", query="select *  FROM Account a WHERE a.name=:name or a.isActive=:active")
 })
 public class Account extends AccountSuper{
 
@@ -26,7 +26,7 @@ public class Account extends AccountSuper{
 	private String name;
 	
 	@Indexed
-	private Float indexedValue;
+	private Float users;
 
 	public String getId() {
 		return id;
@@ -44,17 +44,17 @@ public class Account extends AccountSuper{
 		this.name = name;
 	}
 
-	public Float getIndexedValue() {
-		return indexedValue;
+	public Float getUsers() {
+		return users;
 	}
 
-	public void setIndexedValue(Float users) {
-		this.indexedValue = users;
+	public void setUsers(Float users) {
+		this.users = users;
 	}
 	
-	public static List<Account> findBetween(Index<Account> index, float from, float to) {
+	public static List<Account> findBetween(Index<Account> index, float begin, float to) {
 		Query<Account> query = index.getNamedQuery("findBetween");
-		query.setParameter("from", from);
+		query.setParameter("begin", begin);
 		query.setParameter("to", to);
 		return query.getResultList();
 	}

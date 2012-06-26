@@ -10,7 +10,10 @@ import java.util.Map;
  */
 public class WhereClause implements Node {
 
-	private Map<String,String> parameterMap = new HashMap<String, String>();
+	
+	//This is a cache for whole where clause, otherwise we have go to expression tree everytime to get the attribute and parameter
+	//Using FilterAttribute and Parameter  instead of Map<String, String> because same attribute could exist in expression in N times
+	private Map<Attribute,FilterParameter> parameterMap = new HashMap<Attribute, FilterParameter>();
 	
 	
 	
@@ -18,15 +21,10 @@ public class WhereClause implements Node {
 
 
 
-	public Map<String, String> getParameterMap() {
+	public Map<Attribute, FilterParameter> getParameterMap() {
 		return parameterMap;
 	}
 
-
-
-	public void setParameterMap(Map<String, String> parameterMap) {
-		this.parameterMap = parameterMap;
-	}
 
 
 

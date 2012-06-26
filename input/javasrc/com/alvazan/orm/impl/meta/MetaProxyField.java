@@ -71,4 +71,14 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		String idStr = converter.convertToIndexFormat(value);
 		indexFormat.put(columnName, idStr);
 	}
+
+	@Override
+	public String getFieldName() {
+		return this.field.getName();
+	}
+
+	@Override
+	public Class<?> getFieldType() {
+		return this.field.getType();
+	}
 }

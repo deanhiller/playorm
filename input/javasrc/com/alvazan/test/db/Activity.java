@@ -13,8 +13,8 @@ import com.alvazan.orm.api.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findBetween", query="select ENTITY e FROM TABLE WHERE e.numTimes >= :from and e.numTimes < :to"),
-	@NoSqlQuery(name="findUnique", query="select ENTITY e FROM TABLE WHERE e.uniqueColumn = :unique")
+	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
+	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique")
 	
 })
 public class Activity {

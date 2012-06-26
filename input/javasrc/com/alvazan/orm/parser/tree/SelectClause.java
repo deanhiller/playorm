@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class SelectClause implements Node{
 
-	private List<String> projections = new ArrayList<String>();
+	private List<Attribute> projections = new ArrayList<Attribute>();
 	
-	public void addProjection(String column) {
+	public void addProjection(Attribute column) {
 		projections.add(column);
 	}
 	
-	public List<String> getProjections() {
+	public List<Attribute> getProjections() {
 		return projections;
 	}
 	

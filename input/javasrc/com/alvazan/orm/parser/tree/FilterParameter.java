@@ -13,5 +13,8 @@ public class FilterParameter implements Node{
 		this.parameter = parameter;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return "Parameter:["+this.parameter+"]";
+	}
 }

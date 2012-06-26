@@ -26,9 +26,8 @@ tokens {
 	SELECT_CLAUSE;
 	FROM_CLAUSE;
 	WHERE_CLAUSE;
-	SELECT	=	'select';
-	FROM	=	'from';
-	WHERE	=	'where';
+	ALIAS;
+
 	AS	=	'as';
 	DOT	=	'.';
 	EQ	=	'=';
@@ -46,6 +45,7 @@ tokens {
 	OR	=	'or';
 	NOT	=	'not';
 	IN	=	'in';
+	
 }
 
 @header {
@@ -103,11 +103,12 @@ tableList
 	;
 	
 resultList
-	:	(STAR | attributeList) -> ^(RESULT attributeList? STAR?)
+	:	(STAR | attributeList |) -> ^(RESULT attributeList? STAR?)
 	;
 	
 attributeList
 	:	attribute (COMMA! attribute)*
+	|	aliasdAttribute (COMMA! aliasdAttribute)*
 	;
 table
 	: 	tableName -> ^(TABLE_NAME tableName)
@@ -117,12 +118,17 @@ attribute
 	:	attrName -> ^(ATTR_NAME attrName)
 	;
 	
+aliasdAttribute
+	:       alias DOT attrName -> ^(ALIAS alias ) ^(ATTR_NAME attrName)
+	;
+	
 attrName
 	:	ID
 	;
 
 tableName
 	:	ID
+	|	ID alias -> ^(ALIAS alias)
 	;
 
 parameterName
@@ -135,12 +141,9 @@ expression
 orExpr	:	andExpr (OR^ andExpr)*
 	;
 
-andExpr	:	notExpr (AND^ notExpr)*
+andExpr	:	primaryExpr (AND^ primaryExpr)*
 	;
 	
-notExpr
-	:	(NOT^)? primaryExpr
-	;
 
 primaryExpr
 	:	compExpr
@@ -150,12 +153,16 @@ primaryExpr
 	;
 parameterExpr
 	:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter
+	|	aliasdAttribute (EQ | NE | GT | LT | GE | LE)^parameter
 	;
 	
 compExpr
 	:	attribute (EQ | NE | GT | LT | GE | LE)^ value
+	|     aliasdAttribute(EQ | NE | GT | LT | GE | LE)^value
 	;
-
+alias
+	: 	ID
+	;
 inExpr	:	attribute IN^ valueList
 	;
 
@@ -181,7 +188,11 @@ doubleVal   :   DECIMAL -> ^(DEC_VAL DECIMAL)
     
 strVal	:	STRING -> ^(STR_VAL STRING)
 	;
-
+	
+	
+SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
+FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
+WHERE	:	('W'|'w')('H'|'h')('E'|'e')('R'|'r')('E'|'e');
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*
 	;

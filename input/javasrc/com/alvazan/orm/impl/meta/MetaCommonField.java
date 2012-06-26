@@ -44,4 +44,13 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 		String indexValue = converter.convertToIndexFormat(value);
 		indexFormat.put(columnName, indexValue);
 	}
+
+	@Override
+	public String getFieldName() {
+		return this.field.getName();
+	}
+	
+	public Class<?> getFieldType(){
+		return this.field.getType();
+	}
 }

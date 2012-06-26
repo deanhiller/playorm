@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class MetaClass<T> {
 	private String columnFamily;
 	
 	private MetaIdField<T> idField;
-	private List<MetaField<T>> fields = new ArrayList<MetaField<T>>();
+	private Map<String,MetaField<T>> fields = new HashMap<String, MetaField<T>>();
 	
 	private List<MetaField<T>> indexedFields = new ArrayList<MetaField<T>>();
 	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();
@@ -69,7 +70,7 @@ public class MetaClass<T> {
 		Object key = idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
-		for(MetaField<T> field : fields) {
+		for(MetaField<T> field : fields.values()) {
 			field.translateFromColumn(columns, inst, session);
 		}
 		
@@ -80,7 +81,7 @@ public class MetaClass<T> {
 		RowToPersist row = new RowToPersist();
 		idField.translateToRow(entity, row);
 		
-		for(MetaField<T> m : fields) {
+		for(MetaField<T> m : fields.values()) {
 			Column col = new Column();
 			m.translateToColumn(entity, col);
 			row.getColumns().add(col);
@@ -115,9 +116,17 @@ public class MetaClass<T> {
 	void addMetaField(MetaField<T> field) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
-		fields.add(field);
+		fields.put(field.getFieldName(), field);
 	}
-
+	
+	public MetaField<T> getMetaField(String fieldName){
+		return fields.get(fieldName);
+	}
+	
+	public  Collection<MetaField<T>> getMetaFields(){
+		return this.fields.values();
+	}
+	
 	void setIdField(MetaIdField<T> field) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");

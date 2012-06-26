@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
+import com.alvazan.orm.layer3.spi.index.SpiQueryInfo;
 
 public class QueryFactory implements SpiIndexQueryFactory {
 

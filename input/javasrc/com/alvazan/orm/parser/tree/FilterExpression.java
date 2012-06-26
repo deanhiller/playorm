@@ -48,7 +48,10 @@ public class FilterExpression  implements Node{
 	}
 
 	
-    
+    @Override
+    public String toString() {
+    	return "["+this.leftNode+"] "+hyphen+" ["+this.rightNode+"]";
+    }
     
     
 //    public FilterExpression getLeftFilterExpression();

@@ -35,7 +35,7 @@ public class TestIndexes {
 		log.info("empty so test passes for now");
 	}
 	
-	//@Test
+	@Test
 	public void testFailureOnTypeMismatch() {
 		NoSqlEntityManagerFactory factory = setup();
 		NoSqlEntityManager mgr = factory.createEntityManager();
@@ -58,7 +58,7 @@ public class TestIndexes {
 		double from = 100;
 		Query<Activity> query = index.getNamedQuery("findBetween");
 		try {
-			query.setParameter("from", from);
+			query.setParameter("begin", from);
 			Assert.fail("Should have throw TypeMismatchException and did not");
 		} catch(TypeMismatchException e) {
 			log.info("This is expected to fail due to type mismatch");
@@ -120,15 +120,15 @@ public class TestIndexes {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();
 		acc.setName("tempxxxxx");
-		acc.setIndexedValue(9.33333f);
+		acc.setUsers(9.33333f);
 		mgr.put(acc);
 		Account acc2 = new Account();
 		acc2.setName("xyz");
-		acc2.setIndexedValue(3.1f);
+		acc2.setUsers(3.1f);
 		mgr.put(acc2);
 		Account acc3 = new Account();
 		acc3.setName(acc2.getName());
-		acc3.setIndexedValue(2.9f);
+		acc3.setUsers(2.9f);
 		mgr.put(acc3);
 		
 		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
