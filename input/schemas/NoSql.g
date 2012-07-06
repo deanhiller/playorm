@@ -27,6 +27,7 @@ tokens {
 	FROM_CLAUSE;
 	WHERE_CLAUSE;
 	ALIAS;
+	IN_PARENS;
 
 	AS	=	'as';
 	DOT	=	'.';
@@ -79,11 +80,11 @@ table: tableWithNoAlias | tableName alias -> ^(TABLE_NAME[$tableName.text] ALIAS
 tableWithNoAlias: tableName -> TABLE_NAME[$tableName.text]; 
 
 //WHERE CLAUSE SPECIFIC STUFF
-whereClause: WHERE expression -> ^(WHERE_CLAUSE expression);
-expression: orExpr;
+whereClause: WHERE^ orExpr;  //NOTE: This should be (expression | orExpr) BUT antlr doesn't like that so need to re-visit
+expression: LPAREN^ orExpr RPAREN!;
 orExpr: andExpr (OR^ andExpr)*;
 andExpr: primaryExpr (AND^ primaryExpr)*;
-primaryExpr: parameterExpr | inExpr | compExpr;
+primaryExpr: parameterExpr | inExpr | compExpr | expression;
 
 //An attribute now is either a simpleAttribute OR a aliasdAttribute
 parameterExpr:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter;

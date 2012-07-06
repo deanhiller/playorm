@@ -55,7 +55,8 @@ public class NoSqlTreeParser {
 
     @SuppressWarnings("unchecked")
 	private static void parse(CommonTree tree, QueryContext context) {
-        switch (tree.getType()) {
+    	int type = tree.getType();
+        switch (type) {
             case NoSqlLexer.SELECT_CLAUSE:
             	SelectClause select= parseSelectClause(tree);
             	context.setSelectClause(select);
@@ -64,7 +65,7 @@ public class NoSqlTreeParser {
             	FromClause from= parseFromClause(tree);
             	context.setFromClause(from);
             	break;
-            case NoSqlLexer.WHERE_CLAUSE:
+            case NoSqlLexer.WHERE:
                 WhereClause where= parseWhereClause(tree);
                 context.setWhereClause(where);
                 break;
@@ -91,7 +92,8 @@ public class NoSqlTreeParser {
     	 if (childrenList != null && childrenList.size() > 0) {
     		 	String aliasEntity=FromClause.DEFAULTENTITY;
 	            for (CommonTree child : childrenList) {
-	                switch (child.getType()) {
+	            	int type = child.getType();
+	                switch (type) {
 	                    case NoSqlLexer.AND:
 	                    case NoSqlLexer.OR:
 	                    	log.info("where type:"+child.getType());
