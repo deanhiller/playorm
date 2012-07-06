@@ -21,7 +21,7 @@ public class IndexImpl<T> implements Index<T> {
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
-	private Provider<QueryAdapter<T>> adapterFactory;
+	private Provider<QueryAdapter> adapterFactory;
 	private MetaClass<T> metaClass;
 	private String indexName;
 	private NoSqlSession session;

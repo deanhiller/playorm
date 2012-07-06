@@ -31,11 +31,6 @@ public class TestIndexes {
 	}
 	
 	@Test
-	public void testEmpty() {
-		log.info("empty so test passes for now");
-	}
-	
-	@Test
 	public void testFailureOnTypeMismatch() {
 		NoSqlEntityManagerFactory factory = setup();
 		NoSqlEntityManager mgr = factory.createEntityManager();

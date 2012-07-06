@@ -16,7 +16,7 @@ public class QueryFactory<T> implements SpiIndexQueryFactory<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
 	@Inject
-	private Provider<SpiIndexQueryImpl<T>> factory;
+	private Provider<SpiIndexQueryImpl> factory;
 	private MetaQuery<T> info;
 	private MetaClass<T> clazz;
 	private Indice indice;
@@ -35,7 +35,7 @@ public class QueryFactory<T> implements SpiIndexQueryFactory<T> {
 		log.info("creating query for index="+indexName);
 		SpiIndexQueryImpl<T> indexQuery = factory.get();
 		RAMDirectory ramDir = indice.findOrCreate(indexName);
-		indexQuery.setup(clazz, info, ramDir);
+		indexQuery.setup(clazz, info, ramDir, indexName);
 		return indexQuery;
 	}
 

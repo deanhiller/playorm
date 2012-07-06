@@ -61,14 +61,10 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		this.classMeta = classMeta;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void translateToIndexFormat(OWNER entity,
 			Map<String, String> indexFormat) {
-		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
-		MetaIdField<PROXY> idField = classMeta.getIdField();
-		Converter converter = idField.getConverter();
-		String idStr = converter.convertToIndexFormat(value);
+		String idStr = translateIfEntity(entity);
 		indexFormat.put(columnName, idStr);
 	}
 
@@ -80,5 +76,15 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 	@Override
 	public Class<?> getFieldType() {
 		return this.field.getType();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public String translateIfEntity(Object entity) {
+		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
+		MetaIdField<PROXY> idField = classMeta.getIdField();
+		Converter converter = idField.getConverter();
+		String idStr = converter.convertToIndexFormat(value);
+		return idStr;
 	}
 }

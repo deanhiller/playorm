@@ -53,4 +53,9 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	public Class<?> getFieldType(){
 		return this.field.getType();
 	}
+
+	@Override
+	public String translateIfEntity(Object value) {
+		return value+"";
+	}
 }

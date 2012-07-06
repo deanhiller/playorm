@@ -36,7 +36,11 @@ public class QueryAdapter<T> implements Query<T> {
 					+ fieldType + "]");
 		} 		
 		
-		indexQuery.setParameter(name, value);
+		//We need to just get the entities id for the query if it is an
+		//entity...
+		String newValue = metaField.translateIfEntity(value);
+		
+		indexQuery.setParameter(name, newValue);
 	}
 
 	@Override
