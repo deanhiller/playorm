@@ -21,7 +21,7 @@ public class IndexImpl<T> implements Index<T> {
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
-	private Provider<QueryAdapter> adapterFactory;
+	private Provider<QueryAdapter<T>> adapterFactory;
 	private MetaClass<T> metaClass;
 	private String indexName;
 	private NoSqlSession session;
@@ -41,12 +41,11 @@ public class IndexImpl<T> implements Index<T> {
 		session.removeFromIndex(indexName, indexId);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Query<T> getNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
 		QueryAdapter<T> adapter = adapterFactory.get();
-		SpiIndexQuery indexQuery = metaQuery.createSpiAdapter(indexName);
+		SpiIndexQuery<T> indexQuery = metaQuery.createSpiAdapter(indexName);
 		adapter.setup(metaQuery, indexQuery);
 		return adapter;
 	}

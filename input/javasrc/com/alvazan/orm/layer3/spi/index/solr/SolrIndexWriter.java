@@ -19,6 +19,7 @@ public class SolrIndexWriter implements IndexReaderWriter {
 	public void sendAdds(Map<String, List<IndexAdd>> addToIndex) {
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public SpiIndexQueryFactory createQueryFactory() {
 		// TODO Auto-generated method stub

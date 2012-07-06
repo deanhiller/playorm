@@ -19,6 +19,7 @@ public class QueryAdapter<T> implements Query<T> {
 		this.indexQuery = indexQuery;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void setParameter(String name, Object value) {
 		//check parameter 
@@ -48,7 +49,6 @@ public class QueryAdapter<T> implements Query<T> {
 		return results.get(0);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<T> getResultList() {
 		return indexQuery.getResultList();

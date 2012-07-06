@@ -58,6 +58,7 @@ public class ScannerForClass {
 		setupQueryStuff(clazz, classMeta);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private void setupQueryStuff(Class<?> clazz, MetaClass classMeta) {
 		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
 		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);
@@ -75,6 +76,7 @@ public class ScannerForClass {
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
 		SpiIndexQueryFactory factory = indexes.createQueryFactory();
 		MetaQuery<?> metaQuery = metaQueryFactory.get();

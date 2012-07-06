@@ -53,7 +53,8 @@ public class NoSqlTreeParser {
         }
     }
 
-    private static void parse(CommonTree tree, QueryContext context) {
+    @SuppressWarnings("unchecked")
+	private static void parse(CommonTree tree, QueryContext context) {
         switch (tree.getType()) {
             case NoSqlLexer.SELECT_CLAUSE:
             	SelectClause select= parseSelectClause(tree);
@@ -141,6 +142,7 @@ public class NoSqlTreeParser {
 		return where;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static FromClause parseFromClause(CommonTree tree) {
 		List<CommonTree> childrenList = tree.getChildren();
 		FromClause from = new FromClause();
@@ -158,6 +160,7 @@ public class NoSqlTreeParser {
 		return from;
 	}
 
+	@SuppressWarnings("unchecked")
 	private static SelectClause parseSelectClause(CommonTree tree) {
 
 		List<CommonTree> childrenList = tree.getChildren();
@@ -177,6 +180,7 @@ public class NoSqlTreeParser {
 	}
 
 	//the alias part is silly due to not organize right in .g file
+	@SuppressWarnings("unchecked")
 	private static SelectClause parseResult(CommonTree tree) {
 		List<CommonTree> childrenList = tree.getChildren();
 		SelectClause select = new SelectClause();

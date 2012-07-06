@@ -8,18 +8,17 @@ import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaQuery;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 
-public class SpiIndexQueryImpl implements SpiIndexQuery {
+public class SpiIndexQueryImpl<T> implements SpiIndexQuery<T> {
 
 	private RAMDirectory ramDir;
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public void setParameter(String paraMeterName, Object value) {
 
 	}
 
 	@Override
-	public List getResultList() {
+	public List<T> getResultList() {
 		//query the ram directory.  do we need to synchronize on the MetaClass
 		//as any query on MetaClass can query this one index.  do not synchronize
 		//on this class because there is one instace for each active query on
@@ -29,7 +28,7 @@ public class SpiIndexQueryImpl implements SpiIndexQuery {
 		return null;
 	}
 
-	public void setup(MetaClass clazz, MetaQuery info, RAMDirectory ramDir) {
+	public void setup(MetaClass<T> clazz, MetaQuery<T> info, RAMDirectory ramDir) {
 		this.ramDir = ramDir;
 	}
 

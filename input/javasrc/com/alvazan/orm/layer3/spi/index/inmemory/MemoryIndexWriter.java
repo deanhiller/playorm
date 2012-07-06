@@ -33,6 +33,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
 	@Inject
 	private Indice indice;
+	@SuppressWarnings("rawtypes")
 	@Inject
 	private Provider<QueryFactory> factory;
 	
@@ -179,6 +180,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
         return doc;
     }
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public SpiIndexQueryFactory createQueryFactory() {
 		QueryFactory queryFactory = factory.get();

@@ -15,6 +15,7 @@ import com.alvazan.orm.parser.QueryContext;
 import com.alvazan.orm.parser.tree.Attribute;
 import com.alvazan.orm.parser.tree.FilterParameter;
 
+@SuppressWarnings("rawtypes")
 public class MetaQuery<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(MetaQuery.class);
@@ -41,6 +42,8 @@ public class MetaQuery<T> {
 		return parameterFieldMap.get(parameter);
 	}
 
+	
+	@SuppressWarnings("unchecked")
 	private void setupProjectionsAndAttributes(QueryContext context,MetaClass metaClass) {
 		List<Attribute> projections = context.getSelectClause().getProjections();
 		
