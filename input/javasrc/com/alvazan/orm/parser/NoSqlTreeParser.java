@@ -40,7 +40,7 @@ public class NoSqlTreeParser {
 
 
 
-	private static CommonTree parseTree(String query) {
+	public static CommonTree parseTree(String query) {
         ANTLRStringStream stream = new ANTLRStringStream(query);
         NoSqlLexer lexer = new NoSqlLexer(stream);
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);

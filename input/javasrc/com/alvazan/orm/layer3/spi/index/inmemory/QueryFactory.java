@@ -34,7 +34,7 @@ public class QueryFactory<T> implements SpiIndexQueryFactory<T> {
 	public SpiIndexQuery<T> createQuery(String indexName) {
 		log.info("creating query for index="+indexName);
 		SpiIndexQueryImpl<T> indexQuery = factory.get();
-		RAMDirectory ramDir = indice.findOrCreate(indexName);
+		RAMDirectory ramDir = indice.find(indexName);
 		indexQuery.setup(clazz, info, ramDir, indexName);
 		return indexQuery;
 	}

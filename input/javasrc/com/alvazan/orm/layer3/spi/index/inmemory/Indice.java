@@ -22,4 +22,13 @@ public class Indice {
 			return ramDirectory;
 		}
 	}
+
+	public RAMDirectory find(String indexName) {
+		return findOrCreate(indexName);
+		//we should throw exception if not exist later...???
+//		RAMDirectory directory = nameToIndex.get(indexName);
+//		if(directory == null)
+//			throw new IllegalArgumentException("indexName="+indexName+" does NOT exist at this time.  You must add at least one record to the index before querying it");
+//		return directory;
+	}
 }

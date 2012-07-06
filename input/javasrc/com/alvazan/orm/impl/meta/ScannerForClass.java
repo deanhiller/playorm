@@ -12,7 +12,6 @@ import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,21 +25,17 @@ import com.alvazan.orm.api.anno.NoSqlQuery;
 import com.alvazan.orm.api.anno.OneToMany;
 import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.anno.Transient;
-import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
 
 public class ScannerForClass {
 
 	private static final Logger log = LoggerFactory.getLogger(ScannerForClass.class);
 	
 	@Inject
-	private IndexReaderWriter indexes;
-	@Inject
 	private ScannerForField inspectorField;
 	@Inject
-	private MetaInfo metaInfo;
+	private ScannerForQuery inspectorQuery;
 	@Inject
-	private Provider<MetaQuery<?>> metaQueryFactory;
+	private MetaInfo metaInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
@@ -72,19 +67,8 @@ public class ScannerForClass {
 			theQueries.add(annotation);
 
 		for(NoSqlQuery query : theQueries) {
-			createQueryAndAdd(classMeta, query);
+			inspectorQuery.createQueryAndAdd(classMeta, query);
 		}
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
-		SpiIndexQueryFactory factory = indexes.createQueryFactory();
-		MetaQuery<?> metaQuery = metaQueryFactory.get();
-		//This is a bit messed up and need to clean up one more step
-		metaQuery.setup(classMeta, query.query(), factory);
-
-		//we do lazy verify.
-		classMeta.addQuery(query.name(), metaQuery);
 	}
 
 	@SuppressWarnings("unchecked")
