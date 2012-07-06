@@ -64,47 +64,19 @@ package com.alvazan.orm.parser.antlr;
     }
 }
 
-statement
-	: (  selectStatement  )
-	;
+statement: (  selectStatement  );
 
+selectStatement: selectClause fromClause (whereClause)?;
 
-selectStatement
-	: selectClause
-		(fromClause)?
-		(whereClause)?
-		;
-		
+selectClause: SELECT resultList -> ^(SELECT_CLAUSE resultList);
 
+fromClause: FROM tableList -> ^(FROM_CLAUSE tableList);
 
-
-selectClause
-	: SELECT resultList -> ^(SELECT_CLAUSE resultList) 
-	;
-
-
+whereClause: WHERE expression -> ^(WHERE_CLAUSE expression);
 	
-
-
-fromClause
-	: FROM tableList -> ^(FROM_CLAUSE tableList) 
-	;
-
-whereClause
-	: WHERE expression -> ^(WHERE_CLAUSE expression)
-	;
-
-
-
-
+tableList: table (COMMA! table)*;
 	
-tableList
-	:  	table (COMMA! table)*
-	;
-	
-resultList
-	:	(STAR | attributeList |) -> ^(RESULT attributeList? STAR?)
-	;
+resultList:	(STAR | attributeList |) -> ^(RESULT attributeList? STAR?);
 	
 attributeList
 	:	attribute (COMMA! attribute)*
@@ -114,13 +86,9 @@ table
 	: 	tableName -> ^(TABLE_NAME tableName)
 	;
 
-attribute	
-	:	attrName -> ^(ATTR_NAME attrName)
-	;
+attribute: ID -> ATTR_NAME[$ID.text];
 	
-aliasdAttribute
-	:       alias DOT attrName -> ^(ALIAS alias ) ^(ATTR_NAME attrName)
-	;
+aliasdAttribute: (alias)(DOT)(attrName) -> ALIAS[$alias.text] ATTR_NAME[$attrName.text];
 	
 attrName
 	:	ID
@@ -167,7 +135,7 @@ inExpr	:	attribute IN^ valueList
 	;
 
 parameter
-	: 	COLON parameterName -> ^(PARAMETER_NAME parameterName)
+	: 	COLON parameterName -> PARAMETER_NAME[$parameterName.text]
 	;
 
 valueList

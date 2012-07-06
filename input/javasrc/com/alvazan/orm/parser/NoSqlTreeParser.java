@@ -111,12 +111,12 @@ public class NoSqlTreeParser {
 	                    	log.info("where type:"+child.getType());
 	                    	int start =0;
 	                    	if(child.getChild(0).getType()==NoSqlLexer.ALIAS){
-	                    		aliasEntity = child.getChild(0).getChild(0).getText();
+	                    		aliasEntity = child.getChild(0).getText();
 	                    		start=1;
 	                    	}
-	                    	Attribute attribute = new Attribute(aliasEntity,child.getChild(start).getChild(0).getText());
+	                    	Attribute attribute = new Attribute(aliasEntity,child.getChild(start).getText());
 	                    	FilterParameter parameter = new FilterParameter();
-	                    	parameter.setParameter(child.getChild(start+1).getChild(0).getText());
+	                    	parameter.setParameter(child.getChild(start+1).getText());
 	                    	FilterExpression expression = new FilterExpression();
 	                    	expression.setLeftNode(attribute);
 //	                    	expression.setHyphen(hyphen)
@@ -195,13 +195,13 @@ public class NoSqlTreeParser {
 	                    	aliasEntity=FromClause.DEFAULTENTITY;
 	                    	break;
 	                    case NoSqlLexer.ATTR_NAME:
-	                    	String attributeName = child.getChild(0).getText();
+	                    	String attributeName = child.getText();
 	                    	Attribute attribute = new Attribute(aliasEntity,attributeName);
 	                    	select.addProjection(attribute);
 	                    	aliasEntity=FromClause.DEFAULTENTITY;
 	                        break;
 	                    case NoSqlLexer.ALIAS:
-	                    	aliasEntity=child.getChild(0).getText();
+	                    	aliasEntity=child.getText();
 	                    	break;
 	                    	
 	                    default:
