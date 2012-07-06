@@ -93,7 +93,7 @@ compExpr:       attribute (EQ | NE | GT | LT | GE | LE)^ value;
 attribute: simpleAttribute | aliasdAttribute;
 //This collapses the child node and renames the token ATTR_NAME while keeping the text of the token
 simpleAttribute: ID -> ATTR_NAME[$ID.text];
-aliasdAttribute: (alias)(DOT)(attrName) -> ALIAS[$alias.text] ATTR_NAME[$attrName.text];
+aliasdAttribute: (alias)(DOT)(attrName) -> ^(ATTR_NAME[$attrName.text] ALIAS[$alias.text]);
 
 tableName: ID;
 parameterName: ID;
