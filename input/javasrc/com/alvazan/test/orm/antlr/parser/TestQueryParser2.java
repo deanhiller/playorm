@@ -18,7 +18,8 @@ public class TestQueryParser2 {
 	
 	@Test
 	public void testQueryParser() throws RecognitionException{
-		String sql="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to and e.ttt <:too and e.bbb>=:to";
+		//String sql="select column_a from table_a where column_b=:value_b";
+		String sql="select *  FROM TABLEA e,TABLE2,TABLE3 b WHERE e.numTimes >= \"hello\" and e.numTimes < :to and e.ttt <'hithere' and e.bbb>=:to";
 		printTree(sql);
 		
 	}

@@ -79,61 +79,40 @@ tableList: table (COMMA! table)*;
 resultList:	(STAR | attributeList |) -> ^(RESULT attributeList? STAR?);
 	
 attributeList
-	:	attribute (COMMA! attribute)*
+	:	simpleAttribute (COMMA! simpleAttribute)*
 	|	aliasdAttribute (COMMA! aliasdAttribute)*
 	;
-table
-	: 	tableName -> ^(TABLE_NAME tableName)
-	;
+table: tableWithNoAlias | tableName alias -> ^(TABLE_NAME[$tableName.text] ALIAS[$alias.text]);
+tableWithNoAlias: tableName -> TABLE_NAME[$tableName.text]; 
 
-attribute: ID -> ATTR_NAME[$ID.text];
+attribute: simpleAttribute | aliasdAttribute;
+
+//This collapses the child node and renames the token ATTR_NAME while keeping the text of the token
+simpleAttribute: ID -> ATTR_NAME[$ID.text];
 	
 aliasdAttribute: (alias)(DOT)(attrName) -> ALIAS[$alias.text] ATTR_NAME[$attrName.text];
+
+expression: orExpr;
+
+orExpr: andExpr (OR^ andExpr)*;
+
+andExpr: primaryExpr (AND^ primaryExpr)*;
+
+primaryExpr: compExpr | inExpr | parameterExpr;
 	
-attrName
-	:	ID
+//An attribute now is either a simpleAttribute OR a complex attribute
+parameterExpr:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter;
+compExpr: attribute (EQ | NE | GT | LT | GE | LE)^ value;
+
+tableName: ID;
+parameterName: ID;
+attrName: ID;
+alias: ID;
+
+inExpr	:	simpleAttribute IN^ valueList
 	;
 
-tableName
-	:	ID
-	|	ID alias -> ^(ALIAS alias)
-	;
-
-parameterName
-	:	ID
-	;
-expression
-	:	orExpr
-	;
-
-orExpr	:	andExpr (OR^ andExpr)*
-	;
-
-andExpr	:	primaryExpr (AND^ primaryExpr)*
-	;
-	
-
-primaryExpr
-	:	compExpr
-	|	inExpr
-	|	parameterExpr
-	|	attribute
-	;
-parameterExpr
-	:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter
-	|	aliasdAttribute (EQ | NE | GT | LT | GE | LE)^parameter
-	;
-	
-compExpr
-	:	attribute (EQ | NE | GT | LT | GE | LE)^ value
-	|     aliasdAttribute(EQ | NE | GT | LT | GE | LE)^value
-	;
-alias
-	: 	ID
-	;
-inExpr	:	attribute IN^ valueList
-	;
-
+//This collapses the child node and renames the token PARAMETER_NAME while keeping the parameter text
 parameter
 	: 	COLON parameterName -> PARAMETER_NAME[$parameterName.text]
 	;
@@ -142,21 +121,16 @@ valueList
 	:	 value (COMMA value)*  -> ^(VALUE_LIST value (value)*)
 	;
 
-value	
-    	:	intVal 
-    	|   	doubleVal
-	|	strVal
-	;
+value: intVal | doubleVal | strVal;
 	
-intVal	:	INTEGER -> ^(INT_VAL INTEGER)
-	;
+intVal	:	INTEGER -> INT_VAL[$INTEGER.text];
 
-doubleVal   :   DECIMAL -> ^(DEC_VAL DECIMAL)
-    ;
+doubleVal   :   DECIMAL -> DEC_VAL[$DECIMAL.text];
     
-strVal	:	STRING -> ^(STR_VAL STRING)
-	;
+strVal	:	stringA | stringB;
 	
+stringA : STRINGA -> STR_VAL[$STRINGA.text];
+stringB : STRINGB -> STR_VAL[$STRINGB.text];
 	
 SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
 FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
@@ -171,8 +145,8 @@ INTEGER :  ('0'..'9')+
 DECIMAL	:	('.' ('0'..'9')+)  | (('0'..'9')+ '.' '0'..'9'*)
 	;
 
-STRING	:	'"' (options {greedy=false;}: ESC | .)* '"'
-	;
+STRINGA	:	'"' (options {greedy=false;}: ESC | .)* '"';
+STRINGB	:	'\'' (options {greedy=false;}: ESC | .)* '\'';
 
 WS	:
  	(   ' '

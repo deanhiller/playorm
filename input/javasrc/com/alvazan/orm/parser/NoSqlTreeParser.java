@@ -148,9 +148,10 @@ public class NoSqlTreeParser {
 		FromClause from = new FromClause();
 		 if (childrenList != null && childrenList.size() > 0) {
 	            for (CommonTree child : childrenList) {
-	                switch (child.getType()) {
+	            	int type = child.getType();
+	                switch (type) {
 	                    case NoSqlLexer.TABLE_NAME:
-	                    	from.addEntity(child.getChild(0).getText());
+	                    	from.addEntity(child.getText());
 	                    	break;
 	                    default:
 	                        break;
