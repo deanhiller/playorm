@@ -6,7 +6,6 @@ import java.util.Map;
 import junit.framework.Assert;
 
 import org.junit.Test;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,12 +16,6 @@ import com.alvazan.orm.parser.tree.FilterParameter;
 
 public class TestQueryParser {
 	private static final Logger log = LoggerFactory.getLogger(TestQueryParser.class);
-
-	
-	@Test
-	public void testEmpty() {
-		log.info("empty so test passes for now");
-	}
 	
 	@Test
 	public void testQueryParser(){
@@ -61,5 +54,6 @@ public class TestQueryParser {
 		String sql="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to and e.ttt <:too and e.bbb>=:to";
 		QueryContext context =NoSqlTreeParser.parse(sql);
 		
+		log.info("ctx="+context);
 	}
 }

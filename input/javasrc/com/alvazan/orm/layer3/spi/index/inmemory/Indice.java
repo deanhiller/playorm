@@ -11,6 +11,8 @@ public class Indice {
 
 	public RAMDirectory findOrCreate(String indexName) {
 		//synchronize on the name so we are not creating this twice on accident
+		//if you don't intern then "hel"+"lo" != "hello" which could be very bad per 
+		//Java Language Spec
 		synchronized(indexName.intern()) {
 			RAMDirectory ramDirectory = nameToIndex.get(indexName);
 			if(ramDirectory == null) {
@@ -19,5 +21,5 @@ public class Indice {
 			}
 			return ramDirectory;
 		}
-	}	
+	}
 }

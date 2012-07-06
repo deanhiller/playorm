@@ -3,8 +3,6 @@ package com.alvazan.orm.layer3.spi.index;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.impl.meta.MetaClass;
-
 
 public interface IndexReaderWriter {
 	
@@ -20,5 +18,5 @@ public interface IndexReaderWriter {
 	 * run the query
 	 * @param classMeta 
 	 */
-	SpiIndexQueryFactory createQueryFactory(MetaClass classMeta, String query);
+	SpiIndexQueryFactory createQueryFactory();
 }

@@ -3,7 +3,6 @@ package com.alvazan.orm.layer3.spi.index.solr;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
@@ -21,11 +20,11 @@ public class SolrIndexWriter implements IndexReaderWriter {
 	}
 
 	@Override
-	public SpiIndexQueryFactory createQueryFactory(MetaClass classMeta,
-			String query) {
+	public SpiIndexQueryFactory createQueryFactory() {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 
 
 

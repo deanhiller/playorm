@@ -46,7 +46,7 @@ public class IndexImpl<T> implements Index<T> {
 	public Query<T> getNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
 		QueryAdapter<T> adapter = adapterFactory.get();
-		SpiIndexQuery indexQuery = metaQuery.getFactory().createQuery(indexName);
+		SpiIndexQuery indexQuery = metaQuery.createSpiAdapter(indexName);
 		adapter.setup(metaQuery, indexQuery);
 		return adapter;
 	}
