@@ -3,30 +3,34 @@ package com.alvazan.orm.layer3.spi.index.inmemory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 public class Indice {
 	
-	private Map<String, RAMDirectory> nameToIndex = new ConcurrentHashMap<String, RAMDirectory>();
+	private static StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);
+	private Map<String, IndexItems> nameToIndex = new ConcurrentHashMap<String, IndexItems>();
 
-	public RAMDirectory findOrCreate(String indexName) {
+	public IndexItems findOrCreate(String indexName) {
 		//synchronize on the name so we are not creating this twice on accident
 		//if you don't intern then "hel"+"lo" != "hello" which could be very bad per 
 		//Java Language Spec
 		synchronized(indexName.intern()) {
-			RAMDirectory ramDirectory = nameToIndex.get(indexName);
-			if(ramDirectory == null) {
-				ramDirectory = new RAMDirectory();
-				nameToIndex.put(indexName, ramDirectory);
+			IndexItems items = nameToIndex.get(indexName);
+			if(items == null) {
+				RAMDirectory ramDirectory = new RAMDirectory();
+				items = new IndexItems(analyzer, ramDirectory, indexName);
+				nameToIndex.put(indexName, items);
 			}
-			return ramDirectory;
+			return items;
 		}
 	}
 
-	public RAMDirectory find(String indexName) {
+	public IndexItems find(String indexName) {
 		return findOrCreate(indexName);
 		//we should throw exception if not exist later...???
-//		RAMDirectory directory = nameToIndex.get(indexName);
+//		IndexItems directory = nameToIndex.get(indexName);
 //		if(directory == null)
 //			throw new IllegalArgumentException("indexName="+indexName+" does NOT exist at this time.  You must add at least one record to the index before querying it");
 //		return directory;

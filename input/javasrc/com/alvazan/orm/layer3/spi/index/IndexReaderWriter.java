@@ -19,5 +19,5 @@ public interface IndexReaderWriter {
 	 * @param classMeta 
 	 */
 	@SuppressWarnings("rawtypes")
-	SpiIndexQueryFactory createQueryFactory();
+	SpiMetaQuery createQueryFactory();
 }

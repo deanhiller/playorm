@@ -3,7 +3,6 @@ package com.alvazan.orm.layer1.base;
 import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.Index;
@@ -14,14 +13,11 @@ import com.alvazan.orm.impl.meta.MetaIdField;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.MetaQuery;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 
 public class IndexImpl<T> implements Index<T> {
 
 	@Inject
 	private MetaInfo metaInfo;
-	@Inject
-	private Provider<QueryAdapter> adapterFactory;
 	private MetaClass<T> metaClass;
 	private String indexName;
 	private NoSqlSession session;
@@ -44,10 +40,7 @@ public class IndexImpl<T> implements Index<T> {
 	@Override
 	public Query<T> getNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
-		QueryAdapter<T> adapter = adapterFactory.get();
-		SpiIndexQuery<T> indexQuery = metaQuery.createSpiAdapter(indexName);
-		adapter.setup(metaQuery, indexQuery);
-		return adapter;
+		return metaQuery.createAdapter(name);
 	}
 
 	public void setMeta(MetaClass<T> metaClass) {

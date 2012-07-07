@@ -18,7 +18,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
 import com.alvazan.orm.api.IndexAddFailedException;
@@ -27,7 +26,7 @@ import com.alvazan.orm.api.IndexErrorInfo;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
+import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
 
@@ -69,7 +68,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
 	private void removeAllFromIndex(String indexName,
 			List<? extends IndexRemove> removes) throws ParseException, IOException {
-		RAMDirectory index = indice.findOrCreate(indexName);
+		IndexItems index = indice.findOrCreate(indexName);
 		
 		String queryStr = createQuery(removes);
 		Analyzer analyzer = new KeywordAnalyzer();		
@@ -80,7 +79,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 			boolean success = false;
 			try {
 				IndexWriterConfig config  = new IndexWriterConfig(Version.LUCENE_36, analyzer );
-				writer = new IndexWriter(index, config  );
+				writer = new IndexWriter(index.getRamDirectory(), config);
 				
 				writer.deleteDocuments(query);
 
@@ -130,14 +129,14 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	}
 
 	private void addToIndex(String indexName, List<IndexAdd> adds) throws IOException {
-		RAMDirectory index = indice.findOrCreate(indexName);
+		IndexItems index = indice.findOrCreate(indexName);
 		synchronized(index) {
 			boolean success = false;
 			IndexWriter writer = null;
 			try {
 				Analyzer analyzer = new KeywordAnalyzer();
 				IndexWriterConfig config  = new IndexWriterConfig(Version.LUCENE_36, analyzer );
-				writer = new IndexWriter(index, config  );
+				writer = new IndexWriter(index.getRamDirectory(), config  );
 		
 				for(IndexAdd add : adds) {
 					Document doc = createDocument(add.getItem());
@@ -182,7 +181,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public SpiIndexQueryFactory createQueryFactory() {
+	public SpiMetaQuery createQueryFactory() {
 		QueryFactory queryFactory = factory.get();
 		queryFactory.init(indice);
 		return queryFactory;

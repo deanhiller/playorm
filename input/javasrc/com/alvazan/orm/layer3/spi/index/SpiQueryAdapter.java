@@ -2,7 +2,7 @@ package com.alvazan.orm.layer3.spi.index;
 
 import java.util.List;
 
-public interface SpiIndexQuery<T> {
+public interface SpiQueryAdapter<T> {
 
 	public void setParameter(String parameterName, String value);
 

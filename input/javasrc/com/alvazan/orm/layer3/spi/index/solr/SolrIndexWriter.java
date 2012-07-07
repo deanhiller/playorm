@@ -6,7 +6,7 @@ import java.util.Map;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
+import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
 
 public class SolrIndexWriter implements IndexReaderWriter {
 
@@ -21,7 +21,7 @@ public class SolrIndexWriter implements IndexReaderWriter {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public SpiIndexQueryFactory createQueryFactory() {
+	public SpiMetaQuery createQueryFactory() {
 		// TODO Auto-generated method stub
 		return null;
 	}

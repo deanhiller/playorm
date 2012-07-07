@@ -7,14 +7,14 @@ import com.alvazan.orm.api.TooManyResultException;
 import com.alvazan.orm.api.TypeMismatchException;
 import com.alvazan.orm.impl.meta.MetaQuery;
 import com.alvazan.orm.impl.meta.MetaQueryFieldInfo;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
+import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
 
 public class QueryAdapter<T> implements Query<T> {
 
 	private MetaQuery<T> meta;
-	private SpiIndexQuery<T> indexQuery;
+	private SpiQueryAdapter<T> indexQuery;
 
-	public void setup(MetaQuery<T> meta, SpiIndexQuery<T> indexQuery) {
+	public void setup(MetaQuery<T> meta, SpiQueryAdapter<T> indexQuery) {
 		this.meta = meta;
 		this.indexQuery = indexQuery;
 	}

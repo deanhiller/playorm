@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.anno.NoSqlQuery;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
-import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
+import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 
@@ -56,11 +56,12 @@ public class ScannerForQuery {
 		return newsetupByVisitingTree(metaClass, query);
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> MetaQuery<T> newsetupByVisitingTree(MetaQueryClassInfo metaClass,
 			String query) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery<T> visitor1 = metaQueryFactory.get();
-		SpiIndexQueryFactory<T> visitor2 = indexes.createQueryFactory();
+		SpiMetaQuery<T> visitor2 = indexes.createQueryFactory();
 		
 		visitor1.initialize(metaClass, query, visitor2);
 
@@ -90,26 +91,32 @@ public class ScannerForQuery {
     }
 	
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiIndexQueryFactory<T> factory) {
+			SpiMetaQuery<T> spiMetaQuery) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.SELECT_CLAUSE:
-			parseSelectClause(tree, metaQuery, factory);
+			parseSelectClause(tree, metaQuery, spiMetaQuery);
 			break;
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, factory);
+			parseFromClause(tree, metaQuery, spiMetaQuery);
 			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
-			parseExpression(expression, metaQuery, factory);
+			parseExpression(expression, metaQuery, spiMetaQuery);
+			//NOTE: We were going to call methods on the factory visitor during the tree walk of the
+			//expression, but that makes for a difficult spi to implement for anyone so instead we will
+			//just give the spi implementer the full expression after the WHERE clause in AST tree form
+			//so he can create his own visitor pattern in his code
+			//factory.
+			spiMetaQuery.formQueryFromAstTree(expression);
 			break;
 
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, metaQuery, factory);
+				walkTheTree(child, metaQuery, spiMetaQuery);
 			}
 			break;
 		default:
@@ -119,7 +126,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseSelectClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
 
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList != null && childrenList.size() > 0) {
@@ -138,7 +145,7 @@ public class ScannerForQuery {
 	// the alias part is silly due to not organize right in .g file
 	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseResult(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
 		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
@@ -171,7 +178,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -193,7 +200,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
-			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
 		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
 
 		int type = expression.getType();
