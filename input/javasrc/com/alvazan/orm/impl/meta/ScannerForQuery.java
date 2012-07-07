@@ -100,7 +100,10 @@ public class ScannerForQuery {
 			parseFromClause(tree, metaQuery, factory);
 			break;
 		case NoSqlLexer.WHERE:
-			parseExpression(tree, metaQuery, factory);
+			//We should try to get rid of the where token in the grammar so we don't need 
+			//this line of code here....
+			CommonTree expression = (CommonTree)tree.getChildren().get(0);
+			parseExpression(expression, metaQuery, factory);
 			break;
 
 		case 0: // nil
@@ -133,7 +136,7 @@ public class ScannerForQuery {
 	}
 
 	// the alias part is silly due to not organize right in .g file
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseResult(CommonTree tree,
 			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
 		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
@@ -189,51 +192,49 @@ public class ScannerForQuery {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> void parseExpression(CommonTree tree,
+	private static <T> void parseExpression(CommonTree expression,
 			MetaQuery<T> metaQuery, SpiIndexQueryFactory<T> factory) {
 		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
-		List<CommonTree> childrenList = tree.getChildren();
-		if (childrenList == null)
-			return;
 
-		for (CommonTree child : childrenList) {
-			int type = child.getType();
-			log.info("where type:" + child.getType());
-			switch (type) {
-			case NoSqlLexer.AND:
-			case NoSqlLexer.OR:
-				// no need to add attributes here anymore as we are using
-				// visitor pattern
+		int type = expression.getType();
+		log.info("where type:" + expression.getType());
+		switch (type) {
+		case NoSqlLexer.AND:
+		case NoSqlLexer.OR:
+			// no need to add attributes here anymore as we are using
+			// visitor pattern
+			List<CommonTree> children = expression.getChildren();
+			for(CommonTree child : children)
 				parseExpression(child, metaQuery, factory);
-				break;
-			case NoSqlLexer.EQ:
-			case NoSqlLexer.NE:
-			case NoSqlLexer.GT:
-			case NoSqlLexer.LT:
-			case NoSqlLexer.GE:
-			case NoSqlLexer.LE:
-				int start = 0;
-				String aliasEntity;
-				if (child.getChild(0).getType() == NoSqlLexer.ALIAS) {
-					aliasEntity = child.getChild(0).getText();
-					start = 1;
-				}
-				String attributeName = child.getChild(start).getText();
-
-				MetaQueryFieldInfo attributeField = metaClass.getMetaField(attributeName);
-				if (attributeField == null && !metaClass.getIdFieldName().equals(attributeName)) {
-					throw new IllegalArgumentException("There is no "
-							+ attributeName + " exists for class " + metaClass);
-				}
-
-				String parameter = child.getChild(start + 1).getText();
-
-				metaQuery.getParameterFieldMap().put(parameter, attributeField);
-				
-				break;
-			default:
-				break;
+			
+			break;
+		case NoSqlLexer.EQ:
+		case NoSqlLexer.NE:
+		case NoSqlLexer.GT:
+		case NoSqlLexer.LT:
+		case NoSqlLexer.GE:
+		case NoSqlLexer.LE:
+			int start = 0;
+			String aliasEntity;
+			if (expression.getChild(0).getType() == NoSqlLexer.ALIAS) {
+				aliasEntity = expression.getChild(0).getText();
+				start = 1;
 			}
+			String attributeName = expression.getChild(start).getText();
+
+			MetaQueryFieldInfo attributeField = metaClass.getMetaField(attributeName);
+			if (attributeField == null && !metaClass.getIdFieldName().equals(attributeName)) {
+				throw new IllegalArgumentException("There is no "
+						+ attributeName + " exists for class " + metaClass);
+			}
+
+			String parameter = expression.getChild(start + 1).getText();
+
+			metaQuery.getParameterFieldMap().put(parameter, attributeField);
+			
+			break;
+		default:
+			break;
 		}
 	}
 
