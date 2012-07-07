@@ -5,8 +5,8 @@ import java.util.List;
 import com.alvazan.orm.api.Query;
 import com.alvazan.orm.api.TooManyResultException;
 import com.alvazan.orm.api.TypeMismatchException;
-import com.alvazan.orm.impl.meta.MetaField;
 import com.alvazan.orm.impl.meta.MetaQuery;
+import com.alvazan.orm.impl.meta.MetaQueryFieldInfo;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 
 public class QueryAdapter<T> implements Query<T> {
@@ -23,7 +23,7 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public void setParameter(String name, Object value) {
 		//check parameter 
-		MetaField metaField = meta.getMetaFieldByParameter(name);
+		MetaQueryFieldInfo metaField = meta.getMetaFieldByParameter(name);
 		if(metaField==null){
 			throw new IllegalArgumentException("paraMeterName [" + name
 					+ "] is not find for ");

@@ -6,7 +6,7 @@ import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer3.spi.db.Column;
 
 
-public interface MetaField<OWNER> {
+public interface MetaField<OWNER> extends MetaQueryFieldInfo {
 
 	public void translateFromColumn(Map<String, Column> columns, OWNER entity, NoSqlSession session);
 	

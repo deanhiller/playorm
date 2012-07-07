@@ -12,7 +12,7 @@ import com.alvazan.orm.layer2.nosql.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.Row;
 import com.alvazan.orm.layer3.spi.db.Column;
 
-public class MetaClass<T> {
+public class MetaClass<T> implements MetaQueryClassInfo {
 
 	private static final String IDKEY = "id";
 	private Class<T> metaClass;
@@ -154,5 +154,10 @@ public class MetaClass<T> {
 
 	public void addQuery(String name, MetaQuery<T> metaQuery) {
 		queryInfo.put(name, metaQuery);
+	}
+
+	@Override
+	public String getIdFieldName() {
+		return idField.getField().getName();
 	}
 }

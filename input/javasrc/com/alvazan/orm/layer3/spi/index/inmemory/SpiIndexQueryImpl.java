@@ -6,8 +6,6 @@ import org.apache.lucene.store.RAMDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.impl.meta.MetaClass;
-import com.alvazan.orm.impl.meta.MetaQuery;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 
 public class SpiIndexQueryImpl<T> implements SpiIndexQuery<T> {
@@ -32,7 +30,7 @@ public class SpiIndexQueryImpl<T> implements SpiIndexQuery<T> {
 		return null;
 	}
 
-	public void setup(MetaClass<T> clazz, MetaQuery<T> info, RAMDirectory ramDir, String indexName) {
+	public void setup(RAMDirectory ramDir, String indexName) {
 		this.ramDir = ramDir;
 		this.indexName = indexName;
 	}

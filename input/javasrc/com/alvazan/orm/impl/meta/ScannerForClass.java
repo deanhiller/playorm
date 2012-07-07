@@ -67,7 +67,8 @@ public class ScannerForClass {
 			theQueries.add(annotation);
 
 		for(NoSqlQuery query : theQueries) {
-			inspectorQuery.createQueryAndAdd(classMeta, query);
+			MetaQuery metaQuery = inspectorQuery.createQueryAndAdd(classMeta, query);
+			classMeta.addQuery(query.name(), metaQuery);
 		}
 	}
 

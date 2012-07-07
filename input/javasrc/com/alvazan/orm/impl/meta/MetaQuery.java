@@ -5,41 +5,41 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.layer3.spi.index.SpiIndexQuery;
 import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
 
-@SuppressWarnings("rawtypes")
 public class MetaQuery<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(MetaQuery.class);
+	List<MetaQueryFieldInfo> projectionFields = new ArrayList<MetaQueryFieldInfo>();
 	
-	private List<MetaField> projectionFields = new ArrayList<MetaField>();
+	Map<String,MetaQueryFieldInfo> parameterFieldMap = new HashMap<String, MetaQueryFieldInfo>();
 	
-	private Map<MetaField, String> fieldParameterMap = new HashMap<MetaField, String>();
-	
-	private Map<String,MetaField<?>> parameterFieldMap = new HashMap<String, MetaField<?>>();
 	private SpiIndexQueryFactory<T> factory;
+	private MetaQueryClassInfo metaClass;
+	private String query;
 	
-	public void setup(SpiIndexQueryFactory<T> factory, List<MetaField> projectionFields2, Map<MetaField, String> fieldParameterMap2, Map<String, MetaField<?>> parameterFieldMap2) {
+	public void initialize(MetaQueryClassInfo metaClass2, String query, SpiIndexQueryFactory factory) {
+		this.metaClass = metaClass2;
+		this.query = query;
 		this.factory = factory;
-		this.projectionFields = projectionFields2;
-		this.fieldParameterMap = fieldParameterMap2;
-		this.parameterFieldMap = parameterFieldMap2;
 	}
 	
-	public MetaField<?> getMetaFieldByParameter(String parameter){
-		return parameterFieldMap.get(parameter);
+	public MetaQueryClassInfo getMetaClass() {
+		return metaClass;
+	}
+	
+
+
+	public String getQuery() {
+		return query;
 	}
 
-	
-	
+	public MetaQueryFieldInfo getMetaFieldByParameter(String parameter){
+		return parameterFieldMap.get(parameter);
+	}
 
 	public SpiIndexQuery<T> createSpiAdapter(String indexName) {
 		return factory.createQuery(indexName);
 	}
-	
 	
 }
