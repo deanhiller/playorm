@@ -2,7 +2,6 @@ package com.alvazan.orm.layer3.spi.db;
 
 import java.util.List;
 
-import com.alvazan.orm.layer2.nosql.Row;
 
 public interface NoSqlRawSession {
 	

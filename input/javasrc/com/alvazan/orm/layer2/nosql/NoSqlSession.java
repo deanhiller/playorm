@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer3.spi.db.Column;
 import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
+import com.alvazan.orm.layer3.spi.db.Row;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.google.inject.ImplementedBy;
 

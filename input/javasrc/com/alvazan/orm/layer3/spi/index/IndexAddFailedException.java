@@ -1,7 +1,8 @@
-package com.alvazan.orm.api;
+package com.alvazan.orm.layer3.spi.index;
 
 import java.util.List;
 import java.util.Map;
+
 
 public class IndexAddFailedException extends RuntimeException {
 

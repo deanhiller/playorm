@@ -8,12 +8,12 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer2.nosql.Row;
 import com.alvazan.orm.layer3.spi.db.Action;
 import com.alvazan.orm.layer3.spi.db.Column;
 import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
 import com.alvazan.orm.layer3.spi.db.Persist;
 import com.alvazan.orm.layer3.spi.db.Remove;
+import com.alvazan.orm.layer3.spi.db.Row;
 import com.alvazan.orm.layer3.spi.index.IndexAdd;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.IndexRemove;

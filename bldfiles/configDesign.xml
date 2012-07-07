@@ -13,8 +13,12 @@
 
 <!-- should erase the following... -->
 <package name="default" package="default package" subpackages="include" needdepends="false"/>
+<!-- external packages that are global and everyone is allowed to depend on -->
 <package name="slf4j" package="org.slf4j" needdeclarations="false"/>
+<package name="inject" package="javax.inject" needdeclarations="false"/>
 
+<!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
+<package name="lucene" package="org.apache.lucene" subpackages="include"/>
 <package name="antlr" package="org.antlr.runtime.tree"/>
 
 <package name="RawIndexSpi" package="com.alvazan.orm.layer3.spi.index">
@@ -35,15 +39,25 @@
 	<depends>RawIndexSpi</depends>
 </package>
 
+<!-- This section is just the database adapters depending on the spi -->
 <package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
 	<depends>RawNoSqlSpi</depends>
 </package>
-
 <package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
 	<depends>RawNoSqlSpi</depends>
 </package>
+<package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
+	<depends>RawNoSqlSpi</depends>
+</package>
 
-<package name="inMemDb" package="com.alvazan.orm.layer3.spi.db.inmemory" needdepends="false"/>
-<package name="solr" package="com.alvazan.orm.layer3.spi.index.solr" needdepends="false"/>
-<package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory" needdepends="false"/>
+<!-- This section is just the index adapters depending on the spi -->
+<package name="solr"       package="com.alvazan.orm.layer3.spi.index.solr">
+	<depends>RawIndexSpi</depends>
+</package>
+<package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory">
+	<depends>RawIndexSpi</depends>
+	<depends>lucene</depends>
+	<depends>antlr</depends>
+</package>
+
 </design>

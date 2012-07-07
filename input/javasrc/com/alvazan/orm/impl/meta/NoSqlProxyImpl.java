@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.RowNotFoundException;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer2.nosql.Row;
+import com.alvazan.orm.layer3.spi.db.Row;
 
 public class NoSqlProxyImpl<T> implements MethodHandler {
 

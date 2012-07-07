@@ -15,7 +15,7 @@ import com.alvazan.orm.impl.meta.MetaIdField;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.RowToPersist;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer2.nosql.Row;
+import com.alvazan.orm.layer3.spi.db.Row;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 

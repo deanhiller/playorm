@@ -9,8 +9,8 @@ import java.util.Map;
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer2.nosql.Row;
 import com.alvazan.orm.layer3.spi.db.Column;
+import com.alvazan.orm.layer3.spi.db.Row;
 
 public class MetaClass<T> implements MetaQueryClassInfo {
 
