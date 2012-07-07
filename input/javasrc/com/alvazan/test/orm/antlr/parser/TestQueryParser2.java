@@ -24,7 +24,7 @@ public class TestQueryParser2 {
 		String sql="select *  FROM TABLEA e,TABLE2,TABLE3 b WHERE e.numTimes >= \"hello\" and (e.numTimes < :to and e.ttt <'hithere') and e.bbb>=:to";
 		printTree(sql);
 	}
-	
+
 	private CommonTree printTree(String sql) throws RecognitionException {
 		ANTLRStringStream stream = new ANTLRStringStream(sql);
         NoSqlLexer lexer = new NoSqlLexer(stream);

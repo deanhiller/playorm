@@ -80,11 +80,11 @@ table: tableWithNoAlias | tableName alias -> ^(TABLE_NAME[$tableName.text] ALIAS
 tableWithNoAlias: tableName -> TABLE_NAME[$tableName.text]; 
 
 //WHERE CLAUSE SPECIFIC STUFF
-whereClause: WHERE^ orExpr;  //NOTE: This should be (expression | orExpr) BUT antlr doesn't like that so need to re-visit
-expression: LPAREN^ orExpr RPAREN!;
+whereClause: WHERE^ expression;  //NOTE: This should be (expression | orExpr) BUT antlr doesn't like that so need to re-visit
+expression: orExpr; //The ^ makes LPAREN a root while the ! makes RPAREN get dropped from example I saw
 orExpr: andExpr (OR^ andExpr)*;
 andExpr: primaryExpr (AND^ primaryExpr)*;
-primaryExpr: parameterExpr | inExpr | compExpr | expression;
+primaryExpr: parameterExpr | inExpr | compExpr | LPAREN! expression RPAREN!;
 
 //An attribute now is either a simpleAttribute OR a aliasdAttribute
 parameterExpr:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter;
