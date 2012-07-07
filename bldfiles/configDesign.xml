@@ -29,10 +29,20 @@
 	<depends>NoSqlApi</depends>
 </package>
 
-<!-- Need to clean up below this line -->
-<package name="cache" package="com.alvazan.orm.layer2.nosql.cache" needdepends="false"/>
-<package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra" needdepends="false"/>
-<package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop" needdepends="false"/>
+<package name="cache" package="com.alvazan.orm.layer2.nosql.cache">
+	<depends>NoSqlApi</depends>
+	<depends>RawNoSqlSpi</depends>
+	<depends>RawIndexSpi</depends>
+</package>
+
+<package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
+	<depends>RawNoSqlSpi</depends>
+</package>
+
+<package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
+	<depends>RawNoSqlSpi</depends>
+</package>
+
 <package name="inMemDb" package="com.alvazan.orm.layer3.spi.db.inmemory" needdepends="false"/>
 <package name="solr" package="com.alvazan.orm.layer3.spi.index.solr" needdepends="false"/>
 <package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory" needdepends="false"/>
