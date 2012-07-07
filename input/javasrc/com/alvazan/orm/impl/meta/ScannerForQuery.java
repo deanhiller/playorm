@@ -83,7 +83,7 @@ public class ScannerForQuery {
 			String query) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery<T> visitor1 = metaQueryFactory.get();
-		SpiMetaQuery<T> visitor2 = indexes.createQueryFactory();
+		SpiMetaQuery visitor2 = indexes.createQueryFactory();
 		
 		visitor1.initialize(metaClass, query, visitor2);
 
@@ -116,7 +116,7 @@ public class ScannerForQuery {
 	
 	@SuppressWarnings("unchecked")
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiMetaQuery<T> spiMetaQuery, InfoForWiring wiring) {
+			SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.FROM_CLAUSE:
@@ -151,7 +151,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseSelectClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList != null && childrenList.size() > 0) {
@@ -170,7 +170,7 @@ public class ScannerForQuery {
 	// the alias part is silly due to not organize right in .g file
 	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseResult(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -207,9 +207,9 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	private <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -218,36 +218,7 @@ public class ScannerForQuery {
 			int type = child.getType();
 			switch (type) {
 			case NoSqlLexer.TABLE_NAME:
-				// What should we add to metaQuery here
-				// AND later when we do joins, we need to tell the factory
-				// here as well
-				String tableName = child.getText();
-				List<MetaClass> list = metaInfo.findBySimpleName(tableName);
-				
-				MetaQueryClassInfo metaClass = null;
-				
-				if(tableName.equals("TABLE")) {
-					metaClass = metaQuery.getMetaClass();
-				} else if(tableName.contains(".")) {
-					Class<?> clazz = findClass(tableName);
-					metaClass = metaInfo.getMetaClass(clazz);
-				} else if(list != null) {
-					if(list.size() > 1) 
-						throw new IllegalArgumentException("There are too many classes named="+tableName+"  Use fully qualified name instead.  query="+metaQuery);
-					metaClass = list.get(0);
-				} else
-					throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
-					
-				if(child.getChildren().size() == 0) {
-					if(wiring.getNoAliasTable() != null)
-						throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");
-					wiring.setNoAliasTable(metaClass);
-				} else {
-					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
-					String alias = aliasNode.getText();
-					wiring.put(alias, metaClass);
-				}
-
+				loadTableIntoWiringInfo(metaQuery, wiring, child);
 				break;
 			default:
 				break;
@@ -255,6 +226,41 @@ public class ScannerForQuery {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
+	private <T> void loadTableIntoWiringInfo(MetaQuery<T> metaQuery,
+			InfoForWiring wiring, CommonTree tableNode) {
+		// What should we add to metaQuery here
+		// AND later when we do joins, we need to tell the factory
+		// here as well
+		String tableName = tableNode.getText();
+		List<MetaClass> list = metaInfo.findBySimpleName(tableName);
+		
+		MetaQueryClassInfo metaClass = null;
+		
+		if(tableName.equals("TABLE")) {
+			metaClass = metaQuery.getMetaClass();
+		} else if(tableName.contains(".")) {
+			Class<?> clazz = findClass(tableName);
+			metaClass = metaInfo.getMetaClass(clazz);
+		} else if(list != null) {
+			if(list.size() > 1) 
+				throw new IllegalArgumentException("There are too many classes named="+tableName+"  Use fully qualified name instead.  query="+metaQuery);
+			metaClass = list.get(0);
+		} else
+			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
+			
+		if(tableNode.getChildren().size() == 0) {
+			if(wiring.getNoAliasTable() != null)
+				throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");
+			wiring.setNoAliasTable(metaClass);
+		} else {
+			CommonTree aliasNode = (CommonTree) tableNode.getChildren().get(0);
+			String alias = aliasNode.getText();
+			wiring.put(alias, metaClass);
+		}
+	}
+
+	@SuppressWarnings("rawtypes")
 	private Class findClass(String name) {
 		try {
 			return Class.forName(name);
@@ -264,9 +270,7 @@ public class ScannerForQuery {
 	}
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
-		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
-
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 		int type = expression.getType();
 		log.info("where type:" + expression.getType());
 		switch (type) {
@@ -284,28 +288,50 @@ public class ScannerForQuery {
 		case NoSqlLexer.LT:
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
-			int start = 0;
-			String aliasEntity;
-			if (expression.getChild(0).getType() == NoSqlLexer.ALIAS) {
-				aliasEntity = expression.getChild(0).getText();
-				start = 1;
+			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
+			CommonTree rightSide = (CommonTree) expression.getChild(0);
+			CommonTree leftSide = (CommonTree) expression.getChild(1);
+			
+			//I think we only care about mapping parameters to the attribute meta data here....????
+			if(rightSide.getType() == NoSqlLexer.ATTR_NAME && leftSide.getType() == NoSqlLexer.PARAMETER_NAME) {
+				process(metaQuery, rightSide, leftSide, wiring);
+			} else if(rightSide.getType() == NoSqlLexer.PARAMETER_NAME && leftSide.getType() == NoSqlLexer.ATTR_NAME) {
+				process(metaQuery, leftSide, rightSide, wiring);
 			}
-			String attributeName = expression.getChild(start).getText();
-
-			MetaQueryFieldInfo attributeField = metaClass.getMetaField(attributeName);
-			if (attributeField == null && !metaClass.getIdFieldName().equals(attributeName)) {
-				throw new IllegalArgumentException("There is no "
-						+ attributeName + " exists for class " + metaClass);
-			}
-
-			String parameter = expression.getChild(start + 1).getText();
-
-			metaQuery.getParameterFieldMap().put(parameter, attributeField);
 			
 			break;
 		default:
 			break;
 		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static void process(MetaQuery metaQuery, CommonTree attributeNode, CommonTree parameterNode, InfoForWiring wiring) {
+		MetaQueryClassInfo metaClass;
+		String attributeName = attributeNode.getText();
+		if (attributeNode.getChildCount() > 0) {
+			String aliasEntity = attributeNode.getChild(0).getText();
+			metaClass = wiring.getInfoFromAlias(aliasEntity);
+			String fullName = aliasEntity+"."+attributeName;
+			if(metaClass == null)
+				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
+						+fullName+" has an alias that does not exist in from clause");
+		} else {
+			metaClass = wiring.getNoAliasTable();
+			if(metaClass == null)
+				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
+						+attributeName+" has no alias and from clause only has tables with alias");
+		}
+		
+		//At this point, we have looked up the metaClass associated with the alias
+		MetaQueryFieldInfo attributeField = metaClass.getMetaField(attributeName);
+		if (attributeField == null && !metaClass.getIdFieldName().equals(attributeName)) {
+			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
+		}
+
+		String parameter = parameterNode.getText();
+
+		metaQuery.getParameterFieldMap().put(parameter, attributeField);		
 	}
 
 }

@@ -3,11 +3,6 @@ package com.alvazan.orm.impl.meta;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-
-import com.alvazan.orm.api.Query;
-import com.alvazan.orm.layer1.base.QueryAdapter;
 import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
 import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
 
@@ -15,10 +10,7 @@ public class MetaQuery<T> {
 
 	private Map<String,MetaQueryFieldInfo> parameterFieldMap = new HashMap<String, MetaQueryFieldInfo>();
 	
-	@Inject
-	private Provider<QueryAdapter> adapterFactory;
-	
-	private SpiMetaQuery<T> spiMetaQuery;
+	private SpiMetaQuery spiMetaQuery;
 	private MetaQueryClassInfo metaClass;
 	private String query;
 	
@@ -52,14 +44,8 @@ public class MetaQuery<T> {
 		return parameterFieldMap;
 	}
 
-	@SuppressWarnings("unchecked")
-	public Query<T> createAdapter(String indexName) {
-		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
-		//runs in a different thread potentially while MetaQuery is one used by all threads
-		QueryAdapter<T> adapter = adapterFactory.get();
-		SpiQueryAdapter<T> indexQuery = spiMetaQuery.createQueryInstanceFromQuery(indexName);
-		adapter.setup(this, indexQuery);
-		return adapter;
+	public SpiQueryAdapter createSpiMetaQuery(String indexName) {
+		return spiMetaQuery.createQueryInstanceFromQuery(indexName);
 	}
 
 }

@@ -30,4 +30,12 @@ public class MockMeta implements MetaQueryClassInfo {
 		return "id";
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public Class getMetaClass() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
 }

@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
 import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
 
-public class QueryFactory<T> implements SpiMetaQuery<T> {
+public class QueryFactory implements SpiMetaQuery {
 
 	private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
 	@Inject
@@ -27,9 +27,9 @@ public class QueryFactory<T> implements SpiMetaQuery<T> {
 	}
 	
 	@Override
-	public SpiQueryAdapter<T> createQueryInstanceFromQuery(String indexName) {
+	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName) {
 		log.info("creating query for index="+indexName);
-		SpiIndexQueryImpl<T> indexQuery = factory.get();
+		SpiIndexQueryImpl indexQuery = factory.get();
 		IndexItems index = indice.find(indexName);
 		indexQuery.setup(index, piecesOfQuery, paramNameToIndexList);
 		return indexQuery;

@@ -1,7 +1,9 @@
 package com.alvazan.orm.layer1.base;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.alvazan.orm.api.KeyValue;
 import com.alvazan.orm.api.Query;
 import com.alvazan.orm.api.TooManyResultException;
 import com.alvazan.orm.api.TypeMismatchException;
@@ -12,11 +14,13 @@ import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
 public class QueryAdapter<T> implements Query<T> {
 
 	private MetaQuery<T> meta;
-	private SpiQueryAdapter<T> indexQuery;
+	private SpiQueryAdapter indexQuery;
+	private BaseEntityManagerImpl session;
 
-	public void setup(MetaQuery<T> meta, SpiQueryAdapter<T> indexQuery) {
+	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
 		this.meta = meta;
 		this.indexQuery = indexQuery;
+		this.session = entityMgr;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -53,8 +57,19 @@ public class QueryAdapter<T> implements Query<T> {
 		return results.get(0);
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public List<T> getResultList() {
-		return indexQuery.getResultList();
+		List primaryKeys = indexQuery.getResultList();
+		
+		//HERE we need to query the nosql database with the primary keys from the index
+		List<KeyValue<T>> all = session.findAll(meta.getMetaClass().getMetaClass(), primaryKeys);
+
+		List<T> entities = new ArrayList<T>();
+		for(KeyValue<T> keyVal : all) {
+			entities.add(keyVal.getValue());
+		}
+		
+		return entities;
 	}
 }

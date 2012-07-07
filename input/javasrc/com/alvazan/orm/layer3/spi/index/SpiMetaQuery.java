@@ -3,7 +3,7 @@ package com.alvazan.orm.layer3.spi.index;
 import org.antlr.runtime.tree.CommonTree;
 
 
-public interface SpiMetaQuery<T> {
+public interface SpiMetaQuery {
 	
 	/**
 	 * We will call this method EVERY time we want to run a query so that the SpiIndexQuery can have
@@ -17,7 +17,7 @@ public interface SpiMetaQuery<T> {
 	 * @param indexName
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
-	public SpiQueryAdapter<T> createQueryInstanceFromQuery(String indexName);
+	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName);
 
 	/**
 	 * The root of this tree is AND, OR, EQ, NE, GT, etc. etc.  You should form your query by walking

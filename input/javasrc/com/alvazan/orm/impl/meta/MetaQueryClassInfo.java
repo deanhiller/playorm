@@ -10,4 +10,7 @@ public interface MetaQueryClassInfo {
 
 	String getIdFieldName();
 
+	@SuppressWarnings("rawtypes")
+	Class getMetaClass();
+
 }

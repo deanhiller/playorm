@@ -85,9 +85,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public <T> Index<T> getIndex(Class<T> forEntity, String indexName) {
 		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl indexImpl = indexProvider.get();
-		indexImpl.setMeta(metaClass);
-		indexImpl.setIndexName(indexName);
-		indexImpl.setSession(session);
+		indexImpl.setup(metaClass, indexName, this, session);
 		return indexImpl;
 	}
 

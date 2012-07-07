@@ -35,6 +35,7 @@ public class TestQueryParser2 {
 		return tree;
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void walkStatement(CommonTree tree, Object metaVisitor, Object spiMetaVisitor, int level) {
 		List<CommonTree> children = tree.getChildren();
 		if(children == null)

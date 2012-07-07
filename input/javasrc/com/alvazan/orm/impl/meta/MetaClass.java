@@ -109,7 +109,7 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 		this.metaClass = clazz;
 	}
 
-	Class<T> getMetaClass() {
+	public Class<T> getMetaClass() {
 		return metaClass;
 	}
 	

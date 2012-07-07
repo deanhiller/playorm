@@ -2,10 +2,11 @@ package com.alvazan.orm.layer3.spi.index;
 
 import java.util.List;
 
-public interface SpiQueryAdapter<T> {
+public interface SpiQueryAdapter {
 
 	public void setParameter(String parameterName, String value);
 
-	public List<T> getResultList();
+	@SuppressWarnings("rawtypes")
+	public List getResultList();
 	
 }
