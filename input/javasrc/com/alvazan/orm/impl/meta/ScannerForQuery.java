@@ -119,17 +119,17 @@ public class ScannerForQuery {
 			SpiMetaQuery<T> spiMetaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
-		case NoSqlLexer.SELECT_CLAUSE:
-			parseSelectClause(tree, metaQuery, spiMetaQuery);
-			break;
 		case NoSqlLexer.FROM_CLAUSE:
 			parseFromClause(tree, metaQuery, spiMetaQuery, wiring);
+			break;
+		case NoSqlLexer.SELECT_CLAUSE:
+			parseSelectClause(tree, metaQuery, spiMetaQuery, wiring);
 			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
-			parseExpression(expression, metaQuery, spiMetaQuery);
+			parseExpression(expression, metaQuery, spiMetaQuery, wiring);
 			//NOTE: We were going to call methods on the factory visitor during the tree walk of the
 			//expression, but that makes for a difficult spi to implement for anyone so instead we will
 			//just give the spi implementer the full expression after the WHERE clause in AST tree form
@@ -151,14 +151,14 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseSelectClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
 
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList != null && childrenList.size() > 0) {
 			for (CommonTree child : childrenList) {
 				switch (child.getType()) {
 				case NoSqlLexer.RESULT:
-					parseResult(child, metaQuery, factory);
+					parseResult(child, metaQuery, factory, wiring);
 					break;
 				default:
 					break;
@@ -170,8 +170,7 @@ public class ScannerForQuery {
 	// the alias part is silly due to not organize right in .g file
 	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseResult(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
-		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -179,17 +178,25 @@ public class ScannerForQuery {
 		for (CommonTree child : childrenList) {
 			switch (child.getType()) {
 			case NoSqlLexer.STAR:
-				metaQuery.getProjectionFields().addAll(metaClass.getMetaFields());
+				wiring.setSelectStarDefined(true);
 				break;
 			case NoSqlLexer.ATTR_NAME:
 				String attributeName = child.getText();
-				MetaQueryFieldInfo projectionField = metaClass.getMetaField(attributeName);
-				if (projectionField == null)
-					throw new IllegalArgumentException("There is no "
-							+ attributeName + " exists for class "
-							+ metaClass);
-				metaQuery.getProjectionFields().add(projectionField);
-
+				String alias = null;
+				if(child.getChildren().size() > 0) { //we have an alias too!!!
+					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
+					alias = aliasNode.getText();
+					
+					String fullName = alias+"."+attributeName;
+					if(wiring.getInfoFromAlias(alias) == null)
+						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+fullName+" with an alias that was not defined in the from section");					
+				} else {
+					//later made need to add attributeName information to metaQuery here
+					
+					if(wiring.getNoAliasTable() == null)
+						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+attributeName+" with no alias but there is no table with no alias in from section");					
+				}
+				
 				break;
 			case NoSqlLexer.ALIAS:
 				break;
@@ -198,7 +205,6 @@ public class ScannerForQuery {
 				break;
 			}
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -232,7 +238,15 @@ public class ScannerForQuery {
 				} else
 					throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 					
-				
+				if(child.getChildren().size() == 0) {
+					if(wiring.getNoAliasTable() != null)
+						throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");
+					wiring.setNoAliasTable(metaClass);
+				} else {
+					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
+					String alias = aliasNode.getText();
+					wiring.put(alias, metaClass);
+				}
 
 				break;
 			default:
@@ -250,7 +264,7 @@ public class ScannerForQuery {
 	}
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
 		MetaQueryClassInfo metaClass = metaQuery.getMetaClass();
 
 		int type = expression.getType();
@@ -262,8 +276,7 @@ public class ScannerForQuery {
 			// visitor pattern
 			List<CommonTree> children = expression.getChildren();
 			for(CommonTree child : children)
-				parseExpression(child, metaQuery, factory);
-			
+				parseExpression(child, metaQuery, factory, wiring);
 			break;
 		case NoSqlLexer.EQ:
 		case NoSqlLexer.NE:

@@ -1,8 +1,6 @@
 package com.alvazan.orm.impl.meta;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -15,8 +13,6 @@ import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
 
 public class MetaQuery<T> {
 
-	private List<MetaQueryFieldInfo> projectionFields = new ArrayList<MetaQueryFieldInfo>();
-	
 	private Map<String,MetaQueryFieldInfo> parameterFieldMap = new HashMap<String, MetaQueryFieldInfo>();
 	
 	@Inject
@@ -50,10 +46,6 @@ public class MetaQuery<T> {
 
 	public MetaQueryFieldInfo getMetaFieldByParameter(String parameter){
 		return getParameterFieldMap().get(parameter);
-	}
-
-	List<MetaQueryFieldInfo> getProjectionFields() {
-		return projectionFields;
 	}
 
 	Map<String,MetaQueryFieldInfo> getParameterFieldMap() {
