@@ -5,7 +5,7 @@ import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.alvazan.orm.api.Bootstrap;
+import com.alvazan.orm.api.AbstractBootstrap;
 import com.alvazan.orm.api.DbTypeEnum;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
@@ -19,7 +19,7 @@ public class TestOrmBasic {
 
 	@Before
 	public void setup() {
-		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY);
+		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
 		factory.setup(null, "com.alvazan.test.db");
 	}
 	@Test

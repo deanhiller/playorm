@@ -13,15 +13,27 @@
 
 <!-- should erase the following... -->
 <package name="default" package="default package" subpackages="include" needdepends="false"/>
+<package name="slf4j" package="org.slf4j" needdeclarations="false"/>
 
+<package name="antlr" package="org.antlr.runtime.tree"/>
 
-<!-- should use something like this instead on a per project basis -->
-<!--package name="api"     package="biz.xsoftware.api" subpackages="include"/>
-<package name="testapi" package="biz.xsoftware.test" subpackages="include" depends="api"/>
-<package name="impl"    package="biz.xsoftware.impl" subpackages="include" depends="api"/-->
+<package name="RawIndexSpi" package="com.alvazan.orm.layer3.spi.index">
+	<depends>antlr</depends>
+</package> 
+<package name="RawNoSqlSpi" package="com.alvazan.orm.layer3.spi.db"/>
+<package name="NoSqlApi" package="com.alvazan.orm.layer2.nosql">
+	<depends>RawNoSqlSpi</depends>
+	<depends>RawIndexSpi</depends>
+</package>
+<package name="api" package="com.alvazan.orm.api" subpackages="include">
+	<depends>NoSqlApi</depends>
+</package>
 
-<!-- Use the following to depend on junit and mocklib -->
-<!--package name="junit" package="junit" subpackages="include" needdeclarations="false"/>
-<package name="mocklib" package="biz.xsoftware.mock" subpackages="include" needdeclarations="false"/-->
-
+<!-- Need to clean up below this line -->
+<package name="cache" package="com.alvazan.orm.layer2.nosql.cache" needdepends="false"/>
+<package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra" needdepends="false"/>
+<package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop" needdepends="false"/>
+<package name="inMemDb" package="com.alvazan.orm.layer3.spi.db.inmemory" needdepends="false"/>
+<package name="solr" package="com.alvazan.orm.layer3.spi.index.solr" needdepends="false"/>
+<package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory" needdepends="false"/>
 </design>

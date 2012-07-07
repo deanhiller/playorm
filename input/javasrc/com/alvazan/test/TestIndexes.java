@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.Bootstrap;
+import com.alvazan.orm.api.AbstractBootstrap;
 import com.alvazan.orm.api.DbTypeEnum;
 import com.alvazan.orm.api.Index;
 import com.alvazan.orm.api.NoSqlEntityManager;
@@ -25,7 +25,7 @@ public class TestIndexes {
 	private static final Logger log = LoggerFactory.getLogger(TestIndexes.class);
 	
 	public NoSqlEntityManagerFactory setup() {
-		NoSqlEntityManagerFactory factory = Bootstrap.create(DbTypeEnum.IN_MEMORY);
+		NoSqlEntityManagerFactory factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
 		factory.setup(null, "com.alvazan.test.db");
 		return factory;
 	}
