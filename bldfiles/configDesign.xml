@@ -11,15 +11,15 @@
 	 on ant-contrib yet(wanted to finish a few more things), but this is stable and works.
 	 I just want to add one more feature-->
 
-<!-- should erase the following... -->
-<package name="default" package="default package" subpackages="include" needdepends="false"/>
 <!-- external packages that are global and everyone is allowed to depend on -->
 <package name="slf4j" package="org.slf4j" needdeclarations="false"/>
 <package name="inject" package="javax.inject" needdeclarations="false"/>
 
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="lucene" package="org.apache.lucene" subpackages="include"/>
-<package name="antlr" package="org.antlr.runtime.tree"/>
+<package name="antlr" package="org.antlr.runtime" subpackages="include"/>
+<package name="annotationParser" package="com.impetus.annovention" subpackages="include"/>
+<package name="javassist" package="javassist.util.proxy"/>
 
 <package name="RawIndexSpi" package="com.alvazan.orm.layer3.spi.index">
 	<depends>antlr</depends>
@@ -31,6 +31,32 @@
 </package>
 <package name="api" package="com.alvazan.orm.api" subpackages="include">
 	<depends>NoSqlApi</depends>
+</package>
+
+<package name="ourParser" package="com.alvazan.orm.parser.antlr">
+	<depends>antlr</depends>
+</package>
+
+<!-- bindings can depend on everything to wire stuff up so needdepends is false -->
+<package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
+
+<package name="meta" package="com.alvazan.orm.impl.meta">
+	<depends>api</depends>
+	<depends>antlr</depends>
+	<depends>ourParser</depends>
+	<depends>javassist</depends>
+	<depends>NoSqlApi</depends>
+	<depends>RawNoSqlSpi</depends>
+	<depends>RawIndexSpi</depends>
+</package>
+
+<package name="base" package="com.alvazan.orm.layer1.base">
+	<depends>api</depends> <!-- implements -->
+	<depends>NoSqlApi</depends> <!-- uses -->
+	<depends>RawIndexSpi</depends> <!-- uses -->
+	<depends>RawNoSqlSpi</depends> <!-- uses -->
+	<depends>meta</depends>
+	<depends>annotationParser</depends>
 </package>
 
 <package name="cache" package="com.alvazan.orm.layer2.nosql.cache">
@@ -59,5 +85,7 @@
 	<depends>lucene</depends>
 	<depends>antlr</depends>
 </package>
+
+<package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>
 
 </design>

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,6 @@ import com.alvazan.orm.impl.meta.MetaClass;
 import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.ScannerForField;
 import com.alvazan.orm.impl.meta.ScannerForQuery;
-import com.google.inject.Provider;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
 

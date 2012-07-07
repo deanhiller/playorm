@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.anno.Column;
@@ -15,7 +16,6 @@ import com.alvazan.orm.api.anno.NoConversion;
 import com.alvazan.orm.api.anno.NoSqlEntity;
 import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.spi.KeyGenerator;
-import com.google.inject.Provider;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {

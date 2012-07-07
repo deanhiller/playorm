@@ -7,15 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
-
-import com.google.inject.Provider;
 
 @SuppressWarnings("rawtypes")
 @Singleton
 public class MetaInfo {
 	@Inject
-	private Provider<MetaClass<?>> classMetaProvider;
+	private Provider<MetaClass> classMetaProvider;
 
 	private Map<Class, MetaClass> classToClassMeta = new HashMap<Class, MetaClass>();
 	
