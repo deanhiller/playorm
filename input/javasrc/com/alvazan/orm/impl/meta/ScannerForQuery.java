@@ -124,7 +124,7 @@ public class ScannerForQuery {
 				switch (child.getType()) {
 				case NoSqlLexer.RESULT:
 					parseResult(child, metaQuery, factory);
-
+					break;
 				default:
 					break;
 				}
@@ -144,7 +144,7 @@ public class ScannerForQuery {
 		for (CommonTree child : childrenList) {
 			switch (child.getType()) {
 			case NoSqlLexer.STAR:
-				metaQuery.projectionFields.addAll(metaClass.getMetaFields());
+				metaQuery.getProjectionFields().addAll(metaClass.getMetaFields());
 				break;
 			case NoSqlLexer.ATTR_NAME:
 				String attributeName = child.getText();
@@ -153,7 +153,7 @@ public class ScannerForQuery {
 					throw new IllegalArgumentException("There is no "
 							+ attributeName + " exists for class "
 							+ metaClass);
-				metaQuery.projectionFields.add(projectionField);
+				metaQuery.getProjectionFields().add(projectionField);
 
 				break;
 			case NoSqlLexer.ALIAS:
@@ -228,7 +228,7 @@ public class ScannerForQuery {
 
 				String parameter = child.getChild(start + 1).getText();
 
-				metaQuery.parameterFieldMap.put(parameter, attributeField);
+				metaQuery.getParameterFieldMap().put(parameter, attributeField);
 				
 				break;
 			default:

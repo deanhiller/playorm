@@ -10,9 +10,9 @@ import com.alvazan.orm.layer3.spi.index.SpiIndexQueryFactory;
 
 public class MetaQuery<T> {
 
-	List<MetaQueryFieldInfo> projectionFields = new ArrayList<MetaQueryFieldInfo>();
+	private List<MetaQueryFieldInfo> projectionFields = new ArrayList<MetaQueryFieldInfo>();
 	
-	Map<String,MetaQueryFieldInfo> parameterFieldMap = new HashMap<String, MetaQueryFieldInfo>();
+	private Map<String,MetaQueryFieldInfo> parameterFieldMap = new HashMap<String, MetaQueryFieldInfo>();
 	
 	private SpiIndexQueryFactory<T> factory;
 	private MetaQueryClassInfo metaClass;
@@ -35,11 +35,19 @@ public class MetaQuery<T> {
 	}
 
 	public MetaQueryFieldInfo getMetaFieldByParameter(String parameter){
-		return parameterFieldMap.get(parameter);
+		return getParameterFieldMap().get(parameter);
 	}
 
 	public SpiIndexQuery<T> createSpiAdapter(String indexName) {
 		return factory.createQuery(indexName);
 	}
-	
+
+	List<MetaQueryFieldInfo> getProjectionFields() {
+		return projectionFields;
+	}
+
+	Map<String,MetaQueryFieldInfo> getParameterFieldMap() {
+		return parameterFieldMap;
+	}
+
 }
