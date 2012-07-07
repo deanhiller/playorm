@@ -2,6 +2,7 @@ package com.alvazan.orm.layer1.base;
 
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.Converter;
 import com.alvazan.orm.api.NoSqlEntityManager;
 import com.alvazan.orm.api.NoSqlEntityManagerFactory;
+import com.alvazan.orm.impl.meta.MetaClass;
+import com.alvazan.orm.impl.meta.MetaInfo;
 import com.alvazan.orm.impl.meta.ScannerForField;
+import com.alvazan.orm.impl.meta.ScannerForQuery;
 import com.google.inject.Provider;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
@@ -29,8 +33,12 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@Inject
 	private ScannerForField inspectorField;
 	@Inject
+	private ScannerForQuery inspectorQuery;
+	@Inject
 	private ClasspathDiscoverer discoverer; 
 	private boolean isScanned;
+	@Inject
+	private MetaInfo metaInfo;
 	
 	@Override
 	public NoSqlEntityManager createEntityManager() {
@@ -67,6 +75,11 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	for(URL res : resources) {
         		log.trace("jar="+res);
         	}
+        }
+        
+        Collection<MetaClass> allEntities = metaInfo.getAllEntities();
+        for(MetaClass meta : allEntities) {
+        	inspectorQuery.setupQueryStuff(meta);
         }
         
         isScanned = true;

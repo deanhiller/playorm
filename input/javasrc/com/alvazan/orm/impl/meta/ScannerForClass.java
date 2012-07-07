@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javassist.util.proxy.MethodFilter;
@@ -20,8 +19,6 @@ import com.alvazan.orm.api.anno.Embeddable;
 import com.alvazan.orm.api.anno.Id;
 import com.alvazan.orm.api.anno.ManyToOne;
 import com.alvazan.orm.api.anno.NoSqlEntity;
-import com.alvazan.orm.api.anno.NoSqlQueries;
-import com.alvazan.orm.api.anno.NoSqlQuery;
 import com.alvazan.orm.api.anno.OneToMany;
 import com.alvazan.orm.api.anno.OneToOne;
 import com.alvazan.orm.api.anno.Transient;
@@ -32,8 +29,6 @@ public class ScannerForClass {
 	
 	@Inject
 	private ScannerForField inspectorField;
-	@Inject
-	private ScannerForQuery inspectorQuery;
 	@Inject
 	private MetaInfo metaInfo;
 	
@@ -49,27 +44,6 @@ public class ScannerForClass {
 		classMeta.setMetaClass(clazz);
 		createAndSetProxy(classMeta);
 		scanClass(classMeta);
-		
-		setupQueryStuff(clazz, classMeta);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	private void setupQueryStuff(Class<?> clazz, MetaClass classMeta) {
-		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
-		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);
-		List<NoSqlQuery> theQueries = new ArrayList<NoSqlQuery>();
-		if(annotation2 != null) {
-			NoSqlQuery[] queries = annotation2.value();
-			List<NoSqlQuery> asList = Arrays.asList(queries);
-			theQueries.addAll(asList);
-		}
-		if(annotation != null)
-			theQueries.add(annotation);
-
-		for(NoSqlQuery query : theQueries) {
-			MetaQuery metaQuery = inspectorQuery.createQueryAndAdd(classMeta, query);
-			classMeta.addQuery(query.name(), metaQuery);
-		}
 	}
 
 	@SuppressWarnings("unchecked")

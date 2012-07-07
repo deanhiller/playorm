@@ -26,6 +26,12 @@ public class MetaQuery<T> {
 	private MetaQueryClassInfo metaClass;
 	private String query;
 	
+	
+	@Override
+	public String toString() {
+		return "[Query on entity="+metaClass+" query="+query+"]";
+	}
+
 	public void initialize(MetaQueryClassInfo metaClass2, String query, SpiMetaQuery factory) {
 		this.metaClass = metaClass2;
 		this.query = query;

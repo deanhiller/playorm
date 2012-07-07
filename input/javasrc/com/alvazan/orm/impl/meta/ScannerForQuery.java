@@ -1,5 +1,7 @@
 package com.alvazan.orm.impl.meta;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -12,6 +14,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.anno.NoSqlQueries;
 import com.alvazan.orm.api.anno.NoSqlQuery;
 import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
@@ -24,16 +27,48 @@ public class ScannerForQuery {
 			.getLogger(ScannerForQuery.class);
 	@Inject
 	private IndexReaderWriter indexes;
-
+	@Inject
+	private MetaInfo metaInfo;
+	
 	@SuppressWarnings("rawtypes")
 	@Inject
 	private Provider<MetaQuery> metaQueryFactory;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public MetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
+	public void setupQueryStuff(MetaClass classMeta) {
+		Class<?> clazz = classMeta.getMetaClass();
+		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
+		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);
+		List<NoSqlQuery> theQueries = new ArrayList<NoSqlQuery>();
+		if(annotation2 != null) {
+			NoSqlQuery[] queries = annotation2.value();
+			List<NoSqlQuery> asList = Arrays.asList(queries);
+			theQueries.addAll(asList);
+		}
+		if(annotation != null)
+			theQueries.add(annotation);
+
+		log.info("Parsing queries for entity="+classMeta.getMetaClass());
+		for(NoSqlQuery query : theQueries) {
+			log.info("parsing query="+query.name()+" query="+query.query());
+			MetaQuery metaQuery = createQueryAndAdd(classMeta, query);
+			classMeta.addQuery(query.name(), metaQuery);
+		}
+	}
+	
+	@SuppressWarnings({ "rawtypes" })
+	private MetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
 		try {
-			// 	This is a bit messed up and need to clean up one more step
-			MetaQuery metaQuery = setup(classMeta, query.query());
+			// parse and setup this query once here to be used by ALL of the
+			// SpiIndexQuery objects.
+			// NOTE: This is meta data to be re-used by all threads and all
+			// instances of query objects only!!!!
+
+			// We must walk the tree allowing 2 visitors to see it.
+			// The first visitor would be ourselves maybe? to get all parameter info
+			// The second visitor is the SPI Index so it can create it's "prototype"
+			// query (prototype pattern)
+			MetaQuery metaQuery = newsetupByVisitingTree(classMeta, query.query());
 
 			return metaQuery;
 		} catch(RuntimeException e) {
@@ -43,21 +78,8 @@ public class ScannerForQuery {
 		}
 	}
 
-	public <T> MetaQuery<T> setup(MetaQueryClassInfo metaClass, String query) {
-		// parse and setup this query once here to be used by ALL of the
-		// SpiIndexQuery objects.
-		// NOTE: This is meta data to be re-used by all threads and all
-		// instances of query objects only!!!!
-
-		// We must walk the tree allowing 2 visitors to see it.
-		// The first visitor would be ourselves maybe? to get all parameter info
-		// The second visitor is the SPI Index so it can create it's "prototype"
-		// query (prototype pattern)
-		return newsetupByVisitingTree(metaClass, query);
-	}
-
 	@SuppressWarnings("unchecked")
-	private <T> MetaQuery<T> newsetupByVisitingTree(MetaQueryClassInfo metaClass,
+	public <T> MetaQuery<T> newsetupByVisitingTree(MetaQueryClassInfo metaClass,
 			String query) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery<T> visitor1 = metaQueryFactory.get();
@@ -65,6 +87,8 @@ public class ScannerForQuery {
 		
 		visitor1.initialize(metaClass, query, visitor2);
 
+		InfoForWiring wiring = new InfoForWiring();
+		
 		// VISITOR PATTERN(if you don't know that pattern, google it!!!)
 		// Normally, the visitor is injected INTO theTree variable itself but I
 		// am too lazy to
@@ -72,7 +96,7 @@ public class ScannerForQuery {
 		// not be as flexible as this
 		// anyways since more people can make changes without the grammar
 		// knowledge this way
-		walkTheTree(theTree, visitor1, visitor2);
+		walkTheTree(theTree, visitor1, visitor2, wiring);
 
 		return visitor1;
 	}
@@ -90,15 +114,16 @@ public class ScannerForQuery {
         }
     }
 	
+	@SuppressWarnings("unchecked")
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiMetaQuery<T> spiMetaQuery) {
+			SpiMetaQuery<T> spiMetaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.SELECT_CLAUSE:
 			parseSelectClause(tree, metaQuery, spiMetaQuery);
 			break;
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, spiMetaQuery);
+			parseFromClause(tree, metaQuery, spiMetaQuery, wiring);
 			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
@@ -116,7 +141,7 @@ public class ScannerForQuery {
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, metaQuery, spiMetaQuery);
+				walkTheTree(child, metaQuery, spiMetaQuery, wiring);
 			}
 			break;
 		default:
@@ -177,8 +202,8 @@ public class ScannerForQuery {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
+	private <T> void parseFromClause(CommonTree tree,
+			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -190,6 +215,24 @@ public class ScannerForQuery {
 				// What should we add to metaQuery here
 				// AND later when we do joins, we need to tell the factory
 				// here as well
+				String tableName = child.getText();
+				List<MetaClass> list = metaInfo.findBySimpleName(tableName);
+				
+				MetaQueryClassInfo metaClass = null;
+				
+				if(tableName.equals("TABLE")) {
+					metaClass = metaQuery.getMetaClass();
+				} else if(tableName.contains(".")) {
+					Class<?> clazz = findClass(tableName);
+					metaClass = metaInfo.getMetaClass(clazz);
+				} else if(list != null) {
+					if(list.size() > 1) 
+						throw new IllegalArgumentException("There are too many classes named="+tableName+"  Use fully qualified name instead.  query="+metaQuery);
+					metaClass = list.get(0);
+				} else
+					throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
+					
+				
 
 				break;
 			default:
@@ -198,6 +241,13 @@ public class ScannerForQuery {
 		}
 	}
 
+	private Class findClass(String name) {
+		try {
+			return Class.forName(name);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e.getMessage(), e);
+		}
+	}
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
 			MetaQuery<T> metaQuery, SpiMetaQuery<T> factory) {
