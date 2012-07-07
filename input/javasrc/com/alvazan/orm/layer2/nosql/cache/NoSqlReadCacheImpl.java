@@ -6,11 +6,11 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.db.Column;
-import com.alvazan.orm.layer3.spi.db.NoSqlRawSession;
-import com.alvazan.orm.layer3.spi.db.Row;
-import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 

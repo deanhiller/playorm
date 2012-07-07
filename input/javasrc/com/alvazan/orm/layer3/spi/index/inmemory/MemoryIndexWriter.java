@@ -20,13 +20,13 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
-import com.alvazan.orm.layer3.spi.index.IndexAdd;
-import com.alvazan.orm.layer3.spi.index.IndexAddFailedException;
-import com.alvazan.orm.layer3.spi.index.IndexDeleteFailedException;
-import com.alvazan.orm.layer3.spi.index.IndexErrorInfo;
-import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
-import com.alvazan.orm.layer3.spi.index.IndexRemove;
-import com.alvazan.orm.layer3.spi.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi.index.IndexAdd;
+import com.alvazan.orm.api.spi.index.IndexAddFailedException;
+import com.alvazan.orm.api.spi.index.IndexDeleteFailedException;
+import com.alvazan.orm.api.spi.index.IndexErrorInfo;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.index.IndexRemove;
+import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
 

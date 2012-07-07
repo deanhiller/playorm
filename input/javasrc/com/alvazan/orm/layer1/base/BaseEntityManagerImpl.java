@@ -7,15 +7,15 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.Index;
-import com.alvazan.orm.api.KeyValue;
-import com.alvazan.orm.api.NoSqlEntityManager;
-import com.alvazan.orm.impl.meta.MetaClass;
-import com.alvazan.orm.impl.meta.MetaIdField;
-import com.alvazan.orm.impl.meta.MetaInfo;
-import com.alvazan.orm.impl.meta.RowToPersist;
-import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.db.Row;
+import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.KeyValue;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaIdField;
+import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.data.RowToPersist;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 

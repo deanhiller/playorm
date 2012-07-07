@@ -14,7 +14,7 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
 

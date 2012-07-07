@@ -1,6 +1,6 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.anno.Indexed;
+import com.alvazan.orm.api.base.anno.Indexed;
 
 public class AccountSuper {
 

@@ -21,17 +21,19 @@
 <package name="annotationParser" package="com.impetus.annovention" subpackages="include"/>
 <package name="javassist" package="javassist.util.proxy"/>
 
-<package name="RawIndexSpi" package="com.alvazan.orm.layer3.spi.index">
+<package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index">
 	<depends>antlr</depends>
 </package> 
-<package name="RawNoSqlSpi" package="com.alvazan.orm.layer3.spi.db"/>
-<package name="NoSqlApi" package="com.alvazan.orm.layer2.nosql">
+<package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi.db"/>
+<package name="NoSqlApi" package="com.alvazan.orm.api.spi.layer2">
 	<depends>RawNoSqlSpi</depends>
 	<depends>RawIndexSpi</depends>
 </package>
-<package name="api" package="com.alvazan.orm.api" subpackages="include">
+<package name="api" package="com.alvazan.orm.api.base" subpackages="include">
 	<depends>NoSqlApi</depends>
 </package>
+
+<package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
 
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
@@ -40,22 +42,23 @@
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
 <package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
 
-<package name="meta" package="com.alvazan.orm.impl.meta">
-	<depends>api</depends>
+<package name="metadata" package="com.alvazan.orm.impl.meta.data">
+	<depends>allapis</depends>
+	<depends>javassist</depends>
+</package>
+
+<package name="metascan" package="com.alvazan.orm.impl.meta.scan">
+    <depends>metadata</depends>
+	<depends>allapis</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
 	<depends>javassist</depends>
-	<depends>NoSqlApi</depends>
-	<depends>RawNoSqlSpi</depends>
-	<depends>RawIndexSpi</depends>
 </package>
 
 <package name="base" package="com.alvazan.orm.layer1.base">
-	<depends>api</depends> <!-- implements -->
-	<depends>NoSqlApi</depends> <!-- uses -->
-	<depends>RawIndexSpi</depends> <!-- uses -->
-	<depends>RawNoSqlSpi</depends> <!-- uses -->
-	<depends>meta</depends>
+	<depends>allapis</depends>
+	<depends>metascan</depends>
+	<depends>metadata</depends>
 	<depends>annotationParser</depends>
 </package>
 

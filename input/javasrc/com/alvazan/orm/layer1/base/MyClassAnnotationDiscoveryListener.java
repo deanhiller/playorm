@@ -5,9 +5,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.anno.Embeddable;
-import com.alvazan.orm.api.anno.NoSqlEntity;
-import com.alvazan.orm.impl.meta.ScannerForClass;
+import com.alvazan.orm.api.base.anno.Embeddable;
+import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.impl.meta.scan.ScannerForClass;
 import com.impetus.annovention.listener.ClassAnnotationDiscoveryListener;
 
 public class MyClassAnnotationDiscoveryListener implements

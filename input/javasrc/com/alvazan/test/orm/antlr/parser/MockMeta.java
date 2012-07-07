@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.impl.meta.MetaQueryClassInfo;
-import com.alvazan.orm.impl.meta.MetaQueryFieldInfo;
+import com.alvazan.orm.impl.meta.data.MetaQueryClassInfo;
+import com.alvazan.orm.impl.meta.data.MetaQueryFieldInfo;
 
 public class MockMeta implements MetaQueryClassInfo {
 

@@ -2,14 +2,14 @@ package com.alvazan.test.db;
 
 import java.util.List;
 
-import com.alvazan.orm.api.Index;
-import com.alvazan.orm.api.Query;
-import com.alvazan.orm.api.anno.Id;
-import com.alvazan.orm.api.anno.Indexed;
-import com.alvazan.orm.api.anno.ManyToOne;
-import com.alvazan.orm.api.anno.NoSqlEntity;
-import com.alvazan.orm.api.anno.NoSqlQueries;
-import com.alvazan.orm.api.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlQueries;
+import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({

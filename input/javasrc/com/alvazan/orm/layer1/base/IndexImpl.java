@@ -5,16 +5,16 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.Converter;
-import com.alvazan.orm.api.Index;
-import com.alvazan.orm.api.JoinInfo;
-import com.alvazan.orm.api.Query;
-import com.alvazan.orm.impl.meta.MetaClass;
-import com.alvazan.orm.impl.meta.MetaIdField;
-import com.alvazan.orm.impl.meta.MetaInfo;
-import com.alvazan.orm.impl.meta.MetaQuery;
-import com.alvazan.orm.layer2.nosql.NoSqlSession;
-import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.base.Converter;
+import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.JoinInfo;
+import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaIdField;
+import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.data.MetaQuery;
 
 public class IndexImpl<T> implements Index<T> {
 

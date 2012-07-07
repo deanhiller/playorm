@@ -3,13 +3,13 @@ package com.alvazan.orm.layer1.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.KeyValue;
-import com.alvazan.orm.api.Query;
-import com.alvazan.orm.api.TooManyResultException;
-import com.alvazan.orm.api.TypeMismatchException;
-import com.alvazan.orm.impl.meta.MetaQuery;
-import com.alvazan.orm.impl.meta.MetaQueryFieldInfo;
-import com.alvazan.orm.layer3.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.base.KeyValue;
+import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.TooManyResultException;
+import com.alvazan.orm.api.base.TypeMismatchException;
+import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.impl.meta.data.MetaQuery;
+import com.alvazan.orm.impl.meta.data.MetaQueryFieldInfo;
 
 public class QueryAdapter<T> implements Query<T> {
 

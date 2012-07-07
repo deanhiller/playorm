@@ -8,15 +8,15 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.AbstractBootstrap;
-import com.alvazan.orm.api.DbTypeEnum;
-import com.alvazan.orm.api.Index;
-import com.alvazan.orm.api.NoSqlEntityManager;
-import com.alvazan.orm.api.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.Query;
-import com.alvazan.orm.api.StorageMissingEntitesException;
-import com.alvazan.orm.api.TooManyResultException;
-import com.alvazan.orm.api.TypeMismatchException;
+import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.StorageMissingEntitesException;
+import com.alvazan.orm.api.base.TooManyResultException;
+import com.alvazan.orm.api.base.TypeMismatchException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 

@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.alvazan.orm.layer3.spi.index.IndexAdd;
-import com.alvazan.orm.layer3.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.index.IndexAdd;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
 
 /**

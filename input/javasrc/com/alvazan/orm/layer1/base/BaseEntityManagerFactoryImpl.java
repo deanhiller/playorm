@@ -12,13 +12,13 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.Converter;
-import com.alvazan.orm.api.NoSqlEntityManager;
-import com.alvazan.orm.api.NoSqlEntityManagerFactory;
-import com.alvazan.orm.impl.meta.MetaClass;
-import com.alvazan.orm.impl.meta.MetaInfo;
-import com.alvazan.orm.impl.meta.ScannerForField;
-import com.alvazan.orm.impl.meta.ScannerForQuery;
+import com.alvazan.orm.api.base.Converter;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.scan.ScannerForField;
+import com.alvazan.orm.impl.meta.scan.ScannerForQuery;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
 

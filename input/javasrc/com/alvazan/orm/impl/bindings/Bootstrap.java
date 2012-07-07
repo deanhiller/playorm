@@ -1,8 +1,8 @@
 package com.alvazan.orm.impl.bindings;
 
-import com.alvazan.orm.api.AbstractBootstrap;
-import com.alvazan.orm.api.DbTypeEnum;
-import com.alvazan.orm.api.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 

@@ -1,6 +1,6 @@
 package com.alvazan.test.orm.antlr.parser;
 
-import com.alvazan.orm.impl.meta.MetaQueryFieldInfo;
+import com.alvazan.orm.impl.meta.data.MetaQueryFieldInfo;
 
 public class MockField implements MetaQueryFieldInfo {
 
