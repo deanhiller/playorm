@@ -70,7 +70,12 @@ statement: (  selectStatement  );
 //SELECT PORTION SPECIFIC STUFF
 selectStatement: selectClause fromClause (whereClause)? -> fromClause selectClause (whereClause)?;
 selectClause: SELECT resultList -> ^(SELECT_CLAUSE resultList);
-resultList:	(STAR | attributeList |) -> ^(RESULT attributeList? STAR?);	
+
+resultList
+ : STAR          -> ^(RESULT STAR)
+ | attributeList -> ^(RESULT attributeList)
+ ;
+ 
 attributeList:	simpleAttribute (COMMA! simpleAttribute)* | aliasdAttribute (COMMA! aliasdAttribute)*;
 
 //FROM CLAUSE SPECIFIC STUFF
