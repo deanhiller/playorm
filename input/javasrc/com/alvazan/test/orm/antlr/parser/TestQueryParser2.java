@@ -15,7 +15,8 @@ import com.alvazan.orm.parser.antlr.NoSqlParser;
 
 public class TestQueryParser2 {
 	private static final Logger log = LoggerFactory.getLogger(TestQueryParser2.class);
-	
+	private String sql="select *  FROM TABLEA e,TABLE2,TABLE3 b WHERE e.numTimes >= \"hello\" and (e.numTimes < :to and e.ttt <'hithere') and e.bbb>=:to";
+
 	@Test
 	public void testQueryParser() throws RecognitionException{
 		//String sql ="SelecT a.column_a,a.column_b FrOm table_a a wHerE a.column_b=:value_b";
@@ -55,4 +56,6 @@ public class TestQueryParser2 {
 		}
 		return tabs;
 	}
+	
+
 }

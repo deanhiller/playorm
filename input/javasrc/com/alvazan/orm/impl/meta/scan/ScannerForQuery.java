@@ -142,12 +142,6 @@ public class ScannerForQuery {
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
 			parseExpression(expression, metaQuery, spiMetaQuery, wiring);
-			//NOTE: We were going to call methods on the factory visitor during the tree walk of the
-			//expression, but that makes for a difficult spi to implement for anyone so instead we will
-			//just give the spi implementer the full expression after the WHERE clause in AST tree form
-			//so he can create his own visitor pattern in his code
-			//factory.
-			spiMetaQuery.formQueryFromAstTree(expression);
 			break;
 
 		case 0: // nil
@@ -270,17 +264,16 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
 		int type = expression.getType();
 		log.debug("where type:" + expression.getType());
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
-			// no need to add attributes here anymore as we are using
-			// visitor pattern
+			spiMetaQuery.onHyphen(type);
 			List<CommonTree> children = expression.getChildren();
 			for(CommonTree child : children)
-				parseExpression(child, metaQuery, factory, wiring);
+				parseExpression(child, metaQuery, spiMetaQuery, wiring);
 			break;
 		case NoSqlLexer.EQ:
 		case NoSqlLexer.NE:
@@ -294,9 +287,9 @@ public class ScannerForQuery {
 			
 			//I think we only care about mapping parameters to the attribute meta data here....????
 			if(rightSide.getType() == NoSqlLexer.ATTR_NAME && leftSide.getType() == NoSqlLexer.PARAMETER_NAME) {
-				process(metaQuery, rightSide, leftSide, wiring);
+				process(metaQuery,spiMetaQuery, rightSide, leftSide, wiring,type);
 			} else if(rightSide.getType() == NoSqlLexer.PARAMETER_NAME && leftSide.getType() == NoSqlLexer.ATTR_NAME) {
-				process(metaQuery, leftSide, rightSide, wiring);
+				process(metaQuery,spiMetaQuery, leftSide, rightSide, wiring,type);
 			}
 			
 			break;
@@ -306,7 +299,10 @@ public class ScannerForQuery {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	private static void process(MetaQuery metaQuery, CommonTree attributeNode, CommonTree parameterNode, InfoForWiring wiring) {
+	//too many arguments
+	private static void process(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+			CommonTree attributeNode, CommonTree parameterNode,
+			InfoForWiring wiring, int type) {
 		MetaClassDbo metaClass;
 		String attributeName = attributeNode.getText();
 		if (attributeNode.getChildCount() > 0) {
@@ -332,6 +328,7 @@ public class ScannerForQuery {
 		String parameter = parameterNode.getText();
 
 		metaQuery.getParameterFieldMap().put(parameter, attributeField);		
+		spiMetaQuery.onComparator(parameter, attributeField,type);
 	}
 
 }

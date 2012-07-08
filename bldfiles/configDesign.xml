@@ -21,8 +21,11 @@
 <package name="annotationParser" package="com.impetus.annovention" subpackages="include"/>
 <package name="javassist" package="javassist.util.proxy"/>
 
+<package name="metaDbos" package="com.alvazan.orm.impl.meta.query"/>
+
 <package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index" subpackages="include">
-	<depends>antlr</depends>
+	<depends>metaDbos</depends>
+	<depends>lucene</depends>
 </package> 
 <package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi.db"/>
 <package name="NoSqlApi" package="com.alvazan.orm.api.spi.layer2">
@@ -42,7 +45,7 @@
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
 <package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
 
-<package name="metaDbos" package="com.alvazan.orm.impl.meta.query"/>
+
 
 <package name="metadata" package="com.alvazan.orm.impl.meta.data"  subpackages="include">
 	<depends>allapis</depends>
@@ -82,6 +85,7 @@
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
 	<depends>RawNoSqlSpi</depends>
+
 </package>
 
 <!-- This section is just the index adapters depending on the spi -->
@@ -91,7 +95,7 @@
 <package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory">
 	<depends>RawIndexSpi</depends>
 	<depends>lucene</depends>
-	<depends>antlr</depends>
+	<depends>metaDbos</depends>
 </package>
 
 <package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>

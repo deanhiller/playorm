@@ -1,6 +1,11 @@
 package com.alvazan.orm.api.spi.index;
 
-import org.antlr.runtime.tree.CommonTree;
+import java.util.Map;
+
+import org.apache.lucene.search.Query;
+
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+
 
 
 public interface SpiMetaQuery {
@@ -19,15 +24,14 @@ public interface SpiMetaQuery {
 	 */
 	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName);
 
-	/**
-	 * The root of this tree is AND, OR, EQ, NE, GT, etc. etc.  You should form your query by walking
-	 * this tree at this point and save a prototype of that query so you can clone, clone, clone each
-	 * time that createQueryInstanceFromQuery is called!!!  Then, later on SpiQueryAdapter, parameters
-	 * will be injected into it which is why you must keep returning NEW SpiQueryAdapters every time
-	 * or different threads will step on the instance.
-	 * 
-	 * @param expression
-	 */
-	public void formQueryFromAstTree(CommonTree expression);
+
+	public void onHyphen(int type);
+
+
+	public void onComparator(String parameter, MetaFieldDbo attributeField,
+			int type);
+	
+	
+	public Query getQuery(Map<String, Object> parameterValues);
 	
 }
