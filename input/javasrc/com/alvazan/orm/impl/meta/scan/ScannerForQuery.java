@@ -272,7 +272,7 @@ public class ScannerForQuery {
 	private static <T> void parseExpression(CommonTree expression,
 			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 		int type = expression.getType();
-		log.info("where type:" + expression.getType());
+		log.debug("where type:" + expression.getType());
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
