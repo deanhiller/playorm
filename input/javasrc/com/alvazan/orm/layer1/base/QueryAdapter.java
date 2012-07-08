@@ -3,35 +3,47 @@ package com.alvazan.orm.layer1.base;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.TooManyResultException;
 import com.alvazan.orm.api.base.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaField;
+import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.data.MetaQueryFieldInfo;
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
 
 public class QueryAdapter<T> implements Query<T> {
 
+	@Inject
+	private MetaInfo metaInfo;
+	
 	private MetaQuery<T> meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl session;
+	private MetaClass<T> metaClass;
 
-	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
+	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr, MetaClass<T> metaClass) {
 		this.meta = meta;
 		this.indexQuery = indexQuery;
 		this.session = entityMgr;
+		this.metaClass = metaClass;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void setParameter(String name, Object value) {
 		//check parameter 
-		MetaQueryFieldInfo metaField = meta.getMetaFieldByParameter(name);
-		if(metaField==null){
+		MetaFieldDbo metaFieldDbo = meta.getMetaFieldByParameter(name);
+		if(metaFieldDbo==null){
 			throw new IllegalArgumentException("paraMeterName [" + name
 					+ "] is not find for ");
 		}
+		
+		MetaField metaField = metaClass.getMetaField(metaFieldDbo.getName());
 		Class fieldType = metaField.getFieldType();
 		
 		if(!fieldType.isAssignableFrom(value.getClass())){
@@ -40,8 +52,6 @@ public class QueryAdapter<T> implements Query<T> {
 					+ fieldType + "]");
 		} 		
 		
-		//We need to just get the entities id for the query if it is an
-		//entity...
 		String newValue = metaField.translateIfEntity(value);
 		
 		indexQuery.setParameter(name, newValue);
@@ -63,7 +73,7 @@ public class QueryAdapter<T> implements Query<T> {
 		List primaryKeys = indexQuery.getResultList();
 		
 		//HERE we need to query the nosql database with the primary keys from the index
-		List<KeyValue<T>> all = session.findAll(meta.getMetaClass().getMetaClass(), primaryKeys);
+		List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
 
 		List<T> entities = new ArrayList<T>();
 		for(KeyValue<T> keyVal : all) {

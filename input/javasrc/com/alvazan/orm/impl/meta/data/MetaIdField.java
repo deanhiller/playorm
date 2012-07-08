@@ -9,10 +9,12 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> {
 
+	private MetaFieldDbo metaDbo = new MetaFieldDbo();
 	protected Field field;
 	private Converter converter;
 	
@@ -63,6 +65,7 @@ public class MetaIdField<OWNER> {
 		this.generator = gen;
 		this.converter = converter;
 		this.metaClass = metaClass;
+		metaDbo.setup(field.getName(), null, field.getType().getName());
 	}
 
 	public Converter getConverter() {
@@ -93,4 +96,9 @@ public class MetaIdField<OWNER> {
 		return (OWNER) inst;
 	}
 
+	public MetaFieldDbo getMetaDbo() {
+		return metaDbo;
+	}
+
+	
 }

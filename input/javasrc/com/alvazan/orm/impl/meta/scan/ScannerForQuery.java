@@ -19,13 +19,14 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.data.MetaQueryClassInfo;
-import com.alvazan.orm.impl.meta.data.MetaQueryFieldInfo;
+import com.alvazan.orm.impl.meta.query.MetaClassDbo;
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaInfoMap;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 
+@SuppressWarnings("rawtypes")
 public class ScannerForQuery {
 
 	private static final Logger log = LoggerFactory
@@ -33,13 +34,12 @@ public class ScannerForQuery {
 	@Inject
 	private IndexReaderWriter indexes;
 	@Inject
-	private MetaInfo metaInfo;
+	private MetaInfoMap metaInfo;
 	
-	@SuppressWarnings("rawtypes")
 	@Inject
 	private Provider<MetaQuery> metaQueryFactory;
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	public void setupQueryStuff(MetaClass classMeta) {
 		Class<?> clazz = classMeta.getMetaClass();
 		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
@@ -61,7 +61,6 @@ public class ScannerForQuery {
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes" })
 	private MetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
 		try {
 			// parse and setup this query once here to be used by ALL of the
@@ -73,7 +72,7 @@ public class ScannerForQuery {
 			// The first visitor would be ourselves maybe? to get all parameter info
 			// The second visitor is the SPI Index so it can create it's "prototype"
 			// query (prototype pattern)
-			MetaQuery metaQuery = newsetupByVisitingTree(classMeta, query.query());
+			MetaQuery metaQuery = newsetupByVisitingTree(query.query(), classMeta.getColumnFamily());
 
 			return metaQuery;
 		} catch(RuntimeException e) {
@@ -83,14 +82,22 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> MetaQuery<T> newsetupByVisitingTree(MetaQueryClassInfo metaClass,
-			String query) {
+	/**
+	 * For ad-hoc query tool only
+	 * @param query
+	 * @return
+	 */
+	public MetaQuery parseQuery(String query) {
+		return newsetupByVisitingTree(query, null);
+	}
+	
+	@SuppressWarnings({ "unchecked" })
+	public MetaQuery newsetupByVisitingTree(String query, String targetTable) {
 		CommonTree theTree = parseTree(query);
-		MetaQuery<T> visitor1 = metaQueryFactory.get();
+		MetaQuery visitor1 = metaQueryFactory.get();
 		SpiMetaQuery visitor2 = indexes.createQueryFactory();
 		
-		visitor1.initialize(metaClass, query, visitor2);
+		visitor1.initialize(query, visitor2);
 
 		InfoForWiring wiring = new InfoForWiring();
 		
@@ -101,7 +108,7 @@ public class ScannerForQuery {
 		// not be as flexible as this
 		// anyways since more people can make changes without the grammar
 		// knowledge this way
-		walkTheTree(theTree, visitor1, visitor2, wiring);
+		walkTheTree(theTree, visitor1, visitor2, wiring, targetTable);
 
 		return visitor1;
 	}
@@ -121,11 +128,11 @@ public class ScannerForQuery {
 	
 	@SuppressWarnings("unchecked")
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
+			SpiMetaQuery spiMetaQuery, InfoForWiring wiring, String targetTable) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, spiMetaQuery, wiring);
+			parseFromClause(tree, metaQuery, spiMetaQuery, wiring, targetTable);
 			break;
 		case NoSqlLexer.SELECT_CLAUSE:
 			parseSelectClause(tree, metaQuery, spiMetaQuery, wiring);
@@ -146,7 +153,7 @@ public class ScannerForQuery {
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, metaQuery, spiMetaQuery, wiring);
+				walkTheTree(child, metaQuery, spiMetaQuery, wiring, targetTable);
 			}
 			break;
 		default:
@@ -214,7 +221,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings({ "unchecked" })
 	private <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring, String targetTable) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -223,7 +230,7 @@ public class ScannerForQuery {
 			int type = child.getType();
 			switch (type) {
 			case NoSqlLexer.TABLE_NAME:
-				loadTableIntoWiringInfo(metaQuery, wiring, child);
+				loadTableIntoWiringInfo(metaQuery, wiring, child, targetTable);
 				break;
 			default:
 				break;
@@ -231,30 +238,20 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	private <T> void loadTableIntoWiringInfo(MetaQuery<T> metaQuery,
-			InfoForWiring wiring, CommonTree tableNode) {
+			InfoForWiring wiring, CommonTree tableNode, String targetTable) {
 		// What should we add to metaQuery here
 		// AND later when we do joins, we need to tell the factory
 		// here as well
 		String tableName = tableNode.getText();
-		List<MetaClass> list = metaInfo.findBySimpleName(tableName);
-		
-		MetaQueryClassInfo metaClass = null;
-		
-		if(tableName.equals("TABLE")) {
-			metaClass = metaQuery.getMetaClass();
-		} else if(tableName.contains(".")) {
-			Class<?> clazz = findClass(tableName);
-			metaClass = metaInfo.getMetaClass(clazz);
-		} else if(list != null) {
-			if(list.size() > 1) 
-				throw new IllegalArgumentException("There are too many classes named="+tableName+"  Use fully qualified name instead.  query="+metaQuery);
-			metaClass = list.get(0);
-		} else
+		MetaClassDbo metaClass = metaInfo.getMeta(tableName);
+		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
+		if(tableName.equals("TABLE") && targetTable != null) {
+			metaClass = metaInfo.getMeta(targetTable);
+		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 			
-		if(tableNode.getChildren().size() == 0) {
+		if(tableNode.getChildCount() == 0) {
 			if(wiring.getNoAliasTable() != null)
 				throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");
 			wiring.setNoAliasTable(metaClass);
@@ -263,16 +260,14 @@ public class ScannerForQuery {
 			String alias = aliasNode.getText();
 			wiring.put(alias, metaClass);
 		}
+		
+		//set the very first table as the target table
+		if(metaQuery.getTargetTable() != null)
+			throw new RuntimeException("Two tables are not supported at this time.  query="+metaQuery);
+		
+		metaQuery.setTargetTable(metaClass);
 	}
 
-	@SuppressWarnings("rawtypes")
-	private Class findClass(String name) {
-		try {
-			return Class.forName(name);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e.getMessage(), e);
-		}
-	}
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(CommonTree expression,
 			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
@@ -310,9 +305,9 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	private static void process(MetaQuery metaQuery, CommonTree attributeNode, CommonTree parameterNode, InfoForWiring wiring) {
-		MetaQueryClassInfo metaClass;
+		MetaClassDbo metaClass;
 		String attributeName = attributeNode.getText();
 		if (attributeNode.getChildCount() > 0) {
 			String aliasEntity = attributeNode.getChild(0).getText();
@@ -329,8 +324,8 @@ public class ScannerForQuery {
 		}
 		
 		//At this point, we have looked up the metaClass associated with the alias
-		MetaQueryFieldInfo attributeField = metaClass.getMetaField(attributeName);
-		if (attributeField == null && !metaClass.getIdFieldName().equals(attributeName)) {
+		MetaFieldDbo attributeField = metaClass.getMetaField(attributeName);
+		if (attributeField == null) {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
 

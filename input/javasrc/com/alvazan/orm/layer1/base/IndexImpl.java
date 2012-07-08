@@ -52,10 +52,19 @@ public class IndexImpl<T> implements Index<T> {
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads
 		QueryAdapter<T> adapter = adapterFactory.get();
-		adapter.setup(metaQuery, spiAdapter, entityMgr);
+		adapter.setup(metaQuery, spiAdapter, entityMgr, metaClass);
 		return adapter;
 	}
 
+	@SuppressWarnings("rawtypes")
+	private Class forName(String clazz) {
+		try {
+			return Class.forName(clazz);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	@Override
 	public Query<T> getNamedQueryJoin(String name, JoinInfo... info) {
 		throw new UnsupportedOperationException("We do not support joins just yet");

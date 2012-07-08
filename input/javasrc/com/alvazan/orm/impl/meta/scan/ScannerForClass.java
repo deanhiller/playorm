@@ -27,6 +27,8 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
+import com.alvazan.orm.impl.meta.query.MetaClassDbo;
+import com.alvazan.orm.impl.meta.query.MetaInfoMap;
 
 public class ScannerForClass {
 
@@ -36,6 +38,8 @@ public class ScannerForClass {
 	private ScannerForField inspectorField;
 	@Inject
 	private MetaInfo metaInfo;
+	@Inject
+	private MetaInfoMap databaseInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
@@ -49,6 +53,10 @@ public class ScannerForClass {
 		classMeta.setMetaClass(clazz);
 		createAndSetProxy(classMeta);
 		scanClass(classMeta);
+		
+		metaInfo.addTableNameLookup(classMeta);
+		
+		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -89,7 +97,7 @@ public class ScannerForClass {
 		if(noSqlEntity != null) {
 			String colFamily = noSqlEntity.columnfamily();
 			if("".equals(colFamily))
-				colFamily = meta.getMetaClass().getSimpleName()+"s";
+				colFamily = meta.getMetaClass().getSimpleName();
 			meta.setColumnFamily(colFamily);
 		} else if(embeddable != null) {
 			log.trace("nothing to do yet here until we implement");
@@ -119,9 +127,11 @@ public class ScannerForClass {
 				field.isAnnotationPresent(Transient.class))
 			return;
 		
+		MetaClassDbo metaDbo = metaClass.getMetaDbo();
 		if(field.isAnnotationPresent(Id.class)) {
 			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);
+			metaDbo.addField(idField.getMetaDbo());
 			return;
 		}
 		
@@ -138,6 +148,7 @@ public class ScannerForClass {
 			metaField = inspectorField.processColumn(field);
 		
 		metaClass.addMetaField(metaField);
+		metaDbo.addField(metaField.getMetaDbo());
 	}
 	
 	@SuppressWarnings("rawtypes")

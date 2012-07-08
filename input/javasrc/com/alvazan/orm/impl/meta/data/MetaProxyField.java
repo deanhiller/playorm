@@ -6,9 +6,12 @@ import java.util.Map;
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.query.MetaClassDbo;
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
 
 public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 
+	private MetaFieldDbo metaDbo = new MetaFieldDbo();
 	protected Field field;
 	private String columnName;
 	//ClassMeta Will eventually have the idField that has the converter!!!
@@ -59,6 +62,9 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		this.field.setAccessible(true);
 		this.columnName = colName;
 		this.classMeta = classMeta;
+		
+		MetaClassDbo fkToTable = classMeta.getMetaDbo();
+		metaDbo.setup(colName, fkToTable, field.getType().getName());
 	}
 
 	@Override
@@ -86,5 +92,10 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		Converter converter = idField.getConverter();
 		String idStr = converter.convertToIndexFormat(value);
 		return idStr;
+	}
+
+	@Override
+	public MetaFieldDbo getMetaDbo() {
+		return metaDbo;
 	}
 }

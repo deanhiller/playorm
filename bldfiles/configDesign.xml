@@ -42,13 +42,17 @@
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
 <package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
 
+<package name="metaDbos" package="com.alvazan.orm.impl.meta.query"/>
+
 <package name="metadata" package="com.alvazan.orm.impl.meta.data">
 	<depends>allapis</depends>
 	<depends>javassist</depends>
+	<depends>metaDbos</depends>
 </package>
 
 <package name="metascan" package="com.alvazan.orm.impl.meta.scan">
     <depends>metadata</depends>
+    <depends>metaDbos</depends>
 	<depends>allapis</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
@@ -59,6 +63,7 @@
 	<depends>allapis</depends>
 	<depends>metascan</depends>
 	<depends>metadata</depends>
+	<depends>metaDbos</depends>
 	<depends>annotationParser</depends>
 </package>
 

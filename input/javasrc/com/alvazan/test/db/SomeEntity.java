@@ -7,7 +7,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
-@NoSqlQuery(name="findById", query="select *  FROM TABLE e where e.id=:id")
+@NoSqlQuery(name="findById", query="select * FROM TABLE e where e.id=:id")
 public class SomeEntity {
 
 	@Id

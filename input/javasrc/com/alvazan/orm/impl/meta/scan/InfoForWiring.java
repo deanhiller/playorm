@@ -3,27 +3,27 @@ package com.alvazan.orm.impl.meta.scan;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.impl.meta.data.MetaQueryClassInfo;
+import com.alvazan.orm.impl.meta.query.MetaClassDbo;
 
 public class InfoForWiring {
 
-	private MetaQueryClassInfo noAliasTable;
-	private Map<String, MetaQueryClassInfo> aliasToMeta = new HashMap<String, MetaQueryClassInfo>();
+	private MetaClassDbo noAliasTable;
+	private Map<String, MetaClassDbo> aliasToMeta = new HashMap<String, MetaClassDbo>();
 	private boolean selectStarDefined;
 	
-	public void setNoAliasTable(MetaQueryClassInfo metaClass) {
+	public void setNoAliasTable(MetaClassDbo metaClass) {
 		this.noAliasTable = metaClass;
 	}
 
-	public MetaQueryClassInfo getNoAliasTable() {
+	public MetaClassDbo getNoAliasTable() {
 		return noAliasTable;
 	}
 
-	public void put(String alias, MetaQueryClassInfo metaClass) {
+	public void put(String alias, MetaClassDbo metaClass) {
 		aliasToMeta.put(alias, metaClass);
 	}
 
-	public MetaQueryClassInfo getInfoFromAlias(String alias) {
+	public MetaClassDbo getInfoFromAlias(String alias) {
 		return aliasToMeta.get(alias);
 	}
 

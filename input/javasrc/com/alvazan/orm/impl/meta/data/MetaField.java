@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
 
 
 public interface MetaField<OWNER> extends MetaQueryFieldInfo {
@@ -21,4 +22,5 @@ public interface MetaField<OWNER> extends MetaQueryFieldInfo {
 	//TODO: should be Map<String, Object> so we can return int, double, etc. etc.
 	public void translateToIndexFormat(OWNER entity, Map<String, String> indexFormat);
 	
+	public MetaFieldDbo getMetaDbo();
 }

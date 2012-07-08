@@ -11,10 +11,14 @@ import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.query.MetaClassDbo;
 
 public class MetaClass<T> implements MetaQueryClassInfo {
 
 	private static final String IDKEY = "id";
+	
+	private MetaClassDbo metaDbo = new MetaClassDbo();
+	
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
 	//will be a subclass of metaClass field above!!
@@ -103,6 +107,7 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 		if(colFamily == null)
 			throw new IllegalArgumentException("colFamily cannot be null");
 		this.columnFamily = colFamily;
+		metaDbo.setTableName(colFamily);
 	}
 
 	public void setMetaClass(Class<T> clazz) {
@@ -159,5 +164,9 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 	@Override
 	public String getIdFieldName() {
 		return idField.getField().getName();
+	}
+
+	public MetaClassDbo getMetaDbo() {
+		return metaDbo;
 	}
 }
