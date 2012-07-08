@@ -11,13 +11,13 @@ import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaClass<T> implements MetaQueryClassInfo {
 
 	private static final String IDKEY = "id";
 	
-	private MetaClassDbo metaDbo = new MetaClassDbo();
+	private MetaTableDbo metaDbo = new MetaTableDbo();
 	
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
@@ -166,7 +166,7 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 		return idField.getField().getName();
 	}
 
-	public MetaClassDbo getMetaDbo() {
+	public MetaTableDbo getMetaDbo() {
 		return metaDbo;
 	}
 }

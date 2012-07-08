@@ -6,15 +6,15 @@ import java.util.Map;
 import javax.inject.Singleton;
 
 @Singleton
-public class MetaInfoMap {
+public class MetaDatabase {
 
-	private Map<String, MetaClassDbo> colFamilyToMeta = new HashMap<String, MetaClassDbo>();
+	private Map<String, MetaTableDbo> colFamilyToMeta = new HashMap<String, MetaTableDbo>();
 	
-	public void addMetaClassDbo(MetaClassDbo metaClass) {
+	public void addMetaClassDbo(MetaTableDbo metaClass) {
 		colFamilyToMeta.put(metaClass.getTableName(), metaClass);
 	}
 	
-	public MetaClassDbo getMeta(String tableName) {
+	public MetaTableDbo getMeta(String tableName) {
 		return colFamilyToMeta.get(tableName);
 	}
 

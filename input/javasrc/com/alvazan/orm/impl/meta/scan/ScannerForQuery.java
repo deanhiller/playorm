@@ -20,9 +20,9 @@ import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
-import com.alvazan.orm.impl.meta.query.MetaInfoMap;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
+import com.alvazan.orm.impl.meta.query.MetaDatabase;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 
@@ -34,7 +34,7 @@ public class ScannerForQuery {
 	@Inject
 	private IndexReaderWriter indexes;
 	@Inject
-	private MetaInfoMap metaInfo;
+	private MetaDatabase metaInfo;
 	
 	@Inject
 	private Provider<MetaQuery> metaQueryFactory;
@@ -238,7 +238,7 @@ public class ScannerForQuery {
 		// AND later when we do joins, we need to tell the factory
 		// here as well
 		String tableName = tableNode.getText();
-		MetaClassDbo metaClass = metaInfo.getMeta(tableName);
+		MetaTableDbo metaClass = metaInfo.getMeta(tableName);
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
 		if(tableName.equals("TABLE") && targetTable != null) {
 			metaClass = metaInfo.getMeta(targetTable);
@@ -303,7 +303,7 @@ public class ScannerForQuery {
 	private static void process(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
 			CommonTree attributeNode, CommonTree parameterNode,
 			InfoForWiring wiring, int type) {
-		MetaClassDbo metaClass;
+		MetaTableDbo metaClass;
 		String attributeName = attributeNode.getText();
 		if (attributeNode.getChildCount() > 0) {
 			String aliasEntity = attributeNode.getChild(0).getText();
@@ -320,7 +320,7 @@ public class ScannerForQuery {
 		}
 		
 		//At this point, we have looked up the metaClass associated with the alias
-		MetaFieldDbo attributeField = metaClass.getMetaField(attributeName);
+		MetaColumnDbo attributeField = metaClass.getMetaField(attributeName);
 		if (attributeField == null) {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
@@ -328,7 +328,7 @@ public class ScannerForQuery {
 		String parameter = parameterNode.getText();
 
 		metaQuery.getParameterFieldMap().put(parameter, attributeField);		
-		spiMetaQuery.onComparator(parameter, attributeField,type);
+		spiMetaQuery.onComparator(parameter, attributeField.getColumnName(),type);
 	}
 
 }

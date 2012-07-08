@@ -7,9 +7,9 @@ import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
-import com.alvazan.orm.impl.meta.query.MetaInfoMap;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
+import com.alvazan.orm.impl.meta.query.MetaDatabase;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 import com.alvazan.orm.impl.meta.scan.ScannerForQuery;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
@@ -39,11 +39,11 @@ public class TestLuceneQuery implements Module {
 
 	@Override
 	public void configure(Binder binder) {
-		MetaInfoMap map = new MetaInfoMap();
+		MetaDatabase map = new MetaDatabase();
 		addMetaClassDbo(map, "MyEntity", "cat", "mouse", "dog");
 		addMetaClassDbo(map, "OtherEntity", "id", "dean", "declan", "pet", "house");
 		
-		binder.bind(MetaInfoMap.class).toInstance(map);
+		binder.bind(MetaDatabase.class).toInstance(map);
 		binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class).asEagerSingleton();
 		binder.bind(NoSqlRawSession.class).to(InMemorySession.class);
 	
@@ -51,14 +51,14 @@ public class TestLuceneQuery implements Module {
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);		
 	}
 
-	private void addMetaClassDbo(MetaInfoMap map, String entityName, String ... fields) {
-		MetaClassDbo meta = new MetaClassDbo();
+	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {
+		MetaTableDbo meta = new MetaTableDbo();
 		meta.setTableName(entityName);
 		map.addMetaClassDbo(meta);
 		
 		for(String field : fields) {
-			MetaFieldDbo fieldDbo = new MetaFieldDbo();
-			fieldDbo.setName(field);
+			MetaColumnDbo fieldDbo = new MetaColumnDbo();
+			fieldDbo.setColumnName(field);
 			meta.addField(fieldDbo);
 		}
 	}

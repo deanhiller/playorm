@@ -4,8 +4,6 @@ import java.util.Map;
 
 import org.apache.lucene.search.Query;
 
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
-
 
 
 public interface SpiMetaQuery {
@@ -28,7 +26,7 @@ public interface SpiMetaQuery {
 	public void onHyphen(int type);
 
 
-	public void onComparator(String parameter, MetaFieldDbo attributeField,
+	public void onComparator(String parameter, String attributeField,
 			int type);
 	
 	

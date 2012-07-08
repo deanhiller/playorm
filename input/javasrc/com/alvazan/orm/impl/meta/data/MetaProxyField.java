@@ -7,12 +7,12 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 
-	private MetaFieldDbo metaDbo = new MetaFieldDbo();
+	private MetaColumnDbo metaDbo = new MetaColumnDbo();
 	protected Field field;
 	private String columnName;
 	//ClassMeta Will eventually have the idField that has the converter!!!
@@ -79,7 +79,7 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		this.columnName = colName;
 		this.classMeta = classMeta;
 		
-		MetaClassDbo fkToTable = classMeta.getMetaDbo();
+		MetaTableDbo fkToTable = classMeta.getMetaDbo();
 		metaDbo.setup(colName, fkToTable, null, false);
 	}
 
@@ -111,7 +111,7 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 	}
 
 	@Override
-	public MetaFieldDbo getMetaDbo() {
+	public MetaColumnDbo getMetaDbo() {
 		return metaDbo;
 	}
 }

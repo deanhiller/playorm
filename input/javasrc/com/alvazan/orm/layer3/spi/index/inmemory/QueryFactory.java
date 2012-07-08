@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
 
 public class QueryFactory implements SpiMetaQuery {
 
@@ -62,17 +61,17 @@ public class QueryFactory implements SpiMetaQuery {
 	}
 
 	@Override
-	public void onComparator(String parameter, MetaFieldDbo attributeField,
+	public void onComparator(String parameter, String columnName,
 			int type) {
 		if(pointer ==null){
-			root = new LeafNode(null,attributeField,parameter,type);
+			root = new LeafNode(null,columnName,parameter,type);
 			pointer = root;
 			List<LeafNode> nodes = new ArrayList<LeafNode>();
 			nodes.add((LeafNode)root);
 //			this.paraNameToLeafNodes.put(parameter,nodes);
 			return;
 		}
-		LeafNode node = new LeafNode(pointer,attributeField,parameter,type); 
+		LeafNode node = new LeafNode(pointer,columnName,parameter,type); 
 		if(((HyphenNode)pointer).getLeftNode()==null){
 			((HyphenNode)pointer).setLeftNode(node);
 			

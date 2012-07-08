@@ -5,12 +5,12 @@ import java.util.Map;
 
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaQuery<T> {
 
-	private Map<String,MetaFieldDbo> parameterFieldMap = new HashMap<String, MetaFieldDbo>();
+	private Map<String,MetaColumnDbo> parameterFieldMap = new HashMap<String, MetaColumnDbo>();
 	
 	private SpiMetaQuery spiMetaQuery;
 	private String query;
@@ -18,7 +18,7 @@ public class MetaQuery<T> {
 	//NOTE: This is really JUST for ad-hoc query tool
 	private String indexName;
 
-	private MetaClassDbo targetTable;
+	private MetaTableDbo targetTable;
 	
 	@Override
 	public String toString() {
@@ -34,11 +34,11 @@ public class MetaQuery<T> {
 		return query;
 	}
 
-	public MetaFieldDbo getMetaFieldByParameter(String parameter){
+	public MetaColumnDbo getMetaFieldByParameter(String parameter){
 		return getParameterFieldMap().get(parameter);
 	}
 
-	public Map<String,MetaFieldDbo> getParameterFieldMap() {
+	public Map<String,MetaColumnDbo> getParameterFieldMap() {
 		return parameterFieldMap;
 	}
 
@@ -50,11 +50,11 @@ public class MetaQuery<T> {
 		return indexName;
 	}
 
-	public void setTargetTable(MetaClassDbo metaClass) {
+	public void setTargetTable(MetaTableDbo metaClass) {
 		this.targetTable = metaClass;
 	}
 
-	public MetaClassDbo getTargetTable() {
+	public MetaTableDbo getTargetTable() {
 		return targetTable;
 	}
 	

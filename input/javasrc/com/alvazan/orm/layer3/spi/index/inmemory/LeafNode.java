@@ -8,23 +8,20 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
-
 public class LeafNode implements QueryNode {
 
 	private QueryNode parentNode;
 	
 	private int comparatorType;
 	
-	private MetaFieldDbo field;
-	
+	private String columnName;
 	
 	private String parameterName;
 
-	public LeafNode(QueryNode parentNode, MetaFieldDbo field,
+	public LeafNode(QueryNode parentNode, String field,
 			String parameterName, int comparatorType) {
 		this.parentNode = parentNode;
-		this.field = field;
+		this.columnName = field;
 		this.parameterName = parameterName;
 		this.comparatorType = comparatorType;
 	}
@@ -45,12 +42,12 @@ public class LeafNode implements QueryNode {
 		this.comparatorType = comparatorType;
 	}
 
-	public MetaFieldDbo getField() {
-		return field;
+	public String getField() {
+		return columnName;
 	}
 
-	public void setField(MetaFieldDbo field) {
-		this.field = field;
+	public void setField(String field) {
+		this.columnName = field;
 	}
 
 
@@ -67,7 +64,7 @@ public class LeafNode implements QueryNode {
 
 	@Override
 	public String toString() {
-		return "Field:[" + this.field.getName() + "] type:["
+		return "Field:[" + this.columnName + "] type:["
 				+ this.comparatorType + "] parameter:[" + this.parameterName+"]";
 	}
 
@@ -79,7 +76,7 @@ public class LeafNode implements QueryNode {
 		try {
 			Object value = parameterValues.get(this.parameterName);
 			Query query = new QueryParser(Version.LUCENE_36,
-					this.field.getName(), new KeywordAnalyzer()).parse(value
+					this.columnName, new KeywordAnalyzer()).parse(value
 					.toString());
 			return query;
 		} catch (ParseException e) {

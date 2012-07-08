@@ -1,8 +1,8 @@
 package com.alvazan.orm.impl.meta.query;
 
-public class MetaFieldDbo {
+public class MetaColumnDbo {
 
-	private String name;
+	private String columnName;
 	/**
 	 * null for FK relationships
 	 */
@@ -12,25 +12,25 @@ public class MetaFieldDbo {
 	 * This field may be referencing another entity in another table so here is the meta data
 	 * on that table as well, but for now, I don't think we need it until we have joins
 	 */
-	private MetaClassDbo fkToColumnFamily;
+	private MetaTableDbo fkToColumnFamily;
 	
 	private boolean isToManyColumn;
 	
-	public String getName() {
-		return name;
+	public String getColumnName() {
+		return columnName;
 	}
 
-	public void setName(String field) {
-		this.name = field;
+	public void setColumnName(String field) {
+		this.columnName = field;
 	}
 
 	@Override
 	public String toString() {
-		return "Field["+name+"]";
+		return "Field["+columnName+"]";
 	}
 
-	public void setup(String colName, MetaClassDbo fkToTable, String classType, boolean isToManyColumn) {	
-		this.name = colName;
+	public void setup(String colName, MetaTableDbo fkToTable, String classType, boolean isToManyColumn) {	
+		this.columnName = colName;
 		this.fkToColumnFamily = fkToTable;
 		this.columnType = classType;
 		this.isToManyColumn = isToManyColumn;

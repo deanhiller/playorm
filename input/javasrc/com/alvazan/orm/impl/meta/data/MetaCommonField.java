@@ -6,11 +6,11 @@ import java.util.Map;
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	
-	private MetaFieldDbo metaDbo = new MetaFieldDbo();
+	private MetaColumnDbo metaDbo = new MetaColumnDbo();
 	protected Field field;
 	private String columnName;
 	private Converter converter;
@@ -38,7 +38,7 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 		this.field.setAccessible(true);
 		this.columnName = colName;
 		this.converter = converter;
-		metaDbo.setName(columnName);
+		metaDbo.setColumnName(columnName);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	}
 
 	@Override
-	public MetaFieldDbo getMetaDbo() {
+	public MetaColumnDbo getMetaDbo() {
 		return metaDbo;
 	}
 }

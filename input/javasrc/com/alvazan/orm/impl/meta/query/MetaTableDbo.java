@@ -3,10 +3,10 @@ package com.alvazan.orm.impl.meta.query;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MetaClassDbo {
+public class MetaTableDbo {
 
 	private String columnFamily;
-	private Map<String, MetaFieldDbo> nameToField = new HashMap<String, MetaFieldDbo>();
+	private Map<String, MetaColumnDbo> nameToField = new HashMap<String, MetaColumnDbo>();
 
 	public void setTableName(String tableName) {
 		this.columnFamily = tableName;
@@ -16,11 +16,11 @@ public class MetaClassDbo {
 		return columnFamily;
 	}
 
-	public void addField(MetaFieldDbo fieldDbo) {
-		nameToField.put(fieldDbo.getName(), fieldDbo);
+	public void addField(MetaColumnDbo fieldDbo) {
+		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	
-	public MetaFieldDbo getMetaField(String attributeName) {
+	public MetaColumnDbo getMetaField(String attributeName) {
 		return nameToField.get(attributeName);
 	}
 	

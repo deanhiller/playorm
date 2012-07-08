@@ -27,8 +27,8 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.impl.meta.query.MetaClassDbo;
-import com.alvazan.orm.impl.meta.query.MetaInfoMap;
+import com.alvazan.orm.impl.meta.query.MetaDatabase;
+import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class ScannerForClass {
 
@@ -39,7 +39,7 @@ public class ScannerForClass {
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
-	private MetaInfoMap databaseInfo;
+	private MetaDatabase databaseInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
@@ -127,7 +127,7 @@ public class ScannerForClass {
 				field.isAnnotationPresent(Transient.class))
 			return;
 		
-		MetaClassDbo metaDbo = metaClass.getMetaDbo();
+		MetaTableDbo metaDbo = metaClass.getMetaDbo();
 		if(field.isAnnotationPresent(Id.class)) {
 			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);

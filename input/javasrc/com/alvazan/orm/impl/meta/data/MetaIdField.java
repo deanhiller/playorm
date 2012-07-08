@@ -9,12 +9,12 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> {
 
-	private MetaFieldDbo metaDbo = new MetaFieldDbo();
+	private MetaColumnDbo metaDbo = new MetaColumnDbo();
 	protected Field field;
 	private Converter converter;
 	
@@ -96,7 +96,7 @@ public class MetaIdField<OWNER> {
 		return (OWNER) inst;
 	}
 
-	public MetaFieldDbo getMetaDbo() {
+	public MetaColumnDbo getMetaDbo() {
 		return metaDbo;
 	}
 

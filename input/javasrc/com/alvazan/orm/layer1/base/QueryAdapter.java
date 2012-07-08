@@ -14,7 +14,7 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.query.MetaFieldDbo;
+import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -37,13 +37,13 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public void setParameter(String name, Object value) {
 		//check parameter 
-		MetaFieldDbo metaFieldDbo = meta.getMetaFieldByParameter(name);
+		MetaColumnDbo metaFieldDbo = meta.getMetaFieldByParameter(name);
 		if(metaFieldDbo==null){
 			throw new IllegalArgumentException("paraMeterName [" + name
 					+ "] is not find for ");
 		}
 		
-		MetaField metaField = metaClass.getMetaField(metaFieldDbo.getName());
+		MetaField metaField = metaClass.getMetaField(metaFieldDbo.getColumnName());
 		Class fieldType = metaField.getFieldType();
 		
 		if(!fieldType.isAssignableFrom(value.getClass())){

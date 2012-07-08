@@ -69,11 +69,11 @@ public class HyphenNode implements QueryNode{
 			LeafNode rightNodetmp = (LeafNode)rightNode;
 			if(leftNodetmp.getField()==rightNodetmp.getField()){
 				//TODO  need check lowerTerm and upperTerm
-				Term lowerTerm = new Term(leftNodetmp.getField().getName(),
+				Term lowerTerm = new Term(leftNodetmp.getField(),
 						(String) parameterValues.get(leftNodetmp
 								.getParameterName()));
 
-				Term upperTerm = new Term(rightNodetmp.getField().getName(),
+				Term upperTerm = new Term(rightNodetmp.getField(),
 						(String) parameterValues.get(rightNodetmp
 								.getParameterName()));
 
