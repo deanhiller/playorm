@@ -1,9 +1,9 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.base.exc;
 
 import java.util.List;
 
 @SuppressWarnings("rawtypes")
-public class StorageMissingEntitesException extends RuntimeException {
+public class StorageMissingEntitesException extends NoSqlOrmException {
 
 	private static final long serialVersionUID = 1L;
 	private final List foundElements;

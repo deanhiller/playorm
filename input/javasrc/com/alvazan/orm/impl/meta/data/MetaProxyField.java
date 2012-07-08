@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.alvazan.orm.api.base.Converter;
+import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.query.MetaClassDbo;
@@ -34,7 +35,21 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = convertProxyToId(value);
+		byte[] byteVal = convertProxyToId(classMeta, value);
+		if(byteVal == null && value != null) { 
+			//if value is not null byt we get back a byteVal of null, it means the entity has not been
+			//initialized with a key yet, BUT this is required to be able to save this object
+			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
+			String child = "'"+field.getType().getSimpleName()+"'";
+			String fieldName = "'"+field.getType().getSimpleName()+" "+field.getName()+"'";
+			throw new ChildWithNoPkException("The entity you are saving of type="+owner+" has a field="+fieldName
+					+" that does not yet have a primary key so you cannot save it.  To correct this\n" +
+					"problem, you can either\n"
+					+"1. SAVE the "+child+" BEFORE you save the "+owner+" OR\n"
+					+"2. Call entityManager.fillInWithKey(Object entity), then SAVE your "+owner+"', then save your "+child+" NOTE that this" +
+							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
+		}
+		
 		col.setName(columnName);
 		col.setValue(byteVal);
 	}
@@ -48,10 +63,11 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		return idField.convertIdToProxy(session, entityId);
 	}
 	
-	byte[] convertProxyToId(PROXY value) {
+	@SuppressWarnings("rawtypes")
+	static byte[] convertProxyToId(MetaClass classMeta, Object value) {
 		if(value == null)
 			return null;
-		MetaIdField<PROXY> idField = classMeta.getIdField();
+		MetaIdField idField = classMeta.getIdField();
 		Object id = classMeta.fetchId(value);
 		Converter converter = idField.getConverter();
 		return converter.convertToNoSql(id);
@@ -64,7 +80,7 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		this.classMeta = classMeta;
 		
 		MetaClassDbo fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(colName, fkToTable, field.getType().getName());
+		metaDbo.setup(colName, fkToTable, null, false);
 	}
 
 	@Override

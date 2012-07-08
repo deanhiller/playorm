@@ -1,19 +1,24 @@
 package com.alvazan.test;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.AbstractBootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.base.exc.RowNotFoundException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
-public class TestOrmBasic {
+public class TestManyToOne {
 
+	private static final Logger log = LoggerFactory.getLogger(TestManyToOne.class);
+	
 	private static final String ACCOUNT_NAME = "dean";
 	private NoSqlEntityManagerFactory factory;
 
@@ -22,6 +27,7 @@ public class TestOrmBasic {
 		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
 		factory.setup(null, "com.alvazan.test.db");
 	}
+	
 	@Test
 	public void testActivityHasNullAccount() {
 		NoSqlEntityManager mgr = factory.createEntityManager();
@@ -69,6 +75,63 @@ public class TestOrmBasic {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		
 		readWriteBasic(mgr);
+	}
+	
+	@Test
+	public void testWriteActivityAccountNoSavedYet() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		Account acc = new Account();
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		
+		Activity act = new Activity();
+		act.setAccount(acc);
+		act.setName("asdfsdf");
+		act.setNumTimes(3);
+		
+		try {
+			mgr.put(act);
+			Assert.fail("Should have failed since account has no pk during activity save");
+		} catch(ChildWithNoPkException e) {
+			log.info("expected failure", e);
+		}
+	}
+
+	@Test
+	public void testNotfound() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+
+		Activity act = mgr.find(Activity.class, "asdf");
+		Assert.assertNull(act);
+	}
+	
+	@Test
+	public void testFillInKeyMethod() {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		Account acc = new Account();
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		mgr.fillInWithKey(acc);
+		
+		Activity act = new Activity();
+		act.setAccount(acc);
+		act.setName("asdfsdf");
+		act.setNumTimes(3);
+		
+		mgr.put(act);
+		
+		mgr.flush();
+		
+		Activity activityResult = mgr.find(Activity.class, act.getId());
+		Account theProxy = activityResult.getAccount();
+		try {
+			theProxy.getName();
+			Assert.fail("Account was never saved so above line should fail");
+		} catch(RowNotFoundException e) {
+			log.info("this is expected");
+		}
 	}
 	
 	private Activity readWriteBasic(NoSqlEntityManager mgr) {

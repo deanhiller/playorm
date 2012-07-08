@@ -14,9 +14,9 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.StorageMissingEntitesException;
-import com.alvazan.orm.api.base.TooManyResultException;
-import com.alvazan.orm.api.base.TypeMismatchException;
+import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
+import com.alvazan.orm.api.base.exc.TooManyResultException;
+import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 

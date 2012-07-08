@@ -67,8 +67,18 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		List<Row> rows = session.find(meta.getColumnFamily(), noSqlKeys);
 		
 		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
-		for(Row row : rows) {
-			KeyValue<T> keyVal = meta.translateFromRow(row, session);
+		for(int i = 0; i < rows.size(); i++) {
+			Row row = rows.get(i);
+			Object key = keys.get(i);
+			
+			KeyValue<T> keyVal;
+			if(row == null) {
+				keyVal = new KeyValue<T>();
+				keyVal.setKey(key);
+			} else {
+				keyVal = meta.translateFromRow(row, session);
+			}
+			
 			keyValues.add(keyVal);
 		}
 		
@@ -107,6 +117,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public Object getKey(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
 		return metaClass.fetchId(entity);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void fillInWithKey(Object entity) {
+		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
+		MetaIdField idField = metaClass.getIdField();
+		idField.fillInAndFetchId(entity);
 	}
 
 }

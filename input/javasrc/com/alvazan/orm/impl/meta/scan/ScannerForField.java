@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.scan;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -14,6 +15,7 @@ import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoConversion;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.impl.meta.data.Converters;
@@ -22,6 +24,7 @@ import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.data.MetaListField;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
 import com.alvazan.orm.impl.meta.data.ReflectionUtil;
 
@@ -33,6 +36,8 @@ public class ScannerForField {
 	private Provider<MetaIdField> idMetaProvider;
 	@Inject
 	private Provider<MetaCommonField> metaProvider;
+	@Inject
+	private Provider<MetaListField> metaListProvider;
 	@Inject
 	private Provider<MetaProxyField> metaProxyProvider;
 	
@@ -136,7 +141,7 @@ public class ScannerForField {
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
-					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
+					+field.getDeclaringClass()+".  You need to either add one of the @*ToOne annotations, @Embedded, @Transient " +
 							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
 							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
 							" or finally if we missed a standard converter, we need to add it in file InspectorField.java" +
@@ -155,10 +160,6 @@ public class ScannerForField {
 		throw new IllegalArgumentException("bug, caller should catch this and log info about field or id converter, etc. etc");
 	}
 
-	public MetaField processOneToMany(Field field) {
-		throw new UnsupportedOperationException("not implemented yet");
-	}
-
 	public MetaField processEmbeddable(Field field) {
 		throw new UnsupportedOperationException("not implemented yet");
 	}
@@ -173,10 +174,8 @@ public class ScannerForField {
 	public MetaField processManyToOne(Field field) {
 		ManyToOne annotation = field.getAnnotation(ManyToOne.class);
 		String colName = field.getName();
-		if(annotation != null) {
-			if(!"".equals(annotation.columnName()))
-				colName = annotation.columnName();
-		}
+		if(!"".equals(annotation.columnName()))
+			colName = annotation.columnName();
 		
 		return processToOne(field, colName);
 	}
@@ -184,18 +183,48 @@ public class ScannerForField {
 	public MetaField processOneToOne(Field field) {
 		OneToOne annotation = field.getAnnotation(OneToOne.class);
 		String colName = field.getName();
-		if(annotation != null) {
-			if(!"".equals(annotation.columnName()))
-				colName = annotation.columnName();
-		}
+		if(!"".equals(annotation.columnName()))
+			colName = annotation.columnName();
 		
 		return processToOne(field, colName);
 	}
 	
+	public MetaField processOneToMany(Field field) {
+		OneToMany annotation = field.getAnnotation(OneToMany.class);
+		String colName = field.getName();
+		if(!"".equals(annotation.columnName()))
+			colName = annotation.columnName();
+		
+		Class entityType = annotation.entityType();
+		if(entityType == null)
+			throw new RuntimeException("Field="+field+" is missing entityType attribute of OneToMany annotation which is required");
+		
+		return processToMany(field, colName, entityType);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private MetaField processToMany(Field field, String colName, Class entityType) {
+		//at this point we only need to verify that 
+		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
+		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
+			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
+		
+		//field's type must be Map or List right now today
+		if(!field.getType().equals(Map.class) && !field.getType().equals(List.class))
+			throw new RuntimeException("field="+field+" must be List or Map since it is annotated with OneToMany");
+		
+		MetaListField metaField = metaListProvider.get();
+		MetaClass<?> classMeta = metaInfo.findOrCreate(entityType);
+		metaField.setup(field, colName,  classMeta);
+		
+		return metaField;
+	}
+
 	@SuppressWarnings("unchecked")
 	public MetaField processToOne(Field field, String colName) {
 		//at this point we only need to verify that 
-		//the class referred has the @NoSqlEntity tag so it is picked up by scanner
+		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!field.getType().isAnnotationPresent(NoSqlEntity.class))
 			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());

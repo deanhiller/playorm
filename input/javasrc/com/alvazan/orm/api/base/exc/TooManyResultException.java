@@ -1,6 +1,6 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.base.exc;
 
-public class TooManyResultException extends RuntimeException {
+public class TooManyResultException extends NoSqlOrmException {
 
 	private static final long serialVersionUID = 1L;
 

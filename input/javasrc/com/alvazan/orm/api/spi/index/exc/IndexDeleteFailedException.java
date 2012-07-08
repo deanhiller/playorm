@@ -1,9 +1,10 @@
-package com.alvazan.orm.api.spi.index;
+package com.alvazan.orm.api.spi.index.exc;
 
 import java.util.List;
 
 
-public class IndexDeleteFailedException extends RuntimeException {
+
+public class IndexDeleteFailedException extends IndexFailureException {
 
 	private static final long serialVersionUID = 1L;
 	private final List<IndexErrorInfo> errors;

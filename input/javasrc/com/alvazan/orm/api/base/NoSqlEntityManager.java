@@ -30,18 +30,16 @@ public interface NoSqlEntityManager {
 	public <T> T getReference(Class<T> entityType, Object key);
 	
 	/**
-	 * Mainly for framework code but a nice way to get the key of an unknown entity
-	 * where you don't care about the entity but just need the key
-	 * @param entity
-	 * @return
-	 */
-	public Object getKey(Object entity);
-	
-	/**
-	 * Unlike RDBMS, there are no transactions, BUT all the calls to putAll are cached
-	 * in-memory into flush is called.  This allows us to easily queue up all writes to
-	 * the datastore and time how long all the writes take.  It is also a bit more likely
-	 * to keep things more consistent
+	 * Unlike RDBMS, there are no transactions, BUT all the calls to putAll and put are cached
+	 * in-memory until flush is called.  This allows us to easily queue up all writes to
+	 * the datastore and 
+	 * <ol>
+	 *    <ul> Send all writes as one to incur less i/o over the network
+	 *    <ul> not block your thread for every put/putAll that is called(only block on writing all during flush)
+	 *    <ul> time how long all the writes take.  
+	 * </ol>
+	 * 
+	 * It is more likely to keep things more consistent
 	 */
 	public void flush();
 	
@@ -68,5 +66,31 @@ public interface NoSqlEntityManager {
 	 * @return
 	 */
 	public <T> Index<T> getIndex(Class<T> forEntity, String indexName);
+
+	/**
+	 * In certain cases where you have a bi-directional association, you need a primary key in
+	 * the children before you can save the parent.  ie. If you have an Account that has a list
+	 * of Activity and an Activity with an Account, the proper way to code this is such
+	 * 
+	 * <ol>
+	 *    <li>Account acc = new Account() </li>
+	 *    <li>entityManager.fillInWithKey(acc) </li>
+	 *    <li>Activity act1 = new Activity() </li>
+	 *    <li>act1.setAccount(acc) </li>
+	 *    <li>entityManager.put(act1) </li>
+	 *    <li>acc.addActivity(act1) </li>
+	 *    <li>entityManager.put(acc) </li>
+	 *  </ol>
+	 *  
+	 * @param acc
+	 */
+	public void fillInWithKey(Object acc);
 	
+	/**
+	 * Mainly for framework code but a nice way to get the key of an unknown entity
+	 * where you don't care about the entity but just need the key
+	 * @param entity
+	 * @return
+	 */
+	public Object getKey(Object entity);	
 }

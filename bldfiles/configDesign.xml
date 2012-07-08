@@ -21,7 +21,7 @@
 <package name="annotationParser" package="com.impetus.annovention" subpackages="include"/>
 <package name="javassist" package="javassist.util.proxy"/>
 
-<package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index">
+<package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index" subpackages="include">
 	<depends>antlr</depends>
 </package> 
 <package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi.db"/>
@@ -44,7 +44,7 @@
 
 <package name="metaDbos" package="com.alvazan.orm.impl.meta.query"/>
 
-<package name="metadata" package="com.alvazan.orm.impl.meta.data">
+<package name="metadata" package="com.alvazan.orm.impl.meta.data"  subpackages="include">
 	<depends>allapis</depends>
 	<depends>javassist</depends>
 	<depends>metaDbos</depends>

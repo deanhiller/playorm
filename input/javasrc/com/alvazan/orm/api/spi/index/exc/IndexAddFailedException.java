@@ -1,10 +1,11 @@
-package com.alvazan.orm.api.spi.index;
+package com.alvazan.orm.api.spi.index.exc;
 
 import java.util.List;
 import java.util.Map;
 
 
-public class IndexAddFailedException extends RuntimeException {
+
+public class IndexAddFailedException extends IndexFailureException {
 
 	private static final long serialVersionUID = 1L;
 	private final List<IndexErrorInfo> errors;

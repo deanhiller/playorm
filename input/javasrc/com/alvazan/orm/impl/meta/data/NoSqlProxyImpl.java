@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.Converter;
-import com.alvazan.orm.api.base.RowNotFoundException;
+import com.alvazan.orm.api.base.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 

@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi.index;
+package com.alvazan.orm.api.spi.index.exc;
 
 import java.io.Serializable;
 import java.util.List;

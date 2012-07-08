@@ -1,5 +1,6 @@
 package com.alvazan.test.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alvazan.orm.api.base.Index;
@@ -9,6 +10,7 @@ import com.alvazan.orm.api.base.anno.Indexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.Transient;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -27,6 +29,10 @@ public class Account extends AccountSuper{
 	
 	@Indexed
 	private Float users;
+
+	@Transient
+	//@OneToMany(entityType=Activity.class, keyFieldForMap="")
+	private List<Activity> activities = new ArrayList<Activity>();
 
 	public String getId() {
 		return id;
@@ -74,6 +80,15 @@ public class Account extends AccountSuper{
 		Query<Account> query = index.getNamedQuery("findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
-		return query.getResultList();		
+		return query.getResultList();
 	}
+
+	public List<Activity> getActivities() {
+		return activities;
+	}
+
+	public void addActivity(Activity act1) {
+		activities.add(act1);
+	}
+	
 }

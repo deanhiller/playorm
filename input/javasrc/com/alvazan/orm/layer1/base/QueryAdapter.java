@@ -7,8 +7,8 @@ import javax.inject.Inject;
 
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.TooManyResultException;
-import com.alvazan.orm.api.base.TypeMismatchException;
+import com.alvazan.orm.api.base.exc.TooManyResultException;
+import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;

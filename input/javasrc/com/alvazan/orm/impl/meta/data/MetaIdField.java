@@ -36,13 +36,13 @@ public class MetaIdField<OWNER> {
 	}
 	
 	public void translateToRow(OWNER entity, RowToPersist row) {
-		Object idInEntity = ReflectionUtil.fetchFieldValue(entity, field);
-		Object id = fetchFinalId(idInEntity, entity);
+		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
 		row.setKey(byteVal);
 	}
 
-	private Object fetchFinalId(Object idInEntity, OWNER entity) {
+	public Object fillInAndFetchId(OWNER entity) {
+		Object idInEntity = ReflectionUtil.fetchFieldValue(entity, field);
 		Object id = idInEntity;
 		if(!useGenerator) {
 			if(id == null)
@@ -65,7 +65,7 @@ public class MetaIdField<OWNER> {
 		this.generator = gen;
 		this.converter = converter;
 		this.metaClass = metaClass;
-		metaDbo.setup(field.getName(), null, field.getType().getName());
+		metaDbo.setup(field.getName(), null, field.getType().getName(), false);
 	}
 
 	public Converter getConverter() {

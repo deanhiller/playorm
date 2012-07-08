@@ -9,6 +9,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OneToMany {
     @SuppressWarnings("rawtypes")
-	Class targetEntity() default void.class;
-}
+	Class entityType();
 
+	String columnName() default "";
+
+	/**
+	 * When using Map instead of a List, the field in entityType() needs to 
+	 * be specified here...
+	 * @return
+	 */
+	String keyFieldForMap();
+
+}

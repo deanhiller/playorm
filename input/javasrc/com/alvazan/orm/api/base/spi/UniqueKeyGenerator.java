@@ -50,7 +50,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		if(currentTime <= lastTimeStamp)
 			currentTime = lastTimeStamp+1;
 		lastTimeStamp = currentTime;
-		return ipAddress+lastTimeStamp;
+		return ipAddress+"-"+lastTimeStamp;
 	}
 
 	private static void createHostName() throws UnknownHostException {
