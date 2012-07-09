@@ -228,7 +228,8 @@ public class TestIndexes {
 			Assert.assertEquals(2, foundAccounts.size());
 		}
 	}
-	
+
+	//@Test
 	public void testSeparateIndexes() {
 		NoSqlEntityManagerFactory factory = setup();
 		NoSqlEntityManager mgr = factory.createEntityManager();

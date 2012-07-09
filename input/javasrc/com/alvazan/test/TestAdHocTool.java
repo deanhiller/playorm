@@ -1,10 +1,16 @@
 package com.alvazan.test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
+import com.alvazan.orm.impl.bindings.Bootstrap;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
 import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 import com.alvazan.orm.impl.meta.query.MetaDatabase;
@@ -25,14 +31,20 @@ public class TestAdHocTool implements Module {
 	@SuppressWarnings("rawtypes")
 	@Test
 	public void testBasic() {
+		NoSqlSessionFactory factory = Bootstrap.createRawInstance(DbTypeEnum.IN_MEMORY);
+		NoSqlSession session = factory.createSession();
+		
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("__id__", "asdf");
+		map.put("cat", "deano");
+		session.addToIndex("/someindex", map);
+		
 		Injector injector = Guice.createInjector(this);
 		ScannerForQuery scanner = injector.getInstance(ScannerForQuery.class);
-		String sql = "select * FROM MyEntity e WHERE e.cat >= :hello";
+		String sql = "select * FROM MyEntity e WHERE e.cat >= :dean";
 		
 		MetaQuery metaQuery = scanner.parseQuery(sql);
-		
 		NoSqlSession instance = injector.getInstance(NoSqlSession.class);
-		
 		String indexName = metaQuery.getIndexName();
 		
 		//SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName);

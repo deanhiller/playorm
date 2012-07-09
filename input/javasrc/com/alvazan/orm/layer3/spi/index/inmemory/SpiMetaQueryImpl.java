@@ -93,6 +93,14 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	}
 
 	public Query walkTheASTTree(ExpressionNode node, Map<String, Object> parameterValues) {
+		if(node == null) {
+			//special case as there is no AST tree when there is no where clause which means find every node
+			//in the index
+			throw new UnsupportedOperationException("Need to fill this in with query that gets all rows");
+		}
+		return walkTheASTTreeImpl(node, parameterValues);
+	}
+	public Query walkTheASTTreeImpl(ExpressionNode node, Map<String, Object> parameterValues) {
 		CommonTree expression = node.getASTNode();
 		int type = node.getType();
 		log.debug("where type:" + expression.getType());

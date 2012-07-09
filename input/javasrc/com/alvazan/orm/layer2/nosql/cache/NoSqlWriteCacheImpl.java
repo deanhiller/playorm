@@ -90,6 +90,10 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void removeFromIndex(String indexName, String id) {
+		if(id == null)
+			throw new IllegalArgumentException("id cannot be null");
+		else if(indexName == null)
+			throw new IllegalArgumentException("indexName cannot be null");
 		IndexRemoveImpl remove = new IndexRemoveImpl();
 		remove.setId(id);
 		List removeActions = findCreateList(indexName, removeFromIndex);
@@ -99,6 +103,8 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void addToIndex(String indexName, Map<String, String> item) {
+		
+		
 		IndexAdd add = new IndexAdd();
 		add.setItem(item);
 		
