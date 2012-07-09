@@ -8,9 +8,9 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
+import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
-import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaListField<OWNER, PROXY> implements MetaField<OWNER> {
 

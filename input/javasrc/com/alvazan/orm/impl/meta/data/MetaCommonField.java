@@ -5,8 +5,8 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	

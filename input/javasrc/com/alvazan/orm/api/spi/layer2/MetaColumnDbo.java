@@ -1,4 +1,4 @@
-package com.alvazan.orm.impl.meta.query;
+package com.alvazan.orm.api.spi.layer2;
 
 public class MetaColumnDbo {
 

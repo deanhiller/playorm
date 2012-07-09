@@ -10,11 +10,11 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.impl.meta.data.MetaQuery;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 public class QueryAdapter<T> implements Query<T> {
 

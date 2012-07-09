@@ -12,10 +12,11 @@ import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
+import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
-public class MetaClass<T> implements MetaQueryClassInfo {
+public class MetaClass<T> {
 
 	public static final String IDKEY = IndexReaderWriter.IDKEY;
 	
@@ -168,11 +169,6 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 
 	public void addQuery(String name, MetaQuery<T> metaQuery) {
 		queryInfo.put(name, metaQuery);
-	}
-
-	@Override
-	public String getIdFieldName() {
-		return idField.getField().getName();
 	}
 
 	public MetaTableDbo getMetaDbo() {

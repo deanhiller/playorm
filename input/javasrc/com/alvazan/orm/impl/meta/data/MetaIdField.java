@@ -8,8 +8,8 @@ import javassist.util.proxy.Proxy;
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> {

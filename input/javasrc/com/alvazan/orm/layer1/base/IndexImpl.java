@@ -11,11 +11,11 @@ import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.impl.meta.data.MetaQuery;
 
 public class IndexImpl<T> implements Index<T> {
 

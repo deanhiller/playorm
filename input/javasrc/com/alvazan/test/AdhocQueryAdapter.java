@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.MetaQuery;
 
 @SuppressWarnings("rawtypes")
 public class AdhocQueryAdapter {

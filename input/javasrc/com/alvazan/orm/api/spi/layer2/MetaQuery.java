@@ -1,12 +1,10 @@
-package com.alvazan.orm.impl.meta.data;
+package com.alvazan.orm.api.spi.layer2;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
-import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaQuery<T> {
 

@@ -23,13 +23,13 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.anno.Transient;
+import com.alvazan.orm.api.spi.layer2.MetaDatabase;
+import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.impl.meta.query.MetaDatabase;
-import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class ScannerForClass {
 

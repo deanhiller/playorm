@@ -3,11 +3,11 @@ package com.alvazan.orm.impl.meta.data;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
 
 
-public interface MetaField<OWNER> extends MetaQueryFieldInfo {
+public interface MetaField<OWNER> {
 
 	public void translateFromColumn(Map<String, Column> columns, OWNER entity, NoSqlSession session);
 	

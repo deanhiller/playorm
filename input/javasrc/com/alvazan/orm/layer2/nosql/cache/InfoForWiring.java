@@ -1,9 +1,9 @@
-package com.alvazan.orm.impl.meta.scan;
+package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.impl.meta.query.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 
 public class InfoForWiring {
 
