@@ -172,7 +172,9 @@ public class MemoryIndexWriter implements IndexReaderWriter {
         	if(IDKEY.equals(key))
         		continue;
         	String value = item.getValue();
-        	doc.add(new Field(key, value, Field.Store.NO, Field.Index.ANALYZED));
+        	
+        	if(value != null)
+        		doc.add(new Field(key, value, Field.Store.NO, Field.Index.ANALYZED));
 		}
 
         return doc;

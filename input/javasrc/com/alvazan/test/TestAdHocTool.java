@@ -27,7 +27,7 @@ public class TestAdHocTool implements Module {
 	public void testBasic() {
 		Injector injector = Guice.createInjector(this);
 		ScannerForQuery scanner = injector.getInstance(ScannerForQuery.class);
-		String sql = "select * FROM MyEntity e WHERE e.cat >= \"hello\" and (e.mouse < :to and e.dog <'hithere') and e.cat>=:to";
+		String sql = "select * FROM MyEntity e WHERE e.cat >= :hello";
 		
 		MetaQuery metaQuery = scanner.parseQuery(sql);
 		

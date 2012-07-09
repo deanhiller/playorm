@@ -24,7 +24,7 @@
 <package name="metaDbos" package="com.alvazan.orm.impl.meta.query"/>
 
 <package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index" subpackages="include">
-	<depends>lucene</depends>
+	<depends>antlr</depends>
 </package> 
 <package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi.db"/>
 <package name="NoSqlApi" package="com.alvazan.orm.api.spi.layer2">
@@ -94,6 +94,7 @@
 <package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory">
 	<depends>RawIndexSpi</depends>
 	<depends>lucene</depends>
+	<depends>antlr</depends>
 </package>
 
 <package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>
