@@ -9,6 +9,7 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -40,6 +41,11 @@ public class IndexImpl<T> implements Index<T> {
 		MetaIdField<T> idField = metaClass.getIdField();
 		Converter converter = idField.getConverter();
 		String indexId = converter.convertToIndexFormat(id);
+		if(indexId == null)
+			throw new PkIsNullException("entity="+entity+" has no pk defined, so we fail " +
+					"now before you called flush so nothing has been added to database nor " +
+					"the index(as long as you haven't called flush yet");		
+		
 		session.removeFromIndex(indexName, indexId);
 	}
 
@@ -56,15 +62,6 @@ public class IndexImpl<T> implements Index<T> {
 		return adapter;
 	}
 
-	@SuppressWarnings("rawtypes")
-	private Class forName(String clazz) {
-		try {
-			return Class.forName(clazz);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	@Override
 	public Query<T> getNamedQueryJoin(String name, JoinInfo... info) {
 		throw new UnsupportedOperationException("We do not support joins just yet");

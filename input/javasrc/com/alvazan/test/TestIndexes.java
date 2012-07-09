@@ -29,29 +29,6 @@ public class TestIndexes {
 		factory.setup(null, "com.alvazan.test.db");
 		return factory;
 	}
-
-	@Test
-	public void testBasicString() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
-		Activity act = new Activity();
-		act.setName("hello");
-		act.setUniqueColumn("notunique");
-		act.setNumTimes(5);
-		mgr.put(act);
-		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act);
-		
-		mgr.flush();
-		
-		List<Activity> findByName = Activity.findByName(index, "hello");
-		Assert.assertEquals(1, findByName.size());
-		
-		List<Activity> zero = Activity.findByName(index, "asdf");
-		Assert.assertEquals(0, zero.size());
-	}
 	
 	@Test
 	public void testFailureOnTypeMismatch() {
@@ -90,7 +67,7 @@ public class TestIndexes {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void testFailureOnGetSingleResultAndSuccess() {
 		NoSqlEntityManagerFactory factory = setup();
 		NoSqlEntityManager mgr = factory.createEntityManager();
@@ -101,6 +78,7 @@ public class TestIndexes {
 		act.setUniqueColumn("notunique");
 		act.setNumTimes(5);
 		mgr.put(act);
+		
 		Activity act2 = new Activity();
 		act2.setUniqueColumn(act.getUniqueColumn());
 		act2.setName("hello");
@@ -112,7 +90,7 @@ public class TestIndexes {
 		index.addToIndex(act2);
 		
 		Index<Activity> index2 = mgr.getIndex(Activity.class, "/activity/bysecurity/security1");
-		index.addToIndex(act);
+		index2.addToIndex(act);
 		
 		mgr.flush();
 		
@@ -232,6 +210,7 @@ public class TestIndexes {
 		Account acc3 = new Account();
 		acc3.setName("dean");
 		acc3.setIsActive(true);
+		mgr.fillInWithKey(acc3); //Fill in with key is required by the index
 		
 		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
 		index.addToIndex(acc);

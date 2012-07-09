@@ -61,7 +61,7 @@ public class Account extends AccountSuper{
 	public static List<Account> findBetween(Index<Account> index, float begin, float to) {
 		Query<Account> query = index.getNamedQuery("findBetween");
 		query.setParameter("begin", begin);
-		query.setParameter("to", to);
+		query.setParameter("end", to);
 		return query.getResultList();
 	}
 	public static List<Account> findAll(Index<Account> index) {

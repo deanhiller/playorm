@@ -22,12 +22,11 @@ import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi.index.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
-public class QueryFactory implements SpiMetaQuery {
+public class SpiMetaQueryImpl implements SpiMetaQuery {
 
-	private static final Logger log = LoggerFactory.getLogger(QueryFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(SpiMetaQueryImpl.class);
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
-	private Indice indice;
 	private ExpressionNode astTreeRoot;
 	private QueryNode root;
 	
@@ -35,22 +34,14 @@ public class QueryFactory implements SpiMetaQuery {
 	private QueryNode pointer;
 	
 	
-	
-	public void init(Indice indice) {
-		this.indice = indice;
-	}
-	
 	@Override
 	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName) {
 		log.info("creating query for index="+indexName);
 		SpiIndexQueryImpl indexQuery = factory.get();
-		IndexItems index = indice.find(indexName);
-		indexQuery.setup(index, this);
+		indexQuery.setup(indexName, this);
 		return indexQuery;
 	}
 
-	
-	
 	@Override
 	public void onHyphen(int type) {
 		if(pointer==null){

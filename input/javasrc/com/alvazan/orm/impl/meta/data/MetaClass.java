@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.KeyValue;
+import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
@@ -47,6 +48,10 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 		Object id = fetchId(entity);
 		Converter converter = idField.getConverter();
 		String idStr = converter.convertToIndexFormat(id);
+		if(idStr == null)
+			throw new PkIsNullException("entity="+entity+" has no pk defined, so we fail " +
+					"now before you called flush so nothing has been added to database nor " +
+					"the index(as long as you haven't called flush yet");
 		
 		item.put(IDKEY, idStr);
 		

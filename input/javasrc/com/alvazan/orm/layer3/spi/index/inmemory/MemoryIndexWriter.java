@@ -33,7 +33,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	@Inject
 	private Indice indice;
 	@Inject
-	private Provider<QueryFactory> factory;
+	private Provider<SpiMetaQueryImpl> factory;
 	
 	@Override
 	public void sendRemoves(Map<String, List<? extends IndexRemove>> removeFromIndex) {
@@ -182,8 +182,6 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 
 	@Override
 	public SpiMetaQuery createQueryFactory() {
-		QueryFactory queryFactory = factory.get();
-		queryFactory.init(indice);
-		return queryFactory;
+		return factory.get();
 	}
 }

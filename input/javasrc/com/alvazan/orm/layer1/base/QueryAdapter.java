@@ -39,22 +39,45 @@ public class QueryAdapter<T> implements Query<T> {
 		//check parameter 
 		MetaColumnDbo metaFieldDbo = meta.getMetaFieldByParameter(name);
 		if(metaFieldDbo==null){
-			throw new IllegalArgumentException("paraMeterName [" + name
-					+ "] is not find for ");
+			throw new IllegalArgumentException("parameter='" + name
+					+ "' is not found in query="+meta.getQuery());
 		}
 		
 		MetaField metaField = metaClass.getMetaField(metaFieldDbo.getColumnName());
 		Class fieldType = metaField.getFieldType();
+		//Are actual type will never be a primitive because of autoboxing.  When the param
+		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
+		Class objectFieldType = convertIfPrimitive(fieldType);
+		Class actualType = value.getClass();
 		
-		if(!fieldType.isAssignableFrom(value.getClass())){
+		if(!objectFieldType.isAssignableFrom(actualType)){
 			throw new TypeMismatchException("value [" + value
-					+ "] is not match for paraMeterName which should be ["
+					+ "] is not the correct type for the parameter='"+name+"'.  Type should be=["
 					+ fieldType + "]");
 		} 		
 		
 		String newValue = metaField.translateIfEntity(value);
 		
 		indexQuery.setParameter(name, newValue);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private Class convertIfPrimitive(Class fieldType) {
+		if(long.class.equals(fieldType))
+			return Long.class;
+		else if(int.class.equals(fieldType))
+			return Integer.class;
+		else if(short.class.equals(fieldType))
+			return Short.class;
+		else if(byte.class.equals(fieldType))
+			return Byte.class;
+		else if(double.class.equals(fieldType))
+			return Double.class;
+		else if(float.class.equals(fieldType))
+			return Float.class;
+		else if(boolean.class.equals(fieldType))
+			return Boolean.class;
+		return fieldType;
 	}
 
 	@Override
