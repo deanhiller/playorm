@@ -14,7 +14,8 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlEntity
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
-	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique")
+	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
+	@NoSqlQuery(name="findByName", query="select * FROM TABLE e WHERE e.name=:name")
 	
 })
 public class Activity {
@@ -95,5 +96,10 @@ public class Activity {
 		Query<Activity> query = index.getNamedQuery("findUnique");
 		query.setParameter("val", key);
 		return query.getSingleObject();
+	}
+	public static List<Activity> findByName(Index<Activity> index, String name) {
+		Query<Activity> query = index.getNamedQuery("findByName");
+		query.setParameter("name", name);
+		return query.getResultList();
 	}
 }

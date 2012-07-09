@@ -29,6 +29,29 @@ public class TestIndexes {
 		factory.setup(null, "com.alvazan.test.db");
 		return factory;
 	}
+
+	@Test
+	public void testBasicString() {
+		NoSqlEntityManagerFactory factory = setup();
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		Activity act = new Activity();
+		act.setName("hello");
+		act.setUniqueColumn("notunique");
+		act.setNumTimes(5);
+		mgr.put(act);
+		
+		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		index.addToIndex(act);
+		
+		mgr.flush();
+		
+		List<Activity> findByName = Activity.findByName(index, "hello");
+		Assert.assertEquals(1, findByName.size());
+		
+		List<Activity> zero = Activity.findByName(index, "asdf");
+		Assert.assertEquals(0, zero.size());
+	}
 	
 	@Test
 	public void testFailureOnTypeMismatch() {

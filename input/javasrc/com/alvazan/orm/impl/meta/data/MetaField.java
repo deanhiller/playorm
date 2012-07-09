@@ -23,4 +23,5 @@ public interface MetaField<OWNER> extends MetaQueryFieldInfo {
 	public void translateToIndexFormat(OWNER entity, Map<String, String> indexFormat);
 	
 	public MetaColumnDbo getMetaDbo();
+
 }

@@ -47,7 +47,7 @@ public class IndexImpl<T> implements Index<T> {
 	@Override
 	public Query<T> getNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
-		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(name);
+		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(indexName);
 		
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads

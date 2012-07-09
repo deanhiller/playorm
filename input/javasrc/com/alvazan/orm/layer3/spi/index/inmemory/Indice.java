@@ -3,10 +3,13 @@ package com.alvazan.orm.layer3.spi.index.inmemory;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.inject.Singleton;
+
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
+@Singleton
 public class Indice {
 	
 	private static StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_35);

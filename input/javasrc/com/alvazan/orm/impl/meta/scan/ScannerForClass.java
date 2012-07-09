@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.anno.Embeddable;
 import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.Indexed;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
@@ -147,7 +148,8 @@ public class ScannerForClass {
 		else
 			metaField = inspectorField.processColumn(field);
 		
-		metaClass.addMetaField(metaField);
+		boolean isIndexed = field.isAnnotationPresent(Indexed.class);
+		metaClass.addMetaField(metaField, isIndexed);
 		metaDbo.addField(metaField.getMetaDbo());
 	}
 	

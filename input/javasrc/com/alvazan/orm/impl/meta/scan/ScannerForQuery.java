@@ -11,13 +11,16 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.antlr.runtime.tree.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.spi.index.ExpressionNode;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi.index.StateAttribute;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaQuery;
 import com.alvazan.orm.impl.meta.query.MetaColumnDbo;
@@ -141,7 +144,9 @@ public class ScannerForQuery {
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
-			parseExpression(expression, metaQuery, spiMetaQuery, wiring);
+			ExpressionNode node = new ExpressionNode(expression);
+			parseExpression(node, metaQuery, spiMetaQuery, wiring);
+			spiMetaQuery.setASTTree(node);
 			break;
 
 		case 0: // nil
@@ -263,8 +268,9 @@ public class ScannerForQuery {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> void parseExpression(CommonTree expression,
+	private static <T> void parseExpression(ExpressionNode node,
 			MetaQuery<T> metaQuery, SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
+		CommonTree expression = node.getASTNode();
 		int type = expression.getType();
 		log.debug("where type:" + expression.getType());
 		switch (type) {
@@ -272,8 +278,19 @@ public class ScannerForQuery {
 		case NoSqlLexer.OR:
 			spiMetaQuery.onHyphen(type);
 			List<CommonTree> children = expression.getChildren();
-			for(CommonTree child : children)
-				parseExpression(child, metaQuery, spiMetaQuery, wiring);
+			for(int i = 0; i < 2; i++) {
+				CommonTree child = children.get(i);
+				ExpressionNode childNode = new ExpressionNode(child);
+				if(i == 0)
+					node.setLeftChild(childNode);
+				else if(i == 1)
+					node.setRightChild(childNode);
+				else
+					throw new RuntimeException("We have a big problem, we don't have a binary tree anymore");
+				
+				parseExpression(childNode, metaQuery, spiMetaQuery, wiring);
+				
+			}
 			break;
 		case NoSqlLexer.EQ:
 		case NoSqlLexer.NE:
@@ -282,15 +299,20 @@ public class ScannerForQuery {
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
 			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
-			CommonTree rightSide = (CommonTree) expression.getChild(0);
-			CommonTree leftSide = (CommonTree) expression.getChild(1);
+			CommonTree leftSide = (CommonTree) expression.getChild(0);
+			CommonTree rightSide = (CommonTree) expression.getChild(1);
+			ExpressionNode left  = new ExpressionNode(leftSide);
+			ExpressionNode right = new ExpressionNode(rightSide);
+			node.setLeftChild(left);
+			node.setRightChild(right);
 			
 			//I think we only care about mapping parameters to the attribute meta data here....????
 			if(rightSide.getType() == NoSqlLexer.ATTR_NAME && leftSide.getType() == NoSqlLexer.PARAMETER_NAME) {
-				process(metaQuery,spiMetaQuery, rightSide, leftSide, wiring,type);
+				process(metaQuery,spiMetaQuery, right, left, wiring,type);
 			} else if(rightSide.getType() == NoSqlLexer.PARAMETER_NAME && leftSide.getType() == NoSqlLexer.ATTR_NAME) {
-				process(metaQuery,spiMetaQuery, leftSide, rightSide, wiring,type);
-			}
+				process(metaQuery,spiMetaQuery, left, right, wiring,type);
+			} else
+				throw new UnsupportedOperationException("we don't support these two types together at this point.  lefttype="+leftSide.getType()+" rightType="+rightSide.getType());
 			
 			break;
 		default:
@@ -301,12 +323,16 @@ public class ScannerForQuery {
 	@SuppressWarnings({ "unchecked" })
 	//too many arguments
 	private static void process(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
-			CommonTree attributeNode, CommonTree parameterNode,
+			ExpressionNode attributeNode2, ExpressionNode parameterNode2,
 			InfoForWiring wiring, int type) {
 		MetaTableDbo metaClass;
+		
+		CommonTree attributeNode = attributeNode2.getASTNode();
+		CommonTree parameterNode = parameterNode2.getASTNode();
 		String attributeName = attributeNode.getText();
 		if (attributeNode.getChildCount() > 0) {
 			String aliasEntity = attributeNode.getChild(0).getText();
+			
 			metaClass = wiring.getInfoFromAlias(aliasEntity);
 			String fullName = aliasEntity+"."+attributeName;
 			if(metaClass == null)
@@ -324,11 +350,15 @@ public class ScannerForQuery {
 		if (attributeField == null) {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
-
+		
 		String parameter = parameterNode.getText();
 
 		metaQuery.getParameterFieldMap().put(parameter, attributeField);		
 		spiMetaQuery.onComparator(parameter, attributeField.getColumnName(),type);
+		
+		StateAttribute attr = new StateAttribute(metaClass.getTableName(), attributeField.getColumnName()); 
+		attributeNode2.setState(attr);
+		parameterNode2.setState(parameter);
 	}
 
 }

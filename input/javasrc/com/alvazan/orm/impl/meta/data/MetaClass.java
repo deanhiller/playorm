@@ -10,12 +10,13 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaClass<T> implements MetaQueryClassInfo {
 
-	private static final String IDKEY = "id";
+	private static final String IDKEY = IndexReaderWriter.IDKEY;
 	
 	private MetaTableDbo metaDbo = new MetaTableDbo();
 	
@@ -118,10 +119,13 @@ public class MetaClass<T> implements MetaQueryClassInfo {
 		return metaClass;
 	}
 	
-	public void addMetaField(MetaField<T> field) {
+	public void addMetaField(MetaField<T> field, boolean isIndexed) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		fields.put(field.getFieldName(), field);
+		
+		if(isIndexed)
+			indexedFields.add(field);
 	}
 	
 	public MetaField<T> getMetaField(String fieldName){

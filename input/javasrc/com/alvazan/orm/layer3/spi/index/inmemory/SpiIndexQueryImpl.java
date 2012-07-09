@@ -6,14 +6,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.TopScoreDocCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
@@ -22,9 +26,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private IndexItems index;
 	private String indexName;
 	private Map<String, Object> parameterValues = new HashMap<String, Object>();
-	private SpiMetaQuery spiQuery;
+	private QueryFactory spiQuery;
 	
-	public void setup(IndexItems index, SpiMetaQuery spiQuery) {
+	public void setup(IndexItems index, QueryFactory spiQuery) {
 		this.index = index;
 		this.spiQuery = spiQuery;
 	}
@@ -45,7 +49,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List getResultListImpl() throws ParseException, IOException {
 		IndexReader reader = null;
 		IndexSearcher searcher = null;
@@ -59,8 +63,22 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			Query q = this.spiQuery.getQuery(parameterValues);
 		    reader = IndexReader.open(index.getRamDirectory());
 			searcher = new IndexSearcher(reader);
+			
+			TopScoreDocCollector collector = TopScoreDocCollector.create(500, false);
 			//need to insert a collector here...
-		    searcher.search(q, null);
+		    searcher.search(q, collector);
+		    
+		    int total = collector.getTotalHits();
+		    log.info("total results="+total);
+		    
+		    TopDocs docs = collector.topDocs();
+		    
+		    ScoreDoc[] scoreDocs = docs.scoreDocs;
+		    for(ScoreDoc scoreDoc : scoreDocs) {
+		    	Document doc = searcher.doc(scoreDoc.doc);
+		    	String id = doc.get(IndexReaderWriter.IDKEY);
+		    	listOfPrimaryKeys.add(id);
+		    }
 		    
 			return listOfPrimaryKeys;
 		} finally {

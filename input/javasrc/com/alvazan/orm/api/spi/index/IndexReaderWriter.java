@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface IndexReaderWriter {
 	
-	String IDKEY = "id";
+	String IDKEY = "__id__";
 	
 	void sendRemoves(Map<String, List<? extends IndexRemove>> removeFromIndex);
 

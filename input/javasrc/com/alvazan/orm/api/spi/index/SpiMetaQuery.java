@@ -1,8 +1,5 @@
 package com.alvazan.orm.api.spi.index;
 
-import java.util.Map;
-
-import org.apache.lucene.search.Query;
 
 
 
@@ -30,6 +27,6 @@ public interface SpiMetaQuery {
 			int type);
 	
 	
-	public Query getQuery(Map<String, Object> parameterValues);
+	public void setASTTree(ExpressionNode node);
 	
 }
