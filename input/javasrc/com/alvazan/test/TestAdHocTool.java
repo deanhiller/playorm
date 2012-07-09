@@ -35,9 +35,8 @@ public class TestAdHocTool implements Module {
 		NoSqlSession session = factory.createSession();
 		
 		Map<String, String> map = new HashMap<String, String>();
-		map.put("__id__", "asdf");
 		map.put("cat", "deano");
-		session.addToIndex("/someindex", map);
+		session.addToIndex("/someindex", "myId", map);
 		
 		Injector injector = Guice.createInjector(this);
 		ScannerForQuery scanner = injector.getInstance(ScannerForQuery.class);

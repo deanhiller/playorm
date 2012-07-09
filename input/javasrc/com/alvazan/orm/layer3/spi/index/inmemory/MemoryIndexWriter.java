@@ -138,7 +138,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 				writer = new IndexWriter(index.getRamDirectory(), config  );
 		
 				for(IndexAdd add : adds) {
-					Document doc = createDocument(add.getItem());
+					Document doc = createDocument(add.getId(), add.getItem());
 					writer.addDocument(doc);
 				}
 				success = true;
@@ -162,15 +162,12 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 		}
 	}
 
-	private static Document createDocument(Map<String, String> map) {
+	private static Document createDocument(String idValue, Map<String, String> map) {
         Document doc = new Document();
-        String idValue = map.get(IDKEY);
         doc.add(new Field(IDKEY, idValue, Field.Store.YES, Field.Index.ANALYZED));
         
         for (Entry<String, String> item : map.entrySet()) {
         	String key = item.getKey();
-        	if(IDKEY.equals(key))
-        		continue;
         	String value = item.getValue();
         	
         	if(value != null)

@@ -102,11 +102,17 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void addToIndex(String indexName, Map<String, String> item) {
-		
+	public void addToIndex(String indexName, String id, Map<String, String> item) {
+		if(id == null)
+			throw new IllegalArgumentException("id cannot be null");
+		else if(indexName == null)
+			throw new IllegalArgumentException("indexName cannot be null");
+		else if(item == null)
+			throw new IllegalArgumentException("item map cannot be null");
 		
 		IndexAdd add = new IndexAdd();
 		add.setItem(item);
+		add.setId(id);
 		
 		List removeActions = findCreateList(indexName, removeFromIndex);
 		List addActions = findCreateList(indexName, addToIndex);

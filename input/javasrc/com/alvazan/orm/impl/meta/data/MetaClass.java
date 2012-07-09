@@ -17,7 +17,7 @@ import com.alvazan.orm.impl.meta.query.MetaTableDbo;
 
 public class MetaClass<T> implements MetaQueryClassInfo {
 
-	private static final String IDKEY = IndexReaderWriter.IDKEY;
+	public static final String IDKEY = IndexReaderWriter.IDKEY;
 	
 	private MetaTableDbo metaDbo = new MetaTableDbo();
 	

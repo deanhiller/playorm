@@ -3,7 +3,7 @@ package com.alvazan.orm.api.spi.index;
 import java.util.Map;
 
 
-public class IndexAdd implements IndexRemove {
+public class IndexAdd extends IndexRemoveImpl {
 
 	private Map<String, String> item;
 
@@ -15,8 +15,4 @@ public class IndexAdd implements IndexRemove {
 		return item;
 	}
 
-	@Override
-	public String getId() {
-		return item.get("id");
-	}
 }
