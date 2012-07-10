@@ -309,7 +309,8 @@ public class ScannerForQuery {
 
 	private static TypeInfo processConstant(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		String constant = node.getASTNode().getText();
-		node.setState(constant);
+		String withoutQuotes = constant.substring(1, constant.length()-1);
+		node.setState(withoutQuotes);
 		
 		TypeEnum ourType;
 		if(node.getType() == NoSqlLexer.DECIMAL)

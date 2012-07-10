@@ -1,12 +1,15 @@
 package com.alvazan.test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaDatabase;
@@ -24,17 +27,20 @@ public class TestAdHocTool {
 		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
 
 		NoSqlSessionFactory factory = Bootstrap.createRawInstance(DbTypeEnum.IN_MEMORY, metaDb);
-		String sql = "ON /someindex select * FROM MyEntity e WHERE e.cat = 'deano'";
+		String sql = "ON /someindex select * FROM MyEntity e WHERE e.cat = \"deano\"";
 
 		NoSqlSession session = factory.createSession();
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("cat", "deano");
 		session.addToIndex("/someindex", "myId", map);
-
+		byte[] myId = "myId".getBytes();
+		List<Column> columns = new ArrayList<Column>();
+		session.persist("MyEntity", myId, columns);
+		
 		session.flush();
 		
 		List<Row> rows = factory.runQuery(sql);
-		//Assert.assertEquals(1, rows.size());
+		Assert.assertEquals(1, rows.size());
 	}
 
 	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {

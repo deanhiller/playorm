@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -32,11 +33,17 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName);
 		
-		List primaryKeys = spiQueryAdapter.getResultList();
+		List<String> primaryKeys = spiQueryAdapter.getResultList();
 		String colFamily = metaQuery.getTargetTable().getTableName();
 		
 		NoSqlSession session = createSession();
-		List<Row> rows = session.find(colFamily, primaryKeys);
+		
+		List<byte[]> keys = new ArrayList<byte[]>();
+		for(String key : primaryKeys) {
+			keys.add(key.getBytes());
+		}
+		
+		List<Row> rows = session.find(colFamily, keys);
 		
 		return rows;
 	}
