@@ -19,4 +19,6 @@ public interface IndexReaderWriter {
 	 * @param classMeta 
 	 */
 	SpiMetaQuery createQueryFactory();
+
+	void clearIndexesIfInMemoryType();
 }

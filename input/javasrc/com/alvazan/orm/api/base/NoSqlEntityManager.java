@@ -92,5 +92,14 @@ public interface NoSqlEntityManager {
 	 * @param entity
 	 * @return
 	 */
-	public Object getKey(Object entity);	
+	public Object getKey(Object entity);
+
+	/**
+	 * This is a convenience method for in memory database and in-memory index so that
+	 * unit tests can create the whole entityManagerFactory ONCE in @BeforeClass and then
+	 * in @After, they can easily clear all state from the test with this method.
+	 * 
+	 * This method ONLY works with the DbTypeEnum.IN_MEMORY
+	 */
+	public void clearDbAndIndexesIfInMemoryType();
 }

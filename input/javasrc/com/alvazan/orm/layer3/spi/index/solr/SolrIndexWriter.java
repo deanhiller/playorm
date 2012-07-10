@@ -25,6 +25,11 @@ public class SolrIndexWriter implements IndexReaderWriter {
 		return null;
 	}
 
+	@Override
+	public void clearIndexesIfInMemoryType() {
+		throw new UnsupportedOperationException("Not supported by actual index implementations.  Only can be used with in-memory index.");
+	}
+
 
 
 

@@ -1,13 +1,13 @@
 package com.alvazan.test;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
@@ -20,18 +20,26 @@ public class TestManyToOne {
 	private static final Logger log = LoggerFactory.getLogger(TestManyToOne.class);
 	
 	private static final String ACCOUNT_NAME = "dean";
-	private NoSqlEntityManagerFactory factory;
+	private static NoSqlEntityManagerFactory factory;
+	private NoSqlEntityManager mgr;
 
+	@BeforeClass
+	public static void setup() {
+		factory = FactorySingleton.createFactoryOnce();
+	}
+	
 	@Before
-	public void setup() {
-		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
-		factory.setup(null, "com.alvazan.test.db");
+	public void createEntityManager() {
+		mgr = factory.createEntityManager();
+	}
+	@After
+	public void clearDatabase() {
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDbAndIndexesIfInMemoryType();
 	}
 	
 	@Test
 	public void testActivityHasNullAccount() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-
 		//Activity has null reference to account
 		Activity act = new Activity();
 		act.setName("asdfsdf");
@@ -47,8 +55,6 @@ public class TestManyToOne {
 	
 	@Test
 	public void testGetReference() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Activity activity = readWriteBasic(mgr);
 		
 		Activity reference = mgr.getReference(Activity.class, activity.getId());
@@ -60,8 +66,6 @@ public class TestManyToOne {
 	
 	@Test
 	public void testWriteReadProxy() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Activity activity = readWriteBasic(mgr);
 		
 		//This is the proxy object
@@ -72,15 +76,11 @@ public class TestManyToOne {
 	
 	@Test
 	public void testWriteReadBasic() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		readWriteBasic(mgr);
 	}
 	
 	@Test
 	public void testWriteActivityAccountNoSavedYet() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
@@ -100,16 +100,12 @@ public class TestManyToOne {
 
 	@Test
 	public void testNotfound() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-
 		Activity act = mgr.find(Activity.class, "asdf");
 		Assert.assertNull(act);
 	}
 	
 	@Test
 	public void testFillInKeyMethod() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);

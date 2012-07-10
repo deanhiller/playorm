@@ -4,12 +4,13 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -24,17 +25,26 @@ public class TestIndexes {
 
 	private static final Logger log = LoggerFactory.getLogger(TestIndexes.class);
 	
-	public NoSqlEntityManagerFactory setup() {
-		NoSqlEntityManagerFactory factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
-		factory.setup(null, "com.alvazan.test.db");
-		return factory;
+	private static NoSqlEntityManagerFactory factory;
+	private NoSqlEntityManager mgr;
+
+	@BeforeClass
+	public static void setup() {
+		factory = FactorySingleton.createFactoryOnce();
+	}
+	
+	@Before
+	public void createEntityManager() {
+		mgr = factory.createEntityManager();
+	}
+	@After
+	public void clearDatabase() {
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDbAndIndexesIfInMemoryType();
 	}
 	
 	@Test
 	public void testFailureOnTypeMismatch() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Activity act = new Activity();
 		act.setName("hello");
 		act.setUniqueColumn("notunique");
@@ -69,9 +79,6 @@ public class TestIndexes {
 	
 	@Test
 	public void testFailureOnGetSingleResultAndSuccess() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-
 		//Activity has null reference to account
 		Activity act = new Activity();
 		act.setName("hello");
@@ -110,9 +117,6 @@ public class TestIndexes {
 	
 	//@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();
 		acc.setName("tempxxxxx");
@@ -150,9 +154,6 @@ public class TestIndexes {
 	
 	//@Test
 	public void testBooleanWithAndClause() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Account acc = new Account();
 		acc.setName("abc");
 		acc.setIsActive(true);
@@ -196,9 +197,6 @@ public class TestIndexes {
 	//@Test
 	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-		
 		Account acc = new Account();
 		acc.setName("abc");
 		acc.setIsActive(true);
@@ -231,9 +229,6 @@ public class TestIndexes {
 
 	//@Test
 	public void testSeparateIndexes() {
-		NoSqlEntityManagerFactory factory = setup();
-		NoSqlEntityManager mgr = factory.createEntityManager();
-
 		//Activity has null reference to account
 		Activity act = new Activity();
 		act.setName("hello");

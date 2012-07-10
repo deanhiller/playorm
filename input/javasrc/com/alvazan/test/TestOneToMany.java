@@ -1,13 +1,13 @@
 package com.alvazan.test;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Account;
@@ -18,19 +18,30 @@ public class TestOneToMany {
 	private static final Logger log = LoggerFactory.getLogger(TestOneToMany.class);
 	
 	private static final String ACCOUNT_NAME = "declan";
-	private NoSqlEntityManagerFactory factory;
+	private static NoSqlEntityManagerFactory factory;
+	private NoSqlEntityManager mgr;
 
-	@Before
-	public void setup() {
-		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
-		factory.setup(null, "com.alvazan.test.db");
+	@BeforeClass
+	public static void setup() {
+		factory = FactorySingleton.createFactoryOnce();
 	}
+	
+	@Before
+	public void createEntityManager() {
+		mgr = factory.createEntityManager();
+	}
+	@After
+	public void clearDatabase() {
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDbAndIndexesIfInMemoryType();
+	}
+	
 	@Test
 	public void testInListOneValueIsNotInDatabase() {
 	}
-	
+
+	//@Test
 	public void testBasicToMany() {
-		NoSqlEntityManager mgr = factory.createEntityManager();
 		readWriteBasic(mgr);
 	}
 

@@ -22,4 +22,8 @@ public class NoSqlDatabase {
 	public Table findTable(String name) {
 		return nameToTable.get(name);
 	}
+
+	public void clear() {
+		nameToTable.clear();
+	}
 }

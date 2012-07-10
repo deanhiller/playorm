@@ -137,4 +137,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		return indexWriter;
 	}
 
+	@Override
+	public void clearDbAndIndexesIfInMemoryType() {
+		rawSession.clearDatabaseIfInMemoryType();
+		indexWriter.clearIndexesIfInMemoryType();
+		
+	}
+
 }

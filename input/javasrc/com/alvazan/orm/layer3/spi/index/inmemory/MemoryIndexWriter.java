@@ -181,4 +181,9 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	public SpiMetaQuery createQueryFactory() {
 		return factory.get();
 	}
+
+	@Override
+	public void clearIndexesIfInMemoryType() {
+		indice.clear();
+	}
 }

@@ -127,4 +127,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		idField.fillInAndFetchId(entity);
 	}
 
+	@Override
+	public void clearDbAndIndexesIfInMemoryType() {
+		session.clearDbAndIndexesIfInMemoryType();
+	}
+
 }

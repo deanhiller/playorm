@@ -79,4 +79,9 @@ public class InMemorySession implements NoSqlRawSession {
 			columns.put(col.getName(), col);
 		}
 	}
+
+	@Override
+	public void clearDatabaseIfInMemoryType() {
+		database.clear();
+	}
 }

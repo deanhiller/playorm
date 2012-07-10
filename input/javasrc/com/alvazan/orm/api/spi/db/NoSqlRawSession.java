@@ -21,4 +21,6 @@ public interface NoSqlRawSession {
 	 * @param actions
 	 */
 	public void sendChanges(List<Action> actions);
+
+	public void clearDatabaseIfInMemoryType();
 }

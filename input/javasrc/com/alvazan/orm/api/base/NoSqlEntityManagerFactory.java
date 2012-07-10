@@ -22,5 +22,5 @@ public interface NoSqlEntityManagerFactory {
 	public void setup(Map<Class, Converter> converters, String ... packages);
 	
 	public NoSqlEntityManager createEntityManager();
-	
+
 }

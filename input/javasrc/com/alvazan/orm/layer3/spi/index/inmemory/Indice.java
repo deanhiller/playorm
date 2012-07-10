@@ -33,5 +33,9 @@ public class Indice {
 	public IndexItems find(String indexName) {
 		return nameToIndex.get(indexName);
 	}
+
+	public void clear() {
+		nameToIndex.clear();
+	}
 	
 }

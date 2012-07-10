@@ -5,6 +5,7 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi.layer2.MetaDatabase;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
+import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -14,6 +15,8 @@ public class Bootstrap extends AbstractBootstrap {
 	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
+		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;
+		impl.setInjector(injector);
 		return factory;
 	}
 

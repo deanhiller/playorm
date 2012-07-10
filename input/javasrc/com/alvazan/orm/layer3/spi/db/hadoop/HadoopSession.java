@@ -16,4 +16,9 @@ public class HadoopSession implements NoSqlRawSession {
 	@Override
 	public void sendChanges(List<Action> actions) {
 	}
+
+	@Override
+	public void clearDatabaseIfInMemoryType() {
+		throw new UnsupportedOperationException("Not supported by actual databases.  Only can be used with in-memory db.");
+	}
 }

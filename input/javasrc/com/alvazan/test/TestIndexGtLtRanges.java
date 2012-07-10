@@ -1,10 +1,10 @@
 package com.alvazan.test;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -12,15 +12,25 @@ import com.alvazan.test.db.Activity;
 
 public class TestIndexGtLtRanges {
 
-	private static NoSqlEntityManager mgr;
 	private static Index<Activity> index;
+
+	private static NoSqlEntityManagerFactory factory;
+	private NoSqlEntityManager mgr;
 
 	@BeforeClass
 	public static void setup() {
-		NoSqlEntityManagerFactory factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
-		factory.setup(null, "com.alvazan.test.db");
+		factory = FactorySingleton.createFactoryOnce();
+	}
+	
+	@Before
+	public void createEntityManager() {
 		mgr = factory.createEntityManager();
 		index = setupRecords();
+	}
+	@After
+	public void clearDatabase() {
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDbAndIndexesIfInMemoryType();
 	}
 
 	@Test
@@ -28,7 +38,7 @@ public class TestIndexGtLtRanges {
 		//TODO: test some ranges out here
 	}
 
-	private static Index<Activity> setupRecords() {
+	private Index<Activity> setupRecords() {
 		Activity act = new Activity();
 		act.setName("hello");
 		act.setMyFloat(5.65f);

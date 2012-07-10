@@ -43,6 +43,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private boolean isScanned;
 	@Inject
 	private MetaInfo metaInfo;
+
+	private Object injector;
 	
 	@Override
 	public NoSqlEntityManager createEntityManager() {
@@ -148,4 +150,13 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 			return false;
 		}
 	}
+
+	public Object getInjector() {
+		return injector;
+	}
+
+	public void setInjector(Object injector) {
+		this.injector = injector;
+	}
+
 }
