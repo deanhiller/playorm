@@ -20,11 +20,6 @@ public interface SpiMetaQuery {
 	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName);
 
 
-	public void onHyphen(int type);
-
-
-	public void onComparator(String parameter, String attributeField,
-			int type);
 	
 	
 	public void setASTTree(ExpressionNode node);

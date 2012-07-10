@@ -1,7 +1,5 @@
 package com.alvazan.orm.layer3.spi.index.inmemory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -28,10 +26,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
-	private QueryNode root;
-	
-	//pointer is used for setting up the tree;
-	private QueryNode pointer;
 	
 	
 	@Override
@@ -42,49 +36,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	@Override
-	public void onHyphen(int type) {
-		if(pointer==null){
-			root = new HyphenNode(null,type);
-			pointer = root;
-			return;
-		}
-		if(((HyphenNode)pointer).getLeftNode()==null){
-			((HyphenNode)pointer).setLeftNode(new HyphenNode(pointer,type));
-			pointer = ((HyphenNode)pointer).getLeftNode();
-		}else{
-			((HyphenNode)pointer).setRightNode(
-					new HyphenNode(pointer,type));
-			pointer = ((HyphenNode)pointer).getRightNode();
-		}
-	}
-
-	@Override
-	public void onComparator(String parameter, String columnName,
-			int type) {
-		if(pointer ==null){
-			root = new LeafNode(null,columnName,parameter,type);
-			pointer = root;
-			List<LeafNode> nodes = new ArrayList<LeafNode>();
-			nodes.add((LeafNode)root);
-//			this.paraNameToLeafNodes.put(parameter,nodes);
-			return;
-		}
-		LeafNode node = new LeafNode(pointer,columnName,parameter,type); 
-		if(((HyphenNode)pointer).getLeftNode()==null){
-			((HyphenNode)pointer).setLeftNode(node);
-			
-		}else{
-			((HyphenNode)pointer).setRightNode(node);
-			pointer = pointer.getParentNode();
-		}
-//		List<LeafNode> nodes = this.paraNameToLeafNodes.get(parameter);
-//		if(nodes==null){
-//			nodes= new ArrayList<LeafNode>();
-//			this.paraNameToLeafNodes.put(parameter, nodes);
-//		}
-//		nodes.add(node);
-	}
 
 	public Query getQuery(
 			Map<String, Object> parameterValues) {

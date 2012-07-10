@@ -230,7 +230,6 @@ public class ScannerForQuery {
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
-			spiMetaQuery.onHyphen(type);
 			List<CommonTree> children = expression.getChildren();
 			for(int i = 0; i < 2; i++) {
 				CommonTree child = children.get(i);
