@@ -88,6 +88,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	setupQueryStuff(meta);
         }
         
+        log.info("Finished scanning classes");
         isScanned = true;
 	}
 

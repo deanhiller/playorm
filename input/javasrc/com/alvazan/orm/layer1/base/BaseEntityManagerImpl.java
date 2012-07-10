@@ -31,6 +31,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public void put(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
+		if(metaClass == null)
+			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
 		RowToPersist row = metaClass.translateToRow(entity);
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}

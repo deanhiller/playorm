@@ -56,9 +56,11 @@ public class MetaClass<T> {
 					"the index(as long as you haven't called flush yet");
 		
 		item.put(IDKEY, idStr);
-		
+
 		for(MetaField<T> field : indexedFields) {
-			field.translateToIndexFormat(entity, item);
+			String indexValue = field.translateToIndexFormat(entity);
+			String columnName = field.getColumnName();
+			item.put(columnName, indexValue);
 		}
 		return item;
 	}
@@ -83,7 +85,9 @@ public class MetaClass<T> {
 
 		Map<String, Column> columns = row.getColumns();
 		for(MetaField<T> field : fields.values()) {
-			field.translateFromColumn(columns, inst, session);
+			String columnName = field.getColumnName();
+			Column column = columns.get(columnName);
+			field.translateFromColumn(column, inst, session);
 		}
 		
 		return key;

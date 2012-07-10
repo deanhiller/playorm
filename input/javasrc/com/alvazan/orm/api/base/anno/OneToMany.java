@@ -18,6 +18,6 @@ public @interface OneToMany {
 	 * be specified here...
 	 * @return
 	 */
-	String keyFieldForMap();
+	String keyFieldForMap() default "";
 
 }

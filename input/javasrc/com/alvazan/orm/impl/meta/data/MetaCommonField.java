@@ -1,27 +1,21 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
-public class MetaCommonField<OWNER> implements MetaField<OWNER> {
+public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	
-	private MetaColumnDbo metaDbo = new MetaColumnDbo();
-	protected Field field;
-	private String columnName;
 	private Converter converter;
-	
+
 	@Override
 	public String toString() {
-		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
+		return "MetaCommonField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromColumn(Map<String, Column> columns, OWNER entity, NoSqlSession session) {
-		Column column = columns.get(columnName);
+	public void translateFromColumn(Column column, OWNER entity, NoSqlSession session) {
 		Object value = converter.convertFromNoSql(column.getValue());
 		ReflectionUtil.putFieldValue(entity, field, value);
 	}
@@ -34,26 +28,17 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 	}
 
 	public void setup(Field field2, String colName, Converter converter) {
-		this.field = field2;
-		this.field.setAccessible(true);
-		this.columnName = colName;
+		super.setup(field2, colName, null, field2.getType(), false);
 		this.converter = converter;
-		metaDbo.setup(columnName, null, field.getType(), false);
 	}
 
 	@Override
-	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+	public String translateToIndexFormat(OWNER entity) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
 		String indexValue = converter.convertToIndexFormat(value);
-		indexFormat.put(columnName, indexValue);
+		return indexValue;
 	}
 
-	@Override
-	public String getFieldName() {
-		return this.field.getName();
-	}
-	
 	public Class<?> getFieldType(){
 		return this.field.getType();
 	}
@@ -63,8 +48,4 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 		return value+"";
 	}
 
-	@Override
-	public MetaColumnDbo getMetaDbo() {
-		return metaDbo;
-	}
 }

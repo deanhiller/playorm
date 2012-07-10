@@ -73,7 +73,7 @@ public class TestOneToMany {
 		Account accountResult = mgr.find(Account.class, acc.getId());
 		Assert.assertEquals(ACCOUNT_NAME, accountResult.getName());
 		Assert.assertEquals(acc.getUsers(), accountResult.getUsers());
-		Assert.assertEquals(2, acc.getActivities().size());
+		Assert.assertEquals(2, accountResult.getActivities().size());
 		
 		return accountResult;
 	}

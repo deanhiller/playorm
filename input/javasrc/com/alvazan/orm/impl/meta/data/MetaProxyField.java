@@ -1,31 +1,25 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
-public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
+public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
-	private MetaColumnDbo metaDbo = new MetaColumnDbo();
-	protected Field field;
-	private String columnName;
 	//ClassMeta Will eventually have the idField that has the converter!!!
 	//once it is scanned
 	private MetaClass<PROXY> classMeta;
 	
 	@Override
 	public String toString() {
-		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
+		return "MetaProxyField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType().getName()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromColumn(Map<String, Column> columns, OWNER entity, NoSqlSession session) {
-		Column column = columns.get(columnName);
+	public void translateFromColumn(Column column, OWNER entity, NoSqlSession session) {
 		Object proxy = convertIdToProxy(column.getValue(), session);
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
@@ -74,25 +68,15 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 	}	
 	
 	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {
-		this.field = field2;
-		this.field.setAccessible(true);
-		this.columnName = colName;
-		this.classMeta = classMeta;
-		
 		MetaTableDbo fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(colName, fkToTable, null, false);
+		super.setup(field2, colName, fkToTable, null, false);
+		this.classMeta = classMeta;
 	}
 
 	@Override
-	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+	public String translateToIndexFormat(OWNER entity) {
 		String idStr = translateIfEntity(entity);
-		indexFormat.put(columnName, idStr);
-	}
-
-	@Override
-	public String getFieldName() {
-		return this.field.getName();
+		return idStr;
 	}
 
 	@Override
@@ -110,8 +94,4 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 		return idStr;
 	}
 
-	@Override
-	public MetaColumnDbo getMetaDbo() {
-		return metaDbo;
-	}
 }

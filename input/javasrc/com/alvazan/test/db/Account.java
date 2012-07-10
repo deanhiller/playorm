@@ -31,7 +31,7 @@ public class Account extends AccountSuper{
 	private Float users;
 
 	@Transient
-	//@OneToMany(entityType=Activity.class, keyFieldForMap="")
+	//@OneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 
 	public String getId() {

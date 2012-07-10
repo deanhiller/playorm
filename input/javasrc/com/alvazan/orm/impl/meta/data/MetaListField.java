@@ -8,35 +8,36 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
-public class MetaListField<OWNER, PROXY> implements MetaField<OWNER> {
+public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
-	private MetaColumnDbo metaDbo = new MetaColumnDbo();
-	private Field field;
-	private String columnName;
 	private MetaClass<?> classMeta;
 	
 	@Override
-	public void translateFromColumn(Map<String, Column> columns, OWNER entity,
+	public void translateFromColumn(Column column, OWNER entity,
 			NoSqlSession session) {
+		Object proxy;// = convertIdToProxy(column.getValue(), session);
+		
 		if(field.getType().equals(Map.class))
-			translateFromColumnMap(columns, entity, session);
+			proxy = translateFromColumnMap(column, entity, session);
 		else
-			translateFromColumnList(columns, entity, session);
+			proxy = translateFromColumnList(column, entity, session);
+		
+		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 
-	private void translateFromColumnList(Map<String, Column> columns,
+	private List translateFromColumnList(Column column,
 			OWNER entity, NoSqlSession session) {
 		
+		return null;
 	}
 
-	private void translateFromColumnMap(Map<String, Column> columns,
+	private Map translateFromColumnMap(Column column,
 			OWNER entity, NoSqlSession session) {
-		// TODO Auto-generated method stub
 		
+		return null;
 	}
 
 	@Override
@@ -100,11 +101,6 @@ public class MetaListField<OWNER, PROXY> implements MetaField<OWNER> {
 	}
 
 	@Override
-	public String getFieldName() {
-		return field.getName();
-	}
-
-	@Override
 	public Class<?> getFieldType() {
 		throw new UnsupportedOperationException("not done yet");
 	}
@@ -115,23 +111,19 @@ public class MetaListField<OWNER, PROXY> implements MetaField<OWNER> {
 	}
 
 	@Override
-	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+	public String translateToIndexFormat(OWNER entity) {
 		throw new UnsupportedOperationException("not done yet");
 	}
 
-	@Override
-	public MetaColumnDbo getMetaDbo() {
-		return metaDbo;
+	public void setup(Field field, String colName, MetaClass<?> classMeta) {
+		MetaTableDbo fkToTable = classMeta.getMetaDbo();
+		super.setup(field, colName, fkToTable, null, true);
+		this.classMeta = classMeta;
 	}
 
-	public void setup(Field field, String colName, MetaClass<?> classMeta) {
-		this.field = field;
-		this.field.setAccessible(true);
-		this.columnName = colName;
-		this.classMeta = classMeta;
-		
-		MetaTableDbo fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(colName, fkToTable, null, true);
+	@Override
+	public String toString() {
+		return "MetaListField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType().getName()
+				+ "<"+classMeta.getMetaClass().getName()+">), columnName=" + columnName + "]";
 	}
 }
