@@ -62,7 +62,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void addToIndex(String indexName, String id, Map<String, String> item) {
+	public void addToIndex(String indexName, String id, Map<String, Object> item) {
 		session.addToIndex(indexName, id, item);
 	}
 

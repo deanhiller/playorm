@@ -13,6 +13,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryParser.ParseException;
@@ -117,7 +118,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 	}
 
 	private IndexErrorInfo create(List<IndexAdd> adds, Exception e) {
-		List<Map<String, String>> items = new ArrayList<Map<String,String>>();
+		List<Map<String, Object>> items = new ArrayList<Map<String,Object>>();
 		for(IndexAdd a : adds) {
 			items.add(a.getItem());
 		}
@@ -162,16 +163,41 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 		}
 	}
 
-	private static Document createDocument(String idValue, Map<String, String> map) {
+	private static Document createDocument(String idValue, Map<String, Object> map) {
         Document doc = new Document();
         doc.add(new Field(IDKEY, idValue, Field.Store.YES, Field.Index.ANALYZED));
         
-        for (Entry<String, String> item : map.entrySet()) {
+        for (Entry<String, Object> item : map.entrySet()) {
         	String key = item.getKey();
-        	String value = item.getValue();
-        	
-        	if(value != null)
-        		doc.add(new Field(key, value, Field.Store.NO, Field.Index.ANALYZED));
+        	Object value = item.getValue();
+        	if(value==null) continue;
+			// FIXME stupid if else if
+
+			if (value instanceof String)
+				doc.add(new Field(key, (String) value, Field.Store.NO,
+						Field.Index.ANALYZED));
+			else if (value instanceof Number) {
+				NumericField numericField = new NumericField(key,
+						Field.Store.NO, true);
+				if (value.getClass() == int.class
+						|| value.getClass() == Integer.class) {
+					numericField.setIntValue((Integer) value);
+				} else if (value.getClass() == long.class
+						|| value.getClass() == Long.class) {
+					numericField.setLongValue((Long) value);
+				} else if (value.getClass() == double.class
+						|| value.getClass() == Double.class) {
+					numericField.setDoubleValue((Double) value);
+				} else if (value.getClass() == float.class
+						|| value.getClass() == Float.class) {
+					numericField.setFloatValue((Float) value);
+				}
+			} else {
+				throw new RuntimeException("Unsupport field " + key + " type "
+						+ value.getClass());
+			}
+        
+        		
 		}
 
         return doc;

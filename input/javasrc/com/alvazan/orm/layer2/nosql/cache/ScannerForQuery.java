@@ -309,15 +309,23 @@ public class ScannerForQuery {
 	private static TypeInfo processConstant(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		String constant = node.getASTNode().getText();
 		String withoutQuotes = constant.substring(1, constant.length()-1);
-		node.setState(withoutQuotes);
+		
 		
 		TypeEnum ourType;
-		if(node.getType() == NoSqlLexer.DECIMAL)
+		if(node.getType() == NoSqlLexer.DECIMAL){
 			ourType = TypeEnum.DECIMAL;
-		else if(node.getType() == NoSqlLexer.STR_VAL)
+			//FIXME 
+			node.setState(Double.parseDouble(withoutQuotes)); 
+		}
+		else if(node.getType() == NoSqlLexer.STR_VAL){
 			ourType = TypeEnum.STRING;
-		else if(node.getType() == NoSqlLexer.INT_VAL)
+			node.setState(withoutQuotes);
+		}
+		else if(node.getType() == NoSqlLexer.INT_VAL){
 			ourType = TypeEnum.INTEGER;
+			node.setState(Integer.getInteger(withoutQuotes));
+		}
+			
 		else 
 			throw new RuntimeException("bug, not supported type(please fix)="+node.getType());
 		

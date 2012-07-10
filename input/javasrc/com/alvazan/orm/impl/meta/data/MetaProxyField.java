@@ -85,7 +85,7 @@ public class MetaProxyField<OWNER, PROXY> implements MetaField<OWNER> {
 
 	@Override
 	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+			Map<String, Object> indexFormat) {
 		String idStr = translateIfEntity(entity);
 		indexFormat.put(columnName, idStr);
 	}

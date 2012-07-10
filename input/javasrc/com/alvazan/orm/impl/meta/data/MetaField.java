@@ -20,7 +20,7 @@ public interface MetaField<OWNER> {
 	//TODO: should be Object instead of String probably later so we can return int, double, etc.
 	public String translateIfEntity(Object value);
 	//TODO: should be Map<String, Object> so we can return int, double, etc. etc.
-	public void translateToIndexFormat(OWNER entity, Map<String, String> indexFormat);
+	public void translateToIndexFormat(OWNER entity, Map<String, Object> indexFormat);
 	
 	public MetaColumnDbo getMetaDbo();
 

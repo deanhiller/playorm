@@ -10,7 +10,7 @@ public class IndexFailureException extends RuntimeException {
 
 	public IndexFailureException(String message, Throwable cause,
 			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
+//		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
 	public IndexFailureException(String message, Throwable cause) {

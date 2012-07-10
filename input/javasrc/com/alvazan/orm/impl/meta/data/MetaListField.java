@@ -116,7 +116,7 @@ public class MetaListField<OWNER, PROXY> implements MetaField<OWNER> {
 
 	@Override
 	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+			Map<String, Object> indexFormat) {
 		throw new UnsupportedOperationException("not done yet");
 	}
 

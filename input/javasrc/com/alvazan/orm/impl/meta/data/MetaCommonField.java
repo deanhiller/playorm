@@ -43,7 +43,7 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 
 	@Override
 	public void translateToIndexFormat(OWNER entity,
-			Map<String, String> indexFormat) {
+			Map<String, Object> indexFormat) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
 		String indexValue = converter.convertToIndexFormat(value);
 		indexFormat.put(columnName, indexValue);

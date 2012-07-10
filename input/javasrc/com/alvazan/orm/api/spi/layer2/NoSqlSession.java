@@ -55,7 +55,7 @@ public interface NoSqlSession {
 	public List<Row> find(String colFamily, List<byte[]> rowKeys);
 	
 	public void removeFromIndex(String indexName, String id);
-	public void addToIndex(String indexName, String id, Map<String, String> item);
+	public void addToIndex(String indexName, String id, Map<String, Object> item);
 	
 	public void flush();
 
