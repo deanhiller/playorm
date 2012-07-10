@@ -46,4 +46,12 @@ public class ExpressionNode {
 	}
 
 
+	public String getExpressionAsString() {
+		if(leftChild != null && rightChild != null) {
+			return "("+leftChild.getExpressionAsString()+" "+this.node+" "+rightChild.getExpressionAsString()+")";
+		}
+		return this.node+"";
+	}
+	
+
 }

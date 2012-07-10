@@ -58,7 +58,7 @@ public class TestLuceneQuery implements Module {
 		
 		for(String field : fields) {
 			MetaColumnDbo fieldDbo = new MetaColumnDbo();
-			fieldDbo.setColumnName(field);
+			fieldDbo.setup(field, null, String.class, false);
 			meta.addField(fieldDbo);
 		}
 	}

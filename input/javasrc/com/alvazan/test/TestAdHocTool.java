@@ -1,71 +1,40 @@
 package com.alvazan.test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
-import com.alvazan.orm.api.spi.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaDatabase;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.impl.bindings.Bootstrap;
-import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
-import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
-import com.alvazan.orm.layer2.nosql.cache.ScannerForQuery;
-import com.alvazan.orm.layer3.spi.db.inmemory.InMemorySession;
-import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
-import com.google.inject.Binder;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Module;
-import com.google.inject.name.Names;
 
-public class TestAdHocTool implements Module {
+public class TestAdHocTool {
 
-	@SuppressWarnings("rawtypes")
 	@Test
 	public void testBasic() {
-		NoSqlSessionFactory factory = Bootstrap.createRawInstance(DbTypeEnum.IN_MEMORY);
+		MetaDatabase metaDb = new MetaDatabase();
+		addMetaClassDbo(metaDb, "MyEntity", "cat", "mouse", "dog");
+		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
+
+		NoSqlSessionFactory factory = Bootstrap.createRawInstance(DbTypeEnum.IN_MEMORY, metaDb);
+		String sql = "ON /someindex select * FROM MyEntity e WHERE e.cat = 'deano'";
+
 		NoSqlSession session = factory.createSession();
-		
 		Map<String, String> map = new HashMap<String, String>();
 		map.put("cat", "deano");
 		session.addToIndex("/someindex", "myId", map);
-		
-		Injector injector = Guice.createInjector(this);
-		ScannerForQuery scanner = injector.getInstance(ScannerForQuery.class);
-		String sql = "select * FROM MyEntity e WHERE e.cat >= :dean";
-		
-		MetaQuery metaQuery = scanner.parseQuery(sql);
-		NoSqlSession instance = injector.getInstance(NoSqlSession.class);
-		String indexName = metaQuery.getIndexName();
-		
-		//SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName);
-		//AdhocQueryAdapter adapter = injector.getInstance(AdhocQueryAdapter.class);
-		//adapter.setup(metaQuery, spiQueryAdapter);
 
-		//List<Row> rows = adapter.getResultList();
+		session.flush();
 		
-	}
-
-	@Override
-	public void configure(Binder binder) {
-		MetaDatabase map = new MetaDatabase();
-		addMetaClassDbo(map, "MyEntity", "cat", "mouse", "dog");
-		addMetaClassDbo(map, "OtherEntity", "id", "dean", "declan", "pet", "house");
-		
-		binder.bind(MetaDatabase.class).toInstance(map);
-		binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class).asEagerSingleton();
-		binder.bind(NoSqlRawSession.class).to(InMemorySession.class);
-	
-		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);
-		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);		
+		List<Row> rows = factory.runQuery(sql);
+		//Assert.assertEquals(1, rows.size());
 	}
 
 	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {
@@ -75,7 +44,7 @@ public class TestAdHocTool implements Module {
 		
 		for(String field : fields) {
 			MetaColumnDbo fieldDbo = new MetaColumnDbo();
-			fieldDbo.setColumnName(field);
+			fieldDbo.setup(field, null, String.class, false);
 			meta.addField(fieldDbo);
 		}
 	}

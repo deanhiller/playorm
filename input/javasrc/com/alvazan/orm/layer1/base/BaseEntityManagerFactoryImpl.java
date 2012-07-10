@@ -123,7 +123,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 			// The first visitor would be ourselves maybe? to get all parameter info
 			// The second visitor is the SPI Index so it can create it's "prototype"
 			// query (prototype pattern)
-			MetaQuery metaQuery = noSqlSessionFactory.newsetupByVisitingTree(query.query(), classMeta.getColumnFamily());
+			MetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily());
 
 			return metaQuery;
 		} catch(RuntimeException e) {

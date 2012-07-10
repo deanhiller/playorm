@@ -1,5 +1,8 @@
 package com.alvazan.orm.api.spi.layer2;
 
+import java.util.List;
+
+import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlSessionFactoryImpl;
 import com.google.inject.ImplementedBy;
 
@@ -8,8 +11,7 @@ public interface NoSqlSessionFactory {
 
 	public NoSqlSession createSession();
 	
-	@SuppressWarnings("rawtypes")
-	public MetaQuery parseQuery(String query);
+	public List<Row> runQuery(String query);
 
 	/**
 	 * For ORM layer that want to use TABLE as the alias instead of typing Entity name which allows
@@ -20,6 +22,6 @@ public interface NoSqlSessionFactory {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public MetaQuery newsetupByVisitingTree(String query, String targetTable);
+	public MetaQuery parseQueryForOrm(String query, String targetTable);
 	
 }

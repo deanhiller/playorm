@@ -31,6 +31,7 @@ public class MetaClass<T> {
 	
 	private MetaIdField<T> idField;
 	private Map<String,MetaField<T>> fields = new HashMap<String, MetaField<T>>();
+	private Map<String, MetaField<T>> columnNameToField = new HashMap<String, MetaField<T>>();
 	
 	private List<MetaField<T>> indexedFields = new ArrayList<MetaField<T>>();
 	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();

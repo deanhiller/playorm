@@ -57,9 +57,9 @@ public class ScannerForField {
 		stdConverters.put(Double.class, new Converters.DoubleConverter());
 		stdConverters.put(byte.class, new Converters.ByteConverter());
 		stdConverters.put(Byte.class, new Converters.ByteConverter());
-		stdConverters.put(String.class, new Converters.StringConverter());
-		stdConverters.put(Boolean.class, new Converters.BooleanConverter());
 		stdConverters.put(boolean.class, new Converters.BooleanConverter());
+		stdConverters.put(Boolean.class, new Converters.BooleanConverter());
+		stdConverters.put(String.class, new Converters.StringConverter());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -134,7 +134,7 @@ public class ScannerForField {
 		Converter converter = null;
 		if(col != null && !NoConversion.class.isAssignableFrom(col.customConverter()))
 			converter = ReflectionUtil.create(col.customConverter());
-		
+
 		try {
 			converter = lookupConverter(type, converter);
 			metaField.setup(field, colName, converter);

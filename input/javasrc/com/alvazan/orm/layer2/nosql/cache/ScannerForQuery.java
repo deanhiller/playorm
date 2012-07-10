@@ -20,6 +20,8 @@ import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaDatabase;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.TypeEnum;
+import com.alvazan.orm.api.spi.layer2.TypeInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 
@@ -53,7 +55,7 @@ public class ScannerForQuery {
 		
 		visitor1.initialize(query, visitor2);
 
-		InfoForWiring wiring = new InfoForWiring();
+		InfoForWiring wiring = new InfoForWiring(query, targetTable);
 		
 		// VISITOR PATTERN(if you don't know that pattern, google it!!!)
 		// Normally, the visitor is injected INTO theTree variable itself but I
@@ -62,7 +64,7 @@ public class ScannerForQuery {
 		// not be as flexible as this
 		// anyways since more people can make changes without the grammar
 		// knowledge this way
-		walkTheTree(theTree, visitor1, visitor2, wiring, targetTable);
+		walkTheTree(theTree, visitor1, visitor2, wiring);
 
 		return visitor1;
 	}
@@ -82,11 +84,11 @@ public class ScannerForQuery {
 	
 	@SuppressWarnings("unchecked")
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiMetaQuery spiMetaQuery, InfoForWiring wiring, String targetTable) {
+			SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, spiMetaQuery, wiring, targetTable);
+			parseFromClause(tree, metaQuery, spiMetaQuery, wiring);
 			break;
 		case NoSqlLexer.SELECT_CLAUSE:
 			parseSelectClause(tree, metaQuery, spiMetaQuery, wiring);
@@ -103,7 +105,7 @@ public class ScannerForQuery {
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, metaQuery, spiMetaQuery, wiring, targetTable);
+				walkTheTree(child, metaQuery, spiMetaQuery, wiring);
 			}
 			break;
 		default:
@@ -171,7 +173,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings({ "unchecked" })
 	private <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring, String targetTable) {
+			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -180,7 +182,7 @@ public class ScannerForQuery {
 			int type = child.getType();
 			switch (type) {
 			case NoSqlLexer.TABLE_NAME:
-				loadTableIntoWiringInfo(metaQuery, wiring, child, targetTable);
+				loadTableIntoWiringInfo(metaQuery, wiring, child);
 				break;
 			default:
 				break;
@@ -189,11 +191,12 @@ public class ScannerForQuery {
 	}
 
 	private <T> void loadTableIntoWiringInfo(MetaQuery<T> metaQuery,
-			InfoForWiring wiring, CommonTree tableNode, String targetTable) {
+			InfoForWiring wiring, CommonTree tableNode) {
 		// What should we add to metaQuery here
 		// AND later when we do joins, we need to tell the factory
 		// here as well
 		String tableName = tableNode.getText();
+		String targetTable = wiring.getTargetTable();
 		MetaTableDbo metaClass = metaInfo.getMeta(tableName);
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
 		if(tableName.equals("TABLE") && targetTable != null) {
@@ -257,13 +260,25 @@ public class ScannerForQuery {
 			node.setLeftChild(left);
 			node.setRightChild(right);
 			
-			//I think we only care about mapping parameters to the attribute meta data here....????
-			if(rightSide.getType() == NoSqlLexer.ATTR_NAME && leftSide.getType() == NoSqlLexer.PARAMETER_NAME) {
-				process(metaQuery,spiMetaQuery, right, left, wiring,type);
-			} else if(rightSide.getType() == NoSqlLexer.PARAMETER_NAME && leftSide.getType() == NoSqlLexer.ATTR_NAME) {
-				process(metaQuery,spiMetaQuery, left, right, wiring,type);
+			//This is a VERY difficult issue.  We basically want the type information
+			//first either from the constant OR from the column name, then we want to use
+			//that NOW or later to verify the type of the other side of the equation, BUT which
+			//one has the type information as he needs to go first.  If both are parameters
+			//that are passed in, we have no type information, correct?  :name and :something
+			//could be any types and may not match at all so first let's disallow param to param
+			//matching since developers can do that BEFORE they run the query anyways in the 
+			//java code.  ie. FIRST, let's find the side with type information
+			
+			TypeInfo typeInfo;
+			if(hasTypeInfo(left)) {
+				typeInfo = processSide(metaQuery, spiMetaQuery, left, wiring, null);
+				processSide(metaQuery, spiMetaQuery, right, wiring, typeInfo);
+			} else if(hasTypeInfo(right)){
+				typeInfo = processSide(metaQuery, spiMetaQuery, right, wiring, null);
+				processSide(metaQuery, spiMetaQuery, left, wiring, typeInfo);
 			} else
-				throw new UnsupportedOperationException("we don't support these two types together at this point.  lefttype="+leftSide.getType()+" rightType="+rightSide.getType());
+				throw new IllegalArgumentException("Cannot find type info from either side of expression="+node.getExpressionAsString()+" in query='"
+							+wiring.getQuery()+"' One of the sides must either be constant or columnname");
 			
 			break;
 		default:
@@ -271,15 +286,79 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings({ "unchecked" })
-	//too many arguments
-	private static void process(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
-			ExpressionNode attributeNode2, ExpressionNode parameterNode2,
-			InfoForWiring wiring, int type) {
+	
+	private static boolean hasTypeInfo(ExpressionNode node) {
+		if(node.getType() == NoSqlLexer.ATTR_NAME || node.getType() == NoSqlLexer.DECIMAL
+				|| node.getType() == NoSqlLexer.INT_VAL || node.getType() == NoSqlLexer.STR_VAL)
+			return true;
+		return false;
+	}
+
+	private static TypeInfo processSide(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+			ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
+		if(node.getType() == NoSqlLexer.ATTR_NAME) {
+			return processAttribute(metaQuery, spiMetaQuery, node, wiring, typeInfo);
+		} else if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
+			return processParam(metaQuery, spiMetaQuery, node, wiring, typeInfo);
+		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
+				|| node.getType() == NoSqlLexer.INT_VAL) {
+			return processConstant(node, wiring, typeInfo);
+		} else 
+			throw new RuntimeException("bug, type not supported yet="+node.getType());
+	}
+
+	private static TypeInfo processConstant(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
+		String constant = node.getASTNode().getText();
+		node.setState(constant);
+		
+		TypeEnum ourType;
+		if(node.getType() == NoSqlLexer.DECIMAL)
+			ourType = TypeEnum.DECIMAL;
+		else if(node.getType() == NoSqlLexer.STR_VAL)
+			ourType = TypeEnum.STRING;
+		else if(node.getType() == NoSqlLexer.INT_VAL)
+			ourType = TypeEnum.INTEGER;
+		else 
+			throw new RuntimeException("bug, not supported type(please fix)="+node.getType());
+		
+		if(typeInfo == null) //no types to check against so return...
+			return new TypeInfo(ourType);
+
+		//we must compare type info so this next stuff is pure validation
+		if(typeInfo.getColumnInfo() != null) {
+			validateTypes(wiring, ourType, typeInfo);
+		} else {
+			TypeEnum constantType = typeInfo.getConstantType();
+			if(constantType != ourType)
+				throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery());
+		}
+		return null;
+	}
+
+	private static void validateTypes(InfoForWiring wiring, TypeEnum constantType, TypeInfo typeInfo) {
+		MetaColumnDbo info = typeInfo.getColumnInfo();
+		Class type = info.getClassType();
+		if(constantType == TypeEnum.STRING && 
+				(type.equals(String.class) || type.equals(Boolean.class)
+						|| type.equals(Character.class)))
+			return;
+		else if(constantType == TypeEnum.DECIMAL && 
+				(type.equals(Double.class) || type.equals(Float.class) ))
+			return;
+		else if(constantType == TypeEnum.INTEGER &&
+				(type.equals(Long.class) || type.equals(Integer.class) 
+						|| type.equals(Short.class) || type.equals(Byte.class)))
+			return;
+		else
+			throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery());
+	}
+	
+
+	private static TypeInfo processAttribute(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType) {
 		MetaTableDbo metaClass;
 		
 		CommonTree attributeNode = attributeNode2.getASTNode();
-		CommonTree parameterNode = parameterNode2.getASTNode();
 		String attributeName = attributeNode.getText();
 		if (attributeNode.getChildCount() > 0) {
 			String aliasEntity = attributeNode.getChild(0).getText();
@@ -302,14 +381,34 @@ public class ScannerForQuery {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
 		
-		String parameter = parameterNode.getText();
-
-		metaQuery.getParameterFieldMap().put(parameter, attributeField);		
-		spiMetaQuery.onComparator(parameter, attributeField.getColumnName(),type);
-		
 		StateAttribute attr = new StateAttribute(metaClass.getTableName(), attributeField.getColumnName()); 
 		attributeNode2.setState(attr);
+		
+		TypeInfo typeInfo = new TypeInfo(attributeField);
+		
+		if(otherSideType == null)
+			return typeInfo;
+		
+		if(otherSideType.getConstantType() != null) {
+			validateTypes(wiring, otherSideType.getConstantType(), typeInfo);
+		} else {
+			Class classType = otherSideType.getColumnInfo().getClassType();
+			if(!classType.equals(attributeField.getClassType()))
+				throw new IllegalArgumentException("Types are not the same for query="+wiring.getQuery()+" types="+classType+" and "+attributeField.getClassType());
+		}
+
+		return null;
+	}
+	
+	private static TypeInfo processParam(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+			ExpressionNode parameterNode2, InfoForWiring wiring, TypeInfo typeInfo) {
+		CommonTree parameterNode = parameterNode2.getASTNode();
+		String parameter = parameterNode.getText();
+		
+		metaQuery.getParameterFieldMap().put(parameter, typeInfo);
+		
 		parameterNode2.setState(parameter);
+		return null;
 	}
 
 }

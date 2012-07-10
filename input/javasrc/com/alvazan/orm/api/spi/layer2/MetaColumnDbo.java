@@ -1,10 +1,13 @@
 package com.alvazan.orm.api.spi.layer2;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class MetaColumnDbo {
 
 	private String columnName;
 	/**
-	 * null for FK relationships
+	 * null for FK relationships.  Contains primitive type..
 	 */
 	private String columnType;
 	
@@ -16,12 +19,23 @@ public class MetaColumnDbo {
 	
 	private boolean isToManyColumn;
 	
+	@SuppressWarnings("rawtypes")
+	private static Set<Class> primitives = new HashSet<Class>();
+	
+	static {
+		primitives.add(Long.class);
+		primitives.add(Integer.class);
+		primitives.add(Short.class);
+		primitives.add(Byte.class);
+		primitives.add(Double.class);
+		primitives.add(Float.class);
+		primitives.add(Boolean.class);
+		primitives.add(String.class);
+		primitives.add(Character.class);
+	}
+	
 	public String getColumnName() {
 		return columnName;
-	}
-
-	public void setColumnName(String field) {
-		this.columnName = field;
 	}
 
 	@Override
@@ -29,20 +43,58 @@ public class MetaColumnDbo {
 		return "Field["+columnName+"]";
 	}
 
-	public void setup(String colName, MetaTableDbo fkToTable, String classType, boolean isToManyColumn) {	
+	@SuppressWarnings("rawtypes")
+	public void setup(String colName, MetaTableDbo fkToTable, Class classType, boolean isToManyColumn) {
+		Class newType = convertIfPrimitive(classType);
+		if(!primitives.contains(newType))
+			newType = Byte.class;
 		this.columnName = colName;
 		this.fkToColumnFamily = fkToTable;
-		this.columnType = classType;
+		if(newType != null)
+			this.columnType = newType.getName();
 		this.isToManyColumn = isToManyColumn;
 	}
 
+	@SuppressWarnings({ "rawtypes" })
+	public static Class convertIfPrimitive(Class fieldType) {
+		Class c = fieldType;
+		if(long.class.equals(fieldType))
+			c = Long.class;
+		else if(int.class.equals(fieldType))
+			c = Integer.class;
+		else if(short.class.equals(fieldType))
+			c = Short.class;
+		else if(byte.class.equals(fieldType))
+			c = Byte.class;
+		else if(double.class.equals(fieldType))
+			c = Double.class;
+		else if(float.class.equals(fieldType))
+			c = Float.class;
+		else if(boolean.class.equals(fieldType))
+			c = Boolean.class;
+		else if(char.class.equals(fieldType))
+			c = Character.class;
+		return c;
+	}
+	
 	@SuppressWarnings("rawtypes")
 	public Class getClassType() {
+		if(columnType == null)
+			return null;
+		
 		try {
 			return Class.forName(columnType);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
+	public MetaTableDbo getFkToColumnFamily() {
+		return fkToColumnFamily;
+	}
+
+	public boolean isToManyColumn() {
+		return isToManyColumn;
+	}
+
 }

@@ -8,7 +8,7 @@ import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 
 public class MetaQuery<T> {
 
-	private Map<String,MetaColumnDbo> parameterFieldMap = new HashMap<String, MetaColumnDbo>();
+	private Map<String,TypeInfo> parameterFieldMap = new HashMap<String, TypeInfo>();
 	
 	private SpiMetaQuery spiMetaQuery;
 	private String query;
@@ -32,11 +32,11 @@ public class MetaQuery<T> {
 		return query;
 	}
 
-	public MetaColumnDbo getMetaFieldByParameter(String parameter){
+	public TypeInfo getMetaFieldByParameter(String parameter){
 		return getParameterFieldMap().get(parameter);
 	}
 
-	public Map<String,MetaColumnDbo> getParameterFieldMap() {
+	public Map<String,TypeInfo> getParameterFieldMap() {
 		return parameterFieldMap;
 	}
 
@@ -54,6 +54,10 @@ public class MetaQuery<T> {
 
 	public MetaTableDbo getTargetTable() {
 		return targetTable;
+	}
+
+	public void setIndexName(String indexName) {
+		this.indexName = indexName;
 	}
 	
 }

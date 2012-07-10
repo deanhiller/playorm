@@ -65,7 +65,7 @@ public class MetaIdField<OWNER> {
 		this.generator = gen;
 		this.converter = converter;
 		this.metaClass = metaClass;
-		metaDbo.setup(field.getName(), null, field.getType().getName(), false);
+		metaDbo.setup(field.getName(), null, field.getType(), false);
 	}
 
 	public Converter getConverter() {

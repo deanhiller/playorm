@@ -140,9 +140,9 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		} else if(rightChild.getType() == NoSqlLexer.PARAMETER_NAME && leftChild.getType() == NoSqlLexer.ATTR_NAME) {
 			return processParamNameCombo(leftChild, rightChild, parameterValues, node.getType());
 		} else if(rightChild.getType() == NoSqlLexer.ATTR_NAME && leftChild.getType() == NoSqlLexer.STR_VAL) {
-			return processAttrString(rightChild, leftChild);
+			return processAttrString(rightChild, leftChild, node.getType());
 		} else if(rightChild.getType() == NoSqlLexer.STR_VAL && leftChild.getType() == NoSqlLexer.ATTR_NAME) {
-			return processAttrString(leftChild, rightChild);
+			return processAttrString(leftChild, rightChild, node.getType());
 		} else
 			throw new UnsupportedOperationException("We do not support this combination yet.  lefttype="+leftChild.getType()+" righttype="+rightChild.getType());
 		
@@ -151,8 +151,18 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		// Do we need to add :param1 = :param2...that also seems stupid and they can do that in their own code if they want
 	}
 
-	private Query processAttrString(ExpressionNode attributeNode, ExpressionNode stringNode) {
-		throw new UnsupportedOperationException("not done yet");
+	private Query processAttrString(ExpressionNode attributeNode, ExpressionNode stringNode, int type) {
+		Term term;
+		if(type == NoSqlLexer.EQ) {
+			//NOTE: For DECIMAL, INTEGER, we need to convert string to proper value...(shoudl validate on parser side though before we get here)
+			String constantValueAsStringFromQuery = (String) stringNode.getState();
+			StateAttribute attr = (StateAttribute) attributeNode.getState();
+			String columnName = attr.getColumnName();
+			term = new Term(columnName, constantValueAsStringFromQuery);
+		} else
+			throw new UnsupportedOperationException("not yet supported type="+type);
+		
+		return new TermQuery(term);		
 	}
 
 	private Query processParamNameCombo(ExpressionNode attributeNode, ExpressionNode paramNode, Map<String, Object> parameterValues, int type) {

@@ -38,7 +38,7 @@ public class MetaCommonField<OWNER> implements MetaField<OWNER> {
 		this.field.setAccessible(true);
 		this.columnName = colName;
 		this.converter = converter;
-		metaDbo.setColumnName(columnName);
+		metaDbo.setup(columnName, null, field.getType(), false);
 	}
 
 	@Override

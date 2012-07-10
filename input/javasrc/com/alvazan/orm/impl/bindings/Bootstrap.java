@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.bindings;
 import com.alvazan.orm.api.base.AbstractBootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.spi.layer2.MetaDatabase;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -24,10 +25,11 @@ public class Bootstrap extends AbstractBootstrap {
 	 * but we will log everything that was being written on failure and what was success and what failed)
 	 * 
 	 * @param type
+	 * @param metaDb 
 	 * @return
 	 */
-	public static NoSqlSessionFactory createRawInstance(DbTypeEnum type) {
-		Injector injector = Guice.createInjector(new ProductionBindings(type));
+	public static NoSqlSessionFactory createRawInstance(DbTypeEnum type, MetaDatabase metaDb) {
+		Injector injector = Guice.createInjector(new ProductionBindings(type, metaDb));
 		return injector.getInstance(NoSqlSessionFactory.class);
 	}
 }

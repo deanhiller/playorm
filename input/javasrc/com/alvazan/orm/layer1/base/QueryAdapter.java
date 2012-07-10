@@ -12,6 +12,7 @@ import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
+import com.alvazan.orm.api.spi.layer2.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -37,22 +38,26 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public void setParameter(String name, Object value) {
 		//check parameter 
-		MetaColumnDbo metaFieldDbo = meta.getMetaFieldByParameter(name);
-		if(metaFieldDbo==null){
+		
+		TypeInfo typeInfo = meta.getMetaFieldByParameter(name);
+		if(typeInfo==null){
 			throw new IllegalArgumentException("parameter='" + name
-					+ "' is not found in query="+meta.getQuery());
-		}
+					+ "' is not found in the query="+meta.getQuery());
+		} else if(typeInfo.getConstantType() != null)
+			throw new UnsupportedOperationException("not done here yet, need to validate constant type");
+
+		MetaColumnDbo metaFieldDbo = typeInfo.getColumnInfo();
 		
 		MetaField metaField = metaClass.getMetaField(metaFieldDbo.getColumnName());
 		Class fieldType = metaField.getFieldType();
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
-		Class objectFieldType = convertIfPrimitive(fieldType);
+		Class objectFieldType = MetaColumnDbo.convertIfPrimitive(fieldType);
 		Class actualType = value.getClass();
 		
 		if(!objectFieldType.isAssignableFrom(actualType)){
 			throw new TypeMismatchException("value [" + value
-					+ "] is not the correct type for the parameter='"+name+"'.  Type should be=["
+					+ "] is not the correct type for the parameter='"+name+"' from inspecting the Entity.  Type should be=["
 					+ fieldType + "]");
 		} 		
 		
@@ -61,24 +66,7 @@ public class QueryAdapter<T> implements Query<T> {
 		indexQuery.setParameter(name, newValue);
 	}
 
-	@SuppressWarnings("rawtypes")
-	private Class convertIfPrimitive(Class fieldType) {
-		if(long.class.equals(fieldType))
-			return Long.class;
-		else if(int.class.equals(fieldType))
-			return Integer.class;
-		else if(short.class.equals(fieldType))
-			return Short.class;
-		else if(byte.class.equals(fieldType))
-			return Byte.class;
-		else if(double.class.equals(fieldType))
-			return Double.class;
-		else if(float.class.equals(fieldType))
-			return Float.class;
-		else if(boolean.class.equals(fieldType))
-			return Boolean.class;
-		return fieldType;
-	}
+
 
 	@Override
 	public T getSingleObject() {
