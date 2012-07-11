@@ -64,6 +64,7 @@ public class Holder<T> {
 		return result;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public boolean equals(Object obj) {
 		getValue(); //prime the cache before comparing to make sure real value is there

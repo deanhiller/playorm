@@ -408,6 +408,7 @@ public class ScannerForQuery {
 		return null;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private static TypeInfo processParam(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
 			ExpressionNode parameterNode2, InfoForWiring wiring, TypeInfo typeInfo) {
 		CommonTree parameterNode = parameterNode2.getASTNode();

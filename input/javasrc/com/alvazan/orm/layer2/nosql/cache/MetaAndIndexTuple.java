@@ -2,6 +2,7 @@ package com.alvazan.orm.layer2.nosql.cache;
 
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 
+@SuppressWarnings("rawtypes")
 public class MetaAndIndexTuple {
 
 	private MetaQuery metaQuery;

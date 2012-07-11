@@ -1,10 +1,14 @@
 package com.alvazan.test.db;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
 @NoSqlQuery(name="findById", query="select * FROM TABLE e where e.id=:id")
@@ -15,6 +19,9 @@ public class SomeEntity {
 	
 	private String name;
 
+	@OneToMany(entityType=Activity.class, keyFieldForMap="name")
+	private Map<String, Activity> activities = new HashMap<String, Activity>();
+	
 	public String getId() {
 		return id;
 	}
@@ -35,5 +42,13 @@ public class SomeEntity {
 		Query<SomeEntity> query = index.getNamedQuery("findById");
 		query.setParameter("id", key);
 		return query.getSingleObject();
+	}
+
+	public void putActivity(Activity act) {
+		activities.put(act.getName(), act);
+	}
+
+	public Activity getActivity(String name) {
+		return activities.get(name);
 	}
 }

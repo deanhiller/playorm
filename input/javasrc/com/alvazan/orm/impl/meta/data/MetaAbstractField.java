@@ -23,6 +23,7 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return field.getName();
 	}
 	
+	@SuppressWarnings("rawtypes")
 	public void setup(Field field2, String colName, MetaTableDbo fkToTable, Class classType, boolean isToManyColumn) {
 		this.field = field2;
 		this.field.setAccessible(true);

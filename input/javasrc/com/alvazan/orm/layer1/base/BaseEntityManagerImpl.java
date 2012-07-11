@@ -121,7 +121,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return metaClass.fetchId(entity);
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void fillInWithKey(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());

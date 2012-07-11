@@ -7,18 +7,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
+import com.alvazan.test.db.SomeEntity;
 
 public class TestOneToMany {
 
-	private static final Logger log = LoggerFactory.getLogger(TestOneToMany.class);
-	
 	private static final String ACCOUNT_NAME = "declan";
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
@@ -37,17 +34,40 @@ public class TestOneToMany {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDbAndIndexesIfInMemoryType();
 	}
-	
-	//@Test
-	public void testInListOneValueIsNotInDatabase() {
-	}
 
 	@Test
-	public void testBasicToMany() {
-		readWriteBasic(mgr);
+	public void testBlank() {}
+	
+	//@Test
+	public void testOneToManyWithMap() {
+		Activity act1 = new Activity();
+		act1.setName("dean");
+		act1.setNumTimes(3);
+		mgr.put(act1);
+		Activity act2 = new Activity();
+		act2.setName("dean2");
+		act2.setNumTimes(4);
+		mgr.put(act2);
+		
+		SomeEntity entity = new SomeEntity();
+		entity.setName("asdf");
+		entity.putActivity(act1);
+		entity.putActivity(act2);
+		mgr.put(entity);
+		
+		mgr.flush();
+		
+		SomeEntity result = mgr.find(SomeEntity.class, entity.getId());
+		
+		Activity resAct1 = result.getActivity(act1.getName());
+		Assert.assertEquals(act1.getNumTimes(), resAct1.getNumTimes());
+		
+		Activity resAct2 = result.getActivity(act2.getName());
+		Assert.assertEquals(act2.getNumTimes(), resAct2.getNumTimes());
 	}
-
-	private Account readWriteBasic(NoSqlEntityManager mgr) {
+	
+	@Test
+	public void testOneToManyWithList() {
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
@@ -59,11 +79,11 @@ public class TestOneToMany {
 		act1.setNumTimes(3);
 		
 		mgr.put(act1);
-
+		
 		Activity act2 = new Activity();
 		act2.setName("dean");
 		act2.setNumTimes(4);
-
+		
 		mgr.put(act2);
 		
 		acc.addActivity(act1);
@@ -88,7 +108,6 @@ public class TestOneToMany {
 		
 		//Now let's force a database lookup to have the activity filled in
 		Assert.assertEquals("dean", activity.getName());
-		
-		return accountResult;
 	}
+
 }
