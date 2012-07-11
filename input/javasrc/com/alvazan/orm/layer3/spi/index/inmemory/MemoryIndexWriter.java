@@ -192,6 +192,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 						|| value.getClass() == Float.class) {
 					numericField.setFloatValue((Float) value);
 				}
+				doc.add(numericField);
 			} else {
 				throw new RuntimeException("Unsupport field " + key + " type "
 						+ value.getClass());

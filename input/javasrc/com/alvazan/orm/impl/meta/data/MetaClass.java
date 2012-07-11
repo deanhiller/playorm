@@ -30,8 +30,11 @@ public class MetaClass<T> {
 	private String columnFamily;
 	
 	private MetaIdField<T> idField;
-	private Map<String,MetaField<T>> fields = new HashMap<String, MetaField<T>>();
-	private Map<String, MetaField<T>> columnNameToField = new HashMap<String, MetaField<T>>();
+	/**
+	 * This is NOT fieldName to MetaField but columnName to field(columnName can be different than
+	 * fieldname)
+	 */
+	private Map<String,MetaField<T>> columnNameToField = new HashMap<String, MetaField<T>>();
 	
 	private List<MetaField<T>> indexedFields = new ArrayList<MetaField<T>>();
 	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();
@@ -84,7 +87,7 @@ public class MetaClass<T> {
 		Object key = idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
-		for(MetaField<T> field : fields.values()) {
+		for(MetaField<T> field : columnNameToField.values()) {
 			String columnName = field.getColumnName();
 			Column column = columns.get(columnName);
 			field.translateFromColumn(column, inst, session);
@@ -97,7 +100,7 @@ public class MetaClass<T> {
 		RowToPersist row = new RowToPersist();
 		idField.translateToRow(entity, row);
 		
-		for(MetaField<T> m : fields.values()) {
+		for(MetaField<T> m : columnNameToField.values()) {
 			Column col = new Column();
 			m.translateToColumn(entity, col);
 			row.getColumns().add(col);
@@ -133,18 +136,18 @@ public class MetaClass<T> {
 	public void addMetaField(MetaField<T> field, boolean isIndexed) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
-		fields.put(field.getFieldName(), field);
+		columnNameToField.put(field.getColumnName(), field);
 		
 		if(isIndexed)
 			indexedFields.add(field);
 	}
 	
-	public MetaField<T> getMetaField(String fieldName){
-		return fields.get(fieldName);
+	public MetaField<T> getMetaFieldByCol(String columnName){
+		return columnNameToField.get(columnName);
 	}
 	
 	public  Collection<MetaField<T>> getMetaFields(){
-		return this.fields.values();
+		return this.columnNameToField.values();
 	}
 	
 	public void setIdField(MetaIdField<T> field) {
