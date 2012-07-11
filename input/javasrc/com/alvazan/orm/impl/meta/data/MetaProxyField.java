@@ -59,7 +59,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public String translateToIndexFormat(OWNER entity) {
+	public Object translateToIndexFormat(OWNER entity) {
 		String idStr = translateIfEntity(entity);
 		return idStr;
 	}

@@ -30,7 +30,7 @@ public class TestAdHocTool {
 		String sql = "ON /someindex select * FROM MyEntity e WHERE e.cat = \"deano\"";
 
 		NoSqlSession session = factory.createSession();
-		Map<String, String> map = new HashMap<String, String>();
+		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("cat", "deano");
 		session.addToIndex("/someindex", "myId", map);
 		byte[] myId = "myId".getBytes();

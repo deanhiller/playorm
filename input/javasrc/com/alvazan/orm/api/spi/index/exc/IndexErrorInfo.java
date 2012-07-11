@@ -9,7 +9,7 @@ public class IndexErrorInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Exception cause;
-	private List<Map<String, String>> itemsThatFailed;
+	private List<Map<String, Object>> itemsThatFailed;
 	private List<String> idsThatFailed;
 	
 	public Exception getCause() {
@@ -18,10 +18,10 @@ public class IndexErrorInfo implements Serializable {
 	public void setCause(Exception cause) {
 		this.cause = cause;
 	}
-	public List<Map<String, String>> getItemsThatFailed() {
+	public List<Map<String, Object>> getItemsThatFailed() {
 		return itemsThatFailed;
 	}
-	public void setItemsThatFailed(List<Map<String, String>> items) {
+	public void setItemsThatFailed(List<Map<String, Object>> items) {
 		this.itemsThatFailed = items;
 	}
 	public void setIdsThatFailed(List<String> ids) {

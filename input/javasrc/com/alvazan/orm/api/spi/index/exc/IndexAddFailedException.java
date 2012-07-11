@@ -42,7 +42,7 @@ public class IndexAddFailedException extends IndexFailureException {
 		
 		for(IndexErrorInfo info : errors) {
 			msg += "items list(total="+info.getItemsThatFailed().size()+")=\n";
-			for(Map<String, String> item : info.getItemsThatFailed()) {
+			for(Map<String, Object> item : info.getItemsThatFailed()) {
 				msg += item+"\n";
 			}
 			msg+="failure="+info.getCause().getMessage()+"\n\n\n";

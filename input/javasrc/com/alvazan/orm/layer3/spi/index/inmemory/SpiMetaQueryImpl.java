@@ -1,7 +1,5 @@
 package com.alvazan.orm.layer3.spi.index.inmemory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -28,10 +26,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
-	private QueryNode root;
-	
-	//pointer is used for setting up the tree;
-	private QueryNode pointer;
 	
 	
 	@Override
@@ -42,49 +36,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	@Override
-	public void onHyphen(int type) {
-		if(pointer==null){
-			root = new HyphenNode(null,type);
-			pointer = root;
-			return;
-		}
-		if(((HyphenNode)pointer).getLeftNode()==null){
-			((HyphenNode)pointer).setLeftNode(new HyphenNode(pointer,type));
-			pointer = ((HyphenNode)pointer).getLeftNode();
-		}else{
-			((HyphenNode)pointer).setRightNode(
-					new HyphenNode(pointer,type));
-			pointer = ((HyphenNode)pointer).getRightNode();
-		}
-	}
-
-	@Override
-	public void onComparator(String parameter, String columnName,
-			int type) {
-		if(pointer ==null){
-			root = new LeafNode(null,columnName,parameter,type);
-			pointer = root;
-			List<LeafNode> nodes = new ArrayList<LeafNode>();
-			nodes.add((LeafNode)root);
-//			this.paraNameToLeafNodes.put(parameter,nodes);
-			return;
-		}
-		LeafNode node = new LeafNode(pointer,columnName,parameter,type); 
-		if(((HyphenNode)pointer).getLeftNode()==null){
-			((HyphenNode)pointer).setLeftNode(node);
-			
-		}else{
-			((HyphenNode)pointer).setRightNode(node);
-			pointer = pointer.getParentNode();
-		}
-//		List<LeafNode> nodes = this.paraNameToLeafNodes.get(parameter);
-//		if(nodes==null){
-//			nodes= new ArrayList<LeafNode>();
-//			this.paraNameToLeafNodes.put(parameter, nodes);
-//		}
-//		nodes.add(node);
-	}
 
 	public Query getQuery(
 			Map<String, Object> parameterValues) {
@@ -143,7 +94,12 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 			return processAttrString(rightChild, leftChild, node.getType());
 		} else if(rightChild.getType() == NoSqlLexer.STR_VAL && leftChild.getType() == NoSqlLexer.ATTR_NAME) {
 			return processAttrString(leftChild, rightChild, node.getType());
-		} else
+		} else if ((rightChild.getType() == NoSqlLexer.INT_VAL || rightChild
+				.getType() == NoSqlLexer.DEC_VAL)
+				&& leftChild.getType() == NoSqlLexer.ATTR_NAME) {
+			return processAttrNumber(leftChild, rightChild, node.getType());
+		}
+		else
 			throw new UnsupportedOperationException("We do not support this combination yet.  lefttype="+leftChild.getType()+" righttype="+rightChild.getType());
 		
 		//TODO: add decimal and int.  Do we also go as far as adding "asdf" = "qwer"...seems kind of stupid to me though.
@@ -164,16 +120,30 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		
 		return new TermQuery(term);		
 	}
+	
+	//FIXME
+	private Query processAttrNumber(ExpressionNode attributeNode, ExpressionNode numberNode, int type) {
 
+
+			throw new UnsupportedOperationException("not yet supported type="+type);
+		
+	}
+
+	//FIXME
 	private Query processParamNameCombo(ExpressionNode attributeNode, ExpressionNode paramNode, Map<String, Object> parameterValues, int type) {
 		Term term;
+		String paramName = (String) paramNode.getState();
+		StateAttribute attr = (StateAttribute) attributeNode.getState();
+		String columnName = attr.getColumnName();
+		Object value = parameterValues.get(paramName);
 		if(type == NoSqlLexer.EQ) {
-			String paramName = (String) paramNode.getState();
-			StateAttribute attr = (StateAttribute) attributeNode.getState();
-			String columnName = attr.getColumnName();
-			String value = (String) parameterValues.get(paramName);
-			term = new Term(columnName, value);
-		} else
+			term = new Term(columnName, (String)value);
+		}else if(value instanceof Number){
+
+							throw new UnsupportedOperationException("not yet supported type="+type);
+		} 
+		
+		else
 			throw new UnsupportedOperationException("not yet supported type="+type);
 		
 		return new TermQuery(term);

@@ -45,8 +45,8 @@ public class MetaClass<T> {
 		return converter.convertToNoSql(entityId);
 	}
 
-	public Map<String, String> translateForIndex(T entity) {
-		Map<String, String> item = new HashMap<String, String>();
+	public Map<String, Object> translateForIndex(T entity) {
+		Map<String, Object> item = new HashMap<String, Object>();
 		Object id = fetchId(entity);
 		Converter converter = idField.getConverter();
 		String idStr = converter.convertToIndexFormat(id);
@@ -58,7 +58,7 @@ public class MetaClass<T> {
 		item.put(IDKEY, idStr);
 
 		for(MetaField<T> field : indexedFields) {
-			String indexValue = field.translateToIndexFormat(entity);
+			Object indexValue = field.translateToIndexFormat(entity);
 			String columnName = field.getColumnName();
 			item.put(columnName, indexValue);
 		}

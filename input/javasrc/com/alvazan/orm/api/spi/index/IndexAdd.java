@@ -5,13 +5,13 @@ import java.util.Map;
 
 public class IndexAdd extends IndexRemoveImpl {
 
-	private Map<String, String> item;
+	private Map<String, Object> item;
 
-	public void setItem(Map<String, String> item) {
+	public void setItem(Map<String, Object> item) {
 		this.item = item;
 	}
 
-	public Map<String, String> getItem() {
+	public Map<String, Object> getItem() {
 		return item;
 	}
 

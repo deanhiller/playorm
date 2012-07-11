@@ -31,8 +31,8 @@ public class IndexImpl<T> implements Index<T> {
 
 	@Override
 	public void addToIndex(T entity) {
-		Map<String, String> item = metaClass.translateForIndex(entity);
-		String id = item.get(MetaClass.IDKEY);
+		Map<String, Object> item = metaClass.translateForIndex(entity);
+		String id = (String) item.get(MetaClass.IDKEY);
 		session.addToIndex(indexName, id, item);
 	}
 

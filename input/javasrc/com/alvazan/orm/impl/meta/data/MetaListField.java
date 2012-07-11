@@ -140,7 +140,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public String translateToIndexFormat(OWNER entity) {
+	public Object translateToIndexFormat(OWNER entity) {
 		throw new UnsupportedOperationException("This field cannot be indexed");
 	}
 
