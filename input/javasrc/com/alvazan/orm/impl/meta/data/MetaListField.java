@@ -10,10 +10,13 @@ import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.collections.ListProxy;
+import com.alvazan.orm.impl.meta.data.collections.MapProxy;
 
 public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
-	private MetaClass<?> classMeta;
+	private MetaClass<PROXY> classMeta;
+	private static final byte DEFAULT_DELIMETER = (byte) ',';
 	
 	@Override
 	public void translateFromColumn(Column column, OWNER entity,
@@ -28,42 +31,68 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 
-	private List translateFromColumnList(Column column,
-			OWNER entity, NoSqlSession session) {
-		
-		return null;
-	}
-
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map translateFromColumnMap(Column column,
 			OWNER entity, NoSqlSession session) {
+		List<byte[]> keys = parseOutKeyList(column);
+		MapProxy proxy = new MapProxy(session, classMeta, keys);
+		return proxy;
+	}
+	
+	private List<PROXY> translateFromColumnList(Column column,
+			OWNER entity, NoSqlSession session) {
+		List<byte[]> keys = parseOutKeyList(column);
+		ListProxy<PROXY> proxies = new ListProxy<PROXY>(session, classMeta, keys);
+		return proxies;
+	}
+
+	private List<byte[]> parseOutKeyList(Column column) {
+		byte[] data = column.getValue();
+		List<byte[]> entities = new ArrayList<byte[]>();
+		List<Byte> currentList = new ArrayList<Byte>();
+		for(byte b : data) {
+			if(b == DEFAULT_DELIMETER) {
+				byte[] key = toByteArray(currentList);
+				entities.add(key);
+				currentList = new ArrayList<Byte>();
+			}
+			currentList.add(b);
+		}
 		
-		return null;
+		return entities;
+	}
+
+	private byte[] toByteArray(List<Byte> currentList) {
+		byte[] data = new byte[currentList.size()];
+		for(int i = 0; i < currentList.size(); i++) {
+			data[i] = currentList.get(i).byteValue();
+		}
+		return data;
 	}
 
 	@Override
 	public void translateToColumn(OWNER entity, Column col) {
 		if(field.getType().equals(Map.class))
-			translateMap(entity, col);
+			translateToColumnMap(entity, col);
 		else
-			translateList(entity, col);
+			translateToColumnList(entity, col);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void translateList(OWNER entity, Column col) {
+	private void translateToColumnList(OWNER entity, Column col) {
 		List<PROXY> values = (List<PROXY>) ReflectionUtil.fetchFieldValue(entity, field);
-		translate(values, col);		
+		translateToColumnImpl(values, col);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void translateMap(OWNER entity, Column col) {
+	private void translateToColumnMap(OWNER entity, Column col) {
 		Map mapOfProxies = (Map) ReflectionUtil.fetchFieldValue(entity, field);
 		Collection collection = mapOfProxies.values();
-		translate(collection, col);
+		translateToColumnImpl(collection, col);
 	}
 
-	private void translate(Collection<PROXY> collection, Column col) {
+	private void translateToColumnImpl(Collection<PROXY> collection, Column col) {
 		col.setName(columnName);
-		byte delimeter = (byte) ',';
 		List<Byte> data = new ArrayList<Byte>();
 		
 		for(PROXY proxy : collection) {
@@ -71,7 +100,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			for(byte b : bytes) {
 				data.add(b);
 			}
-			data.add(delimeter);
+			data.add(DEFAULT_DELIMETER);
 		}
 
 		byte[] finalVal = new byte[data.size()];
@@ -84,7 +113,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private byte[] translateOne(PROXY proxy) {
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = MetaProxyField.convertProxyToId(classMeta, proxy);
+		byte[] byteVal = classMeta.convertProxyToId(proxy);
 		if(byteVal == null) {
 			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
 			String child = "'"+classMeta.getMetaClass().getSimpleName()+"'";
@@ -112,10 +141,10 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public String translateToIndexFormat(OWNER entity) {
-		throw new UnsupportedOperationException("not done yet");
+		throw new UnsupportedOperationException("This field cannot be indexed");
 	}
 
-	public void setup(Field field, String colName, MetaClass<?> classMeta) {
+	public void setup(Field field, String colName, MetaClass<PROXY> classMeta) {
 		MetaTableDbo fkToTable = classMeta.getMetaDbo();
 		super.setup(field, colName, fkToTable, null, true);
 		this.classMeta = classMeta;

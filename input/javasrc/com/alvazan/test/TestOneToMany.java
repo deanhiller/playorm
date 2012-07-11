@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -36,11 +38,11 @@ public class TestOneToMany {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 	
-	@Test
+	//@Test
 	public void testInListOneValueIsNotInDatabase() {
 	}
 
-	//@Test
+	@Test
 	public void testBasicToMany() {
 		readWriteBasic(mgr);
 	}
@@ -53,7 +55,7 @@ public class TestOneToMany {
 		
 		Activity act1 = new Activity();
 		act1.setAccount(acc);
-		act1.setName("asdfsdf");
+		act1.setName("dean");
 		act1.setNumTimes(3);
 		
 		mgr.put(act1);
@@ -73,7 +75,19 @@ public class TestOneToMany {
 		Account accountResult = mgr.find(Account.class, acc.getId());
 		Assert.assertEquals(ACCOUNT_NAME, accountResult.getName());
 		Assert.assertEquals(acc.getUsers(), accountResult.getUsers());
-		Assert.assertEquals(2, accountResult.getActivities().size());
+		List<Activity> activities = accountResult.getActivities();
+		Assert.assertEquals(2, activities.size());
+		
+		//Now let's force proxy creation by getting one of the Activities
+		Activity activity = activities.get(0);
+		
+		//This should NOT hit the database since the id is wrapped by the proxy and exists already
+		String id = activity.getId();
+		//since we added activity1 first, we better see that same activity be first in the list again...
+		Assert.assertEquals(act1.getId(), id);
+		
+		//Now let's force a database lookup to have the activity filled in
+		Assert.assertEquals("dean", activity.getName());
 		
 		return accountResult;
 	}

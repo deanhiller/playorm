@@ -29,7 +29,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = convertProxyToId(classMeta, value);
+		byte[] byteVal = classMeta.convertProxyToId(value);
 		if(byteVal == null && value != null) { 
 			//if value is not null byt we get back a byteVal of null, it means the entity has not been
 			//initialized with a key yet, BUT this is required to be able to save this object
@@ -49,23 +49,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		if(id == null)
-			return null;
-		MetaIdField<PROXY> idField = classMeta.getIdField();
-		Converter converter = idField.getConverter();
-		Object entityId = converter.convertFromNoSql(id);
-		return idField.convertIdToProxy(session, entityId);
+		return classMeta.convertIdToProxy(id, session);
 	}
-	
-	@SuppressWarnings("rawtypes")
-	static byte[] convertProxyToId(MetaClass classMeta, Object value) {
-		if(value == null)
-			return null;
-		MetaIdField idField = classMeta.getIdField();
-		Object id = classMeta.fetchId(value);
-		Converter converter = idField.getConverter();
-		return converter.convertToNoSql(id);
-	}	
 	
 	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {
 		MetaTableDbo fkToTable = classMeta.getMetaDbo();

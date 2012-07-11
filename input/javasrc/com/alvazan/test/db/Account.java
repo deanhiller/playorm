@@ -10,7 +10,7 @@ import com.alvazan.orm.api.base.anno.Indexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.base.anno.Transient;
+import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -30,8 +30,8 @@ public class Account extends AccountSuper{
 	@Indexed
 	private Float users;
 
-	@Transient
-	//@OneToMany(entityType=Activity.class)
+	//@Transient
+	@OneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 
 	public String getId() {

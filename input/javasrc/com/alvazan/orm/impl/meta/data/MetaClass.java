@@ -179,4 +179,23 @@ public class MetaClass<T> {
 	public MetaTableDbo getMetaDbo() {
 		return metaDbo;
 	}
+
+	@SuppressWarnings("rawtypes")
+	public byte[] convertProxyToId(T value) {
+		if(value == null)
+			return null;
+		MetaIdField idField = getIdField();
+		Object id = fetchId(value);
+		Converter converter = idField.getConverter();
+		return converter.convertToNoSql(id);		
+	}
+
+	public T convertIdToProxy(byte[] id, NoSqlSession session) {
+		if(id == null)
+			return null;
+		MetaIdField<T> idField = this.getIdField();
+		Converter converter = idField.getConverter();
+		Object entityId = converter.convertFromNoSql(id);
+		return idField.convertIdToProxy(session, entityId);		
+	}
 }
