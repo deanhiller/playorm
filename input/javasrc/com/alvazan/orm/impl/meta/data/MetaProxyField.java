@@ -49,7 +49,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		return classMeta.convertIdToProxy(id, session);
+		return classMeta.convertIdToProxy(id, session, null);
 	}
 	
 	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {

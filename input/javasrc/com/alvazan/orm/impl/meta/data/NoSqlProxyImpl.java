@@ -13,6 +13,7 @@ import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class NoSqlProxyImpl<T> implements MethodHandler {
 
@@ -22,12 +23,14 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	private Method idMethod;
 	private MetaClass<T> classMeta;
 	private boolean isInitialized = false;
+	private CacheLoadCallback cacheLoadCallback;
 	
-	public NoSqlProxyImpl(NoSqlSession session, MetaClass<T> classMeta, Object entityId) {
+	public NoSqlProxyImpl(NoSqlSession session, MetaClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;
 		this.idMethod = classMeta.getIdField().getIdMethod();
+		this.cacheLoadCallback = cacheLoadCallback;
 	}
 	
 	/**
@@ -49,28 +52,46 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		//Here we shortcut as we do not need to go to the database...
 		if(idMethod.equals(superClassMethod))
 			return entityId;
-
+		else if("__injectData".equals(subclassProxyMethod.getName())) {
+			//This is purely to initialize the proxies from a List/Map of proxies where we already
+			//retrieved the List<Row> from the database.
+			//TODO: REMOVE ME, no longer needed
+			return null;
+		}
+		
 		//Any other method that is called, toString, getHashCode, getName, someMethod() all end up
 		//loading the objects fields from the database in case those methods use those fields
 		if(!isInitialized) {
-			MetaIdField<T> idField = classMeta.getIdField();
-			Converter converter = idField.getConverter();
-			byte[] rowKey = converter.convertToNoSql(entityId);
-			List<byte[]> rowKeys = new ArrayList<byte[]>();
-			rowKeys.add(rowKey);
-			List<Row> rows = session.find(classMeta.getColumnFamily(), rowKeys);
-			if(rows.size() != 1)
-				throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
-			else if(rows.get(0) == null)
-				throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
+			//If we have a cacheLoadCallback from a List or Map, we are not just loading
+			//this entity but the callback method will load this and all other entities from
+			//the database in ONE single call instead.
+			if(cacheLoadCallback != null) {
+				cacheLoadCallback.loadCacheIfNeeded();
+			} else {
+				fillInThisOneInstance(self);
+			}
 			
-			Row row = rows.get(0);
-			classMeta.fillInInstance(row, session, self);
 			isInitialized = true;
 		}
 		
 		//Not sure if this should be subclassProxyMethod or superClassMethod
         return subclassProxyMethod.invoke(self, args);  // execute the original method.
+	}
+
+	private void fillInThisOneInstance(T self) {
+		MetaIdField<T> idField = classMeta.getIdField();
+		Converter converter = idField.getConverter();
+		byte[] rowKey = converter.convertToNoSql(entityId);
+		List<byte[]> rowKeys = new ArrayList<byte[]>();
+		rowKeys.add(rowKey);
+		List<Row> rows = session.find(classMeta.getColumnFamily(), rowKeys);
+		if(rows.size() != 1)
+			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
+		else if(rows.get(0) == null)
+			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
+		
+		Row row = rows.get(0);
+		classMeta.fillInInstance(row, session, self);
 	}
 
 }

@@ -19,11 +19,13 @@ public class Holder<T> {
 	private T value;
 	private MetaClass<T> metaClass;
 	private NoSqlSession session;
+	private CacheLoadCallback cacheLoadCallback;
 
-	public Holder(MetaClass<T> metaClass, NoSqlSession session, byte[] key) {
+	public Holder(MetaClass<T> metaClass, NoSqlSession session, byte[] key, CacheLoadCallback cb) {
 		this.metaClass = metaClass;
 		this.session = session;
 		this.key = key;
+		this.cacheLoadCallback = cb;
 	}
 	public Holder(T value) {
 		hasValue = true;
@@ -32,7 +34,7 @@ public class Holder<T> {
 	public synchronized T getValue() {
 		if(!hasValue) {
 			//otherwise, we need to create and cache the value
-			T proxy = metaClass.convertIdToProxy(key, session);
+			T proxy = metaClass.convertIdToProxy(key, session, cacheLoadCallback);
 			value = proxy;
 			hasValue = true;
 		}

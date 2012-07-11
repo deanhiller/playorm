@@ -15,6 +15,7 @@ import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClass<T> {
 
@@ -83,7 +84,7 @@ public class MetaClass<T> {
 	 * @param inst The object OR the proxy to be filled in
 	 * @return The key of the entity object
 	 */
-	Object fillInInstance(Row row, NoSqlSession session, T inst) {
+	public Object fillInInstance(Row row, NoSqlSession session, T inst) {
 		Object key = idField.translateFromRow(row, inst);
 
 		Map<String, Column> columns = row.getColumns();
@@ -193,12 +194,12 @@ public class MetaClass<T> {
 		return converter.convertToNoSql(id);		
 	}
 
-	public T convertIdToProxy(byte[] id, NoSqlSession session) {
+	public T convertIdToProxy(byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
 		if(id == null)
 			return null;
 		MetaIdField<T> idField = this.getIdField();
 		Converter converter = idField.getConverter();
 		Object entityId = converter.convertFromNoSql(id);
-		return idField.convertIdToProxy(session, entityId);		
+		return idField.convertIdToProxy(session, entityId, cacheLoadCallback);
 	}
 }

@@ -7,26 +7,35 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ListProxy<T> extends ArrayList<T> {
+public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallback {
 
 	private static final long serialVersionUID = 1L;
-
-	public ListProxy(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
+	private NoSqlSession session;
+	private MetaClass<T> classMeta;
+	private List<byte[]> keys;
+	private boolean cacheLoaded = false;
+	
+	public ListProxyFetchAll(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
+		this.session = session;
+		this.classMeta = classMeta;
+		this.keys = keys;
 		for(byte[] key : keys) {
-			Holder h = new Holder(classMeta, session, key, null);
+			Holder h = new Holder(classMeta, session, key, this);
 			super.add((T) h);
 		}
 	}
 
 	public Object clone() {
-        ListProxy v = (ListProxy) super.clone();
-        ListProxy[] current = this.toArray(new ListProxy[0]);
-        ListProxy[] clone = Arrays.copyOf(current, this.size());
-        List<ListProxy> asList = Arrays.asList(clone);
+        ListProxyFetchAll v = (ListProxyFetchAll) super.clone();
+        ListProxyFetchAll[] current = this.toArray(new ListProxyFetchAll[0]);
+        ListProxyFetchAll[] clone = Arrays.copyOf(current, this.size());
+        List<ListProxyFetchAll> asList = Arrays.asList(clone);
         v.addAll(asList);
 
         return v;
@@ -42,10 +51,30 @@ public class ListProxy<T> extends ArrayList<T> {
 		return elements;
 	}
 
-	private T getImpl(int i) {
-		//CHECK if already converted....
-		Holder h = (Holder) super.get(i);
-		return (T) h.getValue();
+	private T getImpl(int index) {
+		Holder<T> holder = (Holder) super.get(index);
+		return holder.getValue();
+	}
+	
+	//Callback from one of the proxies to load the entire cache based
+	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
+	public void loadCacheIfNeeded() {
+		if(cacheLoaded)
+			return;
+		
+		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
+		this.clear(); //we will reload with new proxy entities now
+		for(int i = 0; i < this.size(); i++) {
+			Row row = rows.get(i);
+			Holder<T> h = (Holder) super.get(i);
+			T value = h.getValue();
+			if(value instanceof NoSqlProxy) {
+				//inject the row into the proxy object here to load it's fields
+				classMeta.fillInInstance(row, session, value);
+				//((NoSqlProxy)value).__injectData(row);
+			}
+		}
+		cacheLoaded = true;
 	}
 	
 	@SuppressWarnings("hiding")
@@ -85,6 +114,7 @@ public class ListProxy<T> extends ArrayList<T> {
 
 	@Override
 	public boolean remove(Object o) {
+		loadCacheIfNeeded(); //we have to do this so equals will work
 		Holder h = new Holder(o);
 		return super.remove(h);
 	}
@@ -122,12 +152,14 @@ public class ListProxy<T> extends ArrayList<T> {
 
 	@Override
 	public boolean removeAll(Collection<?> c) {
+		loadCacheIfNeeded();
 		Collection holders = createHolders(c);
 		return super.removeAll(holders);
 	}
 
 	@Override
 	public boolean retainAll(Collection<?> c) {
+		loadCacheIfNeeded();
 		Collection holders = createHolders(c);
 		return super.retainAll(holders);
 	}

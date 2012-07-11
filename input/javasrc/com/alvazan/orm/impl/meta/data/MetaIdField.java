@@ -10,6 +10,7 @@ import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> {
@@ -80,19 +81,19 @@ public class MetaIdField<OWNER> {
 		return method;
 	}
 
-	public OWNER convertIdToProxy(NoSqlSession session, Object entityId) {
+	public OWNER convertIdToProxy(NoSqlSession session, Object entityId, CacheLoadCallback cacheLoadCallback) {
 		if(entityId == null)
 			return null;
-		OWNER proxy = createProxy(entityId, session);
+		OWNER proxy = createProxy(entityId, session, cacheLoadCallback);
 		ReflectionUtil.putFieldValue(proxy, field, entityId);
 		return proxy;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private OWNER createProxy(Object entityId, NoSqlSession session) {
+	private OWNER createProxy(Object entityId, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
 		Class<?> subclassProxyClass = metaClass.getProxyClass();
 		Proxy inst = (Proxy) ReflectionUtil.create(subclassProxyClass);
-		inst.setHandler(new NoSqlProxyImpl<OWNER>(session, metaClass, entityId));
+		inst.setHandler(new NoSqlProxyImpl<OWNER>(session, metaClass, entityId, cacheLoadCallback));
 		return (OWNER) inst;
 	}
 
