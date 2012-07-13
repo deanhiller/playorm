@@ -36,9 +36,6 @@ public class TestOneToMany {
 	}
 
 	@Test
-	public void testBlank() {}
-	
-	//@Test
 	public void testOneToManyWithMap() {
 		Activity act1 = new Activity();
 		act1.setName("dean");

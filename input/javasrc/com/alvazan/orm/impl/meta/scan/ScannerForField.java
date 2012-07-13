@@ -195,15 +195,30 @@ public class ScannerForField {
 		if(!"".equals(annotation.columnName()))
 			colName = annotation.columnName();
 		
+		Field fieldForKey = null;
 		Class entityType = annotation.entityType();
 		if(entityType == null)
 			throw new RuntimeException("Field="+field+" is missing entityType attribute of OneToMany annotation which is required");
+		else if(field.getType().equals(Map.class)) {
+			if("".equals(annotation.keyFieldForMap()))
+				throw new RuntimeException("Field="+field+" is a Map so @OneToMany annotation REQUIRES a keyFieldForMap attribute which is the field name in the child entity to use as the key");
+			String fieldName = annotation.keyFieldForMap();
+			
+			try {
+				fieldForKey = entityType.getDeclaredField(fieldName);
+				fieldForKey.setAccessible(true);
+			} catch (NoSuchFieldException e) {
+				throw new RuntimeException("The annotation OneToMany on field="+field+" references a field="+fieldName+" that does not exist on entity="+entityType.getName());
+			} catch (SecurityException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		
-		return processToMany(field, colName, entityType);
+		return processToMany(field, colName, entityType, fieldForKey);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private MetaField processToMany(Field field, String colName, Class entityType) {
+	private MetaField processToMany(Field field, String colName, Class entityType, Field fieldForKey) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
@@ -213,10 +228,10 @@ public class ScannerForField {
 		//field's type must be Map or List right now today
 		if(!field.getType().equals(Map.class) && !field.getType().equals(List.class))
 			throw new RuntimeException("field="+field+" must be List or Map since it is annotated with OneToMany");
-		
+
 		MetaListField metaField = metaListProvider.get();
 		MetaClass<?> classMeta = metaInfo.findOrCreate(entityType);
-		metaField.setup(field, colName,  classMeta);
+		metaField.setup(field, colName,  classMeta, fieldForKey);
 		
 		return metaField;
 	}

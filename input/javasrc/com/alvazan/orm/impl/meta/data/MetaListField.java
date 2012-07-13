@@ -10,19 +10,19 @@ import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.collections.ListProxy;
-import com.alvazan.orm.impl.meta.data.collections.MapProxy;
+import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
+import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 
 public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private MetaClass<PROXY> classMeta;
+	private Field fieldForKey;
 	private static final byte DEFAULT_DELIMETER = (byte) ',';
 	
 	@Override
 	public void translateFromColumn(Column column, OWNER entity,
 			NoSqlSession session) {
-		Object proxy;// = convertIdToProxy(column.getValue(), session);
-		
+		Object proxy;
 		if(field.getType().equals(Map.class))
 			proxy = translateFromColumnMap(column, entity, session);
 		else
@@ -35,15 +35,16 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private Map translateFromColumnMap(Column column,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(column);
-		MapProxy proxy = new MapProxy(session, classMeta, keys);
+		MapProxyFetchAll proxy = new MapProxyFetchAll(session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<PROXY> translateFromColumnList(Column column,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(column);
-		ListProxy<PROXY> proxies = new ListProxy<PROXY>(session, classMeta, keys);
-		return proxies;
+		List<PROXY> retVal = new ListProxyFetchAll(session, classMeta, keys);
+		return retVal;
 	}
 
 	private List<byte[]> parseOutKeyList(Column column) {
@@ -55,8 +56,9 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				byte[] key = toByteArray(currentList);
 				entities.add(key);
 				currentList = new ArrayList<Byte>();
-			}
-			currentList.add(b);
+				
+			} else
+				currentList.add(b);
 		}
 		
 		return entities;
@@ -144,10 +146,11 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		throw new UnsupportedOperationException("This field cannot be indexed");
 	}
 
-	public void setup(Field field, String colName, MetaClass<PROXY> classMeta) {
+	public void setup(Field field, String colName, MetaClass<PROXY> classMeta, Field fieldForKey) {
 		MetaTableDbo fkToTable = classMeta.getMetaDbo();
 		super.setup(field, colName, fkToTable, null, true);
 		this.classMeta = classMeta;
+		this.fieldForKey = fieldForKey;
 	}
 
 	@Override

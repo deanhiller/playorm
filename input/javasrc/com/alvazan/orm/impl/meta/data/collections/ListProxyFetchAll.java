@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.slf4j.Logger;
+
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -15,6 +17,8 @@ import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallback {
 
+	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ListProxyFetchAll.class);
+	
 	private static final long serialVersionUID = 1L;
 	private NoSqlSession session;
 	private MetaClass<T> classMeta;
@@ -28,6 +32,8 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);
 			super.add((T) h);
+			String temp = new String(key);
+			log.info("temp="+temp);
 		}
 	}
 
@@ -63,7 +69,6 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 			return;
 		
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
-		this.clear(); //we will reload with new proxy entities now
 		for(int i = 0; i < this.size(); i++) {
 			Row row = rows.get(i);
 			Holder<T> h = (Holder) super.get(i);
