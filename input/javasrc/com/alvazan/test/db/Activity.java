@@ -117,9 +117,9 @@ public class Activity {
 		this.isCool = isCool;
 	}
 
-	public static List<Activity> findBetween(Index<Activity> index, int from, int to) {
+	public static List<Activity> findBetween(Index<Activity> index, long from, long to) {
 		Query<Activity> query = index.getNamedQuery("findBetween");
-		query.setParameter("from", from);
+		query.setParameter("begin", from);
 		query.setParameter("to", to);
 		return query.getResultList();
 	}

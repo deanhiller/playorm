@@ -38,7 +38,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 	
 	@Override
-	public void setParameter(String parameterName, String value) {
+	public void setParameter(String parameterName, Object value) {
 		log.info("set param for query "+ parameterName +"="+value);
 		parameterValues.put(parameterName, value);
 	}

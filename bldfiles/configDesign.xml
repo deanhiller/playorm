@@ -34,7 +34,7 @@
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
-
+<package name ="exceptions" package="com.alvazan.orm.api.base.exc" subpackages="include"/> 
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
 </package>
@@ -79,6 +79,7 @@
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
 	<depends>RawNoSqlSpi</depends>
+	<depends>exceptions</depends>
 
 </package>
 

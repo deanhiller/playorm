@@ -9,12 +9,15 @@ import org.antlr.runtime.tree.CommonTree;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi.index.ExpressionNode;
+import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi.index.StateAttribute;
@@ -45,9 +48,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 
 	public Query walkTheASTTree(ExpressionNode node, Map<String, Object> parameterValues) {
 		if(node == null) {
-			//special case as there is no AST tree when there is no where clause which means find every node
-			//in the index
-			throw new UnsupportedOperationException("Need to fill this in with query that gets all rows");
+			return new MatchAllDocsQuery(IndexReaderWriter.IDKEY);
 		}
 		return walkTheASTTreeImpl(node, parameterValues);
 	}
@@ -129,26 +130,91 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		
 	}
 
-	//FIXME
 	private Query processParamNameCombo(ExpressionNode attributeNode, ExpressionNode paramNode, Map<String, Object> parameterValues, int type) {
 		Term term;
 		String paramName = (String) paramNode.getState();
 		StateAttribute attr = (StateAttribute) attributeNode.getState();
 		String columnName = attr.getColumnName();
 		Object value = parameterValues.get(paramName);
-		if(type == NoSqlLexer.EQ) {
-			term = new Term(columnName, (String)value);
-		}else if(value instanceof Number){
+		if(value==null) {
+			
+			term = new Term(columnName,"__impossible__value__");
 
-							throw new UnsupportedOperationException("not yet supported type="+type);
-		} 
-		
-		else
+			return new TermQuery(term);
+		}
+		switch (type) {
+		case NoSqlLexer.EQ:
+			NumericRangeQuery query=null;
+			if(value instanceof Integer) {
+				 query = NumericRangeQuery.newIntRange(columnName, (Integer)value, (Integer)value, true, true);
+			}else if(value instanceof Float){
+				 query = NumericRangeQuery.newFloatRange(columnName, (Float)value, (Float)value, true, true);
+			}else if(value instanceof Double){
+				query = NumericRangeQuery.newDoubleRange(columnName, (Double)value, (Double)value, true, true);
+			}else if(value instanceof Long){
+			  query = NumericRangeQuery.newLongRange(columnName, (Long)value, (Long)value, true, true);
+			}
+			else {
+				term = new Term(columnName, value+"");
+				return new TermQuery(term);
+			}
+			if(query!=null) return query;
+		case NoSqlLexer.GT:
+			return getNumbericRangeQuery(columnName, value, true, false);
+		case NoSqlLexer.LT:
+			return getNumbericRangeQuery(columnName, value, false, false);
+		case NoSqlLexer.GE:
+			return getNumbericRangeQuery(columnName, value, true, true);
+		case NoSqlLexer.LE:
+			return getNumbericRangeQuery(columnName,value,false,true);
+		case NoSqlLexer.NE:
 			throw new UnsupportedOperationException("not yet supported type="+type);
+		default:
+			throw new RuntimeException("Should never occur.  type="+type);
+		}
 		
-		return new TermQuery(term);
 	}
-
+	
+	private NumericRangeQuery getNumbericRangeQuery(String columnName,Object value,boolean greater,boolean include){
+		if(value instanceof Integer) {
+			NumericRangeQuery<Integer> query =null;
+			if(greater){
+				query = NumericRangeQuery.newIntRange(columnName,  (Integer)value,Integer.MAX_VALUE, true, include);	
+			}else{
+			   query = NumericRangeQuery.newIntRange(columnName,  Integer.MIN_VALUE,(Integer)value, true, include);	
+			}
+			return query;
+		}else if(value instanceof Float){
+			NumericRangeQuery<Float> query =null;
+			if(greater){
+				query = NumericRangeQuery.newFloatRange(columnName,  (Float)value,Float.MAX_VALUE, true, include);	
+			}else{
+			 query = NumericRangeQuery.newFloatRange(columnName,  Float.MIN_VALUE, (Float)value,  true, include);
+			}
+			return query;
+		}else if(value instanceof Double){
+			NumericRangeQuery<Double> query =null;
+			if(greater){
+				query = NumericRangeQuery.newDoubleRange(columnName,  (Double)value,Double.MAX_VALUE, true, include);	
+			}else{
+				query = NumericRangeQuery.newDoubleRange(columnName, Double.MIN_VALUE,(Double)value,  true, include);	
+			}
+			
+			return query;
+		}else if(value instanceof Long){
+			NumericRangeQuery<Long> query =null;
+			if(greater){
+				query = NumericRangeQuery.newLongRange(columnName,  (Long)value,Long.MAX_VALUE, true, include);	
+			}else{
+				query = NumericRangeQuery.newLongRange(columnName, Long.MIN_VALUE,(Long)value, true, include);	
+			}
+			return query;
+		}else {
+			throw new UnsupportedOperationException("not yet supported GT for type "+value.getClass());
+		}
+	}
+	
+	
 	private Query processAndOr(ExpressionNode node,
 			Map<String, Object> parameterValues, int type) {
 		Query left = walkTheASTTree(node.getLeftChild(), parameterValues);

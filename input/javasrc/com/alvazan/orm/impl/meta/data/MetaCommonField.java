@@ -35,17 +35,13 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	@Override
 	public Object translateToIndexFormat(OWNER entity) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		String indexValue = converter.convertToIndexFormat(value);
-		return indexValue;
+		return value;
 	}
 
 	public Class<?> getFieldType(){
 		return this.field.getType();
 	}
 
-	@Override
-	public String translateIfEntity(Object value) {
-		return value+"";
-	}
+	
 
 }

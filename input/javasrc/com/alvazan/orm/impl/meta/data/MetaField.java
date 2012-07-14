@@ -16,8 +16,6 @@ public interface MetaField<OWNER> {
 	
 	public Class<?> getFieldType();
 
-	//TODO: should be Object instead of String probably later so we can return int, double, etc.
-	public String translateIfEntity(Object value);
 	//TODO: should be Map<String, Object> so we can return int, double, etc. etc.
 	public Object translateToIndexFormat(OWNER entity);
 

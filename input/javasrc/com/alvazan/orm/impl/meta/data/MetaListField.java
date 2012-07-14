@@ -136,10 +136,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		throw new UnsupportedOperationException("not done yet");
 	}
 
-	@Override
-	public String translateIfEntity(Object value) {
-		throw new UnsupportedOperationException("not done yet");
-	}
+
 
 	@Override
 	public Object translateToIndexFormat(OWNER entity) {

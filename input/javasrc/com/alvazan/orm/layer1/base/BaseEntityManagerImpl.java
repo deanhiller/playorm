@@ -10,6 +10,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -66,9 +67,23 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		List<Row> rows = session.find(meta.getColumnFamily(), noSqlKeys);
+		try{
+			List<Row> rows = session.find(meta.getColumnFamily(), noSqlKeys);	
+			return getKeyValues( meta,keys,rows);
+		}catch (StorageMissingEntitesException e) {
+			List<Row> rows = e.getFoundElements();
+			List<KeyValue<T>> keyValues = getKeyValues( meta,keys,rows);
+			StorageMissingEntitesException kExeception= new StorageMissingEntitesException(keyValues,e.getMessage());
+			throw kExeception;
+		}
 		
+		
+		
+	}
+	
+	private <T> List<KeyValue<T>> getKeyValues(MetaClass<T> meta,List<Object> keys,List<Row> rows){
 		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
+
 		for(int i = 0; i < rows.size(); i++) {
 			Row row = rows.get(i);
 			Object key = keys.get(i);

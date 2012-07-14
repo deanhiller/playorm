@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
@@ -53,17 +54,19 @@ public class QueryAdapter<T> implements Query<T> {
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
 		Class objectFieldType = MetaColumnDbo.convertIfPrimitive(fieldType);
-		Class actualType = value.getClass();
+		if(value!=null){
+			Class actualType = value.getClass();
+
+			if(!objectFieldType.isAssignableFrom(actualType)){
+				throw new TypeMismatchException("value [" + value
+						+ "] is not the correct type for the parameter='"+name+"' from inspecting the Entity.  Type should be=["
+						+ fieldType + "]");
+			} 		
+		}
+	
+	
 		
-		if(!objectFieldType.isAssignableFrom(actualType)){
-			throw new TypeMismatchException("value [" + value
-					+ "] is not the correct type for the parameter='"+name+"' from inspecting the Entity.  Type should be=["
-					+ fieldType + "]");
-		} 		
-		
-		String newValue = metaField.translateIfEntity(value);
-		
-		indexQuery.setParameter(name, newValue);
+		indexQuery.setParameter(name, value);
 	}
 
 
@@ -84,13 +87,26 @@ public class QueryAdapter<T> implements Query<T> {
 		List primaryKeys = indexQuery.getResultList();
 		
 		//HERE we need to query the nosql database with the primary keys from the index
-		List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
-
-		List<T> entities = new ArrayList<T>();
-		for(KeyValue<T> keyVal : all) {
-			entities.add(keyVal.getValue());
+		try{
+			List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
+			return getEntities(all);
+		}catch(StorageMissingEntitesException e){
+			List<KeyValue<T>> partial = e.getFoundElements();
+			List<T> entities = getEntities(partial);
+			throw new StorageMissingEntitesException(entities,e.getMessage());
 		}
 		
+
+
+	}
+	
+	private List<T> getEntities(List<KeyValue<T>> keyValues){
+		List<T> entities = new ArrayList<T>();
+		for(KeyValue<T> keyVal : keyValues) {
+			entities.add(keyVal.getValue());
+		}
+
 		return entities;
 	}
+	
 }

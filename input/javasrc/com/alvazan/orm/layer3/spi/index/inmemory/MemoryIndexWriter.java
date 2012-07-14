@@ -20,6 +20,8 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi.index.IndexAdd;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
@@ -30,7 +32,7 @@ import com.alvazan.orm.api.spi.index.exc.IndexDeleteFailedException;
 import com.alvazan.orm.api.spi.index.exc.IndexErrorInfo;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
-
+	private static final Logger log = LoggerFactory.getLogger(MemoryIndexWriter.class);
 	@Inject
 	private Indice indice;
 	@Inject
@@ -109,6 +111,7 @@ public class MemoryIndexWriter implements IndexReaderWriter {
 				adds = entry.getValue();
 				addToIndex(key, adds);
 			} catch (Exception e) {
+				log.error("creating index error ",e);
 				exceptions.add(create(adds, e));
 			}
 		}
@@ -170,30 +173,36 @@ public class MemoryIndexWriter implements IndexReaderWriter {
         for (Entry<String, Object> item : map.entrySet()) {
         	String key = item.getKey();
         	Object value = item.getValue();
-        	if(value==null) continue;
+        	if(value==null) {
+        		doc.add(new Field(key, "__impossible__value__", Field.Store.NO,
+						Field.Index.ANALYZED));
+        		continue;
+        	}
 			// FIXME stupid if else if
 
-			if (value instanceof String)
+			if (value instanceof String){
 				doc.add(new Field(key, (String) value, Field.Store.NO,
 						Field.Index.ANALYZED));
+			}
 			else if (value instanceof Number) {
 				NumericField numericField = new NumericField(key,
 						Field.Store.NO, true);
-				if (value.getClass() == int.class
-						|| value.getClass() == Integer.class) {
+				if (value.getClass() == Integer.class) {
 					numericField.setIntValue((Integer) value);
-				} else if (value.getClass() == long.class
-						|| value.getClass() == Long.class) {
+				} else if ( value.getClass() == Long.class) {
 					numericField.setLongValue((Long) value);
-				} else if (value.getClass() == double.class
-						|| value.getClass() == Double.class) {
+				} else if (value.getClass() == Double.class) {
 					numericField.setDoubleValue((Double) value);
-				} else if (value.getClass() == float.class
-						|| value.getClass() == Float.class) {
+				} else if (value.getClass() == Float.class) {
 					numericField.setFloatValue((Float) value);
 				}
 				doc.add(numericField);
-			} else {
+			} 
+			else if (value instanceof Boolean){
+				doc.add(new Field(key, value+"", Field.Store.NO,
+						Field.Index.ANALYZED));
+			}
+			else {
 				throw new RuntimeException("Unsupport field " + key + " type "
 						+ value.getClass());
 			}

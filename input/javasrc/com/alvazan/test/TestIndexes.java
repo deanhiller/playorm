@@ -115,7 +115,7 @@ public class TestIndexes {
 		Assert.assertNull(activityNull);
 	}
 	
-	//@Test
+	@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();
@@ -137,7 +137,7 @@ public class TestIndexes {
 		index.addToIndex(acc3);
 		
 		Index<Account> index2 = mgr.getIndex(Account.class, "/otherindex");
-		index.addToIndex(acc2);
+		index2.addToIndex(acc2);
 		
 		mgr.flush();
 		
@@ -152,7 +152,7 @@ public class TestIndexes {
 		Assert.assertEquals(1, all2.size());
 	}
 	
-	//@Test
+	@Test
 	public void testBooleanWithAndClause() {
 		Account acc = new Account();
 		acc.setName("abc");
@@ -194,7 +194,7 @@ public class TestIndexes {
 		Assert.assertEquals(5, orList.size());
 	}
 	
-	//@Test
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
 		Account acc = new Account();
@@ -227,7 +227,7 @@ public class TestIndexes {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testSeparateIndexes() {
 		//Activity has null reference to account
 		Activity act = new Activity();

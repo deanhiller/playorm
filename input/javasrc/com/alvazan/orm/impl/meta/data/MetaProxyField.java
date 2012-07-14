@@ -2,7 +2,6 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
@@ -60,8 +59,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public Object translateToIndexFormat(OWNER entity) {
-		String idStr = translateIfEntity(entity);
-		return idStr;
+		Object value = ReflectionUtil.fetchFieldValue(entity, field);
+		return value;
 	}
 
 	@Override
@@ -69,14 +68,6 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return this.field.getType();
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public String translateIfEntity(Object entity) {
-		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
-		MetaIdField<PROXY> idField = classMeta.getIdField();
-		Converter converter = idField.getConverter();
-		String idStr = converter.convertToIndexFormat(value);
-		return idStr;
-	}
+	
 
 }
