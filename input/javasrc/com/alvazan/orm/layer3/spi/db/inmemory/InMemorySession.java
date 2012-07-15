@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.spi.db.Action;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
@@ -22,19 +21,12 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public List<Row> find(String colFamily, List<byte[]> keys) {
 		List<Row> rows = new ArrayList<Row>();
-		StringBuilder missingKey= new StringBuilder();
 		for(byte[] key : keys) {
-			try{
-				Row row = findRow(colFamily, key);
-				rows.add(row);
-			}catch (IllegalArgumentException e) {
-				missingKey.append(e.getLocalizedMessage()+" ");
-			}
-			
+			Row row = findRow(colFamily, key);
+			//This add null if there is no row to the list on purpose
+			rows.add(row);
 		}
-		if(missingKey.length()>0){
-			throw new StorageMissingEntitesException(rows,missingKey.toString());
-		}
+		
 		return rows;
 	}
 

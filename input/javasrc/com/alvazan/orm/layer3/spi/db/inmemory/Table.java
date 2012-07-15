@@ -33,9 +33,6 @@ public class Table {
 	public Row getRow(byte[] rowKey) {
 		String strValue = convert(rowKey);
 		Row row = keyToRow.get(strValue);
-		if(row==null){
-			throw new IllegalArgumentException(strValue);
-		}
 		return row;
 	}
 }

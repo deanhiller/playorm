@@ -25,7 +25,7 @@ public interface NoSqlEntityManager {
 	
 	public <T> T find(Class<T> entityType, Object key);
 	
-	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<Object> keys);
+	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys);
 	
 	public <T> T getReference(Class<T> entityType, Object key);
 	

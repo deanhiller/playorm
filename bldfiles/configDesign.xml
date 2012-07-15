@@ -79,8 +79,6 @@
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
 	<depends>RawNoSqlSpi</depends>
-	<depends>exceptions</depends>
-
 </package>
 
 <!-- This section is just the index adapters depending on the spi -->

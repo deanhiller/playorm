@@ -84,26 +84,22 @@ public class QueryAdapter<T> implements Query<T> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public List<T> getResultList() {
+		
 		List primaryKeys = indexQuery.getResultList();
-		
 		//HERE we need to query the nosql database with the primary keys from the index
-		try{
-			List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
-			return getEntities(all);
-		}catch(StorageMissingEntitesException e){
-			List<KeyValue<T>> partial = e.getFoundElements();
-			List<T> entities = getEntities(partial);
-			throw new StorageMissingEntitesException(entities,e.getMessage());
-		}
-		
-
-
+		List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
+			
+		List<T> entities = getEntities(all);
+		if(entities.size() != primaryKeys.size())
+			throw new StorageMissingEntitesException(entities, "Not all elements found, call exception.getFoundElements for ones that were found");
+		return entities;
 	}
 	
 	private List<T> getEntities(List<KeyValue<T>> keyValues){
 		List<T> entities = new ArrayList<T>();
 		for(KeyValue<T> keyVal : keyValues) {
-			entities.add(keyVal.getValue());
+			if(keyVal.getValue() != null)
+				entities.add(keyVal.getValue());
 		}
 
 		return entities;

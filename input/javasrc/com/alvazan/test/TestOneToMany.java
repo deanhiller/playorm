@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -8,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Account;
@@ -35,6 +37,29 @@ public class TestOneToMany {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 
+	@Test
+	public void testReturnsNullIfNotFound() {
+		Activity act = mgr.find(Activity.class, "somekey");
+		//not found returns null...
+		Assert.assertNull(act);
+		
+		Activity act1 = new Activity();
+		act1.setName("dean");
+		act1.setNumTimes(3);
+		mgr.put(act1);
+		
+		mgr.flush();
+		
+		List<String> keyList = new ArrayList<String>();
+		keyList.add(act1.getId());
+		keyList.add("notexist");
+		List<KeyValue<Activity>> results = mgr.findAll(Activity.class, keyList);
+		Assert.assertEquals(act1.getName(), results.get(0).getValue().getName());
+		
+		Assert.assertEquals("notexist", results.get(1).getKey());
+		Assert.assertNull(results.get(1).getValue());
+	}
+	
 	@Test
 	public void testOneToManyWithMap() {
 		Activity act1 = new Activity();
