@@ -464,7 +464,10 @@
 
 		<!-- Put all implementation classes from ${build} into the jar file -->
 		<jar jarfile="${jardist}/${jar.name}" manifest="${manifest}/MANIFEST.MF" >
-			<fileset dir="${build}" excludes="**/test/**"  />			
+			<fileset dir="${build}" excludes="**/test/**">
+				<exclude name="**/test/**"/>
+				<exclude name="logback.xml"/>
+			</fileset>
 		</jar>
 
 	</target>
