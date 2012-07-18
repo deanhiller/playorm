@@ -384,7 +384,7 @@ public class ScannerForQuery {
 		}
 		
 		//At this point, we have looked up the metaClass associated with the alias
-		DboColumnMeta attributeField = metaClass.getMetaField(attributeName);
+		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
 		if (attributeField == null) {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}

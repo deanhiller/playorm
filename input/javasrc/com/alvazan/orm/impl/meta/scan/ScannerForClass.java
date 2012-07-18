@@ -132,7 +132,7 @@ public class ScannerForClass {
 		if(field.isAnnotationPresent(Id.class)) {
 			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);
-			metaDbo.addField(idField.getMetaDbo());
+			metaDbo.addColumnMeta(idField.getMetaDbo());
 			return;
 		}
 		
@@ -150,7 +150,7 @@ public class ScannerForClass {
 		
 		boolean isIndexed = field.isAnnotationPresent(Indexed.class);
 		metaClass.addMetaField(metaField, isIndexed);
-		metaDbo.addField(metaField.getMetaDbo());
+		metaDbo.addColumnMeta(metaField.getMetaDbo());
 	}
 	
 	@SuppressWarnings("rawtypes")

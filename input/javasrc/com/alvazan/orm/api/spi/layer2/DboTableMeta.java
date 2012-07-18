@@ -23,12 +23,12 @@ public class DboTableMeta {
 		this.columnFamily = columnFamily;
 	}
 
-	public void addField(DboColumnMeta fieldDbo) {
+	public void addColumnMeta(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	
-	public DboColumnMeta getMetaField(String attributeName) {
-		return nameToField.get(attributeName);
+	public DboColumnMeta getColumnMeta(String columnName) {
+		return nameToField.get(columnName);
 	}
 	
 	@Override
