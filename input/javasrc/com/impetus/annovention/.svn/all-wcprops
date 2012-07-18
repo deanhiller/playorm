@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/12/trunk/src/main/java/com/impetus/annovention
+END
+Filter.java
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/Filter.java
+END
+Discoverer.java
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/12/trunk/src/main/java/com/impetus/annovention/Discoverer.java
+END
+FilterImpl.java
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/FilterImpl.java
+END
+ClasspathDiscoverer.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/12/trunk/src/main/java/com/impetus/annovention/ClasspathDiscoverer.java
+END

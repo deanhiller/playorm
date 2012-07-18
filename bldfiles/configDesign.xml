@@ -18,8 +18,12 @@
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="lucene" package="org.apache.lucene" subpackages="include"/>
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>
-<package name="annotationParser" package="com.impetus.annovention" subpackages="include"/>
-<package name="javassist" package="javassist.util.proxy"/>
+<package name="def" package="nosql"/>
+
+<package name="javassist" package="javassist" subpackages="include"/>
+<package name="annotationParser" package="com.impetus.annovention" subpackages="include">
+	<depends>javassist</depends>
+</package>
 
 <package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index" subpackages="include">
 	<depends>antlr</depends>

@@ -58,6 +58,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
+		if(meta == null)
+			throw new IllegalArgumentException("Class type="+entityType.getName()+" was not found, please check that you scanned the right package and look at the logs to see if this class was scanned");
 		List<byte[]> noSqlKeys = new ArrayList<byte[]>();
 		for(Object k : keys) {
 			byte[] key = meta.convertIdToNoSql(k);

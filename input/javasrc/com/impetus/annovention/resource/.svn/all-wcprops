@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/resource
+END
+ClassFileIterator.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/resource/ClassFileIterator.java
+END
+ResourceIterator.java
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/resource/ResourceIterator.java
+END
+JarFileIterator.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/!svn/ver/7/trunk/src/main/java/com/impetus/annovention/resource/JarFileIterator.java
+END
