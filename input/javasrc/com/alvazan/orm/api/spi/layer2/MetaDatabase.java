@@ -11,7 +11,7 @@ public class MetaDatabase {
 	private Map<String, MetaTableDbo> colFamilyToMeta = new HashMap<String, MetaTableDbo>();
 	
 	public void addMetaClassDbo(MetaTableDbo metaClass) {
-		colFamilyToMeta.put(metaClass.getTableName(), metaClass);
+		colFamilyToMeta.put(metaClass.getColumnFamily(), metaClass);
 	}
 	
 	public MetaTableDbo getMeta(String tableName) {

@@ -34,7 +34,7 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName);
 		
 		List<String> primaryKeys = spiQueryAdapter.getResultList();
-		String colFamily = metaQuery.getTargetTable().getTableName();
+		String colFamily = metaQuery.getTargetTable().getColumnFamily();
 		
 		NoSqlSession session = createSession();
 		

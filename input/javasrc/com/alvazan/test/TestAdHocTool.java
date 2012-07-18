@@ -45,7 +45,7 @@ public class TestAdHocTool {
 
 	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {
 		MetaTableDbo meta = new MetaTableDbo();
-		meta.setTableName(entityName);
+		meta.setColumnFamily(entityName);
 		map.addMetaClassDbo(meta);
 		
 		for(String field : fields) {

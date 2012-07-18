@@ -123,7 +123,7 @@ public class MetaClass<T> {
 		if(colFamily == null)
 			throw new IllegalArgumentException("colFamily cannot be null");
 		this.columnFamily = colFamily;
-		metaDbo.setTableName(colFamily);
+		metaDbo.setColumnFamily(colFamily);
 	}
 
 	public void setMetaClass(Class<T> clazz) {

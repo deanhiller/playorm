@@ -3,9 +3,16 @@ package com.alvazan.orm.api.spi.layer2;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlEntity;
+
+@NoSqlEntity
 public class MetaColumnDbo {
 
+	@Id
 	private String columnName;
+	
 	/**
 	 * null for FK relationships.  Contains primitive type..
 	 */
@@ -15,6 +22,7 @@ public class MetaColumnDbo {
 	 * This field may be referencing another entity in another table so here is the meta data
 	 * on that table as well, but for now, I don't think we need it until we have joins
 	 */
+	@ManyToOne
 	private MetaTableDbo fkToColumnFamily;
 	
 	private boolean isToManyColumn;

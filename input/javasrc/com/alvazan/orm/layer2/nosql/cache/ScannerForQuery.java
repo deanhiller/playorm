@@ -389,7 +389,7 @@ public class ScannerForQuery {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
 		
-		StateAttribute attr = new StateAttribute(metaClass.getTableName(), attributeField.getColumnName()); 
+		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), attributeField.getColumnName()); 
 		attributeNode2.setState(attr);
 		
 		TypeInfo typeInfo = new TypeInfo(attributeField);
