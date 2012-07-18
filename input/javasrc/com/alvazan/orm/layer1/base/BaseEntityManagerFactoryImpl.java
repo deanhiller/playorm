@@ -55,22 +55,18 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public void setup(Map<Class, Converter> converters, String... packages) {
+	public void setup(Map<Class, Converter> converters) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");
 		
 		inspectorField.setCustomConverters(converters);
 		
-		List<String> temp = new ArrayList<String>();
-		for(String p : packages) {
-			temp.add(p);
-		}
-		log.info("Begin scanning package list="+temp);
+		log.info("Begin scanning for jars with nosql.Persistence.class");
 		
 		//TODO: Fork annovention, it is a very small library AND then copy from
 		//http://code.google.com/p/reflections/source/browse/trunk/reflections/src/main/java/org/reflections/util/ClasspathHelper.java?r=103
 		//so that we only scan classes that are in a certain package instead of all classes on the classpath!!!!
-		discoverer.setFilter(new OurFilter(temp));
+		discoverer.setFilter(new OurFilter());
         // Add class annotation listener (optional)
         discoverer.addAnnotationListener(listener);
         // Fire it
@@ -137,15 +133,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	}
 	
 	private static class OurFilter implements Filter {
-		private List<String> packages;
-		public OurFilter(List<String> packages) {
-			this.packages = packages;
-		}
-
 		@Override
 		public boolean accepts(String filename) {
-			if(filename.startsWith("com/alvazan"))
-				log.info("filename="+filename);
 			if(filename.endsWith(".class"))
 				return true;
 			return false;

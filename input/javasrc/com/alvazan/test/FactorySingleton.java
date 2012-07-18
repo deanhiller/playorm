@@ -17,7 +17,7 @@ public class FactorySingleton {
 		if(factory == null) {
 			log.info("CREATING FACTORY FOR TESTS");
 			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
-			factory.setup(null, "com.alvazan.test.db");
+			factory.setup(null);
 		}
 		return factory;
 	}
