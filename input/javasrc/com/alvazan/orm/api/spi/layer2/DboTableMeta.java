@@ -8,13 +8,12 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
-public class MetaTableDbo {
+public class DboTableMeta {
 
-	@Id
+	@Id(usegenerator=false)
 	private String columnFamily;
-	@OneToMany(entityType=MetaColumnDbo.class, keyFieldForMap="columnName")
-	private Map<String, MetaColumnDbo> nameToField = new HashMap<String, MetaColumnDbo>();
-
+	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
+	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	
 	public String getColumnFamily() {
 		return columnFamily;
@@ -24,11 +23,11 @@ public class MetaTableDbo {
 		this.columnFamily = columnFamily;
 	}
 
-	public void addField(MetaColumnDbo fieldDbo) {
+	public void addField(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	
-	public MetaColumnDbo getMetaField(String attributeName) {
+	public DboColumnMeta getMetaField(String attributeName) {
 		return nameToField.get(attributeName);
 	}
 	

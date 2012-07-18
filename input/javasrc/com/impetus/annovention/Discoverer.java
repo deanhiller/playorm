@@ -20,7 +20,6 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -164,8 +163,7 @@ public abstract class Discoverer {
                     }
                 }
             } catch (IOException e) {
-                // TODO: Do something with this exception
-                e.printStackTrace();
+            	throw new RuntimeException(e);
             }
         }
     }
@@ -288,8 +286,11 @@ public abstract class Discoverer {
      * @return
      * @throws IOException
      */
-    private ResourceIterator getResourceIterator(URL url, Filter filter) throws IOException {
+    private ResourceIterator getResourceIterator(URL url2, Filter filter) throws IOException {
+    	URL url = url2;
         String urlString = url.toString();
+        //I wonder why he had this in here, looks like he i forming a new url with jar prefix and
+        //strips off the !/ as well which seems odd to me...need to figure out and document
         if (urlString.endsWith("!/")) {
             urlString = urlString.substring(4);
             urlString = urlString.substring(0, urlString.length() - 2);

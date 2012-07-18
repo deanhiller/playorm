@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
@@ -52,7 +52,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {
-		MetaTableDbo fkToTable = classMeta.getMetaDbo();
+		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		super.setup(field2, colName, fkToTable, null, false);
 		this.classMeta = classMeta;
 	}

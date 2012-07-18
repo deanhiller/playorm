@@ -3,7 +3,7 @@ package com.alvazan.orm.impl.bindings;
 import com.alvazan.orm.api.base.AbstractBootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.Guice;
@@ -31,7 +31,7 @@ public class Bootstrap extends AbstractBootstrap {
 	 * @param metaDb 
 	 * @return
 	 */
-	public static NoSqlSessionFactory createRawInstance(DbTypeEnum type, MetaDatabase metaDb) {
+	public static NoSqlSessionFactory createRawInstance(DbTypeEnum type, DboDatabaseMeta metaDb) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type, metaDb));
 		return injector.getInstance(NoSqlSessionFactory.class);
 	}

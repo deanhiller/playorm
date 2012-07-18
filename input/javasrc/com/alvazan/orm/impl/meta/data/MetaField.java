@@ -1,7 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
 
@@ -9,7 +9,7 @@ public interface MetaField<OWNER> {
 
 	public String getColumnName();
 	public String getFieldName();
-	public MetaColumnDbo getMetaDbo();
+	public DboColumnMeta getMetaDbo();
 	
 	public void translateFromColumn(Column column, OWNER entity, NoSqlSession session);
 	public void translateToColumn(OWNER entity, Column col);

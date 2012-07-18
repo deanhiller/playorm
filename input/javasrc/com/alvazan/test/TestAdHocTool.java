@@ -11,9 +11,9 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.impl.bindings.Bootstrap;
@@ -22,7 +22,7 @@ public class TestAdHocTool {
 
 	@Test
 	public void testBasic() {
-		MetaDatabase metaDb = new MetaDatabase();
+		DboDatabaseMeta metaDb = new DboDatabaseMeta();
 		addMetaClassDbo(metaDb, "MyEntity", "cat", "mouse", "dog");
 		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
 
@@ -43,13 +43,13 @@ public class TestAdHocTool {
 		Assert.assertEquals(1, rows.size());
 	}
 
-	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {
-		MetaTableDbo meta = new MetaTableDbo();
+	private void addMetaClassDbo(DboDatabaseMeta map, String entityName, String ... fields) {
+		DboTableMeta meta = new DboTableMeta();
 		meta.setColumnFamily(entityName);
 		map.addMetaClassDbo(meta);
 		
 		for(String field : fields) {
-			MetaColumnDbo fieldDbo = new MetaColumnDbo();
+			DboColumnMeta fieldDbo = new DboColumnMeta();
 			fieldDbo.setup(field, null, String.class, false);
 			meta.addField(fieldDbo);
 		}

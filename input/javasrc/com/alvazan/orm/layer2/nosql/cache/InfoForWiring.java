@@ -3,12 +3,12 @@ package com.alvazan.orm.layer2.nosql.cache;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 
 public class InfoForWiring {
 
-	private MetaTableDbo noAliasTable;
-	private Map<String, MetaTableDbo> aliasToMeta = new HashMap<String, MetaTableDbo>();
+	private DboTableMeta noAliasTable;
+	private Map<String, DboTableMeta> aliasToMeta = new HashMap<String, DboTableMeta>();
 	private boolean selectStarDefined;
 	private String query;
 	private String targetTable;
@@ -18,19 +18,19 @@ public class InfoForWiring {
 		this.targetTable= targetTable;
 	}
 
-	public void setNoAliasTable(MetaTableDbo metaClass) {
+	public void setNoAliasTable(DboTableMeta metaClass) {
 		this.noAliasTable = metaClass;
 	}
 
-	public MetaTableDbo getNoAliasTable() {
+	public DboTableMeta getNoAliasTable() {
 		return noAliasTable;
 	}
 
-	public void put(String alias, MetaTableDbo metaClass) {
+	public void put(String alias, DboTableMeta metaClass) {
 		aliasToMeta.put(alias, metaClass);
 	}
 
-	public MetaTableDbo getInfoFromAlias(String alias) {
+	public DboTableMeta getInfoFromAlias(String alias) {
 		return aliasToMeta.get(alias);
 	}
 

@@ -3,7 +3,7 @@ package com.alvazan.orm.impl.bindings;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
@@ -17,12 +17,12 @@ import com.google.inject.name.Names;
 public class ProductionBindings implements Module {
 
 	private DbTypeEnum type;
-	private MetaDatabase metaDb;
+	private DboDatabaseMeta metaDb;
 
 	public ProductionBindings(DbTypeEnum type) {
 		this.type = type;
 	}
-	public ProductionBindings(DbTypeEnum type, MetaDatabase metaDb) {
+	public ProductionBindings(DbTypeEnum type, DboDatabaseMeta metaDb) {
 		this.type = type;
 		this.metaDb = metaDb;
 	}
@@ -46,7 +46,9 @@ public class ProductionBindings implements Module {
 		}
 		
 		if(metaDb != null) //for adhoc query tool bind the meta database(which typically came from the database read)
-			binder.bind(MetaDatabase.class).toInstance(metaDb);
+			binder.bind(DboDatabaseMeta.class).toInstance(metaDb);
+		else
+			binder.bind(DboDatabaseMeta.class).asEagerSingleton();
 		
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);

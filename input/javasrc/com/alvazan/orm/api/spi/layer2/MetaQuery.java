@@ -16,7 +16,7 @@ public class MetaQuery<T> {
 	//NOTE: This is really JUST for ad-hoc query tool
 	private String indexName;
 
-	private MetaTableDbo targetTable;
+	private DboTableMeta targetTable;
 	
 	@Override
 	public String toString() {
@@ -48,11 +48,11 @@ public class MetaQuery<T> {
 		return indexName;
 	}
 
-	public void setTargetTable(MetaTableDbo metaClass) {
+	public void setTargetTable(DboTableMeta metaClass) {
 		this.targetTable = metaClass;
 	}
 
-	public MetaTableDbo getTargetTable() {
+	public DboTableMeta getTargetTable() {
 		return targetTable;
 	}
 

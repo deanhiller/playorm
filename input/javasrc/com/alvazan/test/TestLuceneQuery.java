@@ -5,10 +5,10 @@ import org.junit.Test;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
@@ -39,11 +39,11 @@ public class TestLuceneQuery implements Module {
 
 	@Override
 	public void configure(Binder binder) {
-		MetaDatabase map = new MetaDatabase();
+		DboDatabaseMeta map = new DboDatabaseMeta();
 		addMetaClassDbo(map, "MyEntity", "cat", "mouse", "dog");
 		addMetaClassDbo(map, "OtherEntity", "id", "dean", "declan", "pet", "house");
 		
-		binder.bind(MetaDatabase.class).toInstance(map);
+		binder.bind(DboDatabaseMeta.class).toInstance(map);
 		binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class).asEagerSingleton();
 		binder.bind(NoSqlRawSession.class).to(InMemorySession.class);
 	
@@ -51,13 +51,13 @@ public class TestLuceneQuery implements Module {
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);		
 	}
 
-	private void addMetaClassDbo(MetaDatabase map, String entityName, String ... fields) {
-		MetaTableDbo meta = new MetaTableDbo();
+	private void addMetaClassDbo(DboDatabaseMeta map, String entityName, String ... fields) {
+		DboTableMeta meta = new DboTableMeta();
 		meta.setColumnFamily(entityName);
 		map.addMetaClassDbo(meta);
 		
 		for(String field : fields) {
-			MetaColumnDbo fieldDbo = new MetaColumnDbo();
+			DboColumnMeta fieldDbo = new DboColumnMeta();
 			fieldDbo.setup(field, null, String.class, false);
 			meta.addField(fieldDbo);
 		}

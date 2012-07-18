@@ -22,6 +22,9 @@ import java.io.InputStream;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.impetus.annovention.Filter;
 
 /**
@@ -35,6 +38,8 @@ import com.impetus.annovention.Filter;
  */
 public final class JarFileIterator implements ResourceIterator {
 
+	private static final Logger log = LoggerFactory.getLogger(JarFileIterator.class);
+	
     /** jar input stream */
     private JarInputStream jarInputStream;
 
@@ -114,6 +119,7 @@ public final class JarFileIterator implements ResourceIterator {
             closed = true;
             jarInputStream.close();
         } catch (IOException ioe) {
+        	log.warn("exception on close", ioe);
         }
     }
 

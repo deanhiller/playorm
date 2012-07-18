@@ -13,7 +13,7 @@ import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
@@ -21,7 +21,7 @@ public class MetaClass<T> {
 
 	public static final String IDKEY = IndexReaderWriter.IDKEY;
 	
-	private MetaTableDbo metaDbo = new MetaTableDbo();
+	private DboTableMeta metaDbo = new DboTableMeta();
 	
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
@@ -180,7 +180,7 @@ public class MetaClass<T> {
 		queryInfo.put(name, metaQuery);
 	}
 
-	public MetaTableDbo getMetaDbo() {
+	public DboTableMeta getMetaDbo() {
 		return metaDbo;
 	}
 

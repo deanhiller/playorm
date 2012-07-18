@@ -16,10 +16,10 @@ import com.alvazan.orm.api.spi.index.ExpressionNode;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
 import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.StateAttribute;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.TypeEnum;
 import com.alvazan.orm.api.spi.layer2.TypeInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
@@ -33,7 +33,7 @@ public class ScannerForQuery {
 	@Inject
 	private IndexReaderWriter indexes;
 	@Inject
-	private MetaDatabase metaInfo;
+	private DboDatabaseMeta metaInfo;
 	
 	@Inject
 	private Provider<MetaQuery> metaQueryFactory;
@@ -197,7 +197,7 @@ public class ScannerForQuery {
 		// here as well
 		String tableName = tableNode.getText();
 		String targetTable = wiring.getTargetTable();
-		MetaTableDbo metaClass = metaInfo.getMeta(tableName);
+		DboTableMeta metaClass = metaInfo.getMeta(tableName);
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
 		if(tableName.equals("TABLE") && targetTable != null) {
 			metaClass = metaInfo.getMeta(targetTable);
@@ -344,7 +344,7 @@ public class ScannerForQuery {
 	}
 
 	private static void validateTypes(InfoForWiring wiring, TypeEnum constantType, TypeInfo typeInfo) {
-		MetaColumnDbo info = typeInfo.getColumnInfo();
+		DboColumnMeta info = typeInfo.getColumnInfo();
 		Class type = info.getClassType();
 		if(constantType == TypeEnum.STRING && 
 				(type.equals(String.class) || type.equals(Boolean.class)
@@ -364,7 +364,7 @@ public class ScannerForQuery {
 
 	private static TypeInfo processAttribute(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
 			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType) {
-		MetaTableDbo metaClass;
+		DboTableMeta metaClass;
 		
 		CommonTree attributeNode = attributeNode2.getASTNode();
 		String attributeName = attributeNode.getText();
@@ -384,7 +384,7 @@ public class ScannerForQuery {
 		}
 		
 		//At this point, we have looked up the metaClass associated with the alias
-		MetaColumnDbo attributeField = metaClass.getMetaField(attributeName);
+		DboColumnMeta attributeField = metaClass.getMetaField(attributeName);
 		if (attributeField == null) {
 			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}

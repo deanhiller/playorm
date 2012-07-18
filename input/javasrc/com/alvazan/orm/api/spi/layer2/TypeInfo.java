@@ -14,13 +14,13 @@ public class TypeInfo {
 	 * NOTE: The type information is either from another constant or from the column's type so we have to 
 	 * compare against one or the other field in this bean.
 	 */	
-	private MetaColumnDbo columnInfo;
+	private DboColumnMeta columnInfo;
 
 	public TypeInfo(TypeEnum type) {
 		this.constantType = type;
 	}
 
-	public TypeInfo(MetaColumnDbo columnInfo) {
+	public TypeInfo(DboColumnMeta columnInfo) {
 		this.columnInfo = columnInfo;
 	}
 
@@ -32,11 +32,11 @@ public class TypeInfo {
 		this.constantType = constantType;
 	}
 
-	public MetaColumnDbo getColumnInfo() {
+	public DboColumnMeta getColumnInfo() {
 		return columnInfo;
 	}
 
-	public void setColumnInfo(MetaColumnDbo columnName) {
+	public void setColumnInfo(DboColumnMeta columnName) {
 		this.columnInfo = columnName;
 	}
 	

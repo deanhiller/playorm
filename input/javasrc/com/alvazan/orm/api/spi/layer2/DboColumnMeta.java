@@ -8,9 +8,9 @@ import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 
 @NoSqlEntity
-public class MetaColumnDbo {
+public class DboColumnMeta {
 
-	@Id
+	@Id(usegenerator=false)
 	private String columnName;
 	
 	/**
@@ -23,7 +23,7 @@ public class MetaColumnDbo {
 	 * on that table as well, but for now, I don't think we need it until we have joins
 	 */
 	@ManyToOne
-	private MetaTableDbo fkToColumnFamily;
+	private DboTableMeta fkToColumnFamily;
 	
 	private boolean isToManyColumn;
 	
@@ -52,7 +52,7 @@ public class MetaColumnDbo {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void setup(String colName, MetaTableDbo fkToTable, Class classType, boolean isToManyColumn) {
+	public void setup(String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn) {
 		Class newType = convertIfPrimitive(classType);
 		if(!primitives.contains(newType))
 			newType = Byte.class;
@@ -97,7 +97,7 @@ public class MetaColumnDbo {
 		}
 	}
 
-	public MetaTableDbo getFkToColumnFamily() {
+	public DboTableMeta getFkToColumnFamily() {
 		return fkToColumnFamily;
 	}
 

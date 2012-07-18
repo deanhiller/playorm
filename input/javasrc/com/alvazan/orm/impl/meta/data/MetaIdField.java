@@ -8,14 +8,14 @@ import javassist.util.proxy.Proxy;
 import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> {
 
-	private MetaColumnDbo metaDbo = new MetaColumnDbo();
+	private DboColumnMeta metaDbo = new DboColumnMeta();
 	protected Field field;
 	private Converter converter;
 	
@@ -97,7 +97,7 @@ public class MetaIdField<OWNER> {
 		return (OWNER) inst;
 	}
 
-	public MetaColumnDbo getMetaDbo() {
+	public DboColumnMeta getMetaDbo() {
 		return metaDbo;
 	}
 

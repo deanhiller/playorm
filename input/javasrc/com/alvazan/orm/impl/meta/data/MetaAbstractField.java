@@ -2,11 +2,11 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
-	private MetaColumnDbo metaDbo = new MetaColumnDbo();
+	private DboColumnMeta metaDbo = new DboColumnMeta();
 	protected Field field;
 	protected String columnName;
 	
@@ -14,7 +14,7 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return columnName;
 	}
 	@Override
-	public MetaColumnDbo getMetaDbo() {
+	public DboColumnMeta getMetaDbo() {
 		return metaDbo;
 	}
 	
@@ -24,7 +24,7 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void setup(Field field2, String colName, MetaTableDbo fkToTable, Class classType, boolean isToManyColumn) {
+	public void setup(Field field2, String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn) {
 		this.field = field2;
 		this.field.setAccessible(true);
 		this.columnName = colName;

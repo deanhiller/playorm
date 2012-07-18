@@ -27,11 +27,13 @@ public class FilterImpl implements Filter {
 
     /* @see com.impetus.annovention.Filter#accepts(java.lang.String) */
     @Override
-    public final boolean accepts(String filename) {
+    public final boolean accepts(String filename2) {
+    	String filename = filename2;
         if (filename.endsWith(".class")) {
             if (filename.startsWith("/")) {
                 filename = filename.substring(1);
             }
+            
             if (!ignoreScan(filename.replace('/', '.'))) {
                 return true;
             }

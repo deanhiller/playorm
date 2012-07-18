@@ -11,7 +11,7 @@ import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.layer2.MetaColumnDbo;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -47,13 +47,13 @@ public class QueryAdapter<T> implements Query<T> {
 		} else if(typeInfo.getConstantType() != null)
 			throw new UnsupportedOperationException("not done here yet, need to validate constant type");
 
-		MetaColumnDbo metaFieldDbo = typeInfo.getColumnInfo();
+		DboColumnMeta metaFieldDbo = typeInfo.getColumnInfo();
 		
 		MetaField metaField = metaClass.getMetaFieldByCol(metaFieldDbo.getColumnName());
 		Class fieldType = metaField.getFieldType();
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
-		Class objectFieldType = MetaColumnDbo.convertIfPrimitive(fieldType);
+		Class objectFieldType = DboColumnMeta.convertIfPrimitive(fieldType);
 		if(value!=null){
 			Class actualType = value.getClass();
 

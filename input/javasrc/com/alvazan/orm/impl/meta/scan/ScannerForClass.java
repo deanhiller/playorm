@@ -23,8 +23,8 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.anno.Transient;
-import com.alvazan.orm.api.spi.layer2.MetaDatabase;
-import com.alvazan.orm.api.spi.layer2.MetaTableDbo;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
@@ -40,7 +40,7 @@ public class ScannerForClass {
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
-	private MetaDatabase databaseInfo;
+	private DboDatabaseMeta databaseInfo;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
@@ -128,7 +128,7 @@ public class ScannerForClass {
 				field.isAnnotationPresent(Transient.class))
 			return;
 		
-		MetaTableDbo metaDbo = metaClass.getMetaDbo();
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		if(field.isAnnotationPresent(Id.class)) {
 			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);
