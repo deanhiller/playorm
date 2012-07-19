@@ -387,9 +387,10 @@ public class ScannerForQuery {
 		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
 		String colName;
 		if (attributeField == null) {
-			if(!metaClass.getIdColumnName().equals(attributeName))
+			DboColumnMeta idMeta = metaClass.getIdColumnMeta();
+			if(!idMeta.getColumnName().equals(attributeName))
 				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
-			colName = metaClass.getIdColumnName();
+			colName = idMeta.getColumnName();
 		} else
 			colName = attributeField.getColumnName();
 		

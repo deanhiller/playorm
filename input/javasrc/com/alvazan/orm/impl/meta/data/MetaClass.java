@@ -155,7 +155,7 @@ public class MetaClass<T> {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
-		metaDbo.setRowKeyTypeAndName(field.field.getClass(), field.getMetaDbo().getColumnName());
+		metaDbo.setRowKeyMeta(field.getMetaDbo());
 	}
 
 	public MetaIdField<T> getIdField() {

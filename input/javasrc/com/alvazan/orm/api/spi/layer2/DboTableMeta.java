@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.OneToOne;
 
 @NoSqlEntity
 public class DboTableMeta {
@@ -15,19 +16,8 @@ public class DboTableMeta {
 	
 	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
-	
-	private String idColumnType;
-	//There is no name stored in the nosql store!!! BUT the queries will use
-	//this name to query the data like e.id = :id and when that happens, we look up by primary key
-	private String idColumnName;
-	
-	@SuppressWarnings("rawtypes")
-	public void setup(String columnFamily, Class idColumnType) {
-		if(columnFamily == null || idColumnType == null)
-			throw new IllegalArgumentException("no parameters can be null and one was null.  cf="+columnFamily+" idcolType="+idColumnType);
-		this.columnFamily = columnFamily;
-
-	}
+	@OneToOne
+	private DboColumnMeta idColumn;
 	
 	public String getColumnFamily() {
 		return columnFamily;
@@ -36,23 +26,9 @@ public class DboTableMeta {
 	public void setColumnFamily(String columnFamily) {
 		this.columnFamily = columnFamily;
 	}
-
-	@SuppressWarnings("rawtypes")
-	public void setRowKeyTypeAndName(Class clazz, String name) {
-		if(clazz == null)
-			throw new IllegalArgumentException("Can only set the row key type to a valid type");
-		Class newType = DboColumnMeta.translateType(clazz);
-		idColumnType = newType.getName();
-		this.idColumnName = name;
-	}
 	
-	public String getIdColumnName() {
-		return idColumnName;
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public Class getIdType() {
-		return DboColumnMeta.classForName(idColumnType);
+	public void setRowKeyMeta(DboColumnMeta idMeta) {
+		this.idColumn = idMeta;
 	}
 	
 	public Map<String, DboColumnMeta> getColumns() {
@@ -69,7 +45,11 @@ public class DboTableMeta {
 	
 	@Override
 	public String toString() {
-		return "[tablename="+columnFamily+" indexedcolumns="+nameToField.values()+"]";
+		return "[tablename="+columnFamily+" indexedcolumns="+nameToField.values()+" pk="+idColumn+"]";
+	}
+
+	public DboColumnMeta getIdColumnMeta() {
+		return idColumn;
 	}
 
 }
