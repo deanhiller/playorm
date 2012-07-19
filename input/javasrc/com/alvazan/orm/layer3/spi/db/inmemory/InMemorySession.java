@@ -2,7 +2,6 @@ package com.alvazan.orm.layer3.spi.db.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -67,18 +66,16 @@ public class InMemorySession implements NoSqlRawSession {
 		if(row == null)
 			return;
 		
-		Map<String, Column> columns = row.getColumns();
-		for(String name : action.getColumns()) {
-			columns.remove(name);
+		for(byte[] name : action.getColumns()) {
+			row.remove(name);
 		}
 	}
 
 	private void persist(Persist action, Table table) {
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
-		Map<String, Column> columns = row.getColumns();
 		for(Column col : action.getColumns()) {
-			columns.put(col.getName(), col);
+			row.put(col.getName(), col);
 		}
 	}
 

@@ -23,7 +23,7 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	public void translateToColumn(OWNER entity, Column col) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
 		byte[] byteVal = converter.convertToNoSql(value);
-		col.setName(columnName);
+		col.setName(columnName.getBytes());
 		col.setValue(byteVal);
 	}
 

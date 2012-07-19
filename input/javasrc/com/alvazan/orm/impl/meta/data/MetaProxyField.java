@@ -43,7 +43,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
 		}
 		
-		col.setName(columnName);
+		col.setName(columnName.getBytes());
 		col.setValue(byteVal);
 	}
 

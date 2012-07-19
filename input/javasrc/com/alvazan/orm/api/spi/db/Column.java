@@ -1,7 +1,7 @@
 package com.alvazan.orm.api.spi.db;
 
 public class Column {
-	private String name;
+	private byte[] name;
 	private byte[] value;
 	private Long timestamp;
 	
@@ -17,10 +17,10 @@ public class Column {
 	public void setTimestamp(Long timestamp) {
 		this.timestamp = timestamp;
 	}
-	public String getName() {
+	public byte[] getName() {
 		return name;
 	}
-	public void setName(String name) {
+	public void setName(byte[] name) {
 		this.name = name;
 	}
 	@Override

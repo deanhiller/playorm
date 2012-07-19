@@ -94,7 +94,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	private void translateToColumnImpl(Collection<PROXY> collection, Column col) {
-		col.setName(columnName);
+		col.setName(columnName.getBytes());
 		List<Byte> data = new ArrayList<Byte>();
 		
 		for(PROXY proxy : collection) {

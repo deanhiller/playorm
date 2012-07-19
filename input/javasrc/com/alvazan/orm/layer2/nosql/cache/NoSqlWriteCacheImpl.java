@@ -48,7 +48,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public void remove(String colFamily, byte[] rowKey, List<String> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, List<byte[]> columnNames) {
 		Remove remove = new Remove();
 		remove.setColFamily(colFamily);
 		remove.setRowKey(rowKey);

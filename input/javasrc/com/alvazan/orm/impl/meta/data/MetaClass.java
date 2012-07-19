@@ -87,10 +87,9 @@ public class MetaClass<T> {
 	public Object fillInInstance(Row row, NoSqlSession session, T inst) {
 		Object key = idField.translateFromRow(row, inst);
 
-		Map<String, Column> columns = row.getColumns();
 		for(MetaField<T> field : columnNameToField.values()) {
 			String columnName = field.getColumnName();
-			Column column = columns.get(columnName);
+			Column column = row.getColumn(columnName.getBytes());
 			field.translateFromColumn(column, inst, session);
 		}
 		

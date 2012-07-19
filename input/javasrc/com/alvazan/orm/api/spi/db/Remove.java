@@ -7,7 +7,7 @@ public class Remove implements Action {
 	private String colFamily;
 	private byte[] rowKey;
 	private RemoveEnum action;
-	private List<String> columns;
+	private List<byte[]> columns;
 	
 	public RemoveEnum getAction() {
 		return action;
@@ -27,10 +27,10 @@ public class Remove implements Action {
 	public void setRowKey(byte[] rowKey) {
 		this.rowKey = rowKey;
 	}
-	public List<String> getColumns() {
+	public List<byte[]> getColumns() {
 		return columns;
 	}
-	public void setColumns(List<String> columnNames) {
+	public void setColumns(List<byte[]> columnNames) {
 		this.columns = columnNames;
 	}
 }

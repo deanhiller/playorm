@@ -28,7 +28,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey, List<String> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, List<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
 	}
 
