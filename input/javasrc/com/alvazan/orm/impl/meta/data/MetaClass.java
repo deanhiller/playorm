@@ -6,14 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.api.spi.layer2.DboTableMeta;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
@@ -155,6 +155,7 @@ public class MetaClass<T> {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
+		metaDbo.setRowKeyTypeAndName(field.field.getClass(), field.getMetaDbo().getColumnName());
 	}
 
 	public MetaIdField<T> getIdField() {

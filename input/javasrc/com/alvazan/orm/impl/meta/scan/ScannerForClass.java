@@ -132,7 +132,6 @@ public class ScannerForClass {
 		if(field.isAnnotationPresent(Id.class)) {
 			MetaIdField idField = inspectorField.processId(field, metaClass);
 			metaClass.setIdField(idField);
-			metaDbo.addColumnMeta(idField.getMetaDbo());
 			return;
 		}
 		

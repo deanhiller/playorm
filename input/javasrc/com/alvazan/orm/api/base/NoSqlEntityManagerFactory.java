@@ -2,6 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.Map;
 
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.ImplementedBy;
 

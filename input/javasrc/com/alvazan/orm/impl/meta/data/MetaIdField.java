@@ -5,9 +5,9 @@ import java.lang.reflect.Method;
 
 import javassist.util.proxy.Proxy;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
@@ -57,7 +57,7 @@ public class MetaIdField<OWNER> {
 		return newId;
 	}
 
-	public void setup(Field field2, Method idMethod, boolean useGenerator, KeyGenerator gen, Converter converter, MetaClass<OWNER> metaClass) {
+	public void setup(Field field2, String columnName, Method idMethod, boolean useGenerator, KeyGenerator gen, Converter converter, MetaClass<OWNER> metaClass) {
 		this.field = field2;
 		this.method = idMethod;
 		this.field.setAccessible(true);
@@ -66,7 +66,7 @@ public class MetaIdField<OWNER> {
 		this.generator = gen;
 		this.converter = converter;
 		this.metaClass = metaClass;
-		metaDbo.setup(field.getName(), null, field.getType(), false);
+		metaDbo.setup(columnName, null, field.getType(), false);
 	}
 
 	public Converter getConverter() {

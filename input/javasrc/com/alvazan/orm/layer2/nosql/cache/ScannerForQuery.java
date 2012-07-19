@@ -18,8 +18,8 @@ import com.alvazan.orm.api.spi.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi.index.StateAttribute;
 import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
 import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.DboTableMeta;
+import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.TypeEnum;
 import com.alvazan.orm.api.spi.layer2.TypeInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
@@ -385,11 +385,15 @@ public class ScannerForQuery {
 		
 		//At this point, we have looked up the metaClass associated with the alias
 		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
+		String colName;
 		if (attributeField == null) {
-			throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
-		}
+			if(!metaClass.getIdColumnName().equals(attributeName))
+				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
+			colName = metaClass.getIdColumnName();
+		} else
+			colName = attributeField.getColumnName();
 		
-		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), attributeField.getColumnName()); 
+		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colName); 
 		attributeNode2.setState(attr);
 		
 		TypeInfo typeInfo = new TypeInfo(attributeField);

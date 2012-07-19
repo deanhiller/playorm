@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.alvazan.orm.api.base.Converter;
+import com.alvazan.orm.api.spi.layer2.Converter;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

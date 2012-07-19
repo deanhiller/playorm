@@ -2,8 +2,8 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
 public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {

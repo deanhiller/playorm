@@ -5,12 +5,12 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;

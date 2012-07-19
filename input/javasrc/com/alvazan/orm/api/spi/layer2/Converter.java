@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.spi.layer2;
 
 public interface Converter {
 

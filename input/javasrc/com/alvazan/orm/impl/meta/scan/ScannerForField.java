@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Converter;
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
@@ -18,7 +17,8 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.impl.meta.data.Converters;
+import com.alvazan.orm.api.spi.layer2.Converter;
+import com.alvazan.orm.api.spi.layer2.StandardConverters;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
@@ -42,24 +42,10 @@ public class ScannerForField {
 	private Provider<MetaProxyField> metaProxyProvider;
 	
 	private Map<Class, Converter> customConverters = new HashMap<Class, Converter>();
-	private Map<Class, Converter> stdConverters = new HashMap<Class, Converter>();
+
 	
 	public ScannerForField() {
-		stdConverters.put(short.class, new Converters.ShortConverter());
-		stdConverters.put(Short.class, new Converters.ShortConverter());
-		stdConverters.put(int.class, new Converters.IntConverter());
-		stdConverters.put(Integer.class, new Converters.IntConverter());
-		stdConverters.put(long.class, new Converters.LongConverter());
-		stdConverters.put(Long.class, new Converters.LongConverter());
-		stdConverters.put(float.class, new Converters.FloatConverter());
-		stdConverters.put(Float.class, new Converters.FloatConverter());
-		stdConverters.put(double.class, new Converters.DoubleConverter());
-		stdConverters.put(Double.class, new Converters.DoubleConverter());
-		stdConverters.put(byte.class, new Converters.ByteConverter());
-		stdConverters.put(Byte.class, new Converters.ByteConverter());
-		stdConverters.put(boolean.class, new Converters.BooleanConverter());
-		stdConverters.put(Boolean.class, new Converters.BooleanConverter());
-		stdConverters.put(String.class, new Converters.StringConverter());
+
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -82,9 +68,12 @@ public class ScannerForField {
 		if(!NoConversion.class.isAssignableFrom(idAnno.customConverter()))
 			converter = ReflectionUtil.create(idAnno.customConverter());
 		
+		String columnName = field.getName();
+		if(!"".equals(idAnno.columnName()))
+			columnName = idAnno.columnName();
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, idMethod, idAnno.usegenerator(), gen, converter, metaClass);
+			metaField.setup(field, columnName, idMethod, idAnno.usegenerator(), gen, converter, metaClass);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -154,8 +143,8 @@ public class ScannerForField {
 			return custom;
 		} else if(customConverters.get(type) != null) {
 			return customConverters.get(type);
-		} else if(stdConverters.get(type) != null){
-			return stdConverters.get(type);
+		} else if(StandardConverters.get(type) != null){
+			return StandardConverters.get(type);
 		}
 		throw new IllegalArgumentException("bug, caller should catch this and log info about field or id converter, etc. etc");
 	}
