@@ -1,12 +1,10 @@
 package com.alvazan.orm.api.spi.layer2;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 
+@SuppressWarnings("rawtypes")
 @NoSqlEntity
 public class DboColumnMeta {
 
@@ -27,22 +25,6 @@ public class DboColumnMeta {
 	
 	private boolean isToManyColumn;
 	
-	@SuppressWarnings("rawtypes")
-	private static Set<Class> supportedRawTypes = new HashSet<Class>();
-	
-	static {
-		supportedRawTypes.add(Long.class);
-		supportedRawTypes.add(Integer.class);
-		supportedRawTypes.add(Short.class);
-		supportedRawTypes.add(Byte.class);
-		supportedRawTypes.add(Double.class);
-		supportedRawTypes.add(Float.class);
-		supportedRawTypes.add(Boolean.class);
-		supportedRawTypes.add(String.class);
-		supportedRawTypes.add(Character.class);
-		supportedRawTypes.add(byte[].class);
-	}
-	
 	public String getColumnName() {
 		return columnName;
 	}
@@ -52,7 +34,6 @@ public class DboColumnMeta {
 		return "Field["+columnName+"]";
 	}
 
-	@SuppressWarnings("rawtypes")
 	public void setup(String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn) {
 		if(fkToTable == null && isToManyColumn)
 			throw new IllegalArgumentException("isToManyColumn must be false if there is no fk");
@@ -67,15 +48,16 @@ public class DboColumnMeta {
 		this.isToManyColumn = isToManyColumn;
 	}
 
-	@SuppressWarnings("rawtypes")
 	protected static Class translateType(Class classType) {
-		Class newType = convertIfPrimitive(classType);
-		if(!supportedRawTypes.contains(newType))
-			newType = byte[].class; //if it is not a supported type, we always support a straight byte[] as the type
-		return newType;
+		Class finalType = classType;
+		if(!StandardConverters.containsConverterFor(classType))
+			finalType = byte[].class; //if it is not a supported type, we always support a straight byte[] as the type
+		
+		finalType = convertIfPrimitive(finalType);
+
+		return finalType;
 	}
 
-	@SuppressWarnings({ "rawtypes" })
 	public static Class convertIfPrimitive(Class fieldType) {
 		Class c = fieldType;
 		if(long.class.equals(fieldType))
@@ -97,7 +79,6 @@ public class DboColumnMeta {
 		return c;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public Class getClassType() {
 		if(columnType == null)
 			return null;
@@ -105,7 +86,7 @@ public class DboColumnMeta {
 		return classForName(columnType);
 	}
 
-	@SuppressWarnings("rawtypes")
+	
 	protected static Class classForName(String columnType) {
 		try {
 			return Class.forName(columnType);
@@ -132,7 +113,6 @@ public class DboColumnMeta {
 		return converter.convertToNoSqlFromString(value);
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public String convertToValue(byte[] dbValue) {
 		if(fkToColumnFamily != null)
 			return fkToColumnFamily.getIdColumnMeta().convertToValue(dbValue);

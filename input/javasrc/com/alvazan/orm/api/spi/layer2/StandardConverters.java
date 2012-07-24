@@ -1,13 +1,14 @@
 package com.alvazan.orm.api.spi.layer2;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi.layer2.Converters.BaseConverter;
 
+@SuppressWarnings("rawtypes")
 public class StandardConverters {
 
-	@SuppressWarnings("rawtypes")
 	private static Map<Class, BaseConverter> stdConverters = new HashMap<Class, BaseConverter>();
 	
 	static {
@@ -27,9 +28,14 @@ public class StandardConverters {
 		stdConverters.put(Boolean.class, Converters.BOOLEAN_CONVERTER);
 		stdConverters.put(String.class, Converters.STRING_CONVERTER);		
 		stdConverters.put(byte[].class, Converters.BYTE_ARRAY_CONVERTER);
+		stdConverters.put(BigInteger.class, Converters.BIGINTEGER_CONVERTER);
 	}
 
-	public static BaseConverter get(Class<?> type) {
+	public static BaseConverter get(Class type) {
 		return stdConverters.get(type);
+	}
+
+	public static boolean containsConverterFor(Class newType) {
+		return stdConverters.containsKey(newType);
 	}
 }

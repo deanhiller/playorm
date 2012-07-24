@@ -3,8 +3,8 @@ package com.alvazan.orm.layer3.spi.db.inmemory;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.db.ByteArray;
+import com.alvazan.orm.api.spi.db.Row;
 
 public class Table {
 

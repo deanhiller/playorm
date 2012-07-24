@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
@@ -21,6 +22,28 @@ public class Converters {
 	public static final DoubleConverter DOUBLE_CONVERTER = new DoubleConverter();
 	public static final ByteConverter BYTE_CONVERTER = new ByteConverter();
 	public static final ByteArrayConverter BYTE_ARRAY_CONVERTER = new ByteArrayConverter();
+	public static final BaseConverter BIGINTEGER_CONVERTER = new BigIntegerConverter();
+	
+	public static class BigIntegerConverter extends BaseConverter {
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
+			BigInteger val = (BigInteger)value;
+			return val.toByteArray();
+		}
+
+		@Override
+		public Object convertFromNoSql(byte[] value) {
+			return new BigInteger(value);
+		}
+
+		@Override
+		public byte[] convertToNoSqlFromString(String value) {
+			return convertToNoSql(new BigInteger(value));
+		}
+		
+	}
 	
 	public static class ByteArrayConverter extends BaseConverter {
 
