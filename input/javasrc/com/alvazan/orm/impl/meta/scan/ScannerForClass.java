@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.anno.Embeddable;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
@@ -140,6 +141,8 @@ public class ScannerForClass {
 			metaField = inspectorField.processManyToOne(field);
 		else if(field.isAnnotationPresent(OneToOne.class))
 			metaField = inspectorField.processOneToOne(field);
+		else if(field.isAnnotationPresent(ManyToMany.class))
+			metaField = inspectorField.processManyToMany(field);
 		else if(field.isAnnotationPresent(OneToMany.class))
 			metaField = inspectorField.processOneToMany(field);
 		else if(field.isAnnotationPresent(Embeddable.class))

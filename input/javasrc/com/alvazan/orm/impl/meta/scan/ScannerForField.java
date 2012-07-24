@@ -162,36 +162,51 @@ public class ScannerForField {
 
 	public MetaField processManyToOne(Field field) {
 		ManyToOne annotation = field.getAnnotation(ManyToOne.class);
-		String colName = field.getName();
-		if(!"".equals(annotation.columnName()))
-			colName = annotation.columnName();
-		
+		String colName = annotation.columnName();
 		return processToOne(field, colName);
 	}
 
 	public MetaField processOneToOne(Field field) {
 		OneToOne annotation = field.getAnnotation(OneToOne.class);
-		String colName = field.getName();
-		if(!"".equals(annotation.columnName()))
-			colName = annotation.columnName();
+		String colName = annotation.columnName();
 		
 		return processToOne(field, colName);
 	}
 	
+	public MetaField processManyToMany(Field field) {
+		OneToMany annotation = field.getAnnotation(OneToMany.class);
+		String colName = annotation.columnName();
+		Class entityType = annotation.entityType();
+		String keyFieldForMap = annotation.keyFieldForMap();
+		
+		return processToManyRelationship(field, colName, entityType,
+				keyFieldForMap);		
+	}
+	
 	public MetaField processOneToMany(Field field) {
 		OneToMany annotation = field.getAnnotation(OneToMany.class);
+		String colName = annotation.columnName();
+		Class entityType = annotation.entityType();
+		String keyFieldForMap = annotation.keyFieldForMap();
+		
+		return processToManyRelationship(field, colName, entityType,
+				keyFieldForMap);
+	}
+
+	private MetaField processToManyRelationship(Field field, String colNameOrig,
+			Class entityType, String keyFieldForMap) {
 		String colName = field.getName();
-		if(!"".equals(annotation.columnName()))
-			colName = annotation.columnName();
+		if(!"".equals(colNameOrig))
+			colName = colNameOrig;
 		
 		Field fieldForKey = null;
-		Class entityType = annotation.entityType();
+
 		if(entityType == null)
 			throw new RuntimeException("Field="+field+" is missing entityType attribute of OneToMany annotation which is required");
 		else if(field.getType().equals(Map.class)) {
-			if("".equals(annotation.keyFieldForMap()))
+			if("".equals(keyFieldForMap))
 				throw new RuntimeException("Field="+field+" is a Map so @OneToMany annotation REQUIRES a keyFieldForMap attribute which is the field name in the child entity to use as the key");
-			String fieldName = annotation.keyFieldForMap();
+			String fieldName = keyFieldForMap;
 			
 			try {
 				fieldForKey = entityType.getDeclaredField(fieldName);
@@ -226,7 +241,11 @@ public class ScannerForField {
 	}
 
 	@SuppressWarnings("unchecked")
-	public MetaField processToOne(Field field, String colName) {
+	public MetaField processToOne(Field field, String colNameOrig) {
+		String colName = field.getName();
+		if(!"".equals(colNameOrig))
+			colName = colNameOrig;
+		
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!field.getType().isAnnotationPresent(NoSqlEntity.class))
