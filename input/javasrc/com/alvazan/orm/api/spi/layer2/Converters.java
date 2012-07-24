@@ -103,14 +103,47 @@ public class Converters {
 	}
 	
 	public static class StringConverter extends AbstractConverter {
+
+		public byte[] convertToNoSqlFromString(String value) {
+			if(value == null)
+				return null;
+			
+			Object typedValue = convertToPrimitive(value);
+			return convertToNoSql(typedValue);
+		}
+		
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			try {
+				if(value == null)
+					return null;
+				String temp = (String) value;
+				return temp.getBytes("UTF8");
+			} catch(IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		@Override
+		public Object convertFromNoSql(byte[] bytes) {
+			try {
+				if(bytes == null)
+					return null;
+				return new String(bytes, "UTF8");
+			} catch(IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+
 		@Override
 		protected void write(DataOutputStream out, Object value)
 				throws IOException {
-			out.writeUTF((String) value);
+			//NOTE: can't be used as it takes on two bytes in the bytestream that we don't want!!
+			throw new UnsupportedOperationException("not used");
 		}
 		@Override
 		protected Object read(DataInputStream in) throws IOException {
-			return in.readUTF();
+			throw new UnsupportedOperationException("not used");
 		}
 		@Override
 		protected Object convertToPrimitive(String value) {
