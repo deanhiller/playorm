@@ -6,6 +6,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
 
 public class Converters {
 
@@ -19,7 +22,7 @@ public class Converters {
 	public static final ByteConverter BYTE_CONVERTER = new ByteConverter();
 	public static final ByteArrayConverter BYTE_ARRAY_CONVERTER = new ByteArrayConverter();
 	
-	public static class ByteArrayConverter extends AbstractConverter {
+	public static class ByteArrayConverter extends BaseConverter {
 
 		@Override
 		public byte[] convertToNoSql(Object value) {
@@ -30,30 +33,40 @@ public class Converters {
 		public Object convertFromNoSql(byte[] value) {
 			return value;
 		}
-
+		
+		public byte[] convertToNoSqlFromString(String value) {
+			try {
+				return Hex.decodeHex(value.toCharArray());
+			} catch (DecoderException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public String convertFromNoSqlToString(byte[] dbValue) {
+			return new String(Hex.encodeHex(dbValue));
+		}
+		
 		@Override
 		public String convertToIndexFormat(Object value) {
-			throw new UnsupportedOperationException("not done yet, this is easy to implement though");
+			return convertFromNoSqlToString((byte[]) value);
 		}
 
-		@Override
-		protected Object convertToPrimitive(String value) {
-			throw new UnsupportedOperationException("should not get here");
+	}
+	
+	public static abstract class BaseConverter implements Converter, AdhocToolConverter {
+		public String convertFromNoSqlToString(byte[] dbValue) {
+			return convertFromNoSql(dbValue)+"";
 		}
-
+		
 		@Override
-		protected void write(DataOutputStream out, Object value)
-				throws IOException {
-			throw new UnsupportedOperationException("should not get here");
-		}
-
-		@Override
-		protected Object read(DataInputStream in) throws IOException {
-			throw new UnsupportedOperationException("should not get here");
+		public String convertToIndexFormat(Object value) {
+			if(value == null)
+				return null;
+			return value+"";
 		}
 	}
 	
-	public static abstract class AbstractConverter implements Converter {
+	public static abstract class AbstractConverter extends BaseConverter {
 		
 		public byte[] convertToNoSqlFromString(String value) {
 			if(value == null)
@@ -94,22 +107,15 @@ public class Converters {
 		}
 		protected abstract Object read(DataInputStream in) throws IOException;
 
-		@Override
-		public String convertToIndexFormat(Object value) {
-			if(value == null)
-				return null;
-			return value+"";
-		}
 	}
 	
-	public static class StringConverter extends AbstractConverter {
+	public static class StringConverter extends BaseConverter {
 
 		public byte[] convertToNoSqlFromString(String value) {
 			if(value == null)
 				return null;
 			
-			Object typedValue = convertToPrimitive(value);
-			return convertToNoSql(typedValue);
+			return convertToNoSql(value);
 		}
 		
 		@Override
@@ -133,21 +139,6 @@ public class Converters {
 			} catch(IOException e) {
 				throw new RuntimeException(e);
 			}
-		}
-
-		@Override
-		protected void write(DataOutputStream out, Object value)
-				throws IOException {
-			//NOTE: can't be used as it takes on two bytes in the bytestream that we don't want!!
-			throw new UnsupportedOperationException("not used");
-		}
-		@Override
-		protected Object read(DataInputStream in) throws IOException {
-			throw new UnsupportedOperationException("not used");
-		}
-		@Override
-		protected Object convertToPrimitive(String value) {
-			return value;
 		}
 	}
 	

@@ -3,12 +3,12 @@ package com.alvazan.orm.api.spi.layer2;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi.layer2.Converters.AbstractConverter;
+import com.alvazan.orm.api.spi.layer2.Converters.BaseConverter;
 
 public class StandardConverters {
 
 	@SuppressWarnings("rawtypes")
-	private static Map<Class, AbstractConverter> stdConverters = new HashMap<Class, AbstractConverter>();
+	private static Map<Class, BaseConverter> stdConverters = new HashMap<Class, BaseConverter>();
 	
 	static {
 		stdConverters.put(short.class, Converters.SHORT_CONVERTER);
@@ -29,7 +29,7 @@ public class StandardConverters {
 		stdConverters.put(byte[].class, Converters.BYTE_ARRAY_CONVERTER);
 	}
 
-	public static AbstractConverter get(Class<?> type) {
+	public static BaseConverter get(Class<?> type) {
 		return stdConverters.get(type);
 	}
 }

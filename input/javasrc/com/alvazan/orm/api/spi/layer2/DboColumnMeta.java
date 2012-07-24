@@ -122,12 +122,11 @@ public class DboColumnMeta {
 		return isToManyColumn;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public byte[] convertToStorage(String value) {
 		if(fkToColumnFamily != null) {
 			return fkToColumnFamily.getIdColumnMeta().convertToStorage(value);
 		}
-		Converters.AbstractConverter converter = StandardConverters.get(getClassType());
+		AdhocToolConverter converter = StandardConverters.get(getClassType());
 		if(converter == null)
 			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
 		return converter.convertToNoSqlFromString(value);
@@ -138,9 +137,9 @@ public class DboColumnMeta {
 		if(fkToColumnFamily != null)
 			return fkToColumnFamily.getIdColumnMeta().convertToValue(dbValue);
 		Class type = getClassType();
-		Converters.AbstractConverter converter = StandardConverters.get(type);
+		AdhocToolConverter converter = StandardConverters.get(type);
 		if(converter == null)
 			throw new IllegalArgumentException("type="+type+" is not supported at this point");
-		return converter.convertFromNoSql(dbValue)+"";		
+		return converter.convertFromNoSqlToString(dbValue)+"";		
 	}
 }

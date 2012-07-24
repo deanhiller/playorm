@@ -14,6 +14,12 @@ public class DboTableMeta {
 	@Id(usegenerator=false)
 	private String columnFamily;
 	
+	/**
+	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
+	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
+	 */
+	private String columnNameType = String.class.getName();
+	
 	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	@OneToOne
@@ -41,6 +47,17 @@ public class DboTableMeta {
 	
 	public DboColumnMeta getColumnMeta(String columnName) {
 		return nameToField.get(columnName);
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setColumnNameType(Class c) {
+		Class objType = DboColumnMeta.translateType(c);
+		this.columnNameType = objType.getName();
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public Class getColumnNameType() {
+		return DboColumnMeta.classForName(columnNameType);
 	}
 	
 	@Override
