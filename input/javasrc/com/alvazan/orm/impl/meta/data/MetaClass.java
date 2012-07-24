@@ -90,6 +90,10 @@ public class MetaClass<T> {
 		for(MetaField<T> field : columnNameToField.values()) {
 			String columnName = field.getColumnName();
 			Column column = row.getColumn(columnName.getBytes());
+			
+			if(column == null) {
+				column = new Column();
+			}
 			field.translateFromColumn(column, inst, session);
 		}
 		

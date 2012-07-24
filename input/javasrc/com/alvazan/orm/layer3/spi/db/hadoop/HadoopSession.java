@@ -1,6 +1,7 @@
 package com.alvazan.orm.layer3.spi.db.hadoop;
 
 import java.util.List;
+import java.util.Map;
 
 import com.alvazan.orm.api.spi.db.Action;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
@@ -20,5 +21,17 @@ public class HadoopSession implements NoSqlRawSession {
 	@Override
 	public void clearDatabaseIfInMemoryType() {
 		throw new UnsupportedOperationException("Not supported by actual databases.  Only can be used with in-memory db.");
+	}
+
+	@Override
+	public void start(Map<String, String> properties) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
 	}
 }

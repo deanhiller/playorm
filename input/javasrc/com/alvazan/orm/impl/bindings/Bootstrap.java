@@ -1,8 +1,11 @@
 package com.alvazan.orm.impl.bindings;
 
+import java.util.Map;
+
 import com.alvazan.orm.api.base.AbstractBootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
@@ -12,9 +15,13 @@ import com.google.inject.Injector;
 public class Bootstrap extends AbstractBootstrap {
 
 	@Override
-	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type) {
+	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
+
+		NoSqlRawSession inst = injector.getInstance(NoSqlRawSession.class);
+		inst.start(properties);
+		
 		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;
 		impl.setInjector(injector);
 		return factory;

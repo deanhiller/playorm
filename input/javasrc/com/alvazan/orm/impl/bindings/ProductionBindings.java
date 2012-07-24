@@ -10,6 +10,7 @@ import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer3.spi.db.cassandra.CassandraSession;
 import com.alvazan.orm.layer3.spi.db.inmemory.InMemorySession;
 import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
+import com.alvazan.orm.layer3.spi.index.solr.SolrIndexWriter;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
@@ -35,10 +36,11 @@ public class ProductionBindings implements Module {
 	public void configure(Binder binder) {
 		switch (type) {
 		case CASSANDRA:
-			binder.bind(NoSqlRawSession.class).to(CassandraSession.class);
+			binder.bind(NoSqlRawSession.class).to(CassandraSession.class).asEagerSingleton();
+			binder.bind(IndexReaderWriter.class).to(SolrIndexWriter.class);
 			break;
 		case IN_MEMORY:
-			binder.bind(NoSqlRawSession.class).to(InMemorySession.class);
+			binder.bind(NoSqlRawSession.class).to(InMemorySession.class).asEagerSingleton();
 			binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class);
 			break;
 		default:

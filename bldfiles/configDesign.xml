@@ -18,6 +18,8 @@
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="lucene" package="org.apache.lucene" subpackages="include"/>
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>
+<package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
+
 <package name="def" package="nosql"/>
 
 <package name="javassist" package="javassist" subpackages="include"/>
@@ -77,6 +79,7 @@
 <!-- This section is just the database adapters depending on the spi -->
 <package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
 	<depends>RawNoSqlSpi</depends>
+	<depends>astyanax</depends>
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
 	<depends>RawNoSqlSpi</depends>

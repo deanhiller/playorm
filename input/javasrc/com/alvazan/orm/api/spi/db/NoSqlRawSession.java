@@ -1,6 +1,7 @@
 package com.alvazan.orm.api.spi.db;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface NoSqlRawSession {
@@ -23,4 +24,8 @@ public interface NoSqlRawSession {
 	public void sendChanges(List<Action> actions);
 
 	public void clearDatabaseIfInMemoryType();
+
+	public void start(Map<String, String> properties);
+	
+	public void stop();
 }

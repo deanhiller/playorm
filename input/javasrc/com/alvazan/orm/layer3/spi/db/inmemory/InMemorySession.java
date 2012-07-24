@@ -2,6 +2,7 @@ package com.alvazan.orm.layer3.spi.db.inmemory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -75,6 +76,10 @@ public class InMemorySession implements NoSqlRawSession {
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
+			//In cassandra(and other nosql) you cannot store null so nothing is stored for that column
+			if(col.getValue() == null)
+				continue;
+			
 			row.put(col.getName(), col);
 		}
 	}
@@ -82,5 +87,16 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public void clearDatabaseIfInMemoryType() {
 		database.clear();
+	}
+
+	@Override
+	public void start(Map<String, String> properties) {
+		
+	}
+
+	@Override
+	public void stop() {
+		// TODO Auto-generated method stub
+		
 	}
 }

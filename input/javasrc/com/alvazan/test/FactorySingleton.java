@@ -16,7 +16,7 @@ public class FactorySingleton {
 	public synchronized static NoSqlEntityManagerFactory createFactoryOnce() {
 		if(factory == null) {
 			log.info("CREATING FACTORY FOR TESTS");
-			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY);
+			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, null);
 			factory.setup(null);
 		}
 		return factory;
