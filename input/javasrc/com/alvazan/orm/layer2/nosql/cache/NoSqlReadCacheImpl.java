@@ -79,9 +79,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
-		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
+		return session.columnRangeScan(colFamily, rowKey, from, to, batchSize);
 	}
 
 

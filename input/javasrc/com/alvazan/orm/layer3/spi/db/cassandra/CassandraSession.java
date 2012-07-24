@@ -256,7 +256,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
 		try {
 			return columnSliceImpl(colFamily, rowKey, from, to, batchSize);

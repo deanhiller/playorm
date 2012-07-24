@@ -146,9 +146,9 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
-		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize);
+		return rawSession.columnRangeScan(colFamily, rowKey, from, to, batchSize);
 	}
 
 }

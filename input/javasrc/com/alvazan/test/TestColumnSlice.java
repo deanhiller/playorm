@@ -65,7 +65,7 @@ public class TestColumnSlice {
 		session.persist(colFamily, rowKey, columns );
 		session.flush();
 
-		Iterable<Column> results = session.columnSlice(colFamily, rowKey, toBytes(333), toBytes(555), 2);
+		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toBytes(333), toBytes(555), 2);
 		
 		int counter = 0;
 		for(Column col : results) {

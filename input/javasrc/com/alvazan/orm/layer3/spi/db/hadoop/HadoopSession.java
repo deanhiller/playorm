@@ -37,7 +37,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public List<Column> columnSlice(String colFamily, byte[] rowKey,
+	public List<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
 		throw new UnsupportedOperationException("not done here yet");
 	}

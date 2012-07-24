@@ -98,7 +98,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Collection<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Collection<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
 		Table table = database.findOrCreateTable(colFamily);
 		Row row = table.findOrCreateRow(rowKey);
