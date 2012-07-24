@@ -4,35 +4,28 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.db.ByteArray;
 
 public class Table {
 
-	private Map<String, Row> keyToRow = new HashMap<String, Row>();
+	private Map<ByteArray, Row> keyToRow = new HashMap<ByteArray, Row>();
 	
 	public Row findOrCreateRow(byte[] key) {
-		Row row = keyToRow.get(key);
+		Row row = keyToRow.get(new ByteArray(key));
 		if(row == null) {
 			row = new Row();
-			String strValue = convert(key);
 			row.setKey(key);
-			keyToRow.put(strValue, row);
+			keyToRow.put(new ByteArray(key), row);
 		}
 		return row;
 	}
 
-	private String convert(byte[] key) {
-		String s = new String(key);
-		return s;
-	}
-
 	public void removeRow(byte[] rowKey) {
-		String strValue = convert(rowKey);
-		keyToRow.remove(strValue);
+		keyToRow.remove(new ByteArray(rowKey));
 	}
 
 	public Row getRow(byte[] rowKey) {
-		String strValue = convert(rowKey);
-		Row row = keyToRow.get(strValue);
+		Row row = keyToRow.get(new ByteArray(rowKey));
 		return row;
 	}
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi.db.Action;
+import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.db.Row;
 
@@ -33,5 +34,11 @@ public class HadoopSession implements NoSqlRawSession {
 	public void stop() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public List<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
+		throw new UnsupportedOperationException("not done here yet");
 	}
 }

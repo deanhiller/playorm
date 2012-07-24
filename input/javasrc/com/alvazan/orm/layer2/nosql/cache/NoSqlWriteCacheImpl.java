@@ -63,11 +63,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public void flush() {
-		long time = System.currentTimeMillis();
-		
-		for(Action action : actions) {
-			insertTime(action, time);
-		}
+		//Cassandra uses timestamp for conflict resolution so don't provide that
+//		long time = System.currentTimeMillis();
+//		
+//		for(Action action : actions) {
+//			insertTime(action, time);
+//		}
 
 		//REMOVE from index BEFORE removing the entity.  ie. If we do the reverse, you do a query and get
 		//an id of entity that is about to be removed and if removed before you, you don't get the entity
@@ -76,11 +77,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		indexWriter.sendAdds(addToIndex);
 	}
 
-	private void insertTime(Action action, long time) {
-		if(action instanceof Persist) {
-			((Persist)action).setTimestamp(time);
-		}
-	}
+//	private void insertTime(Action action, long time) {
+//		if(action instanceof Persist) {
+//			((Persist)action).setTimestamp(time);
+//		}
+//	}
 
 	@Override
 	public NoSqlRawSession getRawSession() {
@@ -142,6 +143,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabaseIfInMemoryType();
 		indexWriter.clearIndexesIfInMemoryType();
 		
+	}
+
+	@Override
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
+		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 
 }

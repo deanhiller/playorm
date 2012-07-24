@@ -28,4 +28,7 @@ public interface NoSqlRawSession {
 	public void start(Map<String, String> properties);
 	
 	public void stop();
+
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize);
 }

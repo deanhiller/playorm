@@ -4,6 +4,13 @@ public class Column {
 	private byte[] name;
 	private byte[] value;
 	private Long timestamp;
+
+	public Column() {}
+	
+	public Column(byte[] name, byte[] value) {
+		this.name = name;
+		this.value = value;
+	}
 	
 	public byte[] getValue() {
 		return value;

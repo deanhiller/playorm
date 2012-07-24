@@ -2,6 +2,7 @@ package com.alvazan.orm.layer3.spi.db.cassandra;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,12 +30,16 @@ import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.ddl.ColumnFamilyDefinition;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
+import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
+import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
+import com.netflix.astyanax.query.RowQuery;
 import com.netflix.astyanax.query.RowSliceQuery;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
+import com.netflix.astyanax.util.RangeBuilder;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public class CassandraSession implements NoSqlRawSession {
@@ -151,7 +156,8 @@ public class CassandraSession implements NoSqlRawSession {
 			long timestamp = col.getTimestamp();
 			Column c = new Column();
 			c.setName(name);
-			c.setValue(val);
+			if(val.length != 0)
+				c.setValue(val);
 			c.setTimestamp(timestamp);
 			
 			r.put(name, c);
@@ -222,16 +228,15 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			//we don't need to store null values.  In fact, cassandra does NOT allow it
-			if(col.getValue() == null)
-				continue;
-			
 			Integer theTime = null;
 			Long time = col.getTimestamp();
 			if(time != null)
 				theTime = (int)time.longValue();
+			byte[] value = new byte[0];
+			if(col.getValue() != null)
+				value = col.getValue();
 			
-			colMutation.putColumn(col.getName(), col.getValue(), theTime);
+			colMutation.putColumn(col.getName(), value, theTime);
 		}
 	}
 
@@ -250,5 +255,110 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 
+	@Override
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
+		try {
+			return columnSliceImpl(colFamily, rowKey, from, to, batchSize);
+		} catch (ConnectionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) throws ConnectionException {
+		if(!existingColumnFamilies.contains(colFamily)) {
+			//well, if column family doesn't exist, then no entities exist either
+			log.info("query was run on column family that does not yet exist="+colFamily);
+			return new ArrayList<Column>();
+		}
+		
+		ColumnFamily cf = lookupOrCreate(colFamily);
+		
+		ByteBufferRange build = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+		
+		return new OurIter(cf, rowKey, build);
+	}
+	
+	private class OurIter implements Iterable<Column> {
+
+		private ColumnFamily cf;
+		private byte[] rowKey;
+		private ByteBufferRange builder;
+
+		public OurIter(ColumnFamily cf, byte[] rowKey, ByteBufferRange build) {
+			this.cf = cf;
+			this.rowKey = rowKey;
+			this.builder = build;
+		}
+
+		@Override
+		public Iterator<Column> iterator() {
+			return new OurIterator(cf, rowKey, builder);
+		}
+	}
+	private class OurIterator implements Iterator<Column> {
+		private RowQuery<byte[], byte[]> query;
+		private Iterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
+		
+		public OurIterator(ColumnFamily cf, byte[] rowKey,
+				ByteBufferRange builder) {
+			query = keyspace
+					.prepareQuery(cf)
+					.getKey(rowKey)
+					.autoPaginate(true)
+					.withColumnRange(builder);
+		}
+
+		@Override
+		public boolean hasNext() {
+			fetchMoreResults();
+			if(subIterator == null)
+				return false;
+			
+			return subIterator.hasNext();
+		}
+
+		@Override
+		public Column next() {
+			fetchMoreResults();
+			if(subIterator == null)
+				throw new ArrayIndexOutOfBoundsException("no more elements");
+
+			com.netflix.astyanax.model.Column<byte[]> col = subIterator.next();
+
+			Column c = new Column();
+			c.setName(col.getName());
+			c.setValue(col.getByteArrayValue());
+			c.setTimestamp(col.getTimestamp());
+			
+			return c;
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException("not supported");
+		}
+		
+		
+		private void fetchMoreResults() {
+			try {
+				fetchMoreResultsImpl();
+			} catch (ConnectionException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private void fetchMoreResultsImpl() throws ConnectionException {
+			if(subIterator != null && subIterator.hasNext())
+				return; //no need to fetch more since subIterator has more
+			
+			ColumnList<byte[]> columns = query.execute().getResult();
+			if(columns.isEmpty())
+				subIterator = null; 
+			else 
+				subIterator = columns.iterator();
+		}
+	}
 
 }

@@ -14,6 +14,7 @@
 <!-- external packages that are global and everyone is allowed to depend on -->
 <package name="slf4j" package="org.slf4j" needdeclarations="false"/>
 <package name="inject" package="javax.inject" needdeclarations="false"/>
+<package name="commons" package="org.apache.commons" needdeclarations="false" subpackages="include"/>
 
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="lucene" package="org.apache.lucene" subpackages="include"/>

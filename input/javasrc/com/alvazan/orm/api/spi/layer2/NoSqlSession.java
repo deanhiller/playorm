@@ -61,4 +61,19 @@ public interface NoSqlSession {
 
 	public void clearDbAndIndexesIfInMemoryType();
 
+	/**
+	 * Returns a special Iterable loads itself first with "batchSize" records and then after you
+	 * iterator over those and request "batchSize+1" record, it hits the database again such that
+	 * your memory does not explode if you have a huge amount of records.
+	 * 
+	 * @param colFamily
+	 * @param rowKey
+	 * @param from
+	 * @param to
+	 * @param batchSize
+	 * @return
+	 */
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize);
+
 }
