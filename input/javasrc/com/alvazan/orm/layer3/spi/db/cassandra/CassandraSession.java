@@ -118,10 +118,16 @@ public class CassandraSession implements NoSqlRawSession {
 		List<Row> retVal = new ArrayList<Row>();
 		for(byte[] key : keys) {
 			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.getRow(key);
-			Row r = new Row();
-			r.setKey(key);
-			processColumns(row, r);
-			retVal.add(r);
+			if(row.getColumns().isEmpty()) {
+				//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
+				//then
+				retVal.add(null);
+			} else {
+				Row r = new Row();
+				r.setKey(key);
+				processColumns(row, r);
+				retVal.add(r);
+			}
 		}
 		
 		return retVal;
@@ -182,6 +188,7 @@ public class CassandraSession implements NoSqlRawSession {
 				    .setName(colFamily)
 				    .setKeyspace(keyspace.getKeyspaceName())
 				);
+			existingColumnFamilies.add(colFamily);
 		}
 		
 		
@@ -230,7 +237,17 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public void clearDatabaseIfInMemoryType() {
-		//throw new UnsupportedOperationException("Not supported by actual databases.  Only can be used with in-memory db.");
+		try {
+			clearImpl();
+		} catch (ConnectionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	public void clearImpl() throws ConnectionException {
+		for(String cf : existingColumnFamilies) {
+			ColumnFamily colFamily = lookupOrCreate(cf);
+			keyspace.truncateColumnFamily(colFamily); 
+		}
 	}
 
 
