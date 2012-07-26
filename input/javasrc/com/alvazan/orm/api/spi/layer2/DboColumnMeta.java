@@ -8,7 +8,9 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 @NoSqlEntity
 public class DboColumnMeta {
 
-	@Id(usegenerator=false)
+	@Id
+	private String id;
+	
 	private String columnName;
 	
 	/**
@@ -24,6 +26,8 @@ public class DboColumnMeta {
 	private DboTableMeta fkToColumnFamily;
 	
 	private boolean isToManyColumn;
+	
+	private String foreignKeyToExtensions;
 	
 	public String getColumnName() {
 		return columnName;
@@ -79,6 +83,15 @@ public class DboColumnMeta {
 		return c;
 	}
 	
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public Class getClassType() {
 		if(columnType == null)
 			return null;
@@ -101,6 +114,14 @@ public class DboColumnMeta {
 
 	public boolean isToManyColumn() {
 		return isToManyColumn;
+	}
+
+	public String getForeignKeyToExtensions() {
+		return foreignKeyToExtensions;
+	}
+
+	public void setForeignKeyToExtensions(String foreignKeyToExtensions) {
+		this.foreignKeyToExtensions = foreignKeyToExtensions;
 	}
 
 	public byte[] convertToStorage(String value) {

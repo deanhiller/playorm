@@ -19,11 +19,14 @@ public class DboTableMeta {
 	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
 	 */
 	private String columnNameType = String.class.getName();
+	private String valueType = void.class.getName();
 	
 	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	@OneToOne
 	private DboColumnMeta idColumn;
+	
+	private String foreignKeyToExtensions;
 	
 	public String getColumnFamily() {
 		return columnFamily;
@@ -67,6 +70,14 @@ public class DboTableMeta {
 
 	public DboColumnMeta getIdColumnMeta() {
 		return idColumn;
+	}
+
+	public String getForeignKeyToExtensions() {
+		return foreignKeyToExtensions;
+	}
+
+	public void setForeignKeyToExtensions(String foreignKeyToExtensions) {
+		this.foreignKeyToExtensions = foreignKeyToExtensions;
 	}
 
 }

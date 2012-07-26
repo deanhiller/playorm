@@ -17,8 +17,6 @@ public interface NoSqlEntityManager {
 	 */
 	public NoSqlSession getSession();
 
-	//public String generateUniqueKey();
-	
 	public void put(Object entity);
 	
 	public void putAll(List<Object> entities);
@@ -44,6 +42,8 @@ public interface NoSqlEntityManager {
 	public void flush();
 	
 	/**
+	 * Not ready for use as of yet.  
+	 * 
 	 * Best explained with an example.  Let's say you have a table with 1 billion rows
 	 * and let's say you have 1 million customers each with on avera 1000 rows in that
 	 * table(ie. total 1 billion).  In that case, it would be good to create 1 million
@@ -77,8 +77,8 @@ public interface NoSqlEntityManager {
 	 *    <li>entityManager.fillInWithKey(acc) </li>
 	 *    <li>Activity act1 = new Activity() </li>
 	 *    <li>act1.setAccount(acc) </li>
-	 *    <li>entityManager.put(act1) </li>
-	 *    <li>acc.addActivity(act1) </li>
+	 *    <li>entityManager.put(act1) //act1 key is generated and filled in here</li>
+	 *    <li>acc.addActivity(act1) //here account has an act1 WITH a key</li>
 	 *    <li>entityManager.put(acc) </li>
 	 *  </ol>
 	 *  

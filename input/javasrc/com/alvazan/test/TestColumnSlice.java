@@ -6,6 +6,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.apache.commons.codec.binary.Hex;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -61,6 +62,26 @@ public class TestColumnSlice {
 		columns.add(new Column(toBytes(550), new byte[0]));
 		columns.add(new Column(toBytes(340), new byte[0]));
 		columns.add(new Column(toBytes(40), new byte[0]));
+		columns.add(new Column(toBytes(-40), new byte[0]));
+		columns.add(new Column(toBytes(-200), new byte[0]));
+		columns.add(new Column(toBytes(-500), new byte[0]));
+		
+		long v = -300;
+		
+		byte[] bytes = toBytes(-300);
+		String hex = new String(Hex.encodeHex(bytes));
+		
+		byte[] newBytes = new byte[8]; 
+		newBytes[0] = (byte)(0xff & (v >> 56));
+		newBytes[1] = (byte)(0xff & (v >> 48));
+		newBytes[2] = (byte)(0xff & (v >> 40));
+		newBytes[3] = (byte)(0xff & (v >> 32));
+		newBytes[4] = (byte)(0xff & (v >> 24));
+		newBytes[5] = (byte)(0xff & (v >> 16));
+		newBytes[6] = (byte)(0xff & (v >>  8));
+		newBytes[7] = (byte)(0xff & v);
+		String hex2 = new String(Hex.encodeHex(newBytes));
+		
 		
 		session.persist(colFamily, rowKey, columns );
 		session.flush();
