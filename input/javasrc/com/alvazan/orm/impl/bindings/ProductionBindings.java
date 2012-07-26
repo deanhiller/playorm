@@ -1,10 +1,10 @@
 package com.alvazan.orm.impl.bindings;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
-import com.alvazan.orm.api.spi.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer3.spi.db.cassandra.CassandraSession;

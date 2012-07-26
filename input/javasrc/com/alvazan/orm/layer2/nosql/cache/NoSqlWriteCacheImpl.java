@@ -7,17 +7,17 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.spi.db.Action;
-import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi.db.Persist;
-import com.alvazan.orm.api.spi.db.Remove;
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.index.IndexAdd;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.IndexRemove;
-import com.alvazan.orm.api.spi.index.IndexRemoveImpl;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Action;
+import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi3.db.Persist;
+import com.alvazan.orm.api.spi3.db.Remove;
+import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.index.IndexAdd;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.IndexRemove;
+import com.alvazan.orm.api.spi3.index.IndexRemoveImpl;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 

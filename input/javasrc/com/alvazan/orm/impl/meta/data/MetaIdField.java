@@ -6,10 +6,10 @@ import java.lang.reflect.Method;
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.Converter;
-import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!

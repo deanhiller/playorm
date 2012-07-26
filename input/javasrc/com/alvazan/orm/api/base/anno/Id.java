@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
-import com.alvazan.orm.api.spi.layer2.Converter;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

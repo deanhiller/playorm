@@ -12,16 +12,16 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi.index.ExpressionNode;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi.index.StateAttribute;
-import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
-import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.TypeEnum;
-import com.alvazan.orm.api.spi.layer2.TypeInfo;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.MetaQuery;
+import com.alvazan.orm.api.spi2.TypeEnum;
+import com.alvazan.orm.api.spi2.TypeInfo;
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi3.index.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 

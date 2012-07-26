@@ -11,13 +11,13 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
-import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.bindings.Bootstrap;
 
 public class TestAdHocTool {

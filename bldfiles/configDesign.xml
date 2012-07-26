@@ -28,16 +28,17 @@
 	<depends>javassist</depends>
 </package>
 
-<package name="RawIndexSpi" package="com.alvazan.orm.api.spi.index" subpackages="include">
+<package name="RawIndexSpi" package="com.alvazan.orm.api.spi3.index" subpackages="include">
 	<depends>antlr</depends>
 </package> 
-<package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi.db"/>
-<package name="NoSqlApi" package="com.alvazan.orm.api.spi.layer2">
+<package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
+<package name="NoSqlApi" package="com.alvazan.orm.api.spi2">
 	<depends>RawNoSqlSpi</depends>
 	<depends>RawIndexSpi</depends>
 </package>
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
 	<depends>NoSqlApi</depends>
+	<depends>RawNoSqlSpi</depends>
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
@@ -89,6 +90,8 @@
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
 	<depends>RawNoSqlSpi</depends>
+	<depends>api</depends> <!-- ironically uses not implements -->
+	<depends>NoSqlApi</depends>	
 </package>
 
 <!-- This section is just the index adapters depending on the spi -->

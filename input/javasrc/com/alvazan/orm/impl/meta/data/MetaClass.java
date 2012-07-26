@@ -8,13 +8,13 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.exc.PkIsNullException;
-import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.layer2.Converter;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.MetaQuery;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClass<T> {

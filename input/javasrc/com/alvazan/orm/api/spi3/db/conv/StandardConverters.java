@@ -1,0 +1,112 @@
+package com.alvazan.orm.api.spi3.db.conv;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
+
+@SuppressWarnings("rawtypes")
+public class StandardConverters {
+
+	private static Map<Class, BaseConverter> stdConverters = new HashMap<Class, BaseConverter>();
+	
+	static {
+		stdConverters.put(short.class, Converters.SHORT_CONVERTER);
+		stdConverters.put(Short.class, Converters.SHORT_CONVERTER);
+		stdConverters.put(int.class, Converters.INT_CONVERTER);
+		stdConverters.put(Integer.class, Converters.INT_CONVERTER);
+		stdConverters.put(long.class, Converters.LONG_CONVERTER);
+		stdConverters.put(Long.class, Converters.LONG_CONVERTER);
+		stdConverters.put(float.class, Converters.FLOAT_CONVERTER);
+		stdConverters.put(Float.class, Converters.FLOAT_CONVERTER);
+		stdConverters.put(double.class, Converters.DOUBLE_CONVERTER);
+		stdConverters.put(Double.class, Converters.DOUBLE_CONVERTER);
+		stdConverters.put(byte.class, Converters.BYTE_CONVERTER);
+		stdConverters.put(Byte.class, Converters.BYTE_CONVERTER);
+		stdConverters.put(boolean.class, Converters.BOOLEAN_CONVERTER);
+		stdConverters.put(Boolean.class, Converters.BOOLEAN_CONVERTER);
+		stdConverters.put(String.class, Converters.STRING_CONVERTER);		
+		stdConverters.put(byte[].class, Converters.BYTE_ARRAY_CONVERTER);
+		stdConverters.put(BigInteger.class, Converters.BIGINTEGER_CONVERTER);
+		stdConverters.put(BigDecimal.class, Converters.BIGDECIMAL_CONVERTER);
+	}
+
+	public static BaseConverter get(Class type) {
+		return stdConverters.get(type);
+	}
+
+	public static boolean containsConverterFor(Class newType) {
+		return stdConverters.containsKey(newType);
+	}
+
+	public static byte[] convertToIntegerBytes(Object obj) {
+		Class clazz = obj.getClass();
+		if(Float.class.equals(clazz) 
+				|| Double.class.equals(clazz))
+			throw new IllegalArgumentException("Cannot convert float or int to integer type bytes, use convertToDecimalBytes instead");
+		
+		BaseConverter converter = stdConverters.get(clazz);
+		if(converter == null)
+			throw new IllegalArgumentException("Type not supported at this time="+obj.getClass());
+		return converter.convertToNoSql(obj);
+	}
+	
+	public static byte[] convertToDecimalBytes(Object obj) {
+		Object value = obj;
+		Class clazz = obj.getClass();
+		if(Byte.class.equals(clazz) 
+				|| Short.class.equals(clazz)
+				|| Integer.class.equals(clazz)
+				|| Long.class.equals(clazz)) {
+			clazz = Double.class;
+			Double d = translate(obj);
+			value = d;
+		}
+		
+		BaseConverter converter = stdConverters.get(clazz);
+		if(converter == null)
+			throw new IllegalArgumentException("Type not supported at this time="+obj.getClass());
+		return converter.convertToNoSql(value);
+	}
+	
+	private static Double translate(Object obj) {
+		if(obj == null)
+			return null;
+
+		double val;
+		if(Byte.class.equals(obj.getClass())) {
+			Byte b = (Byte)obj;
+			val = b.byteValue();
+		} else if(Short.class.equals(obj.getClass())) {
+			Short s = (Short)obj;
+			val = s.shortValue();
+		} else if(Integer.class.equals(obj.getClass())) {
+			Integer i = (Integer)obj;
+			val = i.intValue();
+		} else if(Long.class.equals(obj.getClass())) {
+			Long l = (Long)obj;
+			val = l.longValue();
+		} else
+			throw new RuntimeException("bug, should never get here");
+		
+		return val;
+	}
+
+	public static <T> T convertFromBytesNoExc(Class<T> clazz, byte[] data) {
+		try {
+			return convertFromBytes(clazz, data);
+		} catch(Exception e) {
+			return null;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T> T convertFromBytes(Class<T> clazz, byte[] data) {
+		BaseConverter converter = stdConverters.get(clazz);
+		if(converter == null)
+			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
+		return (T) converter.convertFromNoSql(data);
+	}
+}

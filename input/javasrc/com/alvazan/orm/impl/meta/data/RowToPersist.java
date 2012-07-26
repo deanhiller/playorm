@@ -3,7 +3,7 @@ package com.alvazan.orm.impl.meta.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.spi.db.Column;
+import com.alvazan.orm.api.spi3.db.Column;
 
 public class RowToPersist {
 	private byte[] key;

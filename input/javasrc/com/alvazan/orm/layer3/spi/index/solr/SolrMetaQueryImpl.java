@@ -1,8 +1,8 @@
 package com.alvazan.orm.layer3.spi.index.solr;
 
-import com.alvazan.orm.api.spi.index.ExpressionNode;
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
+import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 
 public class SolrMetaQueryImpl implements SpiMetaQuery {
 

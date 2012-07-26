@@ -19,9 +19,9 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.index.exc.IndexNotYetExistException;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.index.exc.IndexNotYetExistException;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
 

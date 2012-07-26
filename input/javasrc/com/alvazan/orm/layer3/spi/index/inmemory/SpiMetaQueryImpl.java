@@ -16,11 +16,11 @@ import org.apache.lucene.search.TermQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi.index.ExpressionNode;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.index.StateAttribute;
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.index.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiMetaQueryImpl implements SpiMetaQuery {

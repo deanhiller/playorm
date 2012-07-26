@@ -7,11 +7,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
-import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi2.MetaQuery;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 
 public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 

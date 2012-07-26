@@ -3,10 +3,10 @@ package com.alvazan.orm.layer3.spi.db.hadoop;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi.db.Action;
-import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi3.db.Action;
+import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi3.db.Row;
 
 public class HadoopSession implements NoSqlRawSession {
 

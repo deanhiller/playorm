@@ -2,8 +2,8 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 
-import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboTableMeta;
 
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	private DboColumnMeta metaDbo = new DboColumnMeta();

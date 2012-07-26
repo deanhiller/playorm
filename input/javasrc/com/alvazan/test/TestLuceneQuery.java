@@ -2,14 +2,14 @@ package com.alvazan.test;
 
 import org.junit.Test;
 
-import com.alvazan.orm.api.spi.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
-import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
-import com.alvazan.orm.api.spi.layer2.MetaQuery;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.MetaQuery;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.ScannerForQuery;

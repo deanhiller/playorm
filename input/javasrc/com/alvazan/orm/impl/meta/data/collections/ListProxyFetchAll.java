@@ -9,8 +9,8 @@ import java.util.ListIterator;
 
 import org.slf4j.Logger;
 
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 

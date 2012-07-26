@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi.db.Column;
-import com.alvazan.orm.api.spi.layer2.DboTableMeta;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 

@@ -1,6 +1,6 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
 /**

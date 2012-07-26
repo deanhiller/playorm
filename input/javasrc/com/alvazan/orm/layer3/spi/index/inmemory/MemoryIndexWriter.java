@@ -23,13 +23,13 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi.index.IndexAdd;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.IndexRemove;
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi.index.exc.IndexAddFailedException;
-import com.alvazan.orm.api.spi.index.exc.IndexDeleteFailedException;
-import com.alvazan.orm.api.spi.index.exc.IndexErrorInfo;
+import com.alvazan.orm.api.spi3.index.IndexAdd;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.IndexRemove;
+import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi3.index.exc.IndexAddFailedException;
+import com.alvazan.orm.api.spi3.index.exc.IndexDeleteFailedException;
+import com.alvazan.orm.api.spi3.index.exc.IndexErrorInfo;
 
 public class MemoryIndexWriter implements IndexReaderWriter {
 	private static final Logger log = LoggerFactory.getLogger(MemoryIndexWriter.class);

@@ -6,10 +6,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.spi.index.IndexAdd;
-import com.alvazan.orm.api.spi.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi.index.IndexRemove;
-import com.alvazan.orm.api.spi.index.SpiMetaQuery;
+import com.alvazan.orm.api.spi3.index.IndexAdd;
+import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi3.index.IndexRemove;
+import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
 
 public class SolrIndexWriter implements IndexReaderWriter {
 

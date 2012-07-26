@@ -1,6 +1,6 @@
 package com.alvazan.orm.api.base.anno;
 
-import com.alvazan.orm.api.spi.layer2.Converter;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
 
 public class NoConversion implements Converter {
 	@Override

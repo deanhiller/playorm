@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi.db.Row;
-import com.alvazan.orm.api.spi.layer2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
 public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
