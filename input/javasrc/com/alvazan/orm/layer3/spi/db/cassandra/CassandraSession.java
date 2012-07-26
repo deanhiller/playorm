@@ -10,12 +10,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi.db.Action;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi.db.Persist;
 import com.alvazan.orm.api.spi.db.Remove;
 import com.alvazan.orm.api.spi.db.Row;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
@@ -114,7 +117,7 @@ public class CassandraSession implements NoSqlRawSession {
 			return createEmptyList(keys);
 		}
 		
-		ColumnFamily<byte[], byte[]> cf = lookupOrCreate(colFamily);
+		ColumnFamily<byte[], byte[]> cf = lookupOrCreate(colFamily, null);
 		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
 		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
@@ -165,17 +168,17 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions) {
+	public void sendChanges(List<Action> actions, Object ormSession) {
 		try {
-			sendChangesImpl(actions);
+			sendChangesImpl(actions, (NoSqlEntityManager) ormSession);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	public void sendChangesImpl(List<Action> actions) throws ConnectionException {
+	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
 		MutationBatch m = keyspace.prepareMutationBatch();
 		for(Action action : actions) {
-			ColumnFamily cf = lookupOrCreate(action.getColFamily());
+			ColumnFamily cf = lookupOrCreate(action.getColFamily(), mgr);
 			
 			if(action instanceof Persist) {
 				persist((Persist)action, cf, m);
@@ -187,16 +190,34 @@ public class CassandraSession implements NoSqlRawSession {
 		m.execute();
 	}
 
-	private ColumnFamily lookupOrCreate(String colFamily) throws ConnectionException {
+	private ColumnFamily lookupOrCreate(String colFamily, NoSqlEntityManager mgr) throws ConnectionException {
 		if(!existingColumnFamilies.contains(colFamily)) {
 			log.info("CREATING column family="+colFamily+" in cassandra");
-			cluster.addColumnFamily(cluster.makeColumnFamilyDefinition()
+			
+			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+			DboTableMeta cf = db.getMeta(colFamily);
+			Class columnNameType = cf.getColumnNameType();
+			
+			ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
 				    .setName(colFamily)
-				    .setKeyspace(keyspace.getKeyspaceName())
-				);
+				    .setKeyspace(keyspace.getKeyspaceName());
+			
+			if(String.class.equals(columnNameType)) 
+				def = def.setComparatorType("UTF8Type");
+			else if(Integer.class.equals(columnNameType)
+					|| Long.class.equals(columnNameType)
+					|| Short.class.equals(columnNameType)
+					|| Byte.class.equals(columnNameType))
+				def = def.setComparatorType("IntegerType");
+			else if(Float.class.equals(columnNameType)
+					|| Double.class.equals(columnNameType))
+				def = def.setComparatorType("DecimalType");
+			else
+				throw new UnsupportedOperationException("Not supported yet, we need a BigDecimal comparator type here for sure");
+			
+			cluster.addColumnFamily(def);
 			existingColumnFamilies.add(colFamily);
 		}
-		
 		
 		//should we cache this and just look it up each time or is KISS fine for now....
 		ColumnFamily cf = new ColumnFamily(colFamily, BytesArraySerializer.get(), BytesArraySerializer.get());
@@ -250,7 +271,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	public void clearImpl() throws ConnectionException {
 		for(String cf : existingColumnFamilies) {
-			ColumnFamily colFamily = lookupOrCreate(cf);
+			ColumnFamily colFamily = lookupOrCreate(cf, null);
 			keyspace.truncateColumnFamily(colFamily); 
 		}
 	}
@@ -273,7 +294,7 @@ public class CassandraSession implements NoSqlRawSession {
 			return new ArrayList<Column>();
 		}
 		
-		ColumnFamily cf = lookupOrCreate(colFamily);
+		ColumnFamily cf = lookupOrCreate(colFamily, null);
 		
 		ByteBufferRange build = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
 		

@@ -40,17 +40,20 @@ public class TestColumnSlice {
 	@Test
 	public void testColumnSlice() throws UnsupportedEncodingException {
 		NoSqlSession session = mgr.getSession();
+
+		
+		
 		
 		String colFamily = "time_indexes";
 		byte[] rowKey = "myone_index".getBytes("UTF8");
 		
 		List<Column> columns = new ArrayList<Column>();
 		
-		columns.add(new Column(toBytes("asdfsd"), new byte[0]));
-		columns.add(new Column(toBytes("ewrwerewrewr"), new byte[0]));
-		columns.add(new Column(toBytes("eeeee"), new byte[0]));
-		columns.add(new Column(toBytes("0000000000"), new byte[0]));
-		columns.add(new Column(toBytes("a"), new byte[0]));
+		//columns.add(new Column(toBytes("asdfsd"), new byte[0]));
+		//columns.add(new Column(toBytes("ewrwerewrewr"), new byte[0]));
+		//columns.add(new Column(toBytes("eeeee"), new byte[0]));
+		//columns.add(new Column(toBytes("0000000000"), new byte[0]));
+		//columns.add(new Column(toBytes("a"), new byte[0]));
 		
 		columns.add(new Column(toBytes(500), new byte[0]));
 		columns.add(new Column(toBytes(20), new byte[0]));

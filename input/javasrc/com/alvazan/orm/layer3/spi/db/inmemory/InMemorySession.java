@@ -39,7 +39,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions) {
+	public void sendChanges(List<Action> actions, Object ormSession) {
 		for(Action action : actions) {
 			Table table = database.findOrCreateTable(action.getColFamily());
 			if(action instanceof Persist) {

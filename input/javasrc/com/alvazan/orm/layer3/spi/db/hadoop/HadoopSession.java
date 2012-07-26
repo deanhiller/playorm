@@ -16,7 +16,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions) {
+	public void sendChanges(List<Action> actions, Object ormSession) {
 	}
 
 	@Override

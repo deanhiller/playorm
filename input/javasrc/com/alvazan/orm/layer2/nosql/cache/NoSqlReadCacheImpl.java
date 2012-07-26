@@ -84,5 +84,10 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		return session.columnRangeScan(colFamily, rowKey, from, to, batchSize);
 	}
 
+	@Override
+	public void setOrmSessionForMeta(Object ormSession) {
+		session.setOrmSessionForMeta(ormSession);
+	}
+
 
 }

@@ -79,7 +79,9 @@
 
 <!-- This section is just the database adapters depending on the spi -->
 <package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
-	<depends>RawNoSqlSpi</depends>
+	<depends>RawNoSqlSpi</depends> <!-- implements this SPI -->
+	<depends>api</depends> <!-- ironically uses not implements -->
+	<depends>NoSqlApi</depends>
 	<depends>astyanax</depends>
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">

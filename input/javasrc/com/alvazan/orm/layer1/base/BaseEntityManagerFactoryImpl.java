@@ -18,6 +18,9 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.spi.layer2.Converter;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.MetaQuery;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -43,7 +46,9 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private boolean isScanned;
 	@Inject
 	private MetaInfo metaInfo;
-
+	@Inject
+	private DboDatabaseMeta databaseInfo;
+	
 	private Object injector;
 	
 	@Override
@@ -54,10 +59,16 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	}
 
 	@SuppressWarnings("rawtypes")
-	@Override
-	public void setup(Map<Class, Converter> converters) {
+	public void setup(Map<String, String> properties, Map<Class, Converter> converters) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");
+		
+		String val = properties.get(NoSqlEntityManagerFactory.AUTO_CREATE_KEY);
+		if(val == null)
+			throw new IllegalArgumentException("Must provide property with key NoSqlEntityManagerFactory.AUTO_CREATE_KEY so we know to update or validate existing schema");
+		AutoCreateEnum autoCreate = AutoCreateEnum.translate(val);
+		if(autoCreate == null)
+			throw new IllegalArgumentException("Property NoSqlEntityManagerFactory.AUTO_CREATE_KEY can only have values validate,update, or create");
 		
 		inspectorField.setCustomConverters(converters);
 		
@@ -84,8 +95,40 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	setupQueryStuff(meta);
         }
         
-        log.info("Finished scanning classes");
+        log.info("Finished scanning classes, saving meta data");
         isScanned = true;
+        
+        if(AutoCreateEnum.CREATE_ONLY != autoCreate)
+        	throw new UnsupportedOperationException("not implemented yet");
+        
+        
+        NoSqlEntityManager tempMgr = createEntityManager();
+
+        saveMetaData(tempMgr);
+        
+        tempMgr.flush();
+        log.info("Finished saving meta data, complelety done initializing");
+	}
+
+	private void saveMetaData(NoSqlEntityManager tempMgr) {
+        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+        if(existing != null)
+        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY which only creates meta data if none exist already but meta already exists");
+		
+        for(DboTableMeta table : databaseInfo.getAllTables()) {
+        	
+        	for(DboColumnMeta col : table.getAllColumns()) {
+        		tempMgr.put(col);
+        	}
+        	
+        	tempMgr.put(table.getIdColumnMeta());
+        	
+        	tempMgr.put(table);
+        }
+        
+        databaseInfo.setId(NoSqlEntityManager.META_DB_KEY);
+        
+        tempMgr.put(databaseInfo);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

@@ -1,5 +1,8 @@
 package com.alvazan.test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +19,9 @@ public class FactorySingleton {
 	public synchronized static NoSqlEntityManagerFactory createFactoryOnce() {
 		if(factory == null) {
 			log.info("CREATING FACTORY FOR TESTS");
-			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, null);
-			factory.setup(null);
+			Map<String, String> props = new HashMap<String, String>();
+			props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
+			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null);
 		}
 		return factory;
 	}

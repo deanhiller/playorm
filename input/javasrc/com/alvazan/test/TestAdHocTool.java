@@ -9,6 +9,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.db.Row;
 import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
@@ -20,6 +22,19 @@ import com.alvazan.orm.impl.bindings.Bootstrap;
 
 public class TestAdHocTool {
 
+	@Test
+	public void testOrmLayerMetaSaved() {
+		NoSqlEntityManagerFactory factory = FactorySingleton.createFactoryOnce();
+		NoSqlEntityManager mgr = factory.createEntityManager();
+
+		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+		DboTableMeta table = database.getMeta("Activity");
+		DboColumnMeta columnMeta = table.getColumnMeta("account");
+		
+		Assert.assertEquals("id", columnMeta.getFkToColumnFamily().getIdColumnMeta().getColumnName());
+		
+	}
+	
 	@Test
 	public void testBasic() {
 		DboDatabaseMeta metaDb = new DboDatabaseMeta();

@@ -21,7 +21,7 @@ public interface NoSqlRawSession {
 	 * in the order we are given here
 	 * @param actions
 	 */
-	public void sendChanges(List<Action> actions);
+	public void sendChanges(List<Action> actions, Object session);
 
 	public void clearDatabaseIfInMemoryType();
 

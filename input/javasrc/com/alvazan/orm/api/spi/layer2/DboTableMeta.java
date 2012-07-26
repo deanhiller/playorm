@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.spi.layer2;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -80,4 +81,7 @@ public class DboTableMeta {
 		this.foreignKeyToExtensions = foreignKeyToExtensions;
 	}
 
+	public Collection<DboColumnMeta> getAllColumns() {
+		return nameToField.values();
+	}
 }

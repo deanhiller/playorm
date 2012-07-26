@@ -2,18 +2,22 @@ package com.alvazan.orm.api.base;
 
 import java.util.Map;
 
+import com.alvazan.orm.api.spi.layer2.Converter;
 
+@SuppressWarnings("rawtypes")
 public abstract class AbstractBootstrap {
 
-	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, String> properties) {
-		return create(type, "com.alvazan.orm.impl.bindings.Bootstrap", properties);
+	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters) {
+		return create(type, "com.alvazan.orm.impl.bindings.Bootstrap", properties, converters);
 	}
 	
-	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, String impl, Map<String, String> properties) {
+	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, String impl, Map<String, String> properties, Map<Class, Converter> converters) {
 		try {
 			Class<?> clazz = Class.forName(impl);
 			AbstractBootstrap newInstance = (AbstractBootstrap) clazz.newInstance();
-			return newInstance.createInstance(type, properties);
+			NoSqlEntityManagerFactory inst = newInstance.createInstance(type, properties, converters);
+			
+			return inst;
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		} catch (InstantiationException e) {
@@ -23,6 +27,6 @@ public abstract class AbstractBootstrap {
 		}
 	}
 
-	protected abstract NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties);
+	protected abstract NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters);
 
 }

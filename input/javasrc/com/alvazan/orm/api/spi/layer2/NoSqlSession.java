@@ -76,4 +76,6 @@ public interface NoSqlSession {
 	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize);
 
+	public void setOrmSessionForMeta(Object session);
+
 }

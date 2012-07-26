@@ -6,6 +6,7 @@ import com.alvazan.orm.api.base.AbstractBootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi.layer2.Converter;
 import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSessionFactory;
 import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
@@ -14,8 +15,9 @@ import com.google.inject.Injector;
 
 public class Bootstrap extends AbstractBootstrap {
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties) {
+	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
 
@@ -24,7 +26,11 @@ public class Bootstrap extends AbstractBootstrap {
 		
 		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;
 		impl.setInjector(injector);
-		return factory;
+		
+		//The expensive scan all entities occurs here...
+		impl.setup(properties, converters);
+		
+		return impl;
 	}
 
 	/**

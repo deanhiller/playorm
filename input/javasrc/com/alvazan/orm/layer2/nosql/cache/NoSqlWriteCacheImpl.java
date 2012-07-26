@@ -29,6 +29,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	private Map<String, List<? extends IndexRemove>> removeFromIndex = new HashMap<String, List<? extends IndexRemove>>(); 
 	private List<Action> actions = new ArrayList<Action>();
 	private Map<String, List<IndexAdd>> addToIndex = new HashMap<String, List<IndexAdd>>();
+	private Object ormSession;
 	
 	@Override
 	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
@@ -73,7 +74,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		//REMOVE from index BEFORE removing the entity.  ie. If we do the reverse, you do a query and get
 		//an id of entity that is about to be removed and if removed before you, you don't get the entity
 		indexWriter.sendRemoves(removeFromIndex);
-		rawSession.sendChanges(actions);
+		rawSession.sendChanges(actions, ormSession);
 		indexWriter.sendAdds(addToIndex);
 	}
 
@@ -149,6 +150,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
 		return rawSession.columnRangeScan(colFamily, rowKey, from, to, batchSize);
+	}
+
+	@Override
+	public void setOrmSessionForMeta(Object session) {
+		this.ormSession = session;
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.spi.layer2;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +8,7 @@ import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 
-@NoSqlEntity
+@NoSqlEntity()
 public class DboDatabaseMeta {
 
 	@Id(usegenerator=false)
@@ -32,4 +33,7 @@ public class DboDatabaseMeta {
 		return colFamilyToMeta.get(tableName);
 	}
 
+	public Collection<DboTableMeta> getAllTables() {
+		return colFamilyToMeta.values();
+	}
 }

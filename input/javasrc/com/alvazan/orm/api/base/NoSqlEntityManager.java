@@ -9,6 +9,8 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(BaseEntityManagerImpl.class)
 public interface NoSqlEntityManager {
 
+	public static final String META_DB_KEY = "nosqlorm";
+	
 	/**
 	 * Retrieve underlying interface to write raw columns to.  This works the same as the NoSqlEntityManager
 	 * in that you must call flush to execute all the calls to persist.

@@ -117,6 +117,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	@Override
 	public NoSqlSession getSession() {
+		session.setOrmSessionForMeta(this);
 		return session;
 	}
 
