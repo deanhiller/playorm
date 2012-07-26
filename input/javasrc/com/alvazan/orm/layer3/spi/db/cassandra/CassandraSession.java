@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +54,9 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	private Set<String> existingColumnFamilies = new HashSet<String>();
 	private Cluster cluster;
+	
+	@Inject
+	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
 	public void start(Map<String, String> properties) {
@@ -194,8 +199,14 @@ public class CassandraSession implements NoSqlRawSession {
 		if(!existingColumnFamilies.contains(colFamily)) {
 			log.info("CREATING column family="+colFamily+" in cassandra");
 			
-			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
-			DboTableMeta cf = db.getMeta(colFamily);
+			DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
+			if(cf == null) {
+				//check the database now for the meta since it was not found in the ORM meta data.  This is for
+				//those that are modifying meta data themselves
+				DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+				cf = db.getMeta(colFamily);
+			}
+			
 			Class columnNameType = cf.getColumnNameType();
 			
 			ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()

@@ -49,6 +49,9 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private List<byte[]> parseOutKeyList(Column column) {
 		byte[] data = column.getValue();
+		if(data == null)
+			return new ArrayList<byte[]>();
+		
 		List<byte[]> entities = new ArrayList<byte[]>();
 		List<Byte> currentList = new ArrayList<Byte>();
 		for(byte b : data) {

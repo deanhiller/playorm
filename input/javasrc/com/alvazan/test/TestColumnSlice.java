@@ -1,6 +1,7 @@
 package com.alvazan.test;
 
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,9 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi.db.Column;
 import com.alvazan.orm.api.spi.layer2.Converters;
+import com.alvazan.orm.api.spi.layer2.DboColumnMeta;
+import com.alvazan.orm.api.spi.layer2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi.layer2.DboTableMeta;
 import com.alvazan.orm.api.spi.layer2.NoSqlSession;
 
 public class TestColumnSlice {
@@ -40,11 +44,25 @@ public class TestColumnSlice {
 	@Test
 	public void testColumnSlice() throws UnsupportedEncodingException {
 		NoSqlSession session = mgr.getSession();
-
-		
-		
-		
 		String colFamily = "time_indexes";
+		
+		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+		
+		DboColumnMeta idMeta = new DboColumnMeta();
+		idMeta.setup("id", null, String.class, false);
+		mgr.put(idMeta);
+		
+		DboTableMeta tableMeta = new DboTableMeta();
+		tableMeta.setColumnFamily(colFamily);
+		tableMeta.setColumnNameType(long.class);
+		tableMeta.setRowKeyMeta(idMeta);
+		mgr.put(tableMeta);
+
+		meta.addMetaClassDbo(tableMeta);
+		mgr.put(meta);
+		
+		mgr.flush();
+		
 		byte[] rowKey = "myone_index".getBytes("UTF8");
 		
 		List<Column> columns = new ArrayList<Column>();
@@ -68,6 +86,10 @@ public class TestColumnSlice {
 		columns.add(new Column(toBytes(-40), new byte[0]));
 		columns.add(new Column(toBytes(-200), new byte[0]));
 		columns.add(new Column(toBytes(-500), new byte[0]));
+		columns.add(new Column(toBytes(new BigInteger("123000111222333444555666")), new byte[0]));
+		columns.add(new Column(toBytes(new BigInteger("-123000111222333444555666")), new byte[0]));
+		columns.add(new Column(toBytes(new BigInteger("3")), new byte[0]));
+		columns.add(new Column(toBytes(new BigInteger("-3")), new byte[0]));
 		
 		long v = -300;
 		
@@ -100,6 +122,10 @@ public class TestColumnSlice {
 		Assert.assertEquals(3, counter);
 	}
 	
+	private byte[] toBytes(BigInteger bigInteger) {
+		return Converters.BIGINTEGER_CONVERTER.convertToNoSql(bigInteger);
+	}
+
 	private byte[] toBytes(String string) {
 		return Converters.STRING_CONVERTER.convertToNoSql(string);
 	}
