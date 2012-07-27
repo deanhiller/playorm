@@ -23,7 +23,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(UniqueKeyGenerator.class);
 	private static String ipAddress;
-	private static long lastTimeStamp = 0;
+	private static long lastTimeStamp = System.currentTimeMillis();
 	
 	static {
 		try {
@@ -46,16 +46,19 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	}
 	
 	private static synchronized String generateKey() {
-		long currentTime = System.currentTimeMillis();
-		if(currentTime <= lastTimeStamp)
-			currentTime = lastTimeStamp+1;
-		lastTimeStamp = currentTime;
-		return ipAddress+"-"+lastTimeStamp;
+		long time = lastTimeStamp++;
+		return ipAddress+"-"+time;
 	}
 
 	private static void createHostName() throws UnknownHostException {
 		InetAddress local = InetAddress.getLocalHost();
 		ipAddress = local.getHostName();
+		if(ipAddress.contains(".")) {
+			//let's strip it down to just the raw host name since all hosts will have the same domain
+			int index = ipAddress.indexOf(".");
+			ipAddress = ipAddress.substring(0, index);
+		}
+		
 		if(ipAddress.contains("localhost"))
 			throw new RuntimeException("Call to InetAddress.getLocalHost().getHostname() == localhost.  This must be fixed(you are most likely on linux!!) or unique keys will not be generated");
 	}
