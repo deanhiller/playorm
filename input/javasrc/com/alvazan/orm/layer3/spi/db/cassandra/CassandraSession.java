@@ -207,6 +207,12 @@ public class CassandraSession implements NoSqlRawSession {
 				cf = db.getMeta(colFamily);
 			}
 			
+			
+			if(cf == null) {
+				throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
+						" family to create it AND we could not find that data so we can't create it for you");
+			}
+			
 			Class columnNameType = cf.getColumnNameType();
 			
 			ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()

@@ -79,7 +79,11 @@ public class InMemorySession implements NoSqlRawSession {
 			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
 			cf = db.getMeta(colFamily);
 		}
-			
+		
+		if(cf == null) {
+			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
+					" family to create it AND we could not find that data so we can't create it for you");
+		}
 		Class columnNameType = cf.getColumnNameType();
 
 		SortType sortType = SortType.BYTES;

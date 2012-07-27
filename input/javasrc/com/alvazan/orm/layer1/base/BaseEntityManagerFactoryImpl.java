@@ -62,6 +62,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	public void setup(Map<String, String> properties, Map<Class, Converter> converters) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");
+		else if(properties == null)
+			throw new IllegalArgumentException("'properties' parameter must be supplied");
 		
 		String val = properties.get(NoSqlEntityManagerFactory.AUTO_CREATE_KEY);
 		if(val == null)

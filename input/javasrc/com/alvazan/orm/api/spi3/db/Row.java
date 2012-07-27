@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.commons.codec.binary.Hex;
-
 
 public class Row {
 	private byte[] key;
@@ -33,11 +31,12 @@ public class Row {
 		return columns.get(new ByteArray(key));
 	}
 	public void put(byte[] name, Column col) {
-		String hex = new String(Hex.encodeHex(name));
-		columns.put(new ByteArray(name), col);
+		ByteArray key = new ByteArray(name);
+		columns.put(key, col);
 	}
 	public void remove(byte[] name) {
-		columns.remove(new ByteArray(name));
+		ByteArray key = new ByteArray(name);
+		columns.remove(key);
 	}
 	
 	public Collection<Column> columnSlice(byte[] from, byte[] to) {
