@@ -10,7 +10,12 @@ import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity()
 public class DboDatabaseMeta {
-
+	
+	/**
+	 * This is the key for the SINGLE row of DboDatabaseMeta that exists in the nosql store.
+	 */
+	public static final String META_DB_ROWKEY = "nosqlorm";
+	
 	@Id(usegenerator=false)
 	private String id;
 	

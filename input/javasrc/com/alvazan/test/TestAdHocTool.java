@@ -27,7 +27,7 @@ public class TestAdHocTool {
 		NoSqlEntityManagerFactory factory = FactorySingleton.createFactoryOnce();
 		NoSqlEntityManager mgr = factory.createEntityManager();
 
-		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		DboTableMeta table = database.getMeta("Activity");
 		DboColumnMeta columnMeta = table.getColumnMeta("account");
 		

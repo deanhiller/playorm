@@ -49,7 +49,7 @@ public class TestColumnSlice {
 		NoSqlSession session = mgr.getSession();
 		String colFamily = "float_indexes";
 		
-		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
 		DboColumnMeta idMeta = new DboColumnMeta();
 		idMeta.setup("id", null, String.class, false);
@@ -110,7 +110,7 @@ public class TestColumnSlice {
 		NoSqlSession session = mgr.getSession();
 		String colFamily = "time_indexes";
 		
-		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
 		DboColumnMeta idMeta = new DboColumnMeta();
 		idMeta.setup("id", null, String.class, false);

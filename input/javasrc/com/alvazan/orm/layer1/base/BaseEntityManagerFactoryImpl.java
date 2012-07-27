@@ -113,7 +113,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	}
 
 	private void saveMetaData(NoSqlEntityManager tempMgr) {
-        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, NoSqlEntityManager.META_DB_KEY);
+        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
         if(existing != null)
         	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY which only creates meta data if none exist already but meta already exists");
 		
@@ -128,7 +128,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	tempMgr.put(table);
         }
         
-        databaseInfo.setId(NoSqlEntityManager.META_DB_KEY);
+        databaseInfo.setId(DboDatabaseMeta.META_DB_ROWKEY);
         
         tempMgr.put(databaseInfo);
 	}
