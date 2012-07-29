@@ -1,6 +1,9 @@
 package com.alvazan.orm.api.spi3.db;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -42,11 +45,24 @@ public class Row {
 	public Collection<Column> columnSlice(byte[] from, byte[] to) {
 		ByteArray fromArray = new ByteArray(from);
 		ByteArray toArray = new ByteArray(to);
-
-		SortedMap<ByteArray, Column> tailMap = columns.tailMap(fromArray);
-		SortedMap<ByteArray, Column> result = tailMap.headMap(toArray);
-		
+		SortedMap<ByteArray, Column> result = columns.subMap(fromArray, toArray);
 		return result.values();
 	}
 
+	public Collection<Column> columnByPrefix(byte[] prefix) {
+		List<Column> prefixed = new ArrayList<Column>();
+		boolean started = false;
+		for(Entry<ByteArray, Column> col : columns.entrySet()) {
+			if(col.getKey().hasPrefix(prefix)) {
+				started = true;
+				prefixed.add(col.getValue());
+			} else if(started)
+				break; //since we hit the prefix and we are sorted, we can break.
+		}
+		return prefixed;
+	}
+	
+	public SortedMap<ByteArray, Column> getSortedColumns() {
+		return columns;
+	}
 }

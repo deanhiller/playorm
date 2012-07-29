@@ -1,5 +1,6 @@
 package com.alvazan.test.db;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,5 +51,13 @@ public class SomeEntity {
 
 	public Activity getActivity(String name) {
 		return activities.get(name);
+	}
+	
+	public Collection<Activity> getActivities() {
+		return activities.values();
+	}
+
+	public void remove(String name2) {
+		activities.remove(name2);
 	}
 }

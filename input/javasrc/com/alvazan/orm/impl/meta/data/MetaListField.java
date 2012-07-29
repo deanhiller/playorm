@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi3.db.ByteArray;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
@@ -20,34 +23,39 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private static final byte DEFAULT_DELIMETER = (byte) ',';
 	
 	@Override
-	public void translateFromColumn(Column column, OWNER entity,
+	public void translateFromColumn(Row row, OWNER entity,
 			NoSqlSession session) {
 		Object proxy;
 		if(field.getType().equals(Map.class))
-			proxy = translateFromColumnMap(column, entity, session);
+			proxy = translateFromColumnMap(row, entity, session);
 		else
-			proxy = translateFromColumnList(column, entity, session);
+			proxy = translateFromColumnList(row, entity, session);
 		
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Map translateFromColumnMap(Column column,
+	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
-		List<byte[]> keys = parseOutKeyList(column);
+		List<byte[]> keys = parseOutKeyList(row);
 		MapProxyFetchAll proxy = new MapProxyFetchAll(session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private List<PROXY> translateFromColumnList(Column column,
+	private List<PROXY> translateFromColumnList(Row row,
 			OWNER entity, NoSqlSession session) {
-		List<byte[]> keys = parseOutKeyList(column);
+		List<byte[]> keys = parseOutKeyList(row);
 		List<PROXY> retVal = new ListProxyFetchAll(session, classMeta, keys);
 		return retVal;
 	}
 
-	private List<byte[]> parseOutKeyList(Column column) {
+	private List<byte[]> parseOutKeyList(Row row) {
+		String columnName = getColumnName();
+		byte[] bytes = columnName.getBytes();
+		Collection<Column> columns = row.columnByPrefix(bytes);
+		
+		
 		byte[] data = column.getValue();
 		if(data == null)
 			return new ArrayList<byte[]>();
@@ -76,7 +84,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public void translateToColumn(OWNER entity, Column col) {
+	public void translateToColumn(OWNER entity, RowToPersist row) {
 		if(field.getType().equals(Map.class))
 			translateToColumnMap(entity, col);
 		else

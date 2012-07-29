@@ -3,7 +3,6 @@ package com.alvazan.orm.impl.meta.data.collections;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -15,14 +14,17 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallback {
+public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements CacheLoadCallback, List<T> {
 
 	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ListProxyFetchAll.class);
 	
 	private static final long serialVersionUID = 1L;
 	private NoSqlSession session;
 	private MetaClass<T> classMeta;
+	private List<Holder<T>> currentList = new ArrayList<Holder<T>>();
+	//immutable structures that hold the things cached that would need to be loaded
 	private List<byte[]> keys;
+	private List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
 	private boolean cacheLoaded = false;
 	
 	public ListProxyFetchAll(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
@@ -31,13 +33,12 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 		this.keys = keys;
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);
-			super.add((T) h);
-			String temp = new String(key);
-			log.info("temp="+temp);
+			originalHolders.add(h);
+			currentList.add(h);
 		}
 	}
 
-	public Object clone() {
+	public Object clone() throws CloneNotSupportedException {
         ListProxyFetchAll v = (ListProxyFetchAll) super.clone();
         ListProxyFetchAll[] current = this.toArray(new ListProxyFetchAll[0]);
         ListProxyFetchAll[] clone = Arrays.copyOf(current, this.size());
@@ -47,21 +48,6 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
         return v;
     }
 
-	@Override
-	public Object[] toArray() {
-		Object[] elements = new Object[this.size()];
-		for(int i = 0; i < this.size(); i++) {
-			elements[i] = this.getImpl(i);
-		}
-		
-		return elements;
-	}
-
-	private T getImpl(int index) {
-		Holder<T> holder = (Holder) super.get(index);
-		return holder.getValue();
-	}
-	
 	//Callback from one of the proxies to load the entire cache based
 	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
 	public void loadCacheIfNeeded() {
@@ -71,7 +57,7 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
 		for(int i = 0; i < this.size(); i++) {
 			Row row = rows.get(i);
-			Holder<T> h = (Holder) super.get(i);
+			Holder<T> h = (Holder) originalHolders.get(i);
 			T value = h.getValue();
 			if(value instanceof NoSqlProxy) {
 				//inject the row into the proxy object here to load it's fields
@@ -81,99 +67,55 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 		}
 		cacheLoaded = true;
 	}
-	
-	@SuppressWarnings("hiding")
+
 	@Override
-	public <T> T[] toArray(T[] a) {
-		Object[] elements = toArray();
-		return (T[]) Arrays.copyOf(elements, this.size(), a.getClass());
+	public boolean addAll(int index, Collection<? extends T> c) {
+		Collection holdersColl = createHolders(c);
+		return currentList.addAll(index, holdersColl);
 	}
 
 	@Override
 	public T get(int index) {
-		return getImpl(index);
+		Holder<T> holder = currentList.get(index);
+		return holder.getValue();
 	}
 
 	@Override
 	public T set(int index, T element) {
-		Holder<T> h = new Holder<T>(element);
-		return super.set(index, (T) h);
-	}
-
-	@Override
-	public boolean add(T e) {
-		Holder<T> h = new Holder<T>(e);
-		return super.add((T) h);
+		Holder<T> holder = new Holder<T>(element);
+		Holder<T> existing = currentList.set(index, holder);
+		return existing.getValue();
 	}
 
 	@Override
 	public void add(int index, T element) {
-		Holder<T> h = new Holder<T>(element);
-		super.add(index, (T) h);
+		Holder<T> holder = new Holder<T>(element);
+		currentList.add(index, holder);
 	}
 
 	@Override
 	public T remove(int index) {
-		return super.remove(index);
+		Holder<T> holder = currentList.remove(index);
+		return holder.getValue();
 	}
 
 	@Override
-	public boolean remove(Object o) {
-		loadCacheIfNeeded(); //we have to do this so equals will work
-		Holder h = new Holder(o);
-		return super.remove(h);
+	public int indexOf(Object o) {
+		Holder<T> holder = new Holder<T>((T) o);
+		return currentList.indexOf(holder);
 	}
 
 	@Override
-	public void clear() {
-		super.clear();
-	}
-
-	@Override
-	public boolean addAll(Collection<? extends T> c) {
-		Collection holders = createHolders(c);
-		return super.addAll(holders);
-	}
-
-	private Collection createHolders(Collection c) {
-		Collection holders = new ArrayList();
-		for(Object val : c) {
-			Holder h = new Holder(val);
-			holders.add(h);
-		}
-		return holders;
-	}
-
-	@Override
-	public boolean addAll(int index, Collection<? extends T> c) {
-		Collection holders = createHolders(c);
-		return super.addAll(index, holders);
-	}
-
-	@Override
-	protected void removeRange(int fromIndex, int toIndex) {
-		super.removeRange(fromIndex, toIndex);
-	}
-
-	@Override
-	public boolean removeAll(Collection<?> c) {
-		loadCacheIfNeeded();
-		Collection holders = createHolders(c);
-		return super.removeAll(holders);
-	}
-
-	@Override
-	public boolean retainAll(Collection<?> c) {
-		loadCacheIfNeeded();
-		Collection holders = createHolders(c);
-		return super.retainAll(holders);
+	public int lastIndexOf(Object o) {
+		Holder<T> holder = new Holder<T>((T) o);
+		return currentList.indexOf(o);
 	}
 
 	private class OurIter implements ListIterator<T> {
 
-		private ListIterator delegate;
+		private ListIterator<Holder<T>> delegate;
 
-		public OurIter(ListIterator delegate) {
+		public OurIter(ListIterator<Holder<T>> delegate) {
 			this.delegate = delegate;
 		}
 		@Override
@@ -183,7 +125,7 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 
 		@Override
 		public T next() {
-			Holder<T> holder = (Holder<T>) delegate.next();
+			Holder<T> holder = delegate.next();
 			return holder.getValue();
 		}
 
@@ -194,7 +136,7 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 
 		@Override
 		public T previous() {
-			Holder<T> holder = (Holder<T>) delegate.previous();
+			Holder<T> holder = delegate.previous();
 			return holder.getValue();			
 		}
 
@@ -229,7 +171,7 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 	
 	@Override
 	public ListIterator<T> listIterator(int index) {
-		ListIterator<T> iter = super.listIterator(index);
+		ListIterator<Holder<T>> iter = currentList.listIterator(index);
 		OurIter proxy = new OurIter(iter);
 		return proxy;
 	}
@@ -239,37 +181,14 @@ public class ListProxyFetchAll<T> extends ArrayList<T> implements CacheLoadCallb
 		return listIterator(0);
 	}
 
-	private class OurItr implements Iterator<T> {
-		private Iterator delegate;
-
-		public OurItr(Iterator iter) {
-			delegate = iter;
-		}
-		@Override
-		public boolean hasNext() {
-			return delegate.hasNext();
-		}
-
-		@Override
-		public T next() {
-			Holder holder = (Holder) delegate.next();
-			return (T) holder.getValue();
-		}
-
-		@Override
-		public void remove() {
-			delegate.remove();
-		}
-		
-	}
-	
-	@Override
-	public Iterator<T> iterator() {
-		return new OurItr(super.iterator());
-	}
-
 	@Override
 	public List<T> subList(int fromIndex, int toIndex) {
 		throw new UnsupportedOperationException("not supported yet");
 	}
+
+	@Override
+	protected Collection<Holder<T>> getHolders() {
+		return currentList;
+	}
+
 }

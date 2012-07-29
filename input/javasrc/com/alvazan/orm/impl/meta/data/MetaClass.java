@@ -88,13 +88,7 @@ public class MetaClass<T> {
 		Object key = idField.translateFromRow(row, inst);
 
 		for(MetaField<T> field : columnNameToField.values()) {
-			String columnName = field.getColumnName();
-			Column column = row.getColumn(columnName.getBytes());
-			
-			if(column == null) {
-				column = new Column();
-			}
-			field.translateFromColumn(column, inst, session);
+			field.translateFromColumn(row, inst, session);
 		}
 		
 		return key;
@@ -105,9 +99,7 @@ public class MetaClass<T> {
 		idField.translateToRow(entity, row);
 		
 		for(MetaField<T> m : columnNameToField.values()) {
-			Column col = new Column();
-			m.translateToColumn(entity, col);
-			row.getColumns().add(col);
+			m.translateToColumn(entity, row);
 		}
 		
 		return row;

@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
@@ -18,13 +19,23 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return "MetaProxyField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType().getName()+ "), columnName=" + columnName + "]";
 	}
 
-	public void translateFromColumn(Column column, OWNER entity, NoSqlSession session) {
+	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
+		String columnName = getColumnName();
+		Column column = row.getColumn(columnName.getBytes());
+		
+		if(column == null) {
+			column = new Column();
+		}
+		
 		Object proxy = convertIdToProxy(column.getValue(), session);
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void translateToColumn(OWNER entity, Column col) {
+	public void translateToColumn(OWNER entity, RowToPersist row) {
+		Column col = new Column();
+		row.getColumns().add(col);
+		
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
