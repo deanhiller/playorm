@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
@@ -15,12 +16,12 @@ import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
+import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 
 public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private MetaClass<PROXY> classMeta;
 	private Field fieldForKey;
-	private static final byte DEFAULT_DELIMETER = (byte) ',';
 	
 	@Override
 	public void translateFromColumn(Row row, OWNER entity,
@@ -28,10 +29,22 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		Object proxy;
 		if(field.getType().equals(Map.class))
 			proxy = translateFromColumnMap(row, entity, session);
-		else
+		else if(field.getType().equals(Collection.class)
+				|| field.getType().equals(List.class))
 			proxy = translateFromColumnList(row, entity, session);
-		
+		else if(field.getType().equals(Set.class))
+			proxy = translateFromColumnSet(row, entity, session);
+		else
+			throw new RuntimeException("bug, we do not support type="+field.getType());
+			
 		ReflectionUtil.putFieldValue(entity, field, proxy);
+	}
+
+	private Object translateFromColumnSet(Row row, OWNER entity,
+			NoSqlSession session) {
+		List<byte[]> keys = parseOutKeyList(row);
+		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(session, classMeta, keys);
+		return retVal;		
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -42,11 +55,10 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return proxy;
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private List<PROXY> translateFromColumnList(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		List<PROXY> retVal = new ListProxyFetchAll(session, classMeta, keys);
+		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(session, classMeta, keys);
 		return retVal;
 	}
 

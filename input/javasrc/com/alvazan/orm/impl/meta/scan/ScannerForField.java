@@ -2,9 +2,11 @@ package com.alvazan.orm.impl.meta.scan;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -230,8 +232,9 @@ public class ScannerForField {
 					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 		
 		//field's type must be Map or List right now today
-		if(!field.getType().equals(Map.class) && !field.getType().equals(List.class))
-			throw new RuntimeException("field="+field+" must be List or Map since it is annotated with OneToMany");
+		if(!field.getType().equals(Map.class) && !field.getType().equals(List.class)
+				&& !field.getType().equals(Set.class) && !field.getType().equals(Collection.class))
+			throw new RuntimeException("field="+field+" must be Set, Collection, List or Map since it is annotated with OneToMany");
 
 		MetaListField metaField = metaListProvider.get();
 		MetaClass<?> classMeta = metaInfo.findOrCreate(entityType);

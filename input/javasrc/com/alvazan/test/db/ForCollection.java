@@ -1,23 +1,22 @@
 package com.alvazan.test.db;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
-public class SomeEntity {
+public class ForCollection {
 
 	@Id
 	private String id;
 	
 	private String name;
 
-	@OneToMany(entityType=Activity.class, keyFieldForMap="name")
-	private Map<String, Activity> activities = new HashMap<String, Activity>();
+	@OneToMany(entityType=Activity.class)
+	private Collection<Activity> activities = new ArrayList<Activity>();
 	
 	public String getId() {
 		return id;
@@ -35,19 +34,8 @@ public class SomeEntity {
 		this.name = name;
 	}
 
-	public void putActivity(Activity act) {
-		activities.put(act.getName(), act);
-	}
-
-	public Activity getActivity(String name) {
-		return activities.get(name);
-	}
-	
 	public Collection<Activity> getActivities() {
-		return activities.values();
+		return activities;
 	}
 
-	public void remove(String name2) {
-		activities.remove(name2);
-	}
 }

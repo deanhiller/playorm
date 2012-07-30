@@ -79,7 +79,7 @@ public class ByteArray implements Comparable<ByteArray> {
 		String asString = StandardConverters.convertFromBytesNoExc(String.class, key);
 		BigDecimal asDec = StandardConverters.convertFromBytesNoExc(BigDecimal.class, key);
 		BigInteger asInt = StandardConverters.convertFromBytesNoExc(BigInteger.class, key);
-		return "[asString:"+asString+"\nasDec:"+asDec+"\nasInt:"+asInt+"\nasHex:"+new String(Hex.encodeHex(this.key)+"]");
+		return "[asString:"+asString+"\nasDec:"+asDec+"\nasInt:"+asInt+"\nasHex:"+new String(Hex.encodeHex(this.key))+"]";
 	}
 
 	public boolean hasPrefix(byte[] prefix) {
