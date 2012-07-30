@@ -145,7 +145,14 @@ public class ScannerForQuery {
 				wiring.setSelectStarDefined(true);
 				break;
 			case NoSqlLexer.ATTR_NAME:
+				
 				String attributeName = child.getText();
+				DboTableMeta meta = wiring.getInfoFromAlias(attributeName);
+				if(meta != null) {
+					wiring.setSelectStarDefined(true);
+					continue;
+				}
+					
 				String alias = null;
 				if(child.getChildren().size() > 0) { //we have an alias too!!!
 					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);

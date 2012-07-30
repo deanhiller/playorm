@@ -42,7 +42,7 @@ public class IndexDeleteFailedException extends IndexFailureException {
 				"In the meantime, here is a list of the ids that failed removal and the message of failure...\n\n";
 		
 		for(IndexErrorInfo info : errors) {
-			msg += "items list(total="+info.getItemsThatFailed().size()+")=\n";
+			msg += "items list(total="+info.getIdsThatFailed().size()+")=\n";
 			for(String id : info.getIdsThatFailed()) {
 				msg += "id="+id+"\n";
 			}
