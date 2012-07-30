@@ -1,6 +1,7 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Persist;
 import com.alvazan.orm.api.spi3.db.Remove;
+import com.alvazan.orm.api.spi3.db.RemoveEnum;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.index.IndexAdd;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
@@ -43,14 +45,16 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public void remove(String colFamily, byte[] rowKey) {
 		Remove remove = new Remove();
+		remove.setAction(RemoveEnum.REMOVE_ENTIRE_ROW);
 		remove.setColFamily(colFamily);
 		remove.setRowKey(rowKey);
 		actions.add(remove);			
 	}
 	
 	@Override
-	public void remove(String colFamily, byte[] rowKey, List<byte[]> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		Remove remove = new Remove();
+		remove.setAction(RemoveEnum.REMOVE_COLUMNS_FROM_ROW);
 		remove.setColFamily(colFamily);
 		remove.setRowKey(rowKey);
 		remove.setColumns(columnNames);

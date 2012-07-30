@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.spi2;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +51,7 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @param columns
 	 */
-	public void remove(String colFamily, byte[] rowKey, List<byte[]> columnNames);
+	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 	
 	public List<Row> find(String colFamily, List<byte[]> rowKeys);
 	

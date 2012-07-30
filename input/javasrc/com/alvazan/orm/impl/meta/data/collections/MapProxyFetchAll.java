@@ -1,8 +1,10 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,8 +19,10 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 	private boolean cacheLoaded;
 	private NoSqlSession session;
 	private MetaClass<V> classMeta;
-	private List<byte[]> keys;
 	private Field fieldForKey;
+	private List<byte[]> keys;
+	private Set<V> originals = new HashSet<V>();
+	private boolean removeAll;
 	
 	public MapProxyFetchAll(NoSqlSession session, MetaClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey) {
@@ -43,6 +47,7 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 			
 			K key = findFieldValue(proxy);
 			super.put(key,  proxy);
+			originals.add(proxy);
 		}
 		cacheLoaded = true;
 	}
@@ -107,7 +112,7 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 		//no need to load from cache in this case, just clear both key list in
 		//case they haven't loaded cache yet so when it loads it is super fast
 		//and clear the hashtable in case they loaded already
-		keys.clear();
+		removeAll = true;
 		super.clear();
 	}
 
@@ -142,6 +147,33 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
 		loadCacheIfNeeded();
 		return super.entrySet();
+	}
+
+	public Collection<V> getToBeRemoved() {
+		List<V> removes = new ArrayList<V>();
+		if(!removeAll && !cacheLoaded)
+			return removes;
+		
+		//If remove all(clear method called) we still need to check in case they added some
+		//back, but if !removeAll and !cacheLoaded, we know none were removed.
+		Collection<V> current = values();
+		for(V entity : originals) {
+			if(!current.contains(entity))
+				removes.add(entity);
+		}
+		return removes;
+	}
+
+	public Collection<V> getToBeAdded() {
+		List<V> adds = new ArrayList<V>();
+		if(!cacheLoaded)
+			return adds;
+			
+		for(V entity : values()) {
+			if(!originals.contains(entity))
+				adds.add(entity);
+		}
+		return adds;
 	}
 	
 }

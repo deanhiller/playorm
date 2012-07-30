@@ -35,10 +35,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
 		RowToPersist row = metaClass.translateToRow(entity);
 		
-		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
-		
 		if(row.hasRemoves())
 			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
+		
+		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
 
 	@Override
@@ -72,7 +72,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		List<Row> rows = session.find(meta.getColumnFamily(), noSqlKeys);	
+		String cf = meta.getColumnFamily();
+		List<Row> rows = session.find(cf, noSqlKeys);	
 		return getKeyValues( meta,keys,rows);
 	}
 	

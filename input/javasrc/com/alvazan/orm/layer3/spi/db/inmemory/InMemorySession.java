@@ -105,6 +105,8 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	private void remove(Remove action, Table table) {
+		if(action.getAction() == null)
+			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
 		switch(action.getAction()) {
 		case REMOVE_ENTIRE_ROW:
 			table.removeRow(action.getRowKey());

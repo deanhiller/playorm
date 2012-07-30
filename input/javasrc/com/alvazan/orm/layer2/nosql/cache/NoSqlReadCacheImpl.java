@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +29,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey, List<byte[]> columnNames) {
+	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
 	}
 

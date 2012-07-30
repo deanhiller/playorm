@@ -11,7 +11,6 @@ import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;

@@ -6,30 +6,19 @@ import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.slf4j.Logger;
-
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements CacheLoadCallback, List<T> {
+public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements List<T> {
 
-	private static final Logger log = org.slf4j.LoggerFactory.getLogger(ListProxyFetchAll.class);
-	
+	@SuppressWarnings("unused")
 	private static final long serialVersionUID = 1L;
-	private NoSqlSession session;
-	private MetaClass<T> classMeta;
 	private List<Holder<T>> currentList = new ArrayList<Holder<T>>();
 	//immutable structures that hold the things cached that would need to be loaded
-	private List<byte[]> keys;
-	private List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
-	private boolean cacheLoaded = false;
-	
+
 	public ListProxyFetchAll(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
-		this.session = session;
-		this.classMeta = classMeta;
+		super(session, classMeta);
 		this.keys = keys;
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);
@@ -48,29 +37,10 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
         return v;
     }
 
-	//Callback from one of the proxies to load the entire cache based
-	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
-	public void loadCacheIfNeeded() {
-		if(cacheLoaded)
-			return;
-		
-		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
-		for(int i = 0; i < this.size(); i++) {
-			Row row = rows.get(i);
-			Holder<T> h = (Holder) originalHolders.get(i);
-			T value = h.getValue();
-			if(value instanceof NoSqlProxy) {
-				//inject the row into the proxy object here to load it's fields
-				classMeta.fillInInstance(row, session, value);
-				//((NoSqlProxy)value).__injectData(row);
-			}
-		}
-		cacheLoaded = true;
-	}
-
 	@Override
 	public boolean addAll(int index, Collection<? extends T> c) {
-		Collection holdersColl = createHolders(c);
+		Collection<Holder<T>> holdersColl = createHolders(c);
+		added.addAll(holdersColl);
 		return currentList.addAll(index, holdersColl);
 	}
 
@@ -83,6 +53,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 	@Override
 	public T set(int index, T element) {
 		Holder<T> holder = new Holder<T>(element);
+		added.add(holder);
 		Holder<T> existing = currentList.set(index, holder);
 		return existing.getValue();
 	}
@@ -90,12 +61,17 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 	@Override
 	public void add(int index, T element) {
 		Holder<T> holder = new Holder<T>(element);
+		added.add(holder);
 		currentList.add(index, holder);
 	}
 
 	@Override
 	public T remove(int index) {
+		loadCacheIfNeeded(); //done because otherwise getRemovedElements will return and not tell the
+		//framework the removed entities because if cache is not loaded, it returns an empty list.
+		//We have to be careful because the one that was removed could be added back as well...ugh
 		Holder<T> holder = currentList.remove(index);
+		added.remove(holder);
 		return holder.getValue();
 	}
 
@@ -108,13 +84,14 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 	@Override
 	public int lastIndexOf(Object o) {
 		Holder<T> holder = new Holder<T>((T) o);
-		return currentList.indexOf(o);
+		return currentList.indexOf(holder);
 	}
 
 	private class OurIter implements ListIterator<T> {
 
 		private ListIterator<Holder<T>> delegate;
-
+		private Holder<T> lastReturned;
+		
 		public OurIter(ListIterator<Holder<T>> delegate) {
 			this.delegate = delegate;
 		}
@@ -126,6 +103,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 		@Override
 		public T next() {
 			Holder<T> holder = delegate.next();
+			lastReturned = holder;
 			return holder.getValue();
 		}
 
@@ -137,6 +115,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 		@Override
 		public T previous() {
 			Holder<T> holder = delegate.previous();
+			lastReturned = holder;
 			return holder.getValue();			
 		}
 
@@ -152,18 +131,21 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Ca
 
 		@Override
 		public void remove() {
+			added.remove(lastReturned);
 			delegate.remove();
 		}
 
 		@Override
 		public void set(T e) {
 			Holder h = new Holder(e);
+			added.add(h);
 			delegate.set(h);
 		}
 
 		@Override
 		public void add(T e) {
 			Holder h = new Holder(e);
+			added.add(h);
 			delegate.add(h);
 		}
 		

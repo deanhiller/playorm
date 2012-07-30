@@ -1,13 +1,13 @@
 package com.alvazan.orm.api.spi3.db;
 
-import java.util.List;
+import java.util.Collection;
 
 
 public class Remove implements Action {
 	private String colFamily;
 	private byte[] rowKey;
 	private RemoveEnum action;
-	private List<byte[]> columns;
+	private Collection<byte[]> columns;
 	
 	public RemoveEnum getAction() {
 		return action;
@@ -27,10 +27,10 @@ public class Remove implements Action {
 	public void setRowKey(byte[] rowKey) {
 		this.rowKey = rowKey;
 	}
-	public List<byte[]> getColumns() {
+	public Collection<byte[]> getColumns() {
 		return columns;
 	}
-	public void setColumns(List<byte[]> columnNames) {
+	public void setColumns(Collection<byte[]> columnNames) {
 		this.columns = columnNames;
 	}
 }

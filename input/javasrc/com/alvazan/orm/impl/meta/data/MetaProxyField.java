@@ -3,10 +3,10 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 

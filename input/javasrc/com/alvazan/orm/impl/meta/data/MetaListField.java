@@ -1,20 +1,20 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedMap;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi3.db.ByteArray;
-import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
+import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 
 public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
@@ -54,73 +54,104 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		String columnName = getColumnName();
 		byte[] bytes = columnName.getBytes();
 		Collection<Column> columns = row.columnByPrefix(bytes);
-		
-		
-		byte[] data = column.getValue();
-		if(data == null)
-			return new ArrayList<byte[]>();
-		
 		List<byte[]> entities = new ArrayList<byte[]>();
-		List<Byte> currentList = new ArrayList<Byte>();
-		for(byte b : data) {
-			if(b == DEFAULT_DELIMETER) {
-				byte[] key = toByteArray(currentList);
-				entities.add(key);
-				currentList = new ArrayList<Byte>();
-				
-			} else
-				currentList.add(b);
+
+		//NOTE: Current implementation is just like a Set not a List in that it
+		//cannot have repeats right now.  We could take the approach the column name
+		//would be <prefix><index><pk> such that duplicates are allowed and when loaded
+		//we would have to keep the index in the proxy so if removed, we could put the col name
+		//back together so we could remove it and add the new one.  This is very complex though when 
+		//it comes to removing one item and shifting all other column names by one(ie. lots of removes/adds)
+		//so for now, just make everything Set like.
+		for(Column col : columns) {
+			byte[] colNameData = col.getName();
+			//strip off the prefix to get the foreign key
+			int pkLen = colNameData.length-bytes.length;
+			byte[] pk = new byte[pkLen];
+			for(int i = bytes.length; i < colNameData.length; i++) {
+				pk[i-bytes.length] =  colNameData[i];
+			}
+			entities.add(pk);
 		}
 		
 		return entities;
 	}
 
-	private byte[] toByteArray(List<Byte> currentList) {
-		byte[] data = new byte[currentList.size()];
-		for(int i = 0; i < currentList.size(); i++) {
-			data[i] = currentList.get(i).byteValue();
-		}
-		return data;
-	}
-
 	@Override
 	public void translateToColumn(OWNER entity, RowToPersist row) {
 		if(field.getType().equals(Map.class))
-			translateToColumnMap(entity, col);
+			translateToColumnMap(entity, row);
 		else
-			translateToColumnList(entity, col);
+			translateToColumnList(entity, row);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void translateToColumnList(OWNER entity, Column col) {
-		List<PROXY> values = (List<PROXY>) ReflectionUtil.fetchFieldValue(entity, field);
-		translateToColumnImpl(values, col);
+	private void translateToColumnList(OWNER entity, RowToPersist row) {
+		Collection<PROXY> values = (Collection<PROXY>) ReflectionUtil.fetchFieldValue(entity, field);
+		Collection<PROXY> toBeAdded = values; //all values in the list get added if not an OurAbstractCollection
+		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
+		if(values instanceof OurAbstractCollection) {
+			OurAbstractCollection<PROXY> coll = (OurAbstractCollection<PROXY>)values;
+			toBeRemoved = coll.getToBeRemoved();
+			toBeAdded = coll.getToBeAdded();
+		}
+		
+		translateToColumnImpl(toBeAdded, row, toBeRemoved);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void translateToColumnMap(OWNER entity, Column col) {
+	private void translateToColumnMap(OWNER entity, RowToPersist row) {
 		Map mapOfProxies = (Map) ReflectionUtil.fetchFieldValue(entity, field);
 		Collection collection = mapOfProxies.values();
-		translateToColumnImpl(collection, col);
+		Collection<PROXY> toBeAdded = collection;
+		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
+		if(mapOfProxies instanceof MapProxyFetchAll) {
+			MapProxyFetchAll mapProxy = (MapProxyFetchAll) mapOfProxies;
+			toBeRemoved = mapProxy.getToBeRemoved();
+			toBeAdded = mapProxy.getToBeAdded();
+		}
+		
+		translateToColumnImpl(toBeAdded, row, toBeRemoved);
 	}
 
-	private void translateToColumnImpl(Collection<PROXY> collection, Column col) {
-		col.setName(columnName.getBytes());
-		List<Byte> data = new ArrayList<Byte>();
+	private void translateToColumnImpl(Collection<PROXY> toBeAdded, RowToPersist row, Collection<PROXY> toBeRemoved) {
+		//removes first
+		for(PROXY p : toBeRemoved) {
+			byte[] name = formTheName(p);
+			row.addEntityToRemove(name);
+		}
 		
-		for(PROXY proxy : collection) {
-			byte[] bytes = translateOne(proxy);
-			for(byte b : bytes) {
-				data.add(b);
-			}
-			data.add(DEFAULT_DELIMETER);
+		//now process all the existing columns (we can add same entity as many times as we like and it does not
+		//get duplicated)
+		for(PROXY proxy : toBeAdded) {
+			byte[] name = formTheName(proxy);
+			Column c = new Column();
+			c.setName(name);
+			
+			row.getColumns().add(c);
 		}
-
-		byte[] finalVal = new byte[data.size()];
-		for(int i = 0; i < data.size(); i++) {
-			finalVal[i] = data.get(i);
+	}
+	
+	private byte[] formTheName(PROXY p) {
+		try {
+			return formTheNameImpl(p);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
 		}
-		col.setValue(finalVal);
+	}
+	
+	private byte[] formTheNameImpl(PROXY p) throws UnsupportedEncodingException {
+		byte[] pkData = translateOne(p);
+		
+		byte[] prefix = columnName.getBytes("UTF8");
+		byte[] name = new byte[prefix.length + pkData.length];
+		for(int i = 0; i < name.length; i++) {
+			if(i < prefix.length)
+				name[i] = prefix[i];
+			else
+				name[i] = pkData[i-prefix.length];
+		}
+		return name;
 	}
 
 	private byte[] translateOne(PROXY proxy) {
