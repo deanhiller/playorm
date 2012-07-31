@@ -1,5 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.io.UnsupportedEncodingException;
+
 public class IndexData {
 	private String columnFamilyName;
 	private String rowKey;
@@ -27,6 +29,14 @@ public class IndexData {
 
 	public String getRowKey() {
 		return rowKey;
+	}
+
+	public byte[] getRowKeyBytes() {
+		try {
+			return rowKey.getBytes("UTF8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	

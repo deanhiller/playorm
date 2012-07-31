@@ -203,11 +203,12 @@ public class ScannerForQuery {
 		// What should we add to metaQuery here
 		// AND later when we do joins, we need to tell the factory
 		// here as well
-		String tableName = tableNode.getText();
+		String tableName2 = tableNode.getText();
+		String tableName = tableName2.toLowerCase();
 		String targetTable = wiring.getTargetTable();
 		DboTableMeta metaClass = metaInfo.getMeta(tableName);
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
-		if(tableName.equals("TABLE") && targetTable != null) {
+		if(tableName2.equals("TABLE") && targetTable != null) {
 			metaClass = metaInfo.getMeta(targetTable);
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");

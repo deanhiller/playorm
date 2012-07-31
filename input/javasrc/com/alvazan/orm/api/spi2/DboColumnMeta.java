@@ -1,5 +1,8 @@
 package com.alvazan.orm.api.spi2;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -110,6 +113,10 @@ public class DboColumnMeta {
 
 	public TypeEnum getStorageType() {
 		Class fieldType = getClassType();
+		return getStorageType(fieldType);
+	}
+
+	public static TypeEnum getStorageType(Class fieldType) {
 		TypeEnum type = null;
 		if(byte[].class.equals(fieldType))
 			type = TypeEnum.BYTES;
@@ -131,6 +138,10 @@ public class DboColumnMeta {
 			type = TypeEnum.STRING;
 		else if(String.class.equals(fieldType))
 			type = TypeEnum.STRING;
+		else if(BigDecimal.class.equals(fieldType))
+			type = TypeEnum.DECIMAL;
+		else if(BigInteger.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
 		
 		return type;
 	}

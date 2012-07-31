@@ -39,6 +39,8 @@ public class TestIndexesNew {
 		
 		mgr.put(user);
 		
+		mgr.flush();
+		
 		User result = User.findByName(mgr, user.getName());
 		Assert.assertEquals(user.getName(), result.getName());
 		

@@ -44,4 +44,16 @@ public class RowToPersist {
 	public void addIndexToRemove(IndexData data) {
 		indexToRemove.add(data);
 	}
+	public List<IndexData> getIndexToAdd() {
+		return indexToAdd;
+	}
+	public void setIndexToAdd(List<IndexData> indexToAdd) {
+		this.indexToAdd = indexToAdd;
+	}
+	public List<IndexData> getIndexToRemove() {
+		return indexToRemove;
+	}
+	public void setIndexToRemove(List<IndexData> indexToRemove) {
+		this.indexToRemove = indexToRemove;
+	}
 }

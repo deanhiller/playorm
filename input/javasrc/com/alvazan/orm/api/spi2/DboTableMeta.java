@@ -15,12 +15,15 @@ public class DboTableMeta {
 	@Id(usegenerator=false)
 	private String columnFamily;
 	
-	/**
-	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
-	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
-	 */
-	private String columnNameType = String.class.getName();
-	private String valueType = void.class.getName();
+	private String colNamePrefixType = null;
+	private String colNameType = String.class.getName();
+//	/**
+//	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
+//	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
+//	 */
+//	private String columnNameType = String.class.getName();
+//	private String 
+//	private String valueType = void.class.getName();
 	
 	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
@@ -54,16 +57,33 @@ public class DboTableMeta {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void setColumnNameType(Class c) {
+	public void setColNameType(Class c) {
 		Class objType = DboColumnMeta.translateType(c);
-		this.columnNameType = objType.getName();
+		this.colNameType = objType.getName();
 	}
-	
 	@SuppressWarnings("rawtypes")
-	public Class getColumnNameType() {
-		return DboColumnMeta.classForName(columnNameType);
+	public TypeEnum getNameStorageType() {
+		Class clazz = DboColumnMeta.classForName(colNameType);
+		return DboColumnMeta.getStorageType(clazz);
 	}
+//	
+//	@SuppressWarnings("rawtypes")
+//	public Class getColumnNameType() {
+//		return DboColumnMeta.classForName(columnNameType);
+//	}
 	
+	public TypeEnum getColNamePrefixType() {
+		return TypeEnum.lookupValue(colNamePrefixType);
+	}
+
+	public void setColNamePrefixType(TypeEnum colNamePrefixType) {
+		if(colNamePrefixType == null) {
+			this.colNamePrefixType = null;
+			return;
+		}
+		this.colNamePrefixType = colNamePrefixType.getDbValue();
+	}
+
 	@Override
 	public String toString() {
 		return "[tablename="+columnFamily+" indexedcolumns="+nameToField.values()+" pk="+idColumn+"]";

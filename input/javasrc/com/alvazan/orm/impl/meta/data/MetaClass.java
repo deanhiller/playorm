@@ -89,9 +89,10 @@ public class MetaClass<T> {
 	public String getColumnFamily() {
 		return columnFamily;
 	}
-	public void setColumnFamily(String colFamily) {
-		if(colFamily == null)
+	public void setColumnFamily(String cf) {
+		if(cf == null)
 			throw new IllegalArgumentException("colFamily cannot be null");
+		String colFamily = cf.toLowerCase();
 		this.columnFamily = colFamily;
 		metaDbo.setColumnFamily(colFamily);
 	}

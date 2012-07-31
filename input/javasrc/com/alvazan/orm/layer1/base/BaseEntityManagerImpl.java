@@ -11,7 +11,9 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.impl.meta.data.IndexData;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -38,6 +40,20 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		if(row.hasRemoves())
 			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
 		
+		List<byte[]> colNames = new ArrayList<byte[]>();
+		for(IndexData ind : row.getIndexToRemove()) {
+			colNames.add(ind.getIndexColumnName());
+			session.remove(ind.getColumnFamilyName(), ind.getRowKeyBytes(), colNames);
+		}
+		
+		List<Column> cols = new ArrayList<Column>();
+		for(IndexData ind : row.getIndexToAdd()) {
+			cols.clear();
+			Column c = new Column();
+			c.setName(ind.getIndexColumnName());
+			cols.add(c);
+			session.persist(ind.getColumnFamilyName(), ind.getRowKeyBytes(), cols);
+		}
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
 
@@ -130,7 +146,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	@Override
 	public NoSqlSession getSession() {
-		session.setOrmSessionForMeta(this);
 		return session;
 	}
 
@@ -152,6 +167,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public void clearDbAndIndexesIfInMemoryType() {
 		session.clearDbAndIndexesIfInMemoryType();
+	}
+
+	public void setup() {
+		session.setOrmSessionForMeta(this);		
 	}
 
 }

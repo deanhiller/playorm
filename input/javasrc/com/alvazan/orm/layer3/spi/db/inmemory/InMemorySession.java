@@ -84,7 +84,7 @@ public class InMemorySession implements NoSqlRawSession {
 			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
-		Class columnNameType = cf.getColumnNameType();
+		Class columnNameType = null;
 
 		SortType sortType = SortType.BYTES;
 		if(String.class.equals(columnNameType))
@@ -97,7 +97,9 @@ public class InMemorySession implements NoSqlRawSession {
 		else if(Float.class.equals(columnNameType)
 				|| Double.class.equals(columnNameType))
 			sortType = SortType.DECIMAL;
-			
+		else
+			throw new UnsupportedOperationException("type not supported="+columnNameType);
+		
 		table = new Table(sortType);
 		database.putTable(colFamily, table);
 		

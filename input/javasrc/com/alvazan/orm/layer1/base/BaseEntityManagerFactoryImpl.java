@@ -22,6 +22,7 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi2.TypeEnum;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -34,7 +35,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private static final Logger log = LoggerFactory.getLogger(BaseEntityManagerFactoryImpl.class);
 	
 	@Inject
-	private Provider<NoSqlEntityManager> entityMgrProvider;
+	private Provider<BaseEntityManagerImpl> entityMgrProvider;
 	@Inject
 	private MyClassAnnotationDiscoveryListener listener;
 	@Inject
@@ -55,7 +56,9 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	public NoSqlEntityManager createEntityManager() {
 		if(!isScanned)
 			throw new IllegalStateException("Must call scanForEntities first");
-		return entityMgrProvider.get();
+		BaseEntityManagerImpl mgr = entityMgrProvider.get();
+		mgr.setup();
+		return mgr;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -115,7 +118,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private void saveMetaData(NoSqlEntityManager tempMgr) {
         DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
         if(existing != null)
-        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY which only creates meta data if none exist already but meta already exists");
+        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
 		
         for(DboTableMeta table : databaseInfo.getAllTables()) {
         	
@@ -129,6 +132,28 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         }
         
         databaseInfo.setId(DboDatabaseMeta.META_DB_ROWKEY);
+        
+        //NOW, on top of the ORM entites, we have 3 special index column families of String, BigInteger and BigDecimal
+        //which are one of the types in the composite column name.(the row keys are all strings).  The column names
+        //are <value being indexed of String or BigInteger or BigDecimal><primarykey><length of first value> so we can
+        //sort it BUT we can determine the length of first value so we can get to primary key.
+        
+        for(TypeEnum type : TypeEnum.values()) {
+        	if(type == TypeEnum.BYTES)
+        		continue;
+        	DboTableMeta cf = new DboTableMeta();
+        	DboColumnMeta idMeta = new DboColumnMeta();
+        	idMeta.setup("id", null, String.class, false, null);
+        	
+        	cf.setColumnFamily(type.getIndexTableName());
+        	cf.setColNamePrefixType(type);
+        	cf.setRowKeyMeta(idMeta);
+        	
+        	tempMgr.put(idMeta);
+        	tempMgr.put(cf);
+        	
+        	databaseInfo.addMetaClassDbo(cf);
+        }
         
         tempMgr.put(databaseInfo);
 	}

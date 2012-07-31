@@ -57,7 +57,7 @@ public class TestColumnSlice {
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
-		tableMeta.setColumnNameType(double.class);
+		tableMeta.setColNameType(double.class);
 		tableMeta.setRowKeyMeta(idMeta);
 		mgr.put(tableMeta);
 
@@ -118,7 +118,7 @@ public class TestColumnSlice {
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
-		tableMeta.setColumnNameType(long.class);
+		tableMeta.setColNameType(long.class);
 		tableMeta.setRowKeyMeta(idMeta);
 		mgr.put(tableMeta);
 

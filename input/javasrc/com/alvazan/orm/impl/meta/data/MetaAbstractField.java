@@ -1,6 +1,8 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import javassist.util.proxy.Proxy;
 
@@ -52,8 +54,12 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 
 		copy(indexColName, byteVal, 0);
 		copy(indexColName, pk, byteVal.length);
-		indexColName[indexColName.length-2] = (byte)(size & 0xff);
-		indexColName[indexColName.length-1] = (byte)((size >> 8) & 0xff);
+		ByteBuffer b  = ByteBuffer.allocate(2);
+		b.order(ByteOrder.LITTLE_ENDIAN);
+		b.putShort(size);
+		b.flip();
+		indexColName[indexColName.length-2] = b.get();
+		indexColName[indexColName.length-1] = b.get();
 		
 		IndexData data = new IndexData();
 		data.setColumnFamilyName(storageType.getIndexTableName());

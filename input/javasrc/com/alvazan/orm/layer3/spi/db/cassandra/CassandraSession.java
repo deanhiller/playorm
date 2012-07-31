@@ -13,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.TypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
@@ -93,7 +95,7 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		List<ColumnFamilyDefinition> cfList = keySpaceMeta.getColumnFamilyList();
 		for(ColumnFamilyDefinition def : cfList) {
-			existingColumnFamilies.add(def.getName());
+			existingColumnFamilies.add(def.getName().toLowerCase());
 		}
 		log.info("Existing column families="+existingColumnFamilies+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
@@ -197,48 +199,88 @@ public class CassandraSession implements NoSqlRawSession {
 
 	private ColumnFamily lookupOrCreate(String colFamily, NoSqlEntityManager mgr) throws ConnectionException {
 		if(!existingColumnFamilies.contains(colFamily)) {
-			log.info("CREATING column family="+colFamily+" in cassandra");
-			
-			DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
-			if(cf == null) {
-				//check the database now for the meta since it was not found in the ORM meta data.  This is for
-				//those that are modifying meta data themselves
-				DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-				cf = db.getMeta(colFamily);
-			}
-			
-			
-			if(cf == null) {
-				throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
-						" family to create it AND we could not find that data so we can't create it for you");
-			}
-			
-			Class columnNameType = cf.getColumnNameType();
-			
-			ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
-				    .setName(colFamily)
-				    .setKeyspace(keyspace.getKeyspaceName());
-			
-			if(String.class.equals(columnNameType)) 
-				def = def.setComparatorType("UTF8Type");
-			else if(Integer.class.equals(columnNameType)
-					|| Long.class.equals(columnNameType)
-					|| Short.class.equals(columnNameType)
-					|| Byte.class.equals(columnNameType))
-				def = def.setComparatorType("IntegerType");
-			else if(Float.class.equals(columnNameType)
-					|| Double.class.equals(columnNameType))
-				def = def.setComparatorType("DecimalType");
-			else
-				throw new UnsupportedOperationException("Not supported yet, we need a BigDecimal comparator type here for sure");
-			
-			cluster.addColumnFamily(def);
-			existingColumnFamilies.add(colFamily);
+			createColFamily(colFamily, mgr);
 		}
 		
 		//should we cache this and just look it up each time or is KISS fine for now....
 		ColumnFamily cf = new ColumnFamily(colFamily, BytesArraySerializer.get(), BytesArraySerializer.get());
 		return cf;
+	}
+
+	private void createColFamily(String colFamily, NoSqlEntityManager mgr)
+			throws ConnectionException {
+		log.info("CREATING column family="+colFamily+" in cassandra");
+		
+		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
+		if(cf == null) {
+			//check the database now for the meta since it was not found in the ORM meta data.  This is for
+			//those that are modifying meta data themselves
+			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+			cf = db.getMeta(colFamily);
+		}
+		
+		
+		if(cf == null) {
+			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
+					" family to create it AND we could not find that data so we can't create it for you");
+		}
+
+		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
+			    .setName(colFamily)
+			    .setKeyspace(keyspace.getKeyspaceName());
+		
+		def = addRowKeyValidation(cf, def);
+		def = setColumnNameCompareType(cf, def);
+		
+		cluster.addColumnFamily(def);
+		existingColumnFamilies.add(colFamily);
+	}
+
+	private ColumnFamilyDefinition setColumnNameCompareType(DboTableMeta cf,
+			ColumnFamilyDefinition def) {
+		TypeEnum type = cf.getColNamePrefixType();
+
+		if(type == null) {
+			TypeEnum t = cf.getNameStorageType();
+			if(t == TypeEnum.STRING)
+				def = def.setComparatorType("UTF8Type");
+			else if(t == TypeEnum.DECIMAL)
+				def = def.setComparatorType("DecimalType");
+			else if(t == TypeEnum.INTEGER)
+				def = def.setComparatorType("IntegerType");
+			else
+				throw new UnsupportedOperationException("type="+type+" is not supported at this time");
+		} else if(type == TypeEnum.STRING) {
+			def = def.setComparatorType("CompositeType(UTF8Type, BytesType)");
+		} else if(type == TypeEnum.INTEGER) {
+			def = def.setComparatorType("CompositeType(IntegerType, BytesType)");
+		} else if(type == TypeEnum.DECIMAL) {
+			def = def.setComparatorType("CompositeType(DecimalType, BytesType)");
+		}
+		else
+			throw new UnsupportedOperationException("Not supported yet, we need a BigDecimal comparator type here for sure");
+		return def;
+	}
+
+	private ColumnFamilyDefinition addRowKeyValidation(DboTableMeta cf,
+			ColumnFamilyDefinition def) {
+		DboColumnMeta idColumnMeta = cf.getIdColumnMeta();
+		TypeEnum rowKeyType = idColumnMeta.getStorageType();
+		switch (rowKeyType) {
+		case STRING:
+			def = def.setKeyValidationClass("UTF8Type");
+			break;
+		case INTEGER:
+			def = def.setKeyValidationClass("DecimalType");
+			break;
+		case DECIMAL:
+			def = def.setKeyValidationClass("IntegerType");
+		case BYTES:
+			break;
+		default:
+			throw new UnsupportedOperationException("type="+rowKeyType+" is not supported at this time");
+		}
+		return def;
 	}
 
 	private void remove(Remove action, ColumnFamily cf, MutationBatch m) {
