@@ -1,103 +1,61 @@
 package com.alvazan.orm.layer3.spi.index.inmemory;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopScoreDocCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi3.index.exc.IndexNotYetExistException;
+import com.alvazan.orm.api.spi3.index.StateAttribute;
+import com.alvazan.orm.api.spi3.index.ValAndType;
+import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private static final Logger log = LoggerFactory.getLogger(SpiIndexQueryImpl.class);
-	@Inject
-	private Indice indice;
+	
 	private String indexName;
-	private Map<String, Object> parameterValues = new HashMap<String, Object>();
-	private SpiMetaQueryImpl spiQuery;
+	private SpiMetaQueryImpl spiMeta;
+	private NoSqlSession session;
+	private Map<String, ValAndType> parameters = new HashMap<String, ValAndType>();
 	
-	public void setup(String indexName, SpiMetaQueryImpl spiQuery) {
+	public void setup(String indexName, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.indexName = indexName;
-		this.spiQuery = spiQuery;
-	}
-	
-	@Override
-	public void setParameter(String parameterName, Object value) {
-		log.info("set param for query "+ parameterName +"="+value);
-		parameterValues.put(parameterName, value);
+		this.spiMeta = spiMetaQueryImpl;
+		this.session = session;
 	}
 
-	@SuppressWarnings("rawtypes")
+	@Override
+	public void setParameter(String parameterName, ValAndType valAndType) {
+		parameters.put(parameterName, valAndType);
+	}
+
 	@Override
 	public List getResultList() {
-			try {
-				return getResultListImpl();
-			} catch (ParseException e) {
-				throw new RuntimeException("bug, we setup parsing wrong", e);
-			} catch (IOException e) {
-				throw new RuntimeException("some kind of index failure",e);
-			}
-	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List getResultListImpl() throws ParseException, IOException {
-		IndexReader reader = null;
-		IndexSearcher searcher = null;
-		try {
-			IndexItems items = indice.find(indexName);
-			if(items == null)
-				throw new IndexNotYetExistException("Perhaps, you forgot to call flush?  You must save at least ONE entity to the index" +
-						" for it to be created AND call entityManager.flush to flush the index changes.  indexname="+indexName);
-				
-			List listOfPrimaryKeys = new ArrayList();
-			//query the ram directory.  do we need to synchronize on the MetaClass
-			//as any query on MetaClass can query this one index.  do not synchronize
-			//on this class because there is one instace for each active query on
-			//the same thread(some queries may be the same)
+		ExpressionNode root = spiMeta.getASTTree();
+		
+		log.info("root="+root.getExpressionAsString());
+		if(root.getType() == NoSqlLexer.EQ) {
+			ExpressionNode child = root.getLeftChild();
+			StateAttribute attr = (StateAttribute) child.getLeftChild().getState();
+			String paramName = (String) child.getRightChild().getState();
+			ValAndType val = parameters.get(paramName);
+			if(val == null)
+				throw new IllegalStateException("You did not call setParameter for parameter= ':"+paramName+"'");
 			
-			Query q = this.spiQuery.getQuery(parameterValues);
-		    reader = IndexReader.open(items.getRamDirectory());
-			searcher = new IndexSearcher(reader);
+			String table = attr.getTableName();
 			
-			TopScoreDocCollector collector = TopScoreDocCollector.create(500, false);
-			//need to insert a collector here...
-		    searcher.search(q, collector);
-		    
-		    int total = collector.getTotalHits();
-		    log.info("total results="+total);
-		    
-		    TopDocs docs = collector.topDocs();
-		    
-		    ScoreDoc[] scoreDocs = docs.scoreDocs;
-		    for(ScoreDoc scoreDoc : scoreDocs) {
-		    	Document doc = searcher.doc(scoreDoc.doc);
-		    	String id = doc.get(IndexReaderWriter.IDKEY);
-		    	listOfPrimaryKeys.add(id);
-		    }
-		    
-			return listOfPrimaryKeys;
-		} finally {
-			if(reader != null)
-				reader.close();
-			if(searcher != null)
-				searcher.close();
-		}
+			
+		} else
+			throw new UnsupportedOperationException("not supported yet");
+		
+		//session.columnRangeScan(cf, indexKey, from, to, batchSize)
+		return null;
 	}
 
+	
 }

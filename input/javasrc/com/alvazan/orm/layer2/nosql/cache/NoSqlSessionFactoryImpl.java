@@ -28,15 +28,15 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public List<Row> runQuery(String query) {
+		NoSqlSession session = createSession();
+		
 		MetaAndIndexTuple tuple = parseQueryForAdHoc(query);
 		String indexName = tuple.getIndexName();
 		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName);
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName, session);
 		
 		List<String> primaryKeys = spiQueryAdapter.getResultList();
 		String colFamily = metaQuery.getTargetTable().getColumnFamily();
-		
-		NoSqlSession session = createSession();
 		
 		List<byte[]> keys = new ArrayList<byte[]>();
 		for(String key : primaryKeys) {

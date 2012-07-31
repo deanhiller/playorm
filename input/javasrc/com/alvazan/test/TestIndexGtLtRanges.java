@@ -48,7 +48,6 @@ public class TestIndexGtLtRanges {
 		mgr.put(act);
 		
 		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act);
 		
 		mgr.flush();
 		return index;

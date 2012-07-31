@@ -67,6 +67,8 @@ public interface NoSqlEntityManager {
 	 */
 	public <T> Index<T> getIndex(Class<T> forEntity, String indexName);
 
+	public <T> Index<T> getIndex(Class<T> forEntity);
+	
 	/**
 	 * In certain cases where you have a bi-directional association, you need a primary key in
 	 * the children before you can save the parent.  ie. If you have an Account that has a list

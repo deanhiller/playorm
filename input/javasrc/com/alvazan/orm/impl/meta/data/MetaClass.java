@@ -7,19 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.base.KeyValue;
-import com.alvazan.orm.api.base.exc.PkIsNullException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClass<T> {
 
-	public static final String IDKEY = IndexReaderWriter.IDKEY;
-	
 	private DboTableMeta metaDbo = new DboTableMeta();
 	
 	private Class<T> metaClass;
@@ -46,26 +42,6 @@ public class MetaClass<T> {
 	public byte[] convertIdToNoSql(Object entityId) {
 		Converter converter = idField.getConverter();
 		return converter.convertToNoSql(entityId);
-	}
-
-	public Map<String, Object> translateForIndex(T entity) {
-		Map<String, Object> item = new HashMap<String, Object>();
-		Object id = fetchId(entity);
-		Converter converter = idField.getConverter();
-		String idStr = converter.convertToIndexFormat(id);
-		if(idStr == null)
-			throw new PkIsNullException("entity="+entity+" has no pk defined, so we fail " +
-					"now before you called flush so nothing has been added to database nor " +
-					"the index(as long as you haven't called flush yet");
-		
-		item.put(IDKEY, idStr);
-
-		for(MetaField<T> field : indexedFields) {
-			Object indexValue = field.translateToIndexFormat(entity);
-			String columnName = field.getColumnName();
-			item.put(columnName, indexValue);
-		}
-		return item;
 	}
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
@@ -98,7 +74,7 @@ public class MetaClass<T> {
 		idField.translateToRow(entity, row);
 		
 		for(MetaField<T> m : columnNameToField.values()) {
-			m.translateToColumn(entity, row);
+			m.translateToColumn(entity, row, columnFamily);
 		}
 		
 		return row;

@@ -30,6 +30,10 @@ public class DboColumnMeta {
 	private boolean isToManyColumn;
 	
 	private String foreignKeyToExtensions;
+
+	private String indexPrefix;
+
+	private String columnFamily;
 	
 	public String getColumnName() {
 		return columnName;
@@ -40,11 +44,13 @@ public class DboColumnMeta {
 		return "Field["+columnName+"]";
 	}
 
-	public void setup(String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn) {
+	public void setup(String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn, String indexPrefix) {
 		if(fkToTable == null && isToManyColumn)
 			throw new IllegalArgumentException("isToManyColumn must be false if there is no fk");
 		else if(classType != null && fkToTable != null)
 			throw new IllegalArgumentException("classType should not be specified when this column is an FK column to another table");
+		else if(isToManyColumn && indexPrefix != null)
+			throw new IllegalArgumentException("Cannot have a *ToMany and Index that column as well");
 		
 		Class newType = translateType(classType);
 		this.columnName = colName;
@@ -52,6 +58,7 @@ public class DboColumnMeta {
 		if(newType != null)
 			this.columnType = newType.getName();
 		this.isToManyColumn = isToManyColumn;
+		this.indexPrefix = indexPrefix;
 	}
 
 	protected static Class translateType(Class classType) {
@@ -101,6 +108,32 @@ public class DboColumnMeta {
 		return classForName(columnType);
 	}
 
+	public TypeEnum getStorageType() {
+		Class fieldType = getClassType();
+		TypeEnum type = null;
+		if(byte[].class.equals(fieldType))
+			type = TypeEnum.BYTES;
+		else if(Long.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
+		else if(Integer.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
+		else if(Short.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
+		else if(Byte.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
+		else if(Double.class.equals(fieldType))
+			type = TypeEnum.DECIMAL;
+		else if(Float.class.equals(fieldType))
+			type = TypeEnum.DECIMAL;
+		else if(Boolean.class.equals(fieldType))
+			type = TypeEnum.INTEGER;
+		else if(Character.class.equals(fieldType))
+			type = TypeEnum.STRING;
+		else if(String.class.equals(fieldType))
+			type = TypeEnum.STRING;
+		
+		return type;
+	}
 	
 	protected static Class classForName(String columnType) {
 		try {
@@ -116,6 +149,13 @@ public class DboColumnMeta {
 
 	public boolean isToManyColumn() {
 		return isToManyColumn;
+	}
+
+	public boolean isIndexed() {
+		return indexPrefix != null;
+	}
+	public String getIndexPrefix() {
+		return indexPrefix;
 	}
 
 	public String getForeignKeyToExtensions() {

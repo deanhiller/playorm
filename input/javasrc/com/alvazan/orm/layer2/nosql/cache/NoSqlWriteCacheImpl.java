@@ -75,11 +75,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 //			insertTime(action, time);
 //		}
 
-		//REMOVE from index BEFORE removing the entity.  ie. If we do the reverse, you do a query and get
-		//an id of entity that is about to be removed and if removed before you, you don't get the entity
-		indexWriter.sendRemoves(removeFromIndex);
 		rawSession.sendChanges(actions, ormSession);
-		indexWriter.sendAdds(addToIndex);
 	}
 
 //	private void insertTime(Action action, long time) {
@@ -146,8 +142,6 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public void clearDbAndIndexesIfInMemoryType() {
 		rawSession.clearDatabaseIfInMemoryType();
-		indexWriter.clearIndexesIfInMemoryType();
-		
 	}
 
 	@Override

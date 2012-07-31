@@ -112,6 +112,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return indexImpl;
 	}
 
+	@Override
+	public <T> Index<T> getIndex(Class<T> forEntity) {
+		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
+		IndexImpl indexImpl = indexProvider.get();
+		indexImpl.setup(metaClass, "/"+metaClass.getColumnFamily(), this, session);
+		return indexImpl;		
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getReference(Class<T> entityType, Object key) {

@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.TypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
@@ -32,7 +33,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void translateToColumn(OWNER entity, RowToPersist row) {
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName) {
 		Column col = new Column();
 		row.getColumns().add(col);
 		
@@ -41,7 +42,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		//the database is the ID inside this Account.java object!!!!
 		byte[] byteVal = classMeta.convertProxyToId(value);
 		if(byteVal == null && value != null) { 
-			//if value is not null byt we get back a byteVal of null, it means the entity has not been
+			//if value is not null but we get back a byteVal of null, it means the entity has not been
 			//initialized with a key yet, BUT this is required to be able to save this object
 			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
 			String child = "'"+field.getType().getSimpleName()+"'";
@@ -56,29 +57,35 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		
 		col.setName(columnName.getBytes());
 		col.setValue(byteVal);
+		
+		TypeEnum storageType = classMeta.getIdField().getMetaDbo().getStorageType();
+		addIndexInfo(entity, row, columnFamilyName, value, byteVal, storageType);
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public byte[] translateValue(Object value) {
+		byte[] pk = classMeta.convertProxyToId((PROXY) value);
+		if(pk == null && value != null) {
+			throw new ChildWithNoPkException("You can't give us an entity with no pk!!!!  We use the pk to search the database index.  Please fix your bug");
+		}
+		return pk;
+	}
+	
 	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
 		return classMeta.convertIdToProxy(id, session, null);
 	}
 	
-	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {
+	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta, String indexPrefix) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		super.setup(field2, colName, fkToTable, null, false);
+		
+		super.setup(field2, colName, fkToTable, null, false, indexPrefix);
 		this.classMeta = classMeta;
-	}
-
-	@Override
-	public Object translateToIndexFormat(OWNER entity) {
-		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		return value;
 	}
 
 	@Override
 	public Class<?> getFieldType() {
 		return this.field.getType();
 	}
-
-	
 
 }

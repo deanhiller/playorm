@@ -136,11 +136,12 @@ public class ScannerForClass {
 			return;
 		}
 		
+		String cf = metaClass.getColumnFamily();
 		MetaField metaField;
 		if(field.isAnnotationPresent(ManyToOne.class))
-			metaField = inspectorField.processManyToOne(field);
+			metaField = inspectorField.processManyToOne(field, cf);
 		else if(field.isAnnotationPresent(OneToOne.class))
-			metaField = inspectorField.processOneToOne(field);
+			metaField = inspectorField.processOneToOne(field, cf);
 		else if(field.isAnnotationPresent(ManyToMany.class))
 			metaField = inspectorField.processManyToMany(field);
 		else if(field.isAnnotationPresent(OneToMany.class))
@@ -148,7 +149,7 @@ public class ScannerForClass {
 		else if(field.isAnnotationPresent(Embeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
 		else
-			metaField = inspectorField.processColumn(field);
+			metaField = inspectorField.processColumn(field, cf);
 		
 		boolean isIndexed = field.isAnnotationPresent(Indexed.class);
 		metaClass.addMetaField(metaField, isIndexed);

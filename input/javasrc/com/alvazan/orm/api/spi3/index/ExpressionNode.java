@@ -50,7 +50,7 @@ public class ExpressionNode {
 		if(leftChild != null && rightChild != null) {
 			return "("+leftChild.getExpressionAsString()+" "+this.node+" "+rightChild.getExpressionAsString()+")";
 		}
-		return this.node+"";
+		return this.node+"("+node.getType()+")";
 	}
 	
 

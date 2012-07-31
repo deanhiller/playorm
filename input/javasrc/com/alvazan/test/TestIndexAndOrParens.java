@@ -124,11 +124,6 @@ public class TestIndexAndOrParens {
 		mgr.put(act6);
 		
 		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act1);
-		index.addToIndex(act2);
-		index.addToIndex(act4);
-		index.addToIndex(act5);
-		index.addToIndex(act6);
 		mgr.flush();
 		return index;
 	}

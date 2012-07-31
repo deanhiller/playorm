@@ -51,9 +51,9 @@ public class ScannerForQuery {
 	public MetaQuery newsetupByVisitingTree(String query, String targetTable) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery visitor1 = metaQueryFactory.get();
-		SpiMetaQuery visitor2 = indexes.createQueryFactory();
+		SpiMetaQuery spiMetaQuery = indexes.createQueryFactory();
 		
-		visitor1.initialize(query, visitor2);
+		visitor1.initialize(query, spiMetaQuery);
 
 		InfoForWiring wiring = new InfoForWiring(query, targetTable);
 		
@@ -64,8 +64,10 @@ public class ScannerForQuery {
 		// not be as flexible as this
 		// anyways since more people can make changes without the grammar
 		// knowledge this way
-		walkTheTree(theTree, visitor1, visitor2, wiring);
+		walkTheTree(theTree, visitor1, wiring);
 
+		spiMetaQuery.setASTTree(wiring.getAstTree());
+		
 		return visitor1;
 	}
 	
@@ -83,29 +85,28 @@ public class ScannerForQuery {
     }
 	
 	@SuppressWarnings("unchecked")
-	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery,
-			SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
+	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, spiMetaQuery, wiring);
+			parseFromClause(tree, metaQuery, wiring);
 			break;
 		case NoSqlLexer.SELECT_CLAUSE:
-			parseSelectClause(tree, metaQuery, spiMetaQuery, wiring);
+			parseSelectClause(tree, metaQuery, wiring);
 			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
 			ExpressionNode node = new ExpressionNode(expression);
-			parseExpression(node, metaQuery, spiMetaQuery, wiring);
-			spiMetaQuery.setASTTree(node);
+			parseExpression(node, metaQuery, wiring);
+			wiring.setAstTree(node);
 			break;
 
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, metaQuery, spiMetaQuery, wiring);
+				walkTheTree(child, metaQuery, wiring);
 			}
 			break;
 		default:
@@ -115,14 +116,14 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseSelectClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList != null && childrenList.size() > 0) {
 			for (CommonTree child : childrenList) {
 				switch (child.getType()) {
 				case NoSqlLexer.RESULT:
-					parseResult(child, metaQuery, factory, wiring);
+					parseResult(child, metaQuery, wiring);
 					break;
 				default:
 					break;
@@ -134,7 +135,7 @@ public class ScannerForQuery {
 	// the alias part is silly due to not organize right in .g file
 	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseResult(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -180,7 +181,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings({ "unchecked" })
 	private <T> void parseFromClause(CommonTree tree,
-			MetaQuery<T> metaQuery, SpiMetaQuery factory, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -230,7 +231,7 @@ public class ScannerForQuery {
 
 	@SuppressWarnings("unchecked")
 	private static <T> void parseExpression(ExpressionNode node,
-			MetaQuery<T> metaQuery, SpiMetaQuery spiMetaQuery, InfoForWiring wiring) {
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		CommonTree expression = node.getASTNode();
 		int type = expression.getType();
 		log.debug("where type:" + expression.getType());
@@ -248,7 +249,7 @@ public class ScannerForQuery {
 				else
 					throw new RuntimeException("We have a big problem, we don't have a binary tree anymore");
 				
-				parseExpression(childNode, metaQuery, spiMetaQuery, wiring);
+				parseExpression(childNode, metaQuery, wiring);
 				
 			}
 			break;
@@ -261,10 +262,6 @@ public class ScannerForQuery {
 			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
 			CommonTree leftSide = (CommonTree) expression.getChild(0);
 			CommonTree rightSide = (CommonTree) expression.getChild(1);
-			ExpressionNode left  = new ExpressionNode(leftSide);
-			ExpressionNode right = new ExpressionNode(rightSide);
-			node.setLeftChild(left);
-			node.setRightChild(right);
 			
 			//This is a VERY difficult issue.  We basically want the type information
 			//first either from the constant OR from the column name, then we want to use
@@ -275,16 +272,24 @@ public class ScannerForQuery {
 			//matching since developers can do that BEFORE they run the query anyways in the 
 			//java code.  ie. FIRST, let's find the side with type information
 			
-			TypeInfo typeInfo;
-			if(hasTypeInfo(left)) {
-				typeInfo = processSide(metaQuery, spiMetaQuery, left, wiring, null);
-				processSide(metaQuery, spiMetaQuery, right, wiring, typeInfo);
-			} else if(hasTypeInfo(right)){
-				typeInfo = processSide(metaQuery, spiMetaQuery, right, wiring, null);
-				processSide(metaQuery, spiMetaQuery, left, wiring, typeInfo);
-			} else
+			if(hasTypeInfo(rightSide)) {
+				//reorder the children if the right side as the type information
+				expression.setChild(0, rightSide);
+				expression.setChild(1, leftSide);
+				CommonTree temp = rightSide;
+				rightSide = leftSide;
+				leftSide = temp;
+			} else if(!hasTypeInfo(leftSide))
 				throw new IllegalArgumentException("Cannot find type info from either side of expression="+node.getExpressionAsString()+" in query='"
-							+wiring.getQuery()+"' One of the sides must either be constant or columnname");
+						+wiring.getQuery()+"' One of the sides must either be constant or columnname");
+			
+			ExpressionNode left  = new ExpressionNode(leftSide);
+			ExpressionNode right = new ExpressionNode(rightSide);
+			node.setLeftChild(left);
+			node.setRightChild(right);
+			
+			TypeInfo typeInfo = processSide(metaQuery, left, wiring, null);
+			processSide(metaQuery, right, wiring, typeInfo);
 			
 			break;
 		default:
@@ -293,19 +298,18 @@ public class ScannerForQuery {
 	}
 
 	
-	private static boolean hasTypeInfo(ExpressionNode node) {
+	private static boolean hasTypeInfo(CommonTree node) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME || node.getType() == NoSqlLexer.DECIMAL
 				|| node.getType() == NoSqlLexer.INT_VAL || node.getType() == NoSqlLexer.STR_VAL)
 			return true;
 		return false;
 	}
 
-	private static TypeInfo processSide(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
-			ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
+	private static TypeInfo processSide(MetaQuery metaQuery, ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME) {
-			return processAttribute(metaQuery, spiMetaQuery, node, wiring, typeInfo);
+			return processAttribute(metaQuery, node, wiring, typeInfo);
 		} else if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
-			return processParam(metaQuery, spiMetaQuery, node, wiring, typeInfo);
+			return processParam(metaQuery, node, wiring, typeInfo);
 		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
 				|| node.getType() == NoSqlLexer.INT_VAL) {
 			return processConstant(node, wiring, typeInfo);
@@ -369,38 +373,42 @@ public class ScannerForQuery {
 	}
 	
 
-	private static TypeInfo processAttribute(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+	private static TypeInfo processAttribute(MetaQuery metaQuery, 
 			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType) {
 		DboTableMeta metaClass;
 		
 		CommonTree attributeNode = attributeNode2.getASTNode();
 		String attributeName = attributeNode.getText();
+		String textInSql = attributeName;
 		if (attributeNode.getChildCount() > 0) {
 			String aliasEntity = attributeNode.getChild(0).getText();
 			
 			metaClass = wiring.getInfoFromAlias(aliasEntity);
-			String fullName = aliasEntity+"."+attributeName;
+			textInSql = aliasEntity+"."+attributeName;
 			if(metaClass == null)
 				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
-						+fullName+" has an alias that does not exist in from clause");
+						+textInSql+" has an alias that does not exist in from clause");
 		} else {
 			metaClass = wiring.getNoAliasTable();
 			if(metaClass == null)
 				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
-						+attributeName+" has no alias and from clause only has tables with alias");
+						+textInSql+" has no alias and from clause only has tables with alias");
 		}
 		
 		//At this point, we have looked up the metaClass associated with the alias
 		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
 		String colName;
 		if (attributeField == null) {
+			//okay, there is no column found, but maybe the column name for the id matches(id is a special case)
 			DboColumnMeta idMeta = metaClass.getIdColumnMeta();
 			if(!idMeta.getColumnName().equals(attributeName))
 				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 			colName = idMeta.getColumnName();
-		} else
+		} else {
+			if(!attributeField.isIndexed())
+				throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
 			colName = attributeField.getColumnName();
-		
+		}
 		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colName); 
 		attributeNode2.setState(attr);
 		
@@ -421,7 +429,7 @@ public class ScannerForQuery {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static TypeInfo processParam(MetaQuery metaQuery, SpiMetaQuery spiMetaQuery,
+	private static TypeInfo processParam(MetaQuery metaQuery, 
 			ExpressionNode parameterNode2, InfoForWiring wiring, TypeInfo typeInfo) {
 		CommonTree parameterNode = parameterNode2.getASTNode();
 		String parameter = parameterNode.getText();

@@ -89,12 +89,14 @@ whereClause: WHERE^ expression;  //NOTE: This should be (expression | orExpr) BU
 expression: orExpr; //The ^ makes LPAREN a root while the ! makes RPAREN get dropped from example I saw
 orExpr: andExpr (OR^ andExpr)*;
 andExpr: primaryExpr (AND^ primaryExpr)*;
-primaryExpr: parameterExpr | inExpr | compExpr | LPAREN! expression RPAREN!;
+primaryExpr: attrParamExpr | paramAttrExpr | attrValExpr | valAttrExpr | inExpr | LPAREN! expression RPAREN!;
 
 //An attribute now is either a simpleAttribute OR a aliasdAttribute
-parameterExpr:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter;
+attrParamExpr:	attribute (EQ | NE | GT | LT | GE | LE)^ parameter;
+paramAttrExpr:	parameter (EQ | NE | GT | LT | GE | LE)^ attribute;
 inExpr:         attribute IN^ valueList;
-compExpr:       attribute (EQ | NE | GT | LT | GE | LE)^ value;
+attrValExpr:    attribute (EQ | NE | GT | LT | GE | LE)^ value;
+valAttrExpr:    value (EQ | NE | GT | LT | GE | LE)^ attribute;
 
 attribute: simpleAttribute | aliasdAttribute;
 //This collapses the child node and renames the token ATTR_NAME while keeping the text of the token

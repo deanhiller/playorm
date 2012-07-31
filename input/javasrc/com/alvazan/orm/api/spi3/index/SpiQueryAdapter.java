@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SpiQueryAdapter {
 
-	public void setParameter(String parameterName, Object value);
+	public void setParameter(String parameterName, ValAndType valAndType);
 
 	@SuppressWarnings("rawtypes")
 	public List getResultList();

@@ -8,6 +8,7 @@ import javassist.util.proxy.Proxy;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.TypeEnum;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
@@ -39,6 +40,7 @@ public class MetaIdField<OWNER> {
 	public void translateToRow(OWNER entity, RowToPersist row) {
 		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
+		
 		row.setKey(byteVal);
 	}
 
@@ -66,7 +68,7 @@ public class MetaIdField<OWNER> {
 		this.generator = gen;
 		this.converter = converter;
 		this.metaClass = metaClass;
-		metaDbo.setup(columnName, null, field.getType(), false);
+		metaDbo.setup(columnName, null, field.getType(), false, null);
 	}
 
 	public Converter getConverter() {

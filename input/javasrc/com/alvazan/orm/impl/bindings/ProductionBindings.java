@@ -10,7 +10,6 @@ import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer3.spi.db.cassandra.CassandraSession;
 import com.alvazan.orm.layer3.spi.db.inmemory.InMemorySession;
 import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
-import com.alvazan.orm.layer3.spi.index.solr.SolrIndexWriter;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
@@ -37,11 +36,9 @@ public class ProductionBindings implements Module {
 		switch (type) {
 		case CASSANDRA:
 			binder.bind(NoSqlRawSession.class).to(CassandraSession.class).asEagerSingleton();
-			binder.bind(IndexReaderWriter.class).to(SolrIndexWriter.class);
 			break;
 		case IN_MEMORY:
 			binder.bind(NoSqlRawSession.class).to(InMemorySession.class).asEagerSingleton();
-			binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class);
 			break;
 		default:
 			throw new RuntimeException("bug, unsupported database type="+type);
@@ -52,6 +49,7 @@ public class ProductionBindings implements Module {
 		else
 			binder.bind(DboDatabaseMeta.class).asEagerSingleton();
 		
+		binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);
 	}

@@ -14,6 +14,7 @@ import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.TypeInfo;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.index.ValAndType;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -25,13 +26,13 @@ public class QueryAdapter<T> implements Query<T> {
 	
 	private MetaQuery<T> meta;
 	private SpiQueryAdapter indexQuery;
-	private BaseEntityManagerImpl session;
+	private BaseEntityManagerImpl mgr;
 	private MetaClass<T> metaClass;
 
 	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr, MetaClass<T> metaClass) {
 		this.meta = meta;
 		this.indexQuery = indexQuery;
-		this.session = entityMgr;
+		this.mgr = entityMgr;
 		this.metaClass = metaClass;
 	}
 	
@@ -64,12 +65,12 @@ public class QueryAdapter<T> implements Query<T> {
 			} 		
 		}
 	
-	
-		
-		indexQuery.setParameter(name, value);
+		byte[] data = metaField.translateValue(value);
+		ValAndType val = new ValAndType();
+		val.setIndexedData(data);
+		val.setColumnMeta(metaFieldDbo);
+		indexQuery.setParameter(name, val);
 	}
-
-
 
 	@Override
 	public T getSingleObject() {
@@ -84,10 +85,9 @@ public class QueryAdapter<T> implements Query<T> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public List<T> getResultList() {
-		
 		List primaryKeys = indexQuery.getResultList();
 		//HERE we need to query the nosql database with the primary keys from the index
-		List<KeyValue<T>> all = session.findAll(metaClass.getMetaClass(), primaryKeys);
+		List<KeyValue<T>> all = mgr.findAll(metaClass.getMetaClass(), primaryKeys);
 			
 		List<T> entities = getEntities(all);
 		if(entities.size() != primaryKeys.size())

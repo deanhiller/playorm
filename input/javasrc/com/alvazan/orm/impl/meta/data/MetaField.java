@@ -12,11 +12,10 @@ public interface MetaField<OWNER> {
 	public DboColumnMeta getMetaDbo();
 	
 	public void translateFromColumn(Row column, OWNER entity, NoSqlSession session);
-	public void translateToColumn(OWNER entity, RowToPersist col);
+	public void translateToColumn(OWNER entity, RowToPersist col, String columnFamily);
 	
 	public Class<?> getFieldType();
 
-	//TODO: should be Map<String, Object> so we can return int, double, etc. etc.
-	public Object translateToIndexFormat(OWNER entity);
+	public byte[] translateValue(Object value);
 
 }

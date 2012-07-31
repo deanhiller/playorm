@@ -3,6 +3,7 @@ package com.alvazan.orm.api.spi2;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 
@@ -23,13 +24,13 @@ public class MetaQuery<T> {
 		return "[Query="+query+"]";
 	}
 
+	public void initialize(String query) {
+		this.query = query;
+	}
+	
 	public void initialize(String query, SpiMetaQuery factory) {
 		this.query = query;
 		this.spiMetaQuery = factory;
-	}
-	
-	public String getQuery() {
-		return query;
 	}
 
 	public TypeInfo getMetaFieldByParameter(String parameter){
@@ -40,8 +41,8 @@ public class MetaQuery<T> {
 		return parameterFieldMap;
 	}
 
-	public SpiQueryAdapter createSpiMetaQuery(String indexName) {
-		return spiMetaQuery.createQueryInstanceFromQuery(indexName);
+	public SpiQueryAdapter createSpiMetaQuery(String indexName, NoSqlSession session) {
+		return spiMetaQuery.createQueryInstanceFromQuery(indexName, session);
 	}
 
 	public String getIndexName() {
@@ -58,6 +59,10 @@ public class MetaQuery<T> {
 
 	public void setIndexName(String indexName) {
 		this.indexName = indexName;
+	}
+
+	public String getQuery() {
+		return query;
 	}
 	
 }

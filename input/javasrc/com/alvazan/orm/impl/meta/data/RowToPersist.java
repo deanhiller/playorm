@@ -12,6 +12,9 @@ public class RowToPersist {
 	private List<Column> columns = new ArrayList<Column>();
 	
 	private Set<byte[]> columnsToRemove = new HashSet<byte[]>();
+
+	private List<IndexData> indexToAdd = new ArrayList<IndexData>();
+	private List<IndexData> indexToRemove = new ArrayList<IndexData>();
 	
 	public byte[] getKey() {
 		return key;
@@ -35,4 +38,10 @@ public class RowToPersist {
 		columnsToRemove.add(colName);
 	}
 	
+	public void addIndexToPersist(IndexData data) {
+		indexToAdd.add(data);
+	}
+	public void addIndexToRemove(IndexData data) {
+		indexToRemove.add(data);
+	}
 }

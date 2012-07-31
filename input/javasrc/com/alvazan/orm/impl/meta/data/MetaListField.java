@@ -90,7 +90,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public void translateToColumn(OWNER entity, RowToPersist row) {
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName) {
 		if(field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
 		else
@@ -190,16 +190,9 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		throw new UnsupportedOperationException("not done yet");
 	}
 
-
-
-	@Override
-	public Object translateToIndexFormat(OWNER entity) {
-		throw new UnsupportedOperationException("This field cannot be indexed");
-	}
-
 	public void setup(Field field, String colName, MetaClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		super.setup(field, colName, fkToTable, null, true);
+		super.setup(field, colName, fkToTable, null, true, null);
 		this.classMeta = classMeta;
 		this.fieldForKey = fieldForKey;
 	}
@@ -208,5 +201,10 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	public String toString() {
 		return "MetaListField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType().getName()
 				+ "<"+classMeta.getMetaClass().getName()+">), columnName=" + columnName + "]";
+	}
+
+	@Override
+	public byte[] translateValue(Object value) {
+		throw new UnsupportedOperationException("Bug, this operation shold never be called for lists");
 	}
 }

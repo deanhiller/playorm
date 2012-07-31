@@ -13,6 +13,7 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.Indexed;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoConversion;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -112,7 +113,7 @@ public class ScannerForField {
 		}
 	}
 
-	public MetaField processColumn(Field field) {
+	public MetaField processColumn(Field field, String cf) {
 		Column col = field.getAnnotation(Column.class);
 		MetaCommonField metaField = metaProvider.get();
 		String colName = field.getName();
@@ -120,6 +121,10 @@ public class ScannerForField {
 			if(!"".equals(col.columnName()))
 				colName = col.columnName();
 		}
+
+		String indexPrefix = null;
+		if(field.getAnnotation(Indexed.class) != null)
+			indexPrefix = "/"+cf+"/"+colName;
 		
 		Class<?> type = field.getType();
 		Converter converter = null;
@@ -128,7 +133,7 @@ public class ScannerForField {
 
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, colName, converter);
+			metaField.setup(field, colName, converter, indexPrefix);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -162,17 +167,17 @@ public class ScannerForField {
 		this.customConverters = converters;
 	}
 
-	public MetaField processManyToOne(Field field) {
+	public MetaField processManyToOne(Field field, String colFamily) {
 		ManyToOne annotation = field.getAnnotation(ManyToOne.class);
 		String colName = annotation.columnName();
-		return processToOne(field, colName);
+		return processToOne(field, colFamily, colName);
 	}
 
-	public MetaField processOneToOne(Field field) {
+	public MetaField processOneToOne(Field field, String colFamily) {
 		OneToOne annotation = field.getAnnotation(OneToOne.class);
 		String colName = annotation.columnName();
 		
-		return processToOne(field, colName);
+		return processToOne(field, colFamily, colName);
 	}
 	
 	public MetaField processManyToMany(Field field) {
@@ -244,10 +249,14 @@ public class ScannerForField {
 	}
 
 	@SuppressWarnings("unchecked")
-	public MetaField processToOne(Field field, String colNameOrig) {
+	public MetaField processToOne(Field field, String colFamily, String colNameOrig) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
+		
+		String indexPrefix = null;
+		if(field.getAnnotation(Indexed.class) != null)
+			indexPrefix ="/"+colFamily+"/"+colName; 
 		
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
@@ -257,8 +266,8 @@ public class ScannerForField {
 		
 		MetaProxyField metaField = metaProxyProvider.get();
 		MetaClass<?> classMeta = metaInfo.findOrCreate(field.getType());
-		 
-		metaField.setup(field, colName, classMeta);
+		
+		metaField.setup(field, colName, classMeta, indexPrefix);
 		return metaField;
 	}
 

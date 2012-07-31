@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.spi3.index;
 
+import com.alvazan.orm.api.spi2.NoSqlSession;
+
 
 
 
@@ -15,11 +17,10 @@ public interface SpiMetaQuery {
 	 * different parameters to it.  
 	 * 
 	 * @param indexName
+	 * @param session 
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
-	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName);
-
-
+	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, NoSqlSession session);
 	
 	
 	public void setASTTree(ExpressionNode node);

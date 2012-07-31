@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi3.index.ExpressionNode;
 
 public class InfoForWiring {
 
@@ -12,6 +13,7 @@ public class InfoForWiring {
 	private boolean selectStarDefined;
 	private String query;
 	private String targetTable;
+	private ExpressionNode astTree;
 	
 	public InfoForWiring(String query, String targetTable) {
 		this.query = query;
@@ -49,6 +51,15 @@ public class InfoForWiring {
 	public String getTargetTable() {
 		return targetTable;
 	}
+
+	public void setAstTree(ExpressionNode node) {
+		this.astTree = node;
+	}
+
+	public ExpressionNode getAstTree() {
+		return astTree;
+	}
+	
 	
 
 }

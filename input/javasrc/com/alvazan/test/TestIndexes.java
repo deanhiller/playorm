@@ -57,8 +57,6 @@ public class TestIndexes {
 		mgr.put(act2);
 		
 		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act);
-		index.addToIndex(act2);
 		
 		double from = 100;
 		Query<Activity> query = index.getNamedQuery("findBetween");
@@ -93,11 +91,7 @@ public class TestIndexes {
 		mgr.put(act2);
 		
 		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act);
-		index.addToIndex(act2);
-		
 		Index<Activity> index2 = mgr.getIndex(Activity.class, "/activity/bysecurity/security1");
-		index2.addToIndex(act);
 		
 		mgr.flush();
 		
@@ -132,12 +126,7 @@ public class TestIndexes {
 		mgr.put(acc3);
 		
 		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
-		index.addToIndex(acc);
-		index.addToIndex(acc2);
-		index.addToIndex(acc3);
-		
 		Index<Account> index2 = mgr.getIndex(Account.class, "/otherindex");
-		index2.addToIndex(acc2);
 		
 		mgr.flush();
 		
@@ -176,12 +165,7 @@ public class TestIndexes {
 		mgr.put(acc5);
 		
 		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
-		index.addToIndex(acc);
-		index.addToIndex(acc2);
-		index.addToIndex(acc3);		
-		index.addToIndex(acc4);
-		index.addToIndex(acc5);
-	
+
 		mgr.flush();
 		
 		List<Account> activeList = Account.findAnd(index, "dean", true);
@@ -211,9 +195,6 @@ public class TestIndexes {
 		mgr.fillInWithKey(acc3); //Fill in with key is required by the index
 		
 		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
-		index.addToIndex(acc);
-		index.addToIndex(acc2);
-		index.addToIndex(acc3);	
 
 		mgr.flush();
 		
@@ -240,8 +221,6 @@ public class TestIndexes {
 		mgr.put(act2);
 		
 		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		index.addToIndex(act);
-		index.addToIndex(act2);
 		
 		Activity act3 = new Activity();
 		act3.setName("hello");
@@ -249,7 +228,6 @@ public class TestIndexes {
 		mgr.put(act3);
 		
 		Index<Activity> index2 = mgr.getIndex(Activity.class, "/activity/byaccount/account2");
-		index2.addToIndex(act3);
 		
 		//flush the persists and the index modifications to the database and index storage 
 		mgr.flush();
