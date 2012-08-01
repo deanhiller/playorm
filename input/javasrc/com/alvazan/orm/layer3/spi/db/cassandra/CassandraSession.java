@@ -166,17 +166,17 @@ public class CassandraSession implements NoSqlRawSession {
 			case COMPOSITE_DECIMALPREFIX:
 				com.netflix.astyanax.serializers.
 				AnnotatedCompositeSerializer<BigDecimalComposite> eventSerializer = new AnnotatedCompositeSerializer<BigDecimalComposite>(BigDecimalComposite.class);
-				cf = new ColumnFamily<String, BigDecimalComposite>(colFamily, StringSerializer.get(), eventSerializer);
+				cf = new ColumnFamily<byte[], BigDecimalComposite>(colFamily, BytesArraySerializer.get(), eventSerializer);
 				info.setCompositeSerializer(eventSerializer);
 				break;
 			case COMPOSITE_INTEGERPREFIX:
 				AnnotatedCompositeSerializer<BigIntegerComposite> bigIntSer = new AnnotatedCompositeSerializer<BigIntegerComposite>(BigIntegerComposite.class);
-				cf = new ColumnFamily<String, BigIntegerComposite>(colFamily, StringSerializer.get(), bigIntSer);
+				cf = new ColumnFamily<byte[], BigIntegerComposite>(colFamily, BytesArraySerializer.get(), bigIntSer);
 				info.setCompositeSerializer(bigIntSer);
 				break;
 			case COMPOSITE_STRINGPREFIX:
 				AnnotatedCompositeSerializer<StringComposite> stringSerializer = new AnnotatedCompositeSerializer<StringComposite>(StringComposite.class);
-				cf = new ColumnFamily<String, StringComposite>(colFamily, StringSerializer.get(), stringSerializer);
+				cf = new ColumnFamily<byte[], StringComposite>(colFamily, BytesArraySerializer.get(), stringSerializer);
 				info.setCompositeSerializer(stringSerializer);
 				break;
 			default:
@@ -425,8 +425,7 @@ public class CassandraSession implements NoSqlRawSession {
 		Info info = lookupOrCreate2(action.getColFamily(), mgr);
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
-		String key = toUTF8(action.getRowKey());
-		ColumnListMutation colMutation = m.withRow(cf, key);
+		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		
 		byte[] indexedValue = action.getColumn().getIndexedValue();
 		byte[] pk = action.getColumn().getPrimaryKey();
@@ -538,8 +537,7 @@ public class CassandraSession implements NoSqlRawSession {
 
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
 
-		Object key = info.getRowKeyType().convertFromNoSql(rowKey);
-		RowQuery rowQuery = query.getKey(key)
+		RowQuery rowQuery = query.getKey(rowKey)
 							.withColumnRange(range)
 							.autoPaginate(true);
 
