@@ -32,7 +32,7 @@ public class TestIndexesNew {
 	}
 	
 	@Test
-	public void testBasicIndex() {
+	public void testBasicChangeToIndex() {
 		User user = new User();
 		user.setName("dean");
 		user.setLastName("hiller");
@@ -54,4 +54,26 @@ public class TestIndexesNew {
 		Assert.assertEquals(result.getName(), newerResult.getName());
 		
 	}
+	
+	//@Test
+	public void testBasicRemove() {
+		User user = new User();
+		user.setName("dean");
+		user.setLastName("hiller");
+		
+		mgr.put(user);
+		
+		mgr.flush();
+		
+		User result = User.findByName(mgr, user.getName());
+		Assert.assertEquals(user.getName(), result.getName());
+		
+		mgr.remove(user);
+		
+		mgr.flush();
+		
+		User newResult = User.findByName(mgr, user.getName());
+		Assert.assertNull(newResult);
+	}
+	
 }

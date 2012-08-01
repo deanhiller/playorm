@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi3.db.Persist;
 import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
 import com.alvazan.orm.api.spi3.db.RemoveEnum;
+import com.alvazan.orm.api.spi3.db.RemoveIndex;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 
@@ -58,11 +59,10 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type) {
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column) {
 		PersistIndex persist = new PersistIndex();
 		persist.setColFamily(colFamily);
 		persist.setRowKey(rowKey);
-		persist.setColumnType(type);
 		persist.setColumn(column);
 		actions.add(persist);
 	}	
@@ -70,7 +70,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public void removeFromIndex(String columnFamilyName, byte[] rowKeyBytes,
 			IndexColumn c) {
-		
+		RemoveIndex remove = new RemoveIndex();
+		remove.setColFamily(columnFamilyName);
+		remove.setRowKey(rowKeyBytes);
+		remove.setColumn(c);
+		actions.add(remove);
 	}
 	
 	@Override

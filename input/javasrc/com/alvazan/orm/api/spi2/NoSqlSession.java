@@ -36,7 +36,7 @@ public interface NoSqlSession {
 	 */
 	public IndexReaderWriter getRawIndex();
 	
-	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type);
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column);
 	public void removeFromIndex(String columnFamilyName, byte[] rowKeyBytes, IndexColumn c);
 	
 	public void persist(String colFamily, byte[] rowKey, List<Column> columns);

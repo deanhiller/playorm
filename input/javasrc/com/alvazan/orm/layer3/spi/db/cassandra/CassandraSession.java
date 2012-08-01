@@ -5,12 +5,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -30,11 +27,11 @@ import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.ColumnType;
-import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Persist;
 import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
+import com.alvazan.orm.api.spi3.db.RemoveIndex;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.netflix.astyanax.AstyanaxContext;
@@ -43,7 +40,6 @@ import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.MutationBatch;
-import com.netflix.astyanax.Serializer;
 import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
@@ -60,10 +56,8 @@ import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
 import com.netflix.astyanax.query.RowSliceQuery;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
-import com.netflix.astyanax.serializers.BigIntegerSerializer;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
 import com.netflix.astyanax.serializers.CompositeRangeBuilder;
-import com.netflix.astyanax.serializers.StringSerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 import com.netflix.astyanax.util.RangeBuilder;
 
@@ -274,12 +268,14 @@ public class CassandraSession implements NoSqlRawSession {
 	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
 		MutationBatch m = keyspace.prepareMutationBatch();
 		for(Action action : actions) {
-			if(action instanceof PersistIndex) {
-				persistIndex((PersistIndex)action, mgr, m);
-			} else if(action instanceof Persist) {
+			if(action instanceof Persist) {
 				persist((Persist)action, mgr, m);
 			} else if(action instanceof Remove) {
 				remove((Remove)action, m);
+			} else if(action instanceof PersistIndex) {
+				persistIndex((PersistIndex)action, mgr, m);
+			} else if(action instanceof RemoveIndex) {
+				removeIndex((RemoveIndex)action, m);
 			}
 		}
 		
@@ -423,14 +419,31 @@ public class CassandraSession implements NoSqlRawSession {
 
 	private void persistIndex(PersistIndex action, NoSqlEntityManager mgr, MutationBatch m) {
 		Info info = lookupOrCreate2(action.getColFamily(), mgr);
+
 		ColumnFamily cf = info.getColumnFamilyObj();
-		
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
+		Object toPersist = createObjectToUse(action, info);
 		
+		colMutation.putEmptyColumn(toPersist);
+	}
+
+	private void removeIndex(RemoveIndex action, MutationBatch m) {
+		Info info = fetchColumnFamilyInfo(action.getColFamily());
+		if(info == null)
+			return; //nothing to do since it doesn't exist
+		
+		ColumnFamily cf = info.getColumnFamilyObj();
+		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
+		Object toRemove = createObjectToUse(action, info);
+		
+		colMutation.deleteColumn(toRemove);
+	}
+	
+	private Object createObjectToUse(RemoveIndex action, Info info) {
 		byte[] indexedValue = action.getColumn().getIndexedValue();
 		byte[] pk = action.getColumn().getPrimaryKey();
 		
-		ColumnType type = action.getColumnType();
+		ColumnType type = info.getColumnType();
 		Object toPersist;
 		switch(type) {
 		case COMPOSITE_STRINGPREFIX:
@@ -454,8 +467,7 @@ public class CassandraSession implements NoSqlRawSession {
 		default:
 			throw new UnsupportedOperationException("not supported at this time. type="+type);
 		}
-
-		colMutation.putEmptyColumn(toPersist);
+		return toPersist;
 	}
 	
 	private void persist(Persist action, NoSqlEntityManager mgr, MutationBatch m) {

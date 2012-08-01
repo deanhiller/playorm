@@ -98,7 +98,6 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		data.setRowKey("/"+columnFamily+"/"+getMetaDbo().getColumnName());
 		data.getIndexColumn().setIndexedValue(byteVal);
 		data.getIndexColumn().setPrimaryKey(pk);
-		data.setIndexedValueType(storageType);
 		return data;
 	}
 

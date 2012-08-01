@@ -10,7 +10,6 @@ public class IndexData {
 	private String columnFamilyName;
 	private String rowKey;
 	private IndexColumn indexColumn = new IndexColumn();
-	private StorageTypeEnum indexedValueType;
 	
 	public void setColumnFamilyName(String indexTableName) {
 		this.columnFamilyName = indexTableName;
@@ -38,14 +37,6 @@ public class IndexData {
 
 	public IndexColumn getIndexColumn() {
 		return indexColumn;
-	}
-
-	public void setIndexedValueType(StorageTypeEnum storageType) {
-		this.indexedValueType = storageType;
-	}
-
-	public StorageTypeEnum getIndexedValueType() {
-		return indexedValueType;
 	}
 
 }

@@ -52,8 +52,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			ColumnType type = ind.getIndexedValueType().translateStoreToColumnType();
-			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn(), type);
+			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
@@ -180,6 +179,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	public void setup() {
 		session.setOrmSessionForMeta(this);		
+	}
+
+	@Override
+	public void remove(Object entity) {
+		throw new UnsupportedOperationException("not done yet");
 	}
 
 }

@@ -26,8 +26,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn columns, ColumnType type) {
-		session.persistIndex(colFamily, rowKey, columns, type);
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn columns) {
+		session.persistIndex(colFamily, rowKey, columns);
 	}
 	
 	@Override

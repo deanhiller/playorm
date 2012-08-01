@@ -17,6 +17,8 @@ public interface NoSqlEntityManager {
 	 */
 	public NoSqlSession getSession();
 
+	public void remove(Object entity);
+	
 	public void put(Object entity);
 	
 	public void putAll(List<Object> entities);
