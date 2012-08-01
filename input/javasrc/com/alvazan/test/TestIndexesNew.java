@@ -46,6 +46,7 @@ public class TestIndexesNew {
 		
 		result.setName("dave");
 		mgr.put(result);
+		mgr.flush();
 		
 		User newResult = User.findByName(mgr, user.getName());
 		Assert.assertNull(newResult);
