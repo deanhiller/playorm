@@ -161,14 +161,7 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnFamily cf = null;
 		switch(type) {
 			case ANY_EXCEPT_COMPOSITE:
-				Serializer s = BytesArraySerializer.get();
-				if(info.getRowKeyType() == StorageTypeEnum.STRING)
-					s = StringSerializer.get();
-				else if(info.getRowKeyType() == StorageTypeEnum.INTEGER)
-					s = BigIntegerSerializer.get();
-				else if(info.getRowKeyType() == StorageTypeEnum.DECIMAL)
-					s = BigDecimalSerializer.get();
-				cf = new ColumnFamily(colFamily, s, BytesArraySerializer.get());
+				cf = new ColumnFamily(colFamily, BytesArraySerializer.get(), BytesArraySerializer.get());
 				break;
 			case COMPOSITE_DECIMALPREFIX:
 				com.netflix.astyanax.serializers.
@@ -208,12 +201,12 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 	
-	public List<Row> findImpl(String colFamily, List<byte[]> keys2) throws ConnectionException {
+	public List<Row> findImpl(String colFamily, List<byte[]> keys) throws ConnectionException {
 		Info info = fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return createEmptyList(keys2);
+			return createEmptyList(keys);
 		}
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -222,15 +215,13 @@ public class CassandraSession implements NoSqlRawSession {
 			throw new UnsupportedOperationException("Finding on composite type not allowed here, you should be using column slice as these rows are HUGE!!!!");
 		}
 		
-		List keys = createKeys(info.getRowKeyType(), keys2);
-		
 		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
 		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
 		Rows rows = result.getResult();
 		
 		List<Row> retVal = new ArrayList<Row>();
-		for(Object key : keys) {
+		for(byte[] key : keys) {
 			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.getRow(key);
 			if(row.getColumns().isEmpty()) {
 				//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
@@ -238,24 +229,13 @@ public class CassandraSession implements NoSqlRawSession {
 				retVal.add(null);
 			} else {
 				Row r = new Row();
-				byte[] keyData = StandardConverters.convertToBytes(key);
-				r.setKey(keyData);
+				r.setKey(key);
 				processColumns(row, r);
 				retVal.add(r);
 			}
 		}
 		
 		return retVal;
-	}
-
-
-	private List createKeys(StorageTypeEnum rowKeyType, List<byte[]> keys2) {
-		List realKeys = new ArrayList();
-		for(byte[] key : keys2) {
-			Object k = StandardConverters.convertFromBytes(rowKeyType.getJavaType(), key);
-			realKeys.add(k);
-		}
-		return realKeys;
 	}
 
 	@SuppressWarnings("unused")
@@ -484,8 +464,7 @@ public class CassandraSession implements NoSqlRawSession {
 		Info info = lookupOrCreate2(action.getColFamily(), mgr);
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
-		String key = toUTF8(action.getRowKey());
-		ColumnListMutation colMutation = m.withRow(cf, key);
+		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
 			Integer theTime = null;
@@ -583,8 +562,7 @@ public class CassandraSession implements NoSqlRawSession {
 		ByteBufferRange build = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
 		
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
-		Object key = info.getRowKeyType().convertFromNoSql(rowKey);
-		RowQuery rowQuery = query.getKey(key)
+		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
 							.withColumnRange(build);
 		
