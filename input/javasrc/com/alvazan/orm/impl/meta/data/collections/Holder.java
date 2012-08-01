@@ -2,6 +2,7 @@ package com.alvazan.orm.impl.meta.data.collections;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaClass.Tuple;
 
 /**
  * A class specifically so we can account for nulls.  ie. if we don't use holders and we get
@@ -34,7 +35,8 @@ public class Holder<T> {
 	public synchronized T getValue() {
 		if(!hasValue) {
 			//otherwise, we need to create and cache the value
-			T proxy = metaClass.convertIdToProxy(key, session, cacheLoadCallback);
+			Tuple<T> tuple =  metaClass.convertIdToProxy(key, session, cacheLoadCallback);
+			T proxy = tuple.getProxy();
 			value = proxy;
 			hasValue = true;
 		}

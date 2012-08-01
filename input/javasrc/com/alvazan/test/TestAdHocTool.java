@@ -48,7 +48,7 @@ public class TestAdHocTool {
 		NoSqlSession session = factory.createSession();
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("cat", "deano");
-		session.addToIndex("/someindex", "myId", map);
+		//session.addToIndex("/someindex", "myId", map);
 		byte[] myId = "myId".getBytes();
 		List<Column> columns = new ArrayList<Column>();
 		session.persist("MyEntity", myId, columns);

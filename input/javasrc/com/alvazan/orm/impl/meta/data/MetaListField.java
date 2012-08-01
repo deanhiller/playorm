@@ -90,7 +90,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName) {
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName, Map<Field, Object> fieldToValue) {
 		if(field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
 		else
@@ -185,11 +185,6 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return byteVal;
 	}
 
-	@Override
-	public Class<?> getFieldType() {
-		throw new UnsupportedOperationException("not done yet");
-	}
-
 	public void setup(Field field, String colName, MetaClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		super.setup(field, colName, fkToTable, null, true, null);
@@ -206,5 +201,10 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	@Override
 	public byte[] translateValue(Object value) {
 		throw new UnsupportedOperationException("Bug, this operation shold never be called for lists");
+	}
+
+	@Override
+	protected Object unwrapIfNeeded(Object value) {
+		throw new UnsupportedOperationException("Bug, this should never be called");
 	}
 }

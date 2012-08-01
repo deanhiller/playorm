@@ -2,14 +2,11 @@ package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.ColumnType;
@@ -20,10 +17,7 @@ import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
 import com.alvazan.orm.api.spi3.db.RemoveEnum;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.index.IndexAdd;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi3.index.IndexRemove;
-import com.alvazan.orm.api.spi3.index.IndexRemoveImpl;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 
@@ -32,9 +26,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Inject
 	private IndexReaderWriter indexWriter;
 	
-	private Map<String, List<? extends IndexRemove>> removeFromIndex = new HashMap<String, List<? extends IndexRemove>>(); 
 	private List<Action> actions = new ArrayList<Action>();
-	private Map<String, List<IndexAdd>> addToIndex = new HashMap<String, List<IndexAdd>>();
 	private Object ormSession;
 	
 	@Override
@@ -45,16 +37,6 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		persist.setColumns(columns);
 		actions.add(persist);
 	}
-
-	@Override
-	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type) {
-		PersistIndex persist = new PersistIndex();
-		persist.setColFamily(colFamily);
-		persist.setRowKey(rowKey);
-		persist.setColumnType(type);
-		persist.setColumn(column);
-		actions.add(persist);
-	}	
 
 	@Override
 	public void remove(String colFamily, byte[] rowKey) {
@@ -75,6 +57,22 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		actions.add(remove);		
 	}
 
+	@Override
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type) {
+		PersistIndex persist = new PersistIndex();
+		persist.setColFamily(colFamily);
+		persist.setRowKey(rowKey);
+		persist.setColumnType(type);
+		persist.setColumn(column);
+		actions.add(persist);
+	}	
+	
+	@Override
+	public void removeFromIndex(String columnFamilyName, byte[] rowKeyBytes,
+			IndexColumn c) {
+		
+	}
+	
 	@Override
 	public List<Row> find(String colFamily, List<byte[]> keys) {
 		return rawSession.find(colFamily, keys);
@@ -103,51 +101,6 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		return rawSession;
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public void removeFromIndex(String indexName, String id) {
-		if(id == null)
-			throw new IllegalArgumentException("id cannot be null");
-		else if(indexName == null)
-			throw new IllegalArgumentException("indexName cannot be null");
-		IndexRemoveImpl remove = new IndexRemoveImpl();
-		remove.setId(id);
-		List removeActions = findCreateList(indexName, removeFromIndex);
-		removeActions.add(remove);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public void addToIndex(String indexName, String id, Map<String, Object> item) {
-		if(id == null)
-			throw new IllegalArgumentException("id cannot be null");
-		else if(indexName == null)
-			throw new IllegalArgumentException("indexName cannot be null");
-		else if(item == null)
-			throw new IllegalArgumentException("item map cannot be null");
-		
-		IndexAdd add = new IndexAdd();
-		add.setItem(item);
-		add.setId(id);
-		
-		List removeActions = findCreateList(indexName, removeFromIndex);
-		List addActions = findCreateList(indexName, addToIndex);
-		//ironically, we have to remove it form the index as well as the old data in the index has
-		//most likely changed...
-		removeActions.add(add);
-		addActions.add(add);
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private List findCreateList(String indexName, Map indexToList) {
-		List actions = (List) indexToList.get(indexName);
-		if(actions == null) {
-			actions = new ArrayList();
-			indexToList.put(indexName, actions);
-		}
-		return actions;
-	}
-	
 	@Override
 	public IndexReaderWriter getRawIndex() {
 		return indexWriter;

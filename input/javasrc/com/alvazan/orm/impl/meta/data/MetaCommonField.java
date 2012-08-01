@@ -1,6 +1,9 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.util.Map;
+
+import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
@@ -28,8 +31,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		Object value = converter.convertFromNoSql(column.getValue());
 		ReflectionUtil.putFieldValue(entity, field, value);
 	}
-	
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamily) {
+	@Override
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamily, Map<Field, Object> fieldToValue) {
 		Column col = new Column();
 		row.getColumns().add(col);
 
@@ -39,7 +42,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		col.setValue(byteVal);
 		
 		StorageTypeEnum storageType = getMetaDbo().getStorageType();
-		addIndexInfo(entity, row, columnFamily, value, byteVal, storageType);
+		addIndexInfo(entity, row, columnFamily, value, byteVal, storageType, fieldToValue);
+		removeIndexInfo(entity, row, columnFamily, value, byteVal, storageType, fieldToValue);
 	}
 	
 	@Override
@@ -52,9 +56,10 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		this.converter = converter;
 	}
 
-	public Class<?> getFieldType(){
-		return this.field.getType();
+	@Override
+	protected Object unwrapIfNeeded(Object value) {
+		return value; //no need to unwrap common fields
 	}
-	
+
 
 }

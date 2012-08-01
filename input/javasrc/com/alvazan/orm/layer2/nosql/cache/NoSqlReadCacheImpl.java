@@ -65,16 +65,10 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void removeFromIndex(String indexName, String id) {
-		session.removeFromIndex(indexName, id);
+	public void removeFromIndex(String columnFamilyName, byte[] rowKeyBytes,
+			IndexColumn c) {
+		session.removeFromIndex(columnFamilyName, rowKeyBytes, c);
 	}
-
-	@Override
-	public void addToIndex(String indexName, String id, Map<String, Object> item) {
-		session.addToIndex(indexName, id, item);
-	}
-
-	
 	
 	@Override
 	public IndexReaderWriter getRawIndex() {
@@ -96,6 +90,5 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	public void setOrmSessionForMeta(Object ormSession) {
 		session.setOrmSessionForMeta(ormSession);
 	}
-
 
 }

@@ -4,12 +4,12 @@ import java.io.UnsupportedEncodingException;
 
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.ColumnType;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 
 public class IndexData {
 	private String columnFamilyName;
 	private String rowKey;
-	private byte[] indexedValue;
-	private byte[] primaryKey;
+	private IndexColumn indexColumn = new IndexColumn();
 	private StorageTypeEnum indexedValueType;
 	
 	public void setColumnFamilyName(String indexTableName) {
@@ -36,20 +36,8 @@ public class IndexData {
 		}
 	}
 
-	public void setIndexedValue(byte[] byteVal) {
-		indexedValue = byteVal;
-	}
-
-	public byte[] getPrimaryKey() {
-		return primaryKey;
-	}
-
-	public void setPrimaryKey(byte[] primaryKey) {
-		this.primaryKey = primaryKey;
-	}
-
-	public byte[] getIndexedValue() {
-		return indexedValue;
+	public IndexColumn getIndexColumn() {
+		return indexColumn;
 	}
 
 	public void setIndexedValueType(StorageTypeEnum storageType) {

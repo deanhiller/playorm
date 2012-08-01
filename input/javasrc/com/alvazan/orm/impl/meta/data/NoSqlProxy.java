@@ -1,9 +1,13 @@
 package com.alvazan.orm.impl.meta.data;
 
-import com.alvazan.orm.api.spi3.db.Row;
+import java.lang.reflect.Field;
+import java.util.Map;
+
 
 public interface NoSqlProxy {
 
-	void __injectData(Row row);
+	void __markInitializedAndCacheIndexedValues();
+
+	Map<Field, Object> __getOriginalValues();
 
 }

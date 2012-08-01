@@ -39,22 +39,21 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
 		RowToPersist row = metaClass.translateToRow(entity);
 		
+		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
+		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
 			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
 		
-		List<byte[]> colNames = new ArrayList<byte[]>();
+		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			throw new UnsupportedOperationException("not supported just yet");
-			//colNames.add(ind.getIndexColumnName());
-			//session.remove(ind.getColumnFamilyName(), ind.getRowKeyBytes(), colNames);
+			//ColumnType type = ind.getIndexedValueType().translateStoreToColumnType();
+			session.removeFromIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
+		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			IndexColumn c = new IndexColumn();
-			c.setIndexedValue(ind.getIndexedValue());
-			c.setPrimaryKey(ind.getPrimaryKey());
 			ColumnType type = ind.getIndexedValueType().translateStoreToColumnType();
-			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), c, type);
+			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn(), type);
 		}
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}

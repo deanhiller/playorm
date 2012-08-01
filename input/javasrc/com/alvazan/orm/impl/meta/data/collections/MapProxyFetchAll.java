@@ -12,6 +12,7 @@ import java.util.Set;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaClass.Tuple;
 
 public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 
@@ -34,6 +35,7 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 
 	//Callback from one of the proxies to load the entire cache based
 	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
+	@SuppressWarnings("unchecked")
 	public void loadCacheIfNeeded() {
 		if(cacheLoaded)
 			return;
@@ -41,26 +43,16 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
 		for(int i = 0; i < this.size(); i++) {
 			Row row = rows.get(i);
-			V proxy = classMeta.convertIdToProxy(row.getKey(), session, null);
+			Tuple<V> tuple = classMeta.convertIdToProxy(row.getKey(), session, null);
+			V proxy = tuple.getProxy();
 			//inject the row into the proxy object here to load it's fields
 			classMeta.fillInInstance(row, session, proxy);
 			
-			K key = findFieldValue(proxy);
+			K key = (K) tuple.getEntityId();
 			super.put(key,  proxy);
 			originals.add(proxy);
 		}
 		cacheLoaded = true;
-	}
-
-	@SuppressWarnings("unchecked")
-	private K findFieldValue(V proxy) {
-		try {
-			return (K) fieldForKey.get(proxy);
-		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override

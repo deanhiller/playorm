@@ -2,11 +2,11 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -14,10 +14,8 @@ import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!
-public class MetaIdField<OWNER> {
+public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 
-	private DboColumnMeta metaDbo = new DboColumnMeta();
-	protected Field field;
 	private Converter converter;
 	
 	private boolean useGenerator;
@@ -30,18 +28,22 @@ public class MetaIdField<OWNER> {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ ")";
 	}
 
-	public Object translateFromRow(Row row, OWNER entity) {
+	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
 		byte[] rowKey = row.getKey();
 		Object entityId = converter.convertFromNoSql(rowKey);
 		ReflectionUtil.putFieldValue(entity, field, entityId);
-		return entityId;
 	}
 	
-	public void translateToRow(OWNER entity, RowToPersist row) {
+	@Override
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamily, Map<Field, Object> fieldToValue) {
 		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
-		
 		row.setKey(byteVal);
+		
+		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		addIndexInfo(entity, row, columnFamily, id, byteVal, storageType, fieldToValue);
+		//NOTICE: there is no call to remove because if an id is changed, it is a new entity and we only need to add index not remove since
+		//the old entity was not deleted during this save....we remove from index on remove of old entity only
 	}
 
 	public Object fillInAndFetchId(OWNER entity) {
@@ -59,24 +61,19 @@ public class MetaIdField<OWNER> {
 		return newId;
 	}
 
-	public void setup(Field field2, String columnName, Method idMethod, boolean useGenerator, KeyGenerator gen, Converter converter, MetaClass<OWNER> metaClass) {
-		this.field = field2;
-		this.method = idMethod;
-		this.field.setAccessible(true);
+	@SuppressWarnings("unchecked")
+	public void setup(IdInfo info, Field field2, String columnName,	String indexPrefix) {
+		this.method = info.getIdMethod();
 		this.method.setAccessible(true);
-		this.useGenerator = useGenerator;
-		this.generator = gen;
-		this.converter = converter;
-		this.metaClass = metaClass;
-		metaDbo.setup(columnName, null, field.getType(), false, null);
+		this.useGenerator = info.isUseGenerator();
+		this.generator = info.getGen();
+		this.converter = info.getConverter();	
+		this.metaClass = info.getMetaClass();
+		super.setup(field2, columnName, null, field.getType(), false, indexPrefix);
 	}
 
 	public Converter getConverter() {
 		return converter;
-	}
-
-	public Field getField() {
-		return field;
 	}
 
 	public Method getIdMethod() {
@@ -99,8 +96,14 @@ public class MetaIdField<OWNER> {
 		return (OWNER) inst;
 	}
 
-	public DboColumnMeta getMetaDbo() {
-		return metaDbo;
+	@Override
+	protected Object unwrapIfNeeded(Object value) {
+		return value; // no need to unwrap keys
+	}
+
+	@Override
+	public byte[] translateValue(Object value) {
+		return converter.convertToNoSql(value);
 	}
 
 	

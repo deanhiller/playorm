@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 import com.netflix.astyanax.annotations.Component;
 
+//Need to get rid of this and do raw bytes so translation is not needed back and forth(That extra translation is annoying)
+@Deprecated
 public class BigDecimalComposite {
 
 	@Component(ordinal=0)

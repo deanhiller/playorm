@@ -70,7 +70,13 @@ public class ScannerForClass {
 		f.setFilter(new MethodFilter() {
 			public boolean isHandled(Method m) {
 				// ignore finalize()
-				return !m.getName().equals("finalize");
+				if(m.getName().equals("finalize"))
+					return false;
+				else if(m.getName().equals("equals"))
+					return false;
+				else if(m.getName().equals("hashCode"))
+					return false;
+				return true;
 			}
 		});
 		Class<T> clazz = f.createClass();

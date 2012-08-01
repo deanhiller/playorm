@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class MetaClass<T> {
 	 */
 	private Map<String,MetaField<T>> columnNameToField = new HashMap<String, MetaField<T>>();
 	
-	private List<MetaField<T>> indexedFields = new ArrayList<MetaField<T>>();
+	private List<MetaField<T>> indexedColumns = new ArrayList<MetaField<T>>();
 	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();
 	
 	public Object fetchId(T entity) {
@@ -45,10 +46,15 @@ public class MetaClass<T> {
 	}
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
-		T inst = ReflectionUtil.create(metaClass);
-		Object key = fillInInstance(row, session, inst);
+		Tuple<T> tuple = convertIdToProxy(row.getKey(), session, null);
+		T inst = tuple.getProxy();
+		fillInInstance(row, session, inst);
+		NoSqlProxy temp = (NoSqlProxy)inst;
+		//mark initialized so it doesn't hit the database again.
+		temp.__markInitializedAndCacheIndexedValues();
+		
 		KeyValue<T> keyVal = new KeyValue<T>();
-		keyVal.setKey(key);
+		keyVal.setKey(tuple.getEntityId());
 		keyVal.setValue(inst);
 		return keyVal;
 	}
@@ -59,22 +65,25 @@ public class MetaClass<T> {
 	 * @param inst The object OR the proxy to be filled in
 	 * @return The key of the entity object
 	 */
-	public Object fillInInstance(Row row, NoSqlSession session, T inst) {
-		Object key = idField.translateFromRow(row, inst);
-
+	public void fillInInstance(Row row, NoSqlSession session, T inst) {
+		idField.translateFromColumn(row, inst, session);
+		
 		for(MetaField<T> field : columnNameToField.values()) {
 			field.translateFromColumn(row, inst, session);
 		}
-		
-		return key;
 	}
 	
 	public RowToPersist translateToRow(T entity) {
 		RowToPersist row = new RowToPersist();
-		idField.translateToRow(entity, row);
+		Map<Field, Object> fieldToValue = null;
+		if(entity instanceof NoSqlProxy) {
+			fieldToValue = ((NoSqlProxy) entity).__getOriginalValues();
+		}
+		
+		idField.translateToColumn(entity, row, columnFamily, fieldToValue);
 		
 		for(MetaField<T> m : columnNameToField.values()) {
-			m.translateToColumn(entity, row, columnFamily);
+			m.translateToColumn(entity, row, columnFamily, fieldToValue);
 		}
 		
 		return row;
@@ -110,7 +119,7 @@ public class MetaClass<T> {
 		columnNameToField.put(field.getColumnName(), field);
 		
 		if(isIndexed)
-			indexedFields.add(field);
+			indexedColumns.add(field);
 	}
 	
 	public MetaField<T> getMetaFieldByCol(String columnName){
@@ -165,12 +174,37 @@ public class MetaClass<T> {
 		return converter.convertToNoSql(id);		
 	}
 
-	public T convertIdToProxy(byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
+	public Tuple<T> convertIdToProxy(byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
 		if(id == null)
 			return null;
 		MetaIdField<T> idField = this.getIdField();
 		Converter converter = idField.getConverter();
+		Tuple<T> t = new Tuple<T>();
 		Object entityId = converter.convertFromNoSql(id);
-		return idField.convertIdToProxy(session, entityId, cacheLoadCallback);
+		T proxy = idField.convertIdToProxy(session, entityId, cacheLoadCallback);
+		t.setEntityId(entityId);
+		t.setProxy(proxy);
+		return t;
+	}
+	
+	public static class Tuple<D> {
+		private D proxy;
+		private Object entityId;
+		public D getProxy() {
+			return proxy;
+		}
+		public void setProxy(D proxy) {
+			this.proxy = proxy;
+		}
+		public Object getEntityId() {
+			return entityId;
+		}
+		public void setEntityId(Object entityId) {
+			this.entityId = entityId;
+		}
+	}
+
+	public List<MetaField<T>> getIndexedColumns() {
+		return indexedColumns;
 	}
 }

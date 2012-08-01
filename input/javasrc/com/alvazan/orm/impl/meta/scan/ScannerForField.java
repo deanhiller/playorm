@@ -22,6 +22,7 @@ import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
+import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
@@ -74,9 +75,19 @@ public class ScannerForField {
 		String columnName = field.getName();
 		if(!"".equals(idAnno.columnName()))
 			columnName = idAnno.columnName();
+		String indexPrefix = null;
+		if(field.isAnnotationPresent(Indexed.class))
+			indexPrefix = "/"+metaClass.getColumnFamily()+"/"+columnName;
+		
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, columnName, idMethod, idAnno.usegenerator(), gen, converter, metaClass);
+			IdInfo info = new IdInfo();
+			info.setIdMethod(idMethod);
+			info.setConverter(converter);
+			info.setGen(gen);
+			info.setUseGenerator(idAnno.usegenerator());
+			info.setMetaClass(metaClass);
+			metaField.setup(info, field, columnName, indexPrefix);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="

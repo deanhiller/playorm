@@ -51,7 +51,7 @@ public class QueryAdapter<T> implements Query<T> {
 		DboColumnMeta metaFieldDbo = typeInfo.getColumnInfo();
 		
 		MetaField metaField = metaClass.getMetaFieldByCol(metaFieldDbo.getColumnName());
-		Class fieldType = metaField.getFieldType();
+		Class fieldType = metaField.getField().getType();
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
 		Class objectFieldType = DboColumnMeta.convertIfPrimitive(fieldType);

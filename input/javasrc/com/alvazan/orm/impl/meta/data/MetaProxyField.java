@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
@@ -33,7 +34,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName) {
+	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName, Map<Field, Object> fieldToValue) {
 		Column col = new Column();
 		row.getColumns().add(col);
 		
@@ -59,7 +60,9 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		col.setValue(byteVal);
 		
 		StorageTypeEnum storageType = classMeta.getIdField().getMetaDbo().getStorageType();
-		addIndexInfo(entity, row, columnFamilyName, value, byteVal, storageType);
+		Object primaryKey = classMeta.fetchId(value);
+		addIndexInfo(entity, row, columnFamilyName, primaryKey, byteVal, storageType, fieldToValue);
+		removeIndexInfo(entity, row, columnFamilyName, primaryKey, byteVal, storageType, fieldToValue);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -73,7 +76,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		return classMeta.convertIdToProxy(id, session, null);
+		return classMeta.convertIdToProxy(id, session, null).getProxy();
 	}
 	
 	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta, String indexPrefix) {
@@ -83,9 +86,11 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		this.classMeta = classMeta;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Class<?> getFieldType() {
-		return this.field.getType();
+	protected Object unwrapIfNeeded(Object value) {
+		PROXY proxy = (PROXY) value;
+		return classMeta.fetchId(proxy);
 	}
 
 }
