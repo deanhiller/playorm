@@ -17,7 +17,11 @@ public class MetaInfo {
 	private Map<Class, MetaClass> classToClassMeta = new HashMap<Class, MetaClass>();
 	private Map<String, MetaClass> tableNameToClassMeta = new HashMap<String, MetaClass>();
 	
-	public MetaClass getMetaClass(Class clazz) {
+	public MetaClass getMetaClass(Class clazz2) {
+		Class clazz = clazz2; 
+		if(NoSqlProxy.class.isAssignableFrom(clazz2)) {
+			clazz = clazz2.getSuperclass();
+		}
 		MetaClass metaClass = classToClassMeta.get(clazz);
 		return metaClass;
 	}
