@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
 
 @SuppressWarnings("rawtypes")
@@ -41,18 +42,25 @@ public class StandardConverters {
 		return stdConverters.containsKey(newType);
 	}
 
-	public static byte[] convertToIntegerBytes(Object obj) {
+	/**
+	 * Converts to BigInteger byte form OR BigDecimal byte form OR UTF8 byte form
+	 * @param obj
+	 * @return
+	 */
+	public static byte[] convertToBytes(Object obj) {
 		Class clazz = obj.getClass();
-		if(Float.class.equals(clazz) 
-				|| Double.class.equals(clazz))
-			throw new IllegalArgumentException("Cannot convert float or int to integer type bytes, use convertToDecimalBytes instead");
-		
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
-			throw new IllegalArgumentException("Type not supported at this time="+obj.getClass());
+			throw new IllegalArgumentException("Type clazz="+clazz+" is not supported at this time");
 		return converter.convertToNoSql(obj);
 	}
 	
+	/**
+	 * Special method as if you convert 5 or 876, they convert to BigInteger byte form but here we
+	 * specifically want BigDecimal byte form so we need to force that.
+	 * @param obj
+	 * @return
+	 */
 	public static byte[] convertToDecimalBytes(Object obj) {
 		Object value = obj;
 		Class clazz = obj.getClass();
@@ -109,4 +117,5 @@ public class StandardConverters {
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
 		return (T) converter.convertFromNoSql(data);
 	}
+
 }

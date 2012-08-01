@@ -1,14 +1,16 @@
 package com.alvazan.orm.api.spi3.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
-public class Persist implements Action {
+public class PersistIndex implements Action {
 	private String colFamily;
 	private byte[] rowKey;
 	private long timestamp;
-	private List<Column> columns;
-
+	private IndexColumn column;
+	private ColumnType columnType = ColumnType.ANY_EXCEPT_COMPOSITE;
+	
 	public long getTimestamp() {
 		return timestamp;
 	}
@@ -27,10 +29,17 @@ public class Persist implements Action {
 	public void setRowKey(byte[] rowKey) {
 		this.rowKey = rowKey;
 	}
-	public List<Column> getColumns() {
-		return columns;
+	public ColumnType getColumnType() {
+		return columnType;
 	}
-	public void setColumns(List<Column> columns) {
-		this.columns = columns;
+	public void setColumnType(ColumnType columnType) {
+		this.columnType = columnType;
 	}
+	public IndexColumn getColumn() {
+		return column;
+	}
+	public void setColumn(IndexColumn column) {
+		this.column = column;
+	}
+	
 }

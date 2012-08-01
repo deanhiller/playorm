@@ -111,37 +111,37 @@ public class DboColumnMeta {
 		return classForName(columnType);
 	}
 
-	public TypeEnum getStorageType() {
+	public StorageTypeEnum getStorageType() {
 		Class fieldType = getClassType();
 		return getStorageType(fieldType);
 	}
 
-	public static TypeEnum getStorageType(Class fieldType) {
-		TypeEnum type = null;
+	public static StorageTypeEnum getStorageType(Class fieldType) {
+		StorageTypeEnum type = null;
 		if(byte[].class.equals(fieldType))
-			type = TypeEnum.BYTES;
+			type = StorageTypeEnum.BYTES;
 		else if(Long.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		else if(Integer.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		else if(Short.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		else if(Byte.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		else if(Double.class.equals(fieldType))
-			type = TypeEnum.DECIMAL;
+			type = StorageTypeEnum.DECIMAL;
 		else if(Float.class.equals(fieldType))
-			type = TypeEnum.DECIMAL;
+			type = StorageTypeEnum.DECIMAL;
 		else if(Boolean.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		else if(Character.class.equals(fieldType))
-			type = TypeEnum.STRING;
+			type = StorageTypeEnum.STRING;
 		else if(String.class.equals(fieldType))
-			type = TypeEnum.STRING;
+			type = StorageTypeEnum.STRING;
 		else if(BigDecimal.class.equals(fieldType))
-			type = TypeEnum.DECIMAL;
+			type = StorageTypeEnum.DECIMAL;
 		else if(BigInteger.class.equals(fieldType))
-			type = TypeEnum.INTEGER;
+			type = StorageTypeEnum.INTEGER;
 		
 		return type;
 	}

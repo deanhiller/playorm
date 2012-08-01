@@ -16,7 +16,7 @@ import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
-import com.alvazan.orm.api.spi2.TypeEnum;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi2.TypeInfo;
 import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
@@ -203,12 +203,11 @@ public class ScannerForQuery {
 		// What should we add to metaQuery here
 		// AND later when we do joins, we need to tell the factory
 		// here as well
-		String tableName2 = tableNode.getText();
-		String tableName = tableName2.toLowerCase();
+		String tableName = tableNode.getText();
 		String targetTable = wiring.getTargetTable();
 		DboTableMeta metaClass = metaInfo.getMeta(tableName);
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
-		if(tableName2.equals("TABLE") && targetTable != null) {
+		if(tableName.equals("TABLE") && targetTable != null) {
 			metaClass = metaInfo.getMeta(targetTable);
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
@@ -323,18 +322,18 @@ public class ScannerForQuery {
 		String withoutQuotes = constant.substring(1, constant.length()-1);
 		
 		
-		TypeEnum ourType;
+		StorageTypeEnum ourType;
 		if(node.getType() == NoSqlLexer.DECIMAL){
-			ourType = TypeEnum.DECIMAL;
+			ourType = StorageTypeEnum.DECIMAL;
 			//FIXME 
 			node.setState(Double.parseDouble(withoutQuotes)); 
 		}
 		else if(node.getType() == NoSqlLexer.STR_VAL){
-			ourType = TypeEnum.STRING;
+			ourType = StorageTypeEnum.STRING;
 			node.setState(withoutQuotes);
 		}
 		else if(node.getType() == NoSqlLexer.INT_VAL){
-			ourType = TypeEnum.INTEGER;
+			ourType = StorageTypeEnum.INTEGER;
 			node.setState(Integer.getInteger(withoutQuotes));
 		}
 			
@@ -348,24 +347,24 @@ public class ScannerForQuery {
 		if(typeInfo.getColumnInfo() != null) {
 			validateTypes(wiring, ourType, typeInfo);
 		} else {
-			TypeEnum constantType = typeInfo.getConstantType();
+			StorageTypeEnum constantType = typeInfo.getConstantType();
 			if(constantType != ourType)
 				throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery());
 		}
 		return null;
 	}
 
-	private static void validateTypes(InfoForWiring wiring, TypeEnum constantType, TypeInfo typeInfo) {
+	private static void validateTypes(InfoForWiring wiring, StorageTypeEnum constantType, TypeInfo typeInfo) {
 		DboColumnMeta info = typeInfo.getColumnInfo();
 		Class type = info.getClassType();
-		if(constantType == TypeEnum.STRING && 
+		if(constantType == StorageTypeEnum.STRING && 
 				(type.equals(String.class) || type.equals(Boolean.class)
 						|| type.equals(Character.class)))
 			return;
-		else if(constantType == TypeEnum.DECIMAL && 
+		else if(constantType == StorageTypeEnum.DECIMAL && 
 				(type.equals(Double.class) || type.equals(Float.class) ))
 			return;
-		else if(constantType == TypeEnum.INTEGER &&
+		else if(constantType == StorageTypeEnum.INTEGER &&
 				(type.equals(Long.class) || type.equals(Integer.class) 
 						|| type.equals(Short.class) || type.equals(Byte.class)))
 			return;

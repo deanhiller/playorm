@@ -55,14 +55,14 @@ public class DboTableMeta {
 	public DboColumnMeta getColumnMeta(String columnName) {
 		return nameToField.get(columnName);
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void setColNameType(Class c) {
 		Class objType = DboColumnMeta.translateType(c);
 		this.colNameType = objType.getName();
 	}
 	@SuppressWarnings("rawtypes")
-	public TypeEnum getNameStorageType() {
+	public StorageTypeEnum getNameStorageType() {
 		Class clazz = DboColumnMeta.classForName(colNameType);
 		return DboColumnMeta.getStorageType(clazz);
 	}
@@ -72,11 +72,11 @@ public class DboTableMeta {
 //		return DboColumnMeta.classForName(columnNameType);
 //	}
 	
-	public TypeEnum getColNamePrefixType() {
-		return TypeEnum.lookupValue(colNamePrefixType);
+	public StorageTypeEnum getColNamePrefixType() {
+		return StorageTypeEnum.lookupValue(colNamePrefixType);
 	}
 
-	public void setColNamePrefixType(TypeEnum colNamePrefixType) {
+	public void setColNamePrefixType(StorageTypeEnum colNamePrefixType) {
 		if(colNamePrefixType == null) {
 			this.colNamePrefixType = null;
 			return;

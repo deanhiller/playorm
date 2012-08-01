@@ -9,10 +9,14 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.ColumnType;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Persist;
+import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
 import com.alvazan.orm.api.spi3.db.RemoveEnum;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -41,6 +45,16 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		persist.setColumns(columns);
 		actions.add(persist);
 	}
+
+	@Override
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type) {
+		PersistIndex persist = new PersistIndex();
+		persist.setColFamily(colFamily);
+		persist.setRowKey(rowKey);
+		persist.setColumnType(type);
+		persist.setColumn(column);
+		actions.add(persist);
+	}	
 
 	@Override
 	public void remove(String colFamily, byte[] rowKey) {

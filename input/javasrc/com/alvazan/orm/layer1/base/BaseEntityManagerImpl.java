@@ -12,6 +12,8 @@ import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.ColumnType;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.IndexData;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -42,17 +44,17 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		List<byte[]> colNames = new ArrayList<byte[]>();
 		for(IndexData ind : row.getIndexToRemove()) {
-			colNames.add(ind.getIndexColumnName());
-			session.remove(ind.getColumnFamilyName(), ind.getRowKeyBytes(), colNames);
+			throw new UnsupportedOperationException("not supported just yet");
+			//colNames.add(ind.getIndexColumnName());
+			//session.remove(ind.getColumnFamilyName(), ind.getRowKeyBytes(), colNames);
 		}
 		
-		List<Column> cols = new ArrayList<Column>();
 		for(IndexData ind : row.getIndexToAdd()) {
-			cols.clear();
-			Column c = new Column();
-			c.setName(ind.getIndexColumnName());
-			cols.add(c);
-			session.persist(ind.getColumnFamilyName(), ind.getRowKeyBytes(), cols);
+			IndexColumn c = new IndexColumn();
+			c.setIndexedValue(ind.getIndexedValue());
+			c.setPrimaryKey(ind.getPrimaryKey());
+			ColumnType type = ind.getIndexedValueType().translateStoreToColumnType();
+			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), c, type);
 		}
 		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
 	}
@@ -86,6 +88,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			noSqlKeys.add(key);
 		}
 		
+		return findAllImpl(meta, keys, noSqlKeys);
+	}
+
+	<T> List<KeyValue<T>> findAllImpl(MetaClass<T> meta, List<? extends Object> keys, List<byte[]> noSqlKeys) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
@@ -98,7 +104,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 		for(int i = 0; i < rows.size(); i++) {
 			Row row = rows.get(i);
-			Object key = keys.get(i);
+			Object key;
+			if(keys != null)
+				key = keys.get(i);
+			else
+				key = meta.getIdField().getConverter().convertFromNoSql(row.getKey());
 			
 			KeyValue<T> keyVal;
 			if(row == null) {

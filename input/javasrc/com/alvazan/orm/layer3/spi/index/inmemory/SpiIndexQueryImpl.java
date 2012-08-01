@@ -42,11 +42,14 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		parameters.put(parameterName, valAndType);
 	}
 
+	/**
+	 * Returns the primary keys as a byte[]
+	 */
 	@Override
-	public List getResultList() {
+	public List<byte[]> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		
-		List<Row> rows = new ArrayList<Row>();
+		List<byte[]> objectKeys = new ArrayList<byte[]>();
 		log.info("root="+root.getExpressionAsString());
 		if(root.getType() == NoSqlLexer.EQ) {
 			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
@@ -66,26 +69,16 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			byte[] data = val.getIndexedData();
 			Iterable<Column> scan = session.columnRangeScan(columnFamily, rowKey, data, data, BATCH_SIZE);
 			
-			List<byte[]> keySet = new ArrayList<byte[]>();
 			for(Column c : scan) {
-				byte[] name = c.getName();
-				//the last two bytes have the length of the indexed value(which we already know in the == case)
-				short len = getLength(name);
-				
-				byte[] key = new byte[name.length-2-len];
-				for(int i = len; i < name.length-2;i++) {
-					key[i-len] = name[i];
-				}
-				keySet.add(key);
+				byte[] primaryKey = c.getName();
+				objectKeys.add(primaryKey);
 			}
-			
-			rows = session.find(table, keySet);
 			
 		} else
 			throw new UnsupportedOperationException("not supported yet");
 		
 		//session.columnRangeScan(cf, indexKey, from, to, batchSize)
-		return rows;
+		return objectKeys;
 	}
 
 	private short getLength(byte[] name) {

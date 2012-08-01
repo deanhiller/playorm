@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.ColumnType;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
@@ -33,6 +35,8 @@ public interface NoSqlSession {
 	 * @return
 	 */
 	public IndexReaderWriter getRawIndex();
+	
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column, ColumnType type);
 	
 	public void persist(String colFamily, byte[] rowKey, List<Column> columns);
 

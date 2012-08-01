@@ -9,6 +9,8 @@ import javax.inject.Named;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.ColumnType;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
@@ -23,6 +25,11 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		session.persist(colFamily, rowKey, columns);
 	}
 
+	@Override
+	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn columns, ColumnType type) {
+		session.persistIndex(colFamily, rowKey, columns, type);
+	}
+	
 	@Override
 	public void remove(String colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);

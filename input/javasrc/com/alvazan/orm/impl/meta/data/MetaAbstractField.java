@@ -8,7 +8,7 @@ import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.api.spi2.TypeEnum;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	private DboColumnMeta metaDbo = new DboColumnMeta();
@@ -37,41 +37,24 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	}
 	
 	protected void addIndexInfo(OWNER entity, RowToPersist row,
-			String columnFamily, Object value, byte[] byteVal, TypeEnum storageType) {
+			String columnFamily, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		if(!this.getMetaDbo().isIndexed())
 			return;
-		else if(storageType == TypeEnum.BYTES)
-			throw new IllegalArgumentException("Cannot do indexing for types that are stored as bytes");
+		else if(storageType == StorageTypeEnum.BYTES)
+			throw new IllegalArgumentException("Cannot do indexing for types that are stored as bytes at this time");
 		else if(entity instanceof Proxy) {
 			//this is for removals when indexing is changing
+			throw new UnsupportedOperationException("not supported just yet, we need to code up the removals");
 		}
 		byte[] pk = row.getKey();
-		int len = byteVal.length;
-		if(len > Short.MAX_VALUE)
-			throw new IllegalArgumentException("Indexed field in bytes is larger than Short.MAX_VALUE.  The value from field="+field);
-		short size = (short)len;
-		byte[] indexColName = new byte[byteVal.length+pk.length+2];
 
-		copy(indexColName, byteVal, 0);
-		copy(indexColName, pk, byteVal.length);
-		ByteBuffer b  = ByteBuffer.allocate(2);
-		b.order(ByteOrder.LITTLE_ENDIAN);
-		b.putShort(size);
-		b.flip();
-		indexColName[indexColName.length-2] = b.get();
-		indexColName[indexColName.length-1] = b.get();
-		
 		IndexData data = new IndexData();
 		data.setColumnFamilyName(storageType.getIndexTableName());
 		data.setRowKey("/"+columnFamily+"/"+getMetaDbo().getColumnName());
-		data.setIndexColumnName(indexColName);
+		data.setIndexedValue(byteVal);
+		data.setPrimaryKey(pk);
+		data.setIndexedValueType(storageType);
 		row.addIndexToPersist(data);
-	}
-	
-	private void copy(byte[] indexColName, byte[] byteVal, int offset) {
-		for(int i = 0; i < byteVal.length; i++) {
-			indexColName[i+offset] = byteVal[i];
-		}
 	}
 	
 }

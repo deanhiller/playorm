@@ -24,6 +24,7 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public class TestColumnSlice {
@@ -88,7 +89,7 @@ public class TestColumnSlice {
 		columns.add(new Column(toDecBytes(new BigDecimal("3")), new byte[0]));
 		columns.add(new Column(toDecBytes(new BigDecimal("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns );
+		session.persist(colFamily, rowKey, columns);
 		session.flush();
 
 		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toDecBytes(-250), toDecBytes(12), 2);
@@ -149,7 +150,7 @@ public class TestColumnSlice {
 		columns.add(new Column(toIntBytes(new BigInteger("3")), new byte[0]));
 		columns.add(new Column(toIntBytes(new BigInteger("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns );
+		session.persist(colFamily, rowKey, columns);
 		session.flush();
 
 		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toIntBytes(-250), toIntBytes(50), 2);
@@ -164,7 +165,7 @@ public class TestColumnSlice {
 	}
 	
 	private byte[] toIntBytes(Object obj) {
-		return StandardConverters.convertToIntegerBytes(obj);
+		return StandardConverters.convertToBytes(obj);
 	}
 	private byte[] toDecBytes(Object obj) {
 		return StandardConverters.convertToDecimalBytes(obj);

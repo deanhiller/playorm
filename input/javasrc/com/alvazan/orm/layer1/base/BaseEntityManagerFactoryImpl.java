@@ -22,7 +22,7 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
-import com.alvazan.orm.api.spi2.TypeEnum;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -138,8 +138,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         //are <value being indexed of String or BigInteger or BigDecimal><primarykey><length of first value> so we can
         //sort it BUT we can determine the length of first value so we can get to primary key.
         
-        for(TypeEnum type : TypeEnum.values()) {
-        	if(type == TypeEnum.BYTES)
+        for(StorageTypeEnum type : StorageTypeEnum.values()) {
+        	if(type == StorageTypeEnum.BYTES)
         		continue;
         	DboTableMeta cf = new DboTableMeta();
         	DboColumnMeta idMeta = new DboColumnMeta();

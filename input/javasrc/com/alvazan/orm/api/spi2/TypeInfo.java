@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.spi2;
 
+
 /**
  * NOTE: The type information is either from another constant or from the column's type so we have to 
  * compare against one or the other in this bean.
@@ -9,14 +10,14 @@ package com.alvazan.orm.api.spi2;
  */
 public class TypeInfo {
 
-	private TypeEnum constantType;
+	private StorageTypeEnum constantType;
 	/**
 	 * NOTE: The type information is either from another constant or from the column's type so we have to 
 	 * compare against one or the other field in this bean.
 	 */	
 	private DboColumnMeta columnInfo;
 
-	public TypeInfo(TypeEnum type) {
+	public TypeInfo(StorageTypeEnum type) {
 		this.constantType = type;
 	}
 
@@ -24,11 +25,11 @@ public class TypeInfo {
 		this.columnInfo = columnInfo;
 	}
 
-	public TypeEnum getConstantType() {
+	public StorageTypeEnum getConstantType() {
 		return constantType;
 	}
 
-	public void setConstantType(TypeEnum constantType) {
+	public void setConstantType(StorageTypeEnum constantType) {
 		this.constantType = constantType;
 	}
 
