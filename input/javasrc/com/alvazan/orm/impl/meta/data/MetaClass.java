@@ -37,6 +37,8 @@ public class MetaClass<T> {
 	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();
 	
 	public Object fetchId(T entity) {
+		if(entity == null)
+			return null;
 		return ReflectionUtil.fetchFieldValue(entity, idField.getField());
 	}
 	

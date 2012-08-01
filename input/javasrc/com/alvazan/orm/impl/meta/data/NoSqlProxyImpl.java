@@ -56,11 +56,11 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		//Here we shortcut as we do not need to go to the database...
 		if(idMethod.equals(superClassMethod))
 			return entityId;
-		else if("__markInitializedAndCacheIndexedValues".equals(subclassProxyMethod.getName())) {
+		else if("__markInitializedAndCacheIndexedValues".equals(superClassMethod.getName())) {
 			cacheIndexedValues(self);
 			isInitialized = true;
 			return null;
-		} else if("__getOriginalValues".equals(subclassProxyMethod.getName())) {
+		} else if("__getOriginalValues".equals(superClassMethod.getName())) {
 			return getOriginalValues();
 		}
 			

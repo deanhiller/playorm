@@ -62,14 +62,14 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setup(IdInfo info, Field field2, String columnName,	String indexPrefix) {
+	public void setup(IdInfo info, Field field, String columnName,	String indexPrefix) {
 		this.method = info.getIdMethod();
 		this.method.setAccessible(true);
 		this.useGenerator = info.isUseGenerator();
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();
-		super.setup(field2, columnName, null, field.getType(), false, indexPrefix);
+		super.setup(field, columnName, null, field.getType(), false, indexPrefix);
 	}
 
 	public Converter getConverter() {
