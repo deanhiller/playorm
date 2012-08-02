@@ -90,7 +90,9 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName, Map<Field, Object> fieldToValue) {
+	public void translateToColumn(InfoForIndex<OWNER> info) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
 		if(field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
 		else
@@ -169,7 +171,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private byte[] translateOne(PROXY proxy) {
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = classMeta.convertProxyToId(proxy);
+		byte[] byteVal = classMeta.convertEntityToId(proxy);
 		if(byteVal == null) {
 			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
 			String child = "'"+classMeta.getMetaClass().getSimpleName()+"'";
@@ -206,5 +208,11 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	@Override
 	protected Object unwrapIfNeeded(Object value) {
 		throw new UnsupportedOperationException("Bug, this should never be called");
+	}
+
+	@Override
+	public void removingEntity(InfoForIndex<OWNER> info,
+			List<IndexData> indexRemoves, byte[] rowKey) {
+		throw new UnsupportedOperationException("Bug, this should never be called");		
 	}
 }

@@ -10,15 +10,15 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.ColumnType;
-import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.IndexData;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.impl.meta.data.RowToPersist;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
@@ -46,7 +46,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			//ColumnType type = ind.getIndexedValueType().translateStoreToColumnType();
 			session.removeFromIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
@@ -86,27 +85,56 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			noSqlKeys.add(key);
 		}
 		
-		return findAllImpl(meta, keys, noSqlKeys);
+		return findAllImpl(meta, keys, noSqlKeys, null);
 	}
 
-	<T> List<KeyValue<T>> findAllImpl(MetaClass<T> meta, List<? extends Object> keys, List<byte[]> noSqlKeys) {
+	<T> List<KeyValue<T>> findAllImpl(MetaClass<T> meta, List<? extends Object> keys, List<byte[]> noSqlKeys, String indexName) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		List<Row> rows = session.find(cf, noSqlKeys);	
-		return getKeyValues( meta,keys,rows);
+		List<Row> rows = session.find(cf, noSqlKeys);
+		return getKeyValues(meta, keys, noSqlKeys, rows, indexName);
 	}
 	
-	private <T> List<KeyValue<T>> getKeyValues(MetaClass<T> meta,List<? extends Object> keys,List<Row> rows){
+	private <T> List<KeyValue<T>> getKeyValues(MetaClass<T> meta,List<? extends Object> keys,List<byte[]> noSqlKeys,List<Row> rows, String indexName){
 		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
 
+		if(keys != null)
+			translateRows(meta, keys, rows, keyValues);
+		else
+			translateRowsForQuery(meta, noSqlKeys, rows, keyValues, indexName);
+		
+		return keyValues;
+	}
+
+	private <T> void translateRowsForQuery(MetaClass<T> meta, List<byte[]> noSqlKeys, List<Row> rows, List<KeyValue<T>> keyValues, String indexName) {
 		for(int i = 0; i < rows.size(); i++) {
 			Row row = rows.get(i);
-			Object key;
-			if(keys != null)
-				key = keys.get(i);
-			else
-				key = meta.getIdField().getConverter().convertFromNoSql(row.getKey());
+			byte[] rowKey = noSqlKeys.get(i);
+			MetaIdField<T> idField = meta.getIdField();
+			Converter converter = idField.getConverter();
+			Object key = converter.convertFromNoSql(rowKey);
+			
+			KeyValue<T> keyVal;
+			if(row == null) {
+				keyVal = new KeyValue<T>();
+				keyVal.setKey(key);
+				RowNotFoundException exc = new RowNotFoundException("Your query="+indexName+" contained a value with a pk where that entity no longer exists in the nosql store");
+				keyVal.setException(exc);
+			} else {
+				keyVal = meta.translateFromRow(row, session);
+			}
+			
+			keyValues.add(keyVal);
+		}		
+	}
+	
+	private <T> void translateRows(MetaClass<T> meta,
+			List<? extends Object> keys, List<Row> rows,
+			List<KeyValue<T>> keyValues) {
+		for(int i = 0; i < rows.size(); i++) {
+			Row row = rows.get(i);
+			Object key = keys.get(i);
 			
 			KeyValue<T> keyVal;
 			if(row == null) {
@@ -118,8 +146,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			
 			keyValues.add(keyVal);
 		}
-		
-		return keyValues;
 	}
 	
 	@Override
@@ -181,9 +207,33 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		session.setOrmSessionForMeta(this);		
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public void remove(Object entity) {
-		throw new UnsupportedOperationException("not done yet");
+		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
+		if(metaClass == null)
+			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
+
+		Object proxy = entity;
+		Object pk = metaClass.fetchId(entity);
+		byte[] rowKey = metaClass.convertIdToNoSql(pk);
+			
+		if(!metaClass.hasIndexedField()) {
+			session.remove(metaClass.getColumnFamily(), rowKey);
+			return;
+		} else if(!(entity instanceof NoSqlProxy)) {
+			//then we don't have the database information for indexes so we need to read from the database
+			proxy = find(metaClass.getMetaClass(), pk);
+		}
+		
+		List<IndexData> indexToRemove = metaClass.findIndexRemoves((NoSqlProxy)proxy, rowKey);
+		
+		//REMOVE EVERYTHING HERE, we are probably removing extra and could optimize this later
+		for(IndexData ind : indexToRemove) {
+			session.removeFromIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+		}
+		
+		session.remove(metaClass.getColumnFamily(), rowKey);
 	}
 
 }

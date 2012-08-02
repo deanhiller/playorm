@@ -1,7 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
-import java.util.Map;
+import java.util.List;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi2.DboTableMeta;
@@ -34,14 +34,17 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamilyName, Map<Field, Object> fieldToValue) {
+	public void translateToColumn(InfoForIndex<OWNER> info) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
+		
 		Column col = new Column();
 		row.getColumns().add(col);
 		
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = classMeta.convertProxyToId(value);
+		byte[] byteVal = classMeta.convertEntityToId(value);
 		if(byteVal == null && value != null) { 
 			//if value is not null but we get back a byteVal of null, it means the entity has not been
 			//initialized with a key yet, BUT this is required to be able to save this object
@@ -59,16 +62,27 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		col.setName(columnName.getBytes());
 		col.setValue(byteVal);
 		
-		StorageTypeEnum storageType = classMeta.getIdField().getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = getStorageType();
 		Object primaryKey = classMeta.fetchId(value);
-		addIndexInfo(entity, row, columnFamilyName, primaryKey, byteVal, storageType, fieldToValue);
-		removeIndexInfo(entity, row, columnFamilyName, primaryKey, byteVal, storageType, fieldToValue);
+		addIndexInfo(info, primaryKey, byteVal, storageType);
+		removeIndexInfo(info, primaryKey, byteVal, storageType);
+	}
+
+	private StorageTypeEnum getStorageType() {
+		StorageTypeEnum storageType = classMeta.getIdField().getMetaDbo().getStorageType();
+		return storageType;
+	}
+	
+	@Override
+	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
+		StorageTypeEnum storageType = getStorageType();
+		removingThisEntity(info, indexRemoves, pk, storageType);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public byte[] translateValue(Object value) {
-		byte[] pk = classMeta.convertProxyToId((PROXY) value);
+		byte[] pk = classMeta.convertEntityToId((PROXY) value);
 		if(pk == null && value != null) {
 			throw new ChildWithNoPkException("You can't give us an entity with no pk!!!!  We use the pk to search the database index.  Please fix your bug");
 		}

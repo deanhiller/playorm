@@ -1,7 +1,5 @@
 package com.alvazan.orm.api.spi3.db;
 
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class RemoveIndex implements Action {

@@ -7,7 +7,6 @@ import javax.inject.Inject;
 
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
@@ -74,26 +73,27 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public T getSingleObject() {
-		List<T> results = getResultList();
+		List<KeyValue<T>> results = getResultKeyValueList();
 		if(results.size() > 1)
 			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
 		else if(results.size() == 0)
 			return null;
-		return results.get(0);
+		return results.get(0).getValue();
 	}
 
 	@SuppressWarnings({"unchecked" })
 	@Override
-	public List<T> getResultList() {
+	public List<KeyValue<T>> getResultKeyValueList() {
 		List<byte[]> primaryKeys = indexQuery.getResultList();
-		
 		//HERE we need to query the nosql database with the primary keys from the index
-		List<KeyValue<T>> all = mgr.findAllImpl(metaClass, null, primaryKeys);
-			
-		List<T> entities = getEntities(all);
-		if(entities.size() != primaryKeys.size())
-			throw new StorageMissingEntitesException(entities, "Not all elements found, call exception.getFoundElements for ones that were found");
-		return entities;
+		List<KeyValue<T>> all = mgr.findAllImpl(metaClass, null, primaryKeys, meta.getQuery());
+		return all;
+	}
+
+	@Override
+	public List<T> getResultList() {
+		List<KeyValue<T>> all = getResultKeyValueList();
+		return getEntities(all);
 	}
 	
 	private List<T> getEntities(List<KeyValue<T>> keyValues){
@@ -105,5 +105,5 @@ public class QueryAdapter<T> implements Query<T> {
 
 		return entities;
 	}
-	
+
 }

@@ -24,7 +24,6 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public class TestColumnSlice {

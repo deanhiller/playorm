@@ -2,7 +2,7 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Map;
+import java.util.List;
 
 import javassist.util.proxy.Proxy;
 
@@ -35,17 +35,26 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 	
 	@Override
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamily, Map<Field, Object> fieldToValue) {
+	public void translateToColumn(InfoForIndex<OWNER> info) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
+		
 		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
 		row.setKey(byteVal);
 		
 		StorageTypeEnum storageType = getMetaDbo().getStorageType();
-		addIndexInfo(entity, row, columnFamily, id, byteVal, storageType, fieldToValue);
+		addIndexInfo(info, id, byteVal, storageType);
 		//NOTICE: there is no call to remove because if an id is changed, it is a new entity and we only need to add index not remove since
 		//the old entity was not deleted during this save....we remove from index on remove of old entity only
 	}
 
+	@Override
+	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
+		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		removingThisEntity(info, indexRemoves, pk, storageType);
+	}
+	
 	public Object fillInAndFetchId(OWNER entity) {
 		Object idInEntity = ReflectionUtil.fetchFieldValue(entity, field);
 		Object id = idInEntity;

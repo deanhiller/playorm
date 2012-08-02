@@ -82,15 +82,30 @@ public class MetaClass<T> {
 			fieldToValue = ((NoSqlProxy) entity).__getOriginalValues();
 		}
 		
-		idField.translateToColumn(entity, row, columnFamily, fieldToValue);
+		InfoForIndex<T> info = new InfoForIndex<T>(entity, row, columnFamily, fieldToValue);
+		
+		idField.translateToColumn(info);
 		
 		for(MetaField<T> m : columnNameToField.values()) {
-			m.translateToColumn(entity, row, columnFamily, fieldToValue);
+			m.translateToColumn(info);
 		}
 		
 		return row;
 	}
 
+	@SuppressWarnings("unchecked")
+	public List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey) {
+		Map<Field, Object> fieldToValue = proxy.__getOriginalValues();
+		InfoForIndex<T> info = new InfoForIndex<T>((T) proxy, null, columnFamily, fieldToValue);
+		List<IndexData> indexRemoves = new ArrayList<IndexData>();
+		idField.removingEntity(info, indexRemoves, rowKey);
+		for(MetaField<T> indexed : indexedColumns) {
+			indexed.removingEntity(info, indexRemoves, rowKey);
+		}
+		
+		return indexRemoves;
+	}
+	
 	@Override
 	public String toString() {
 		return "MetaClass [metaClass=" + metaClass + ", columnFamily="
@@ -167,7 +182,7 @@ public class MetaClass<T> {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public byte[] convertProxyToId(T value) {
+	public byte[] convertEntityToId(T value) {
 		if(value == null)
 			return null;
 		MetaIdField idField = getIdField();
@@ -208,5 +223,11 @@ public class MetaClass<T> {
 
 	public List<MetaField<T>> getIndexedColumns() {
 		return indexedColumns;
+	}
+
+	public boolean hasIndexedField() {
+		if(indexedColumns.size() > 0 || idField.getMetaDbo().isIndexed())
+			return true;
+		return false;
 	}
 }

@@ -2,10 +2,8 @@ package com.alvazan.orm.api.spi2;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;

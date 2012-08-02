@@ -1,7 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
-import java.util.Map;
+import java.util.List;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -20,7 +20,9 @@ public interface MetaField<OWNER> {
 	/**
 	 * For when we are translating TO nosql row, this is called on each field/column
 	 */
-	public void translateToColumn(OWNER entity, RowToPersist col, String columnFamily, Map<Field, Object> fieldToValue);
+	public void translateToColumn(InfoForIndex<OWNER> info);
+	
+	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] rowKey);
 	
 	public Field getField();
 

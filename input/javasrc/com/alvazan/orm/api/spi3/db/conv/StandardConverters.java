@@ -5,7 +5,6 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
 
 @SuppressWarnings("rawtypes")

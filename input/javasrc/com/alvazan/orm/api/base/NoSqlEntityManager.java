@@ -11,22 +11,70 @@ public interface NoSqlEntityManager {
 
 	/**
 	 * Retrieve underlying interface to write raw columns to.  This works the same as the NoSqlEntityManager
-	 * in that you must call flush to execute all the calls to persist.
+	 * in that you must call flush to execute all the calls to persist, but is the raw interface.
 	 * 
 	 * @return 
 	 */
 	public NoSqlSession getSession();
 
+	/**
+	 * Creates a 'Remove' action in the write cache that will be sent to nosql store when flush is called.  This 
+	 * method also creates RemoveIndex actions that will be sent when flush is called as well. 
+	 * @param entity
+	 */
 	public void remove(Object entity);
 	
+	/**
+	 * Creates a 'Persist' action in the write cache that will be sent to nosql store when flush is called.  This method
+	 * also creates PersistIndex and RemoveIndex actions if you have indexed fields and the index needs to be modified
+	 * and those are sent when flush is called as well.
+	 * @param entity
+	 */
 	public void put(Object entity);
 	
+	/**
+	 * Use put(Object entity) in a for loop instead BECAUSE changes are not sent to nosql store until the flush anyways.
+	 * putAll will go away in future release
+	 * @param entities
+	 * @deprecated Use put(Object entity) in a loop and flush will send all puts down at one time.
+	 */
+	@Deprecated
 	public void putAll(List<Object> entities);
 	
+	/**
+	 * This is NOSql so do NOT use find in a loop!!!!  Use findAll instead and then loop over the items.
+	 * If your network latency is 5 ms, looking up 1000 records will cost you 5 seconds in a loop(plus processing time)
+	 * where findAll will cost you 5 ms (plus processing time).  ie. findAll is better for looking up lots of entities!!
+	 * 
+	 * @param entityType
+	 * @param key
+	 * @return
+	 */
 	public <T> T find(Class<T> entityType, Object key);
 	
+	/**
+	 * Very efficient operation in nosql for retrieving many entities at once.  This is the operation
+	 * we use very frequently in the ORM for OneToMany operations so we can fetch all your relations 
+	 * extremely fast(as they are fetched in parallel not series so 5ms network latency for 1000 objects
+	 * is not 5 seconds but just 5ms as it is done in parallel).
+	 * 
+	 * @param entityType
+	 * @param keys
+	 * @return
+	 */
 	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys);
 	
+	/**
+	 * Just like hibernate getReference call.  Use this when you have an id of an object and
+	 * have another object like User and you want to call User.addAccount(Account account).  First
+	 * get a fake account with Account account = mgr.getReference(Account.class, accountId) and
+	 * then set the fake account into the User object and save the user object.  The User is now
+	 * related to the account with that accountId and you did not have to hit the database to
+	 * read in the account.  Again, this is the same as JPA getReference method.
+	 * @param entityType
+	 * @param key
+	 * @return
+	 */
 	public <T> T getReference(Class<T> entityType, Object key);
 	
 	/**
@@ -92,18 +140,17 @@ public interface NoSqlEntityManager {
 	
 	/**
 	 * Mainly for framework code but a nice way to get the key of an unknown entity
-	 * where you don't care about the entity but just need the key
+	 * where you don't care about the entity but just need that dang key
 	 * @param entity
 	 * @return
 	 */
 	public Object getKey(Object entity);
 
 	/**
-	 * This is a convenience method for in memory database and in-memory index so that
-	 * unit tests can create the whole entityManagerFactory ONCE in @BeforeClass and then
-	 * in @After, they can easily clear all state from the test with this method.
+	 * This is a convenience method for in memory database and cassandra database
+	 * so that you can run unit tests against in-memory (and run the same unit tests
+	 * against cassandra live as well).
 	 * 
-	 * This method ONLY works with the DbTypeEnum.IN_MEMORY
 	 */
 	public void clearDbAndIndexesIfInMemoryType();
 }

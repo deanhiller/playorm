@@ -3,7 +3,6 @@ package com.alvazan.orm.api.spi2;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 

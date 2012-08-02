@@ -1,9 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
-import java.util.Map;
-
-import javassist.util.proxy.Proxy;
+import java.util.List;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
@@ -32,7 +30,10 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		ReflectionUtil.putFieldValue(entity, field, value);
 	}
 	@Override
-	public void translateToColumn(OWNER entity, RowToPersist row, String columnFamily, Map<Field, Object> fieldToValue) {
+	public void translateToColumn(InfoForIndex<OWNER> info) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
+		
 		Column col = new Column();
 		row.getColumns().add(col);
 
@@ -42,8 +43,14 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		col.setValue(byteVal);
 		
 		StorageTypeEnum storageType = getMetaDbo().getStorageType();
-		addIndexInfo(entity, row, columnFamily, value, byteVal, storageType, fieldToValue);
-		removeIndexInfo(entity, row, columnFamily, value, byteVal, storageType, fieldToValue);
+		addIndexInfo(info, value, byteVal, storageType);
+		removeIndexInfo(info, value, byteVal, storageType);
+	}
+	
+	@Override
+	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
+		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		removingThisEntity(info, indexRemoves, pk, storageType);
 	}
 	
 	@Override
@@ -60,6 +67,5 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	protected Object unwrapIfNeeded(Object value) {
 		return value; //no need to unwrap common fields
 	}
-
 
 }

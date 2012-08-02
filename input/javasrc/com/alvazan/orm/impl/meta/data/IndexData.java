@@ -2,8 +2,6 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.io.UnsupportedEncodingException;
 
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
-import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 
 public class IndexData {

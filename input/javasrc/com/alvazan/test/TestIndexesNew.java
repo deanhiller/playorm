@@ -38,7 +38,7 @@ public class TestIndexesNew {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testBasicChangeToIndex() {
 		User user = new User();
 		user.setName("dean");
@@ -63,7 +63,7 @@ public class TestIndexesNew {
 		
 	}
 	
-	//@Test
+	@Test
 	public void testBasicRemove() {
 		User user = new User();
 		user.setName("dean");

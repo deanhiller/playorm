@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi3.index.StateAttribute;

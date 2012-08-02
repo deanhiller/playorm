@@ -2,14 +2,12 @@ package com.alvazan.orm.layer2.nosql.cache;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;

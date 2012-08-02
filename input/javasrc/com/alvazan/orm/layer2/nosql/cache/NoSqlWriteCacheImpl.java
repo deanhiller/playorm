@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Persist;

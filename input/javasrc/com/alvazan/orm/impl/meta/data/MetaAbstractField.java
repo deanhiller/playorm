@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
@@ -37,8 +38,11 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		metaDbo.setup(columnName, fkToTable, classType, isToManyColumn, indexPrefix);
 	}
 	
-	protected void removeIndexInfo(OWNER entity, RowToPersist row,
-			String columnFamily, Object value, byte[] byteVal, StorageTypeEnum storageType, Map<Field, Object> fieldToValue) {
+	protected void removeIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
+		RowToPersist row = info.getRow();
+		String columnFamily = info.getColumnFamily();
+		Map<Field, Object> fieldToValue = info.getFieldToValue();
+		
 		if(!this.getMetaDbo().isIndexed())
 			return;
 		else if(storageType == StorageTypeEnum.BYTES)
@@ -65,7 +69,25 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		row.addIndexToRemove(data);
 	}
 	
-	protected void addIndexInfo(OWNER entity, RowToPersist row, String columnFamily, Object value, byte[] byteVal, StorageTypeEnum storageType, Map<Field, Object> fieldToValue) {
+	protected void removingThisEntity(InfoForIndex<OWNER> info,
+			List<IndexData> indexRemoves, byte[] pk, StorageTypeEnum storageType) {
+		String columnFamily = info.getColumnFamily();
+		Map<Field, Object> fieldToValue = info.getFieldToValue();
+		Object valueInDatabase = fieldToValue.get(field);
+		if(valueInDatabase == null)
+			return;
+		
+		byte[] oldIndexedVal = translateValue(valueInDatabase);
+		IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk);
+		indexRemoves.add(data);
+	}
+	
+	protected void addIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
+		String columnFamily = info.getColumnFamily();
+		Map<Field, Object> fieldToValue = info.getFieldToValue();
+		
 		if(!this.getMetaDbo().isIndexed())
 			return;
 		else if(storageType == StorageTypeEnum.BYTES)
