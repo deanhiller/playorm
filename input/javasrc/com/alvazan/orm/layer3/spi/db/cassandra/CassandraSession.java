@@ -460,9 +460,9 @@ public class CassandraSession implements NoSqlRawSession {
 			break;
 		case COMPOSITE_DECIMALPREFIX:
 			BigDecimalComposite bigDec = new BigDecimalComposite();
-			bigDec.value = StandardConverters.convertFromBytes(BigDecimal.class, indexedValue);
+			bigDec.value = indexedValue;
 			bigDec.pk = pk;
-			toPersist = pk;
+			toPersist = bigDec;
 			break;
 		default:
 			throw new UnsupportedOperationException("not supported at this time. type="+type);
@@ -528,22 +528,29 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 
 		ColumnType type = info.getColumnType();
-		ColumnFamily cf = info.getColumnFamilyObj();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE)
 			return findBasic(rowKey, from, to, batchSize, info);
 		else if(type == ColumnType.COMPOSITE_STRINGPREFIX)
-			return findString(rowKey, from, to, batchSize, info);
-		
-		throw new UnsupportedOperationException("not done here yet");
+			return findString(String.class, rowKey, from, to, batchSize, info);
+		else if(type == ColumnType.COMPOSITE_INTEGERPREFIX)
+			return findString(BigInteger.class, rowKey, from, to, batchSize, info);
+		else if(type == ColumnType.COMPOSITE_DECIMALPREFIX)
+			return findString(null, rowKey, from, to, batchSize, info);
+		else
+			throw new UnsupportedOperationException("not done here yet");
 	}
 
-	private Iterable<Column> findString(byte[] rowKey, byte[] from, byte[] to,
+	private Iterable<Column> findString(Class clazz, byte[] rowKey, byte[] from, byte[] to,
 			int batchSize, Info info) {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		AnnotatedCompositeSerializer serializer = info.getCompositeSerializer();
 
-		String val1 = toUTF8(from);
-		String val2 = toUTF8(to);
+		Object val1 = from;
+		Object val2 = to;
+		if(clazz != null) { 
+			val1 = StandardConverters.convertFromBytes(clazz, to);
+			val2 = StandardConverters.convertFromBytes(clazz, from); 
+		}
 		
 		CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(val1).lessThanEquals(val2).limit(batchSize);
 

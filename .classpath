@@ -26,7 +26,7 @@
 	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/antlr-3.4-complete-no-antlrv2.jar"/>
-	<classpathentry kind="lib" path="input/libinclude/astyanax/astyanax-1.0.4.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/astyanax/astyanax-1.0.4.jar" sourcepath="/Users/dhiller2/AAROOT/area1/Netflix-astyanax-5c05d11/src/main/java"/>
 	<classpathentry kind="lib" path="input/libinclude/astyanax/avro-1.4.0-cassandra-1.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/astyanax/cassandra-all-1.1.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/astyanax/cassandra-thrift-1.1.0.jar"/>

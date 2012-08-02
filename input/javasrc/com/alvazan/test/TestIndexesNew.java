@@ -97,4 +97,18 @@ public class TestIndexesNew {
 		TimeSeriesData newData = TimeSeriesData.findById(mgr, data.getKey());
 		Assert.assertEquals(data.getSomeName(), newData.getSomeName());
 	}
+	
+	@Test
+	public void testFloatKey() {
+		TimeSeriesData data = new TimeSeriesData();
+		data.setKey(67L);
+		data.setSomeName("dean");
+		data.setTemp(67.8f);
+		
+		mgr.put(data);
+		mgr.flush();
+
+		TimeSeriesData newData = TimeSeriesData.findByTemp(mgr, 67.8f);
+		Assert.assertEquals(data.getSomeName(), newData.getSomeName());
+	}
 }
