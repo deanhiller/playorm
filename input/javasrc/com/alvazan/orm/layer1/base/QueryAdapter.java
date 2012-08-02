@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer1.base;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi3.index.ValAndType;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
+import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 
 public class QueryAdapter<T> implements Query<T> {
@@ -49,8 +51,11 @@ public class QueryAdapter<T> implements Query<T> {
 
 		DboColumnMeta metaFieldDbo = typeInfo.getColumnInfo();
 		
-		MetaField metaField = metaClass.getMetaFieldByCol(metaFieldDbo.getColumnName());
-		Class fieldType = metaField.getField().getType();
+		String columnName = metaFieldDbo.getColumnName();
+		MetaField metaField = metaClass.getMetaFieldByCol(columnName);
+		
+		Field field = metaField.getField();
+		Class fieldType = field.getType();
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
 		Class objectFieldType = DboColumnMeta.convertIfPrimitive(fieldType);

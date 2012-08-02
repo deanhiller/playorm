@@ -62,8 +62,12 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 			if(id == null)
 				throw new IllegalArgumentException("Entity has @NoSqlEntity(usegenerator=false) but this entity has no id="+entity);
 			return id;
-		} else if(id != null)
+		} else if(id != null) {
+			if(!(entity instanceof NoSqlProxy))
+				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @Id annotation yet you supplied " +
+						"your own id...this will cause issues, please don't set the id OR you are using a primitive for your key which is not a good idea either if you are going to use a generator");
 			return id;
+		}
 		
 		Object newId = generator.generateNewKey(entity);
 		ReflectionUtil.putFieldValue(entity, field, newId);

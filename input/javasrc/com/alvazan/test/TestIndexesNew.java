@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.db.TimeSeriesData;
 import com.alvazan.test.db.User;
 
 public class TestIndexesNew {
@@ -38,7 +39,7 @@ public class TestIndexesNew {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void testBasicChangeToIndex() {
 		User user = new User();
 		user.setName("dean");
@@ -84,4 +85,16 @@ public class TestIndexesNew {
 		Assert.assertNull(newResult);
 	}
 	
+	@Test
+	public void testPrimaryKeyLongIndex() {
+		TimeSeriesData data = new TimeSeriesData();
+		data.setKey(67L);
+		data.setSomeName("dean");
+		
+		mgr.put(data);
+		mgr.flush();
+
+		TimeSeriesData newData = TimeSeriesData.findById(mgr, data.getKey());
+		Assert.assertEquals(data.getSomeName(), newData.getSomeName());
+	}
 }

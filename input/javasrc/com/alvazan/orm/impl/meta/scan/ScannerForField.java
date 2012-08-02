@@ -54,9 +54,7 @@ public class ScannerForField {
 	
 	@SuppressWarnings("unchecked")
 	public <T> MetaIdField<T> processId(Field field, MetaClass<T> metaClass) {
-		if(!String.class.isAssignableFrom(field.getType()))
-			throw new IllegalArgumentException("The id is not of type String and has to be.  field="+field+" in class="+field.getDeclaringClass());
-		
+
 		Method idMethod = getIdMethod(field);
 		
 		Id idAnno = field.getAnnotation(Id.class);

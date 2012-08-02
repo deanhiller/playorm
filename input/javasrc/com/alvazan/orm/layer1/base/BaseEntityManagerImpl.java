@@ -37,6 +37,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
 		if(metaClass == null)
 			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
+		
 		RowToPersist row = metaClass.translateToRow(entity);
 		
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany

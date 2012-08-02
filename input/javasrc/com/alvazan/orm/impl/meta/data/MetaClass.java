@@ -140,6 +140,8 @@ public class MetaClass<T> {
 	}
 	
 	public MetaField<T> getMetaFieldByCol(String columnName){
+		if(idField.getColumnName().equals(columnName))
+			return idField;
 		return columnNameToField.get(columnName);
 	}
 	

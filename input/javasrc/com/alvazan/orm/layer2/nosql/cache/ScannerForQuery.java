@@ -397,18 +397,17 @@ public class ScannerForQuery {
 		
 		//At this point, we have looked up the metaClass associated with the alias
 		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
-		String colName;
 		if (attributeField == null) {
 			//okay, there is no column found, but maybe the column name for the id matches(id is a special case)
-			DboColumnMeta idMeta = metaClass.getIdColumnMeta();
-			if(!idMeta.getColumnName().equals(attributeName))
+			attributeField = metaClass.getIdColumnMeta();
+			if(!attributeField.getColumnName().equals(attributeName))
 				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
-			colName = idMeta.getColumnName();
-		} else {
-			if(!attributeField.isIndexed())
-				throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
-			colName = attributeField.getColumnName();
 		}
+		
+		String colName = attributeField.getColumnName();
+		if(!attributeField.isIndexed())
+			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
+		
 		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colName); 
 		attributeNode2.setState(attr);
 		
