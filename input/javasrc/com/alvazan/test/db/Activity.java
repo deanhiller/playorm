@@ -13,21 +13,21 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 
 @NoSqlEntity
-//@NoSqlQueries({
-//	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
-//	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
-//	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
-//			" e.name=:name and (e.numTimes = :numTimes or e.myFloat = :myFloat)"),	
-//	@NoSqlQuery(name="findWithoutParens", query="select * FROM TABLE e WHERE" +
-//			" e.name=:name and e.numTimes = :numTimes or e.myFloat = :myFloat"),
-//	@NoSqlQuery(name="findWithAnd", query="select * FROM TABLE e WHERE e.name=:name and e.numTimes = :numTimes"),
-//	@NoSqlQuery(name="findWithOr", query="select * FROM TABLE e WHERE e.name=:name or e.numTimes = :numTimes"),
-//	@NoSqlQuery(name="findByName", query="select * FROM TABLE e WHERE e.name=:name"),
-//	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE e WHERE e.numTimes=:numTimes"),
-//	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE e WHERE e.myFloat=:myFloat"),
-//	@NoSqlQuery(name="findByCool", query="select * FROM TABLE e WHERE e.isCool=:cool")
-//	
-//})
+@NoSqlQueries({
+	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
+	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
+	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
+			" e.name=:name and (e.numTimes = :numTimes or e.myFloat = :myFloat)"),	
+	@NoSqlQuery(name="findWithoutParens", query="select * FROM TABLE e WHERE" +
+			" e.name=:name and e.numTimes = :numTimes or e.myFloat = :myFloat"),
+	@NoSqlQuery(name="findWithAnd", query="select * FROM TABLE e WHERE e.name=:name and e.numTimes = :numTimes"),
+	@NoSqlQuery(name="findWithOr", query="select * FROM TABLE e WHERE e.name=:name or e.numTimes = :numTimes"),
+	@NoSqlQuery(name="findByName", query="select * FROM TABLE e WHERE e.name=:name"),
+	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE e WHERE e.numTimes=:numTimes"),
+	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE e WHERE e.myFloat=:myFloat"),
+	@NoSqlQuery(name="findByCool", query="select * FROM TABLE e WHERE e.isCool=:cool")
+	
+})
 public class Activity {
 
 	@Id
