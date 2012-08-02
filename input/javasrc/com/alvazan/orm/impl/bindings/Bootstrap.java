@@ -9,7 +9,7 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.layer1.base.BaseEntityManagerFactoryImpl;
+import com.alvazan.orm.layer0.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 

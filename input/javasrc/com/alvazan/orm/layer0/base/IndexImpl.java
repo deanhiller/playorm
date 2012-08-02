@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer1.base;
+package com.alvazan.orm.layer0.base;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
