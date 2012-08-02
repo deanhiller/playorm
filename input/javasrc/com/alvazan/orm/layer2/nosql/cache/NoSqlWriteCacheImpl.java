@@ -92,6 +92,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 //		}
 
 		rawSession.sendChanges(actions, ormSession);
+		actions = new ArrayList<Action>();
 	}
 
 //	private void insertTime(Action action, long time) {

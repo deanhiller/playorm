@@ -6,6 +6,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -13,6 +15,7 @@ import com.alvazan.test.db.User;
 
 public class TestIndexesNew {
 
+	private static final Logger log = LoggerFactory.getLogger(TestIndexesNew.class);
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 
@@ -28,7 +31,11 @@ public class TestIndexesNew {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		try {
+			other.clearDbAndIndexesIfInMemoryType();
+		} catch(Exception e) {
+			log.warn("Could not clean up properly", e);
+		}
 	}
 	
 	@Test
