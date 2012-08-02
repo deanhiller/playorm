@@ -2,7 +2,7 @@ package com.alvazan.orm.layer3.spi.db.cassandra;
 
 import com.netflix.astyanax.annotations.Component;
 
-public class BigDecimalComposite {
+public class GenericComposite {
 
 	@Component(ordinal=0)
 	byte[] value;

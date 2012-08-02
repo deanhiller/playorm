@@ -158,20 +158,12 @@ public class CassandraSession implements NoSqlRawSession {
 				cf = new ColumnFamily(colFamily, BytesArraySerializer.get(), BytesArraySerializer.get());
 				break;
 			case COMPOSITE_DECIMALPREFIX:
-				com.netflix.astyanax.serializers.
-				AnnotatedCompositeSerializer<BigDecimalComposite> eventSerializer = new AnnotatedCompositeSerializer<BigDecimalComposite>(BigDecimalComposite.class);
-				cf = new ColumnFamily<byte[], BigDecimalComposite>(colFamily, BytesArraySerializer.get(), eventSerializer);
-				info.setCompositeSerializer(eventSerializer);
-				break;
 			case COMPOSITE_INTEGERPREFIX:
-				AnnotatedCompositeSerializer<BigIntegerComposite> bigIntSer = new AnnotatedCompositeSerializer<BigIntegerComposite>(BigIntegerComposite.class);
-				cf = new ColumnFamily<byte[], BigIntegerComposite>(colFamily, BytesArraySerializer.get(), bigIntSer);
-				info.setCompositeSerializer(bigIntSer);
-				break;
 			case COMPOSITE_STRINGPREFIX:
-				AnnotatedCompositeSerializer<StringComposite> stringSerializer = new AnnotatedCompositeSerializer<StringComposite>(StringComposite.class);
-				cf = new ColumnFamily<byte[], StringComposite>(colFamily, BytesArraySerializer.get(), stringSerializer);
-				info.setCompositeSerializer(stringSerializer);
+				com.netflix.astyanax.serializers.
+				AnnotatedCompositeSerializer<GenericComposite> eventSerializer = new AnnotatedCompositeSerializer<GenericComposite>(GenericComposite.class);
+				cf = new ColumnFamily<byte[], GenericComposite>(colFamily, BytesArraySerializer.get(), eventSerializer);
+				info.setCompositeSerializer(eventSerializer);
 				break;
 			default:
 				throw new UnsupportedOperationException("type not supported yet="+type);
@@ -447,22 +439,12 @@ public class CassandraSession implements NoSqlRawSession {
 		Object toPersist;
 		switch(type) {
 		case COMPOSITE_STRINGPREFIX:
-			StringComposite comp = new StringComposite();
-			comp.value = toUTF8(indexedValue);
-			comp.pk = pk;
-			toPersist = comp;
-			break;
 		case COMPOSITE_INTEGERPREFIX:
-			BigIntegerComposite bigInt = new BigIntegerComposite();
-			bigInt.value = StandardConverters.convertFromBytes(BigInteger.class, indexedValue);
+		case COMPOSITE_DECIMALPREFIX:
+			GenericComposite bigInt = new GenericComposite();
+			bigInt.value = indexedValue;
 			bigInt.pk = pk;
 			toPersist = bigInt;
-			break;
-		case COMPOSITE_DECIMALPREFIX:
-			BigDecimalComposite bigDec = new BigDecimalComposite();
-			bigDec.value = indexedValue;
-			bigDec.pk = pk;
-			toPersist = bigDec;
 			break;
 		default:
 			throw new UnsupportedOperationException("not supported at this time. type="+type);
@@ -530,29 +512,20 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnType type = info.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE)
 			return findBasic(rowKey, from, to, batchSize, info);
-		else if(type == ColumnType.COMPOSITE_STRINGPREFIX)
-			return findString(String.class, rowKey, from, to, batchSize, info);
-		else if(type == ColumnType.COMPOSITE_INTEGERPREFIX)
-			return findString(BigInteger.class, rowKey, from, to, batchSize, info);
-		else if(type == ColumnType.COMPOSITE_DECIMALPREFIX)
-			return findString(null, rowKey, from, to, batchSize, info);
+		else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
+				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
+				type == ColumnType.COMPOSITE_STRINGPREFIX)
+			return findString(rowKey, from, to, batchSize, info);
 		else
 			throw new UnsupportedOperationException("not done here yet");
 	}
 
-	private Iterable<Column> findString(Class clazz, byte[] rowKey, byte[] from, byte[] to,
+	private Iterable<Column> findString(byte[] rowKey, byte[] from, byte[] to,
 			int batchSize, Info info) {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		AnnotatedCompositeSerializer serializer = info.getCompositeSerializer();
-
-		Object val1 = from;
-		Object val2 = to;
-		if(clazz != null) { 
-			val1 = StandardConverters.convertFromBytes(clazz, to);
-			val2 = StandardConverters.convertFromBytes(clazz, from); 
-		}
 		
-		CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(val1).lessThanEquals(val2).limit(batchSize);
+		CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(from).lessThanEquals(to).limit(batchSize);
 
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
 
@@ -637,15 +610,9 @@ public class CassandraSession implements NoSqlRawSession {
 				name = (byte[])obj;
 				break;
 			case COMPOSITE_STRINGPREFIX:
-				StringComposite str = (StringComposite)obj;
-				name = str.pk;
-				break;
-			case COMPOSITE_INTEGERPREFIX:
-				BigIntegerComposite bigInt = (BigIntegerComposite)obj;
-				name = bigInt.pk;
-				break;
 			case COMPOSITE_DECIMALPREFIX:
-				BigDecimalComposite bigDec = (BigDecimalComposite)obj;
+			case COMPOSITE_INTEGERPREFIX:
+				GenericComposite bigDec = (GenericComposite)obj;
 				name = bigDec.pk;
 				break;
 			default:
