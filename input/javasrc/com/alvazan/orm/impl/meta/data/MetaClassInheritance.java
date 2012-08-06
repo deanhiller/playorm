@@ -7,7 +7,6 @@ import java.util.Map;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClassInheritance<T> extends MetaAbstractClass<T> {

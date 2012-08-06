@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer3.spi.index.inmemory;
+package com.alvazan.orm.layer2.indexing;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -13,12 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.db.ByteArray;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.index.ExpressionNode;
-import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi3.index.StateAttribute;
-import com.alvazan.orm.api.spi3.index.ValAndType;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
@@ -30,7 +27,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private String indexName;
 	private SpiMetaQueryImpl spiMeta;
 	private NoSqlSession session;
-	private Map<String, ValAndType> parameters = new HashMap<String, ValAndType>();
+	private Map<String, ByteArray> parameters = new HashMap<String, ByteArray>();
 	
 	public void setup(String indexName, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.indexName = indexName;
@@ -39,8 +36,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	@Override
-	public void setParameter(String parameterName, ValAndType valAndType) {
-		parameters.put(parameterName, valAndType);
+	public void setParameter(String parameterName, byte[] value) {
+		ByteArray val = new ByteArray(value);
+		parameters.put(parameterName, val);
 	}
 
 	/**
@@ -95,12 +93,12 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private byte[] processParam(DboColumnMeta info, ExpressionNode node) {
-		String paramName = (String) node.getState();		
-		ValAndType val = parameters.get(paramName);
+		String paramName = (String) node.getState();
+		ByteArray val = parameters.get(paramName);
 		if(val == null)
 			throw new IllegalStateException("You did not call setParameter for parameter= ':"+paramName+"'");
 
-		byte[] data = val.getIndexedData();
+		byte[] data = val.getKey();
 		return data;
 	}
 

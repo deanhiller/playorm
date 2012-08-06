@@ -1,6 +1,5 @@
-package com.alvazan.orm.api.spi3.index;
+package com.alvazan.orm.api.spi2;
 
-import com.alvazan.orm.api.spi2.NoSqlSession;
 
 
 
@@ -23,6 +22,6 @@ public interface SpiMetaQuery {
 	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, NoSqlSession session);
 	
 	
-	public void setASTTree(ExpressionNode node);
+	//public void setASTTree(ExpressionNode node);
 	
 }

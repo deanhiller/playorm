@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
@@ -36,6 +37,9 @@ public class TestIndexAndOrParens {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDbAndIndexesIfInMemoryType();
 	}
+	
+	@Test
+	public void empty() {}
 	
 	//@Test
 	public void testSimpleAnd() {

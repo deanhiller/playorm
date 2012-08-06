@@ -8,7 +8,7 @@ import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 

@@ -4,12 +4,10 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer3.spi.db.cassandra.CassandraSession;
 import com.alvazan.orm.layer3.spi.db.inmemory.InMemorySession;
-import com.alvazan.orm.layer3.spi.index.inmemory.MemoryIndexWriter;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.name.Names;
@@ -49,7 +47,6 @@ public class ProductionBindings implements Module {
 		else
 			binder.bind(DboDatabaseMeta.class).asEagerSingleton();
 		
-		binder.bind(IndexReaderWriter.class).to(MemoryIndexWriter.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);
 	}

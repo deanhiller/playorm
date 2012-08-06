@@ -9,7 +9,6 @@ import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public abstract class MetaAbstractClass<T> implements MetaClass<T> {

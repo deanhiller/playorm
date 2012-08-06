@@ -12,7 +12,7 @@ import java.util.Set;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
-import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
+import com.alvazan.orm.impl.meta.data.Tuple;
 
 public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 

@@ -7,6 +7,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,9 @@ public class TestIndexes {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDbAndIndexesIfInMemoryType();
 	}
+	
+	@Test
+	public void empty() {}
 	
 	//@Test
 	public void testFailureOnTypeMismatch() {

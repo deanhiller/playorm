@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer3.spi.index.inmemory;
+package com.alvazan.orm.layer2.indexing;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -7,9 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.index.ExpressionNode;
-import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
+import com.alvazan.orm.api.spi2.SpiMetaQuery;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 
 public class SpiMetaQueryImpl implements SpiMetaQuery {
 
@@ -26,7 +25,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	@Override
 	public void setASTTree(ExpressionNode node) {
 		this.astTreeRoot = node;
 	}

@@ -1,10 +1,10 @@
-package com.alvazan.orm.api.spi3.index;
+package com.alvazan.orm.api.spi2;
 
 import java.util.List;
 
 public interface SpiQueryAdapter {
 
-	public void setParameter(String parameterName, ValAndType valAndType);
+	public void setParameter(String parameterName, byte[] value);
 
 	@SuppressWarnings("rawtypes")
 	public List getResultList();

@@ -9,7 +9,6 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
-import org.hamcrest.core.IsAnything;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,10 +18,9 @@ import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi2.TypeInfo;
-import com.alvazan.orm.api.spi3.index.ExpressionNode;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
-import com.alvazan.orm.api.spi3.index.SpiMetaQuery;
-import com.alvazan.orm.api.spi3.index.StateAttribute;
+import com.alvazan.orm.layer2.indexing.ExpressionNode;
+import com.alvazan.orm.layer2.indexing.SpiMetaQueryImpl;
+import com.alvazan.orm.layer2.indexing.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 
@@ -32,7 +30,7 @@ public class ScannerForQuery {
 	private static final Logger log = LoggerFactory
 			.getLogger(ScannerForQuery.class);
 	@Inject
-	private IndexReaderWriter indexes;
+	private Provider<SpiMetaQueryImpl> factory;
 	@Inject
 	private DboDatabaseMeta metaInfo;
 	
@@ -52,7 +50,7 @@ public class ScannerForQuery {
 	public MetaQuery newsetupByVisitingTree(String query, String targetTable) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery visitor1 = metaQueryFactory.get();
-		SpiMetaQuery spiMetaQuery = indexes.createQueryFactory();
+		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
 		
 		visitor1.initialize(query, spiMetaQuery);
 

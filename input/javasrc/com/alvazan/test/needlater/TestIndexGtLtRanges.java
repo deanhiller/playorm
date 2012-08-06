@@ -3,6 +3,7 @@ package com.alvazan.test.needlater;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
@@ -31,6 +32,9 @@ public class TestIndexGtLtRanges {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 
+	@Test
+	public void empty() {}
+	
 	//@Test
 	public void testBasicString() {
 		//TODO: test some ranges out here

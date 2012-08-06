@@ -34,6 +34,9 @@ public class TestInheritanceSingleTable {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 
+	@Test
+	public void empty() {}
+
 	//@Test
 	public void testBasicMultipleClasses() {
 		DboColumnCommonMeta common = new DboColumnCommonMeta();

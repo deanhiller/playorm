@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.api.spi3.index.ExpressionNode;
+import com.alvazan.orm.layer2.indexing.ExpressionNode;
 
 public class InfoForWiring {
 

@@ -120,24 +120,11 @@ public class Converters {
 		public String convertFromNoSqlToString(byte[] dbValue) {
 			return new String(Hex.encodeHex(dbValue));
 		}
-		
-		@Override
-		public String convertToIndexFormat(Object value) {
-			return convertFromNoSqlToString((byte[]) value);
-		}
-
 	}
 	
 	public static abstract class BaseConverter implements Converter, AdhocToolConverter {
 		public String convertFromNoSqlToString(byte[] dbValue) {
 			return convertFromNoSql(dbValue)+"";
-		}
-		
-		@Override
-		public String convertToIndexFormat(Object value) {
-			if(value == null)
-				return null;
-			return value+"";
 		}
 	}
 	

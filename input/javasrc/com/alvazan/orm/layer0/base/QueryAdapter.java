@@ -12,9 +12,8 @@ import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.api.spi2.TypeInfo;
-import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
-import com.alvazan.orm.api.spi3.index.ValAndType;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -69,10 +68,8 @@ public class QueryAdapter<T> implements Query<T> {
 		}
 	
 		byte[] data = metaField.translateValue(value);
-		ValAndType val = new ValAndType();
-		val.setIndexedData(data);
-		val.setColumnMeta(metaFieldDbo);
-		indexQuery.setParameter(name, val);
+		
+		indexQuery.setParameter(name, data);
 	}
 
 	@Override

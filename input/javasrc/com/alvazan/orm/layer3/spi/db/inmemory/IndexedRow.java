@@ -76,10 +76,16 @@ public class IndexedRow extends Row {
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
-			result = prime * result
-					+ ((postfix == null) ? 0 : postfix.hashCode());
-			result = prime * result
-					+ ((prefix == null) ? 0 : prefix.hashCode());
+			
+			int val = 0;
+			if(postfix != null)
+				val = postfix.hashCode();
+			int val2 = 0;
+			if(prefix != null)
+				val2 = prefix.hashCode();
+			
+			result = prime * result + val;
+			result = prime * result + val2;
 			return result;
 		}
 

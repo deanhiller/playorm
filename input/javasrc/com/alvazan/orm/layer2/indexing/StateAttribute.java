@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi3.index;
+package com.alvazan.orm.layer2.indexing;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 

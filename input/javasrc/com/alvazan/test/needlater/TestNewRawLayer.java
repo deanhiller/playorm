@@ -43,6 +43,9 @@ public class TestNewRawLayer {
 		}
 	}
 	
+	@Test
+	public void empty() {}
+	
 	//@Test
 	public void testBasicChangeToIndex() {
 		NoSqlSession session = mgr.getSession();

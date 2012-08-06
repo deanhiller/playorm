@@ -9,7 +9,6 @@ import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 

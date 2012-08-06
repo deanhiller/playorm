@@ -336,7 +336,8 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	private ColumnFamilyDefinition setColumnNameCompareType(DboTableMeta cf,
-			StorageTypeEnum type, ColumnFamilyDefinition def) {
+			StorageTypeEnum type, ColumnFamilyDefinition def2) {
+		ColumnFamilyDefinition def = def2;
 		if(type == null) {
 			StorageTypeEnum t = cf.getNameStorageType();
 			if(t == StorageTypeEnum.STRING)
@@ -360,7 +361,8 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	private ColumnFamilyDefinition addRowKeyValidation(DboTableMeta cf,
-			ColumnFamilyDefinition def) {
+			ColumnFamilyDefinition def2) {
+		ColumnFamilyDefinition def = def2;
 		DboColumnMeta idColumnMeta = cf.getIdColumnMeta();
 		StorageTypeEnum rowKeyType = idColumnMeta.getStorageType();
 		switch (rowKeyType) {
@@ -372,6 +374,7 @@ public class CassandraSession implements NoSqlRawSession {
 			break;
 		case DECIMAL:
 			def = def.setKeyValidationClass("IntegerType");
+			break;
 		case BYTES:
 			break;
 		default:

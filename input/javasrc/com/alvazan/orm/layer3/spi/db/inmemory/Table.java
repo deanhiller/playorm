@@ -15,12 +15,12 @@ public class Table {
 
 	private Map<ByteArray, Row> keyToRow = new HashMap<ByteArray, Row>();
 	private SortType columnSortType;
-	static Comparator<ByteArray> utfComparator = new Utf8Comparator();
-	static Comparator<ByteArray> integerComparator = new IntegerComparator();
-	static Comparator<ByteArray> decimalComparator = new DecimalComparator();
-	private static Comparator<OurKey> utfPrefixComparator = new PrefixComparator(utfComparator);
-	private static Comparator<OurKey> integerPrefixComparator = new PrefixComparator(integerComparator);
-	private static Comparator<OurKey> decimalPrefixComparator = new PrefixComparator(decimalComparator);
+	static final Comparator<ByteArray> UTF_COMPARATOR = new Utf8Comparator();
+	static final Comparator<ByteArray> INTEGER_COMPARATOR = new IntegerComparator();
+	static final Comparator<ByteArray> DECIMAL_COMPARATOR = new DecimalComparator();
+	private static Comparator<OurKey> utfPrefixComparator = new PrefixComparator(UTF_COMPARATOR);
+	private static Comparator<OurKey> integerPrefixComparator = new PrefixComparator(INTEGER_COMPARATOR);
+	private static Comparator<OurKey> decimalPrefixComparator = new PrefixComparator(DECIMAL_COMPARATOR);
 	
 	public Table(SortType sortType) {
 		this.columnSortType = sortType;
@@ -46,15 +46,15 @@ public class Table {
 			row = new Row(tree);
 			break;
 		case UTF8:
-			tree = new TreeMap<ByteArray, Column>(utfComparator);
+			tree = new TreeMap<ByteArray, Column>(UTF_COMPARATOR);
 			row = new Row(tree);
 			break;
 		case INTEGER:
-			tree = new TreeMap<ByteArray, Column>(integerComparator);
+			tree = new TreeMap<ByteArray, Column>(INTEGER_COMPARATOR);
 			row = new Row(tree);
 			break;
 		case DECIMAL:
-			tree = new TreeMap<ByteArray, Column>(decimalComparator);
+			tree = new TreeMap<ByteArray, Column>(DECIMAL_COMPARATOR);
 			row = new Row(tree);
 			break;
 		case DECIMAL_PREFIX:

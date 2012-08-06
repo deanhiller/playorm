@@ -2,7 +2,7 @@ package com.alvazan.orm.impl.meta.data.collections;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
-import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
+import com.alvazan.orm.impl.meta.data.Tuple;
 
 /**
  * A class specifically so we can account for nulls.  ie. if we don't use holders and we get
