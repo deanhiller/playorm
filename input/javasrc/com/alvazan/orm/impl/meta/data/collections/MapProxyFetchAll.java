@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -16,6 +19,7 @@ import com.alvazan.orm.impl.meta.data.Tuple;
 
 public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 
+	private static final Logger log = LoggerFactory.getLogger(MapProxyFetchAll.class);
 	private static final long serialVersionUID = 1L;
 	private boolean cacheLoaded;
 	private NoSqlSession session;
@@ -24,13 +28,15 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 	private List<byte[]> keys;
 	private Set<V> originals = new HashSet<V>();
 	private boolean removeAll;
+	private Object owner;
 	
-	public MapProxyFetchAll(NoSqlSession session, MetaAbstractClass<V> classMeta,
+	public MapProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey) {
 		this.session = session;
 		this.classMeta = classMeta;
 		this.keys = keys;
 		this.fieldForKey = fieldForKey;
+		this.owner = owner;
 	}
 
 	//Callback from one of the proxies to load the entire cache based
@@ -41,9 +47,17 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 			return;
 
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
+		log.info("loading key list="+keys+" results="+rows);
 		for(int i = 0; i < this.size(); i++) {
+			byte[] key = keys.get(i);
+			Tuple<V> tuple = classMeta.convertIdToProxy(key, session, null);
 			Row row = rows.get(i);
-			Tuple<V> tuple = classMeta.convertIdToProxy(row.getKey(), session, null);
+			if(row == null) {
+				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
+						" reference/FK to a row that does not exist in another table.  " +
+						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
+			}
+
 			V proxy = tuple.getProxy();
 			//inject the row into the proxy object here to load it's fields
 			classMeta.fillInInstance(row, session, proxy);

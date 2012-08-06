@@ -143,7 +143,7 @@ public class InMemorySession implements NoSqlRawSession {
 			}
 		}
 		
-		table = new Table(sortType);
+		table = new Table(colFamily, sortType);
 		database.putTable(colFamily, table);
 		
 		return table;

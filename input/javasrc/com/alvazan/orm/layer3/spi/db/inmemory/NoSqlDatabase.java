@@ -21,4 +21,14 @@ public class NoSqlDatabase {
 	public void clear() {
 		nameToTable.clear();
 	}
+
+	@Override
+	public String toString() {
+		String db = "";
+		for(Table t : nameToTable.values()) {
+			db += "\n"+t+"\n\n";
+		}
+		return db;
+	}
+	
 }

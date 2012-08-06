@@ -76,12 +76,16 @@ public class ByteArray implements Comparable<ByteArray> {
 	
 	@Override
 	public String toString() {
-		String asString = StandardConverters.convertFromBytesNoExc(String.class, key);
+		String asString = asString();
 		BigDecimal asDec = StandardConverters.convertFromBytesNoExc(BigDecimal.class, key);
 		BigInteger asInt = StandardConverters.convertFromBytesNoExc(BigInteger.class, key);
 		return "[asString:"+asString+"\nasDec:"+asDec+"\nasInt:"+asInt+"\nasHex:"+new String(Hex.encodeHex(this.key))+"]";
 	}
 
+	public String asString() {
+		return StandardConverters.convertFromBytesNoExc(String.class, key);
+	}
+	
 	public boolean hasPrefix(byte[] prefix) {
 		if(key.length <= prefix.length)
 			return false;

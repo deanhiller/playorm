@@ -17,8 +17,8 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 	private List<Holder<T>> currentList = new ArrayList<Holder<T>>();
 	//immutable structures that hold the things cached that would need to be loaded
 
-	public ListProxyFetchAll(NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
-		super(session, classMeta);
+	public ListProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
+		super(owner, session, classMeta);
 		this.keys = keys;
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);

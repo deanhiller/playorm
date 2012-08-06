@@ -43,22 +43,22 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(session, classMeta, keys);
-		return retVal;		
+		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session, classMeta, keys);
+		return retVal;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		MapProxyFetchAll proxy = new MapProxyFetchAll(session, classMeta, keys, fieldForKey);
+		MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
 	
 	private List<PROXY> translateFromColumnList(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(session, classMeta, keys);
+		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session, classMeta, keys);
 		return retVal;
 	}
 

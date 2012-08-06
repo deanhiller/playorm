@@ -61,6 +61,17 @@ public class TestOneToMany {
 	}
 	
 	@Test
+	public void testEmptyMap() {
+		SomeEntity entity = new SomeEntity();
+		entity.setName("asdf");
+		mgr.put(entity);
+		mgr.flush();
+		
+		SomeEntity someEntity = mgr.find(SomeEntity.class, entity.getId());
+		Assert.assertEquals(0, someEntity.getActivities().size());
+	}
+	
+	@Test
 	public void testMapDeletesAreCumulative() {
 		SomeEntity entity = new SomeEntity();
 		entity.setName("asdf");

@@ -14,6 +14,7 @@ import com.alvazan.orm.layer3.spi.db.inmemory.IndexedRow.OurKey;
 public class Table {
 
 	private Map<ByteArray, Row> keyToRow = new HashMap<ByteArray, Row>();
+	private String columnFamilyName;
 	private SortType columnSortType;
 	static final Comparator<ByteArray> UTF_COMPARATOR = new Utf8Comparator();
 	static final Comparator<ByteArray> INTEGER_COMPARATOR = new IntegerComparator();
@@ -22,8 +23,9 @@ public class Table {
 	private static Comparator<OurKey> integerPrefixComparator = new PrefixComparator(INTEGER_COMPARATOR);
 	private static Comparator<OurKey> decimalPrefixComparator = new PrefixComparator(DECIMAL_COMPARATOR);
 	
-	public Table(SortType sortType) {
+	public Table(String columnFamily, SortType sortType) {
 		this.columnSortType = sortType;
+		this.columnFamilyName = columnFamily;
 	}
 
 	public Row findOrCreateRow(byte[] key) {
@@ -86,4 +88,17 @@ public class Table {
 		Row row = keyToRow.get(key);
 		return row;
 	}
+
+	@Override
+	public String toString() {
+		String t = "";
+		t += "columnFamilyName="+columnFamilyName+" columnSortType="+columnSortType;
+		for(Row r : keyToRow.values()) {
+			ByteArray b = new ByteArray(r.getKey());
+			t += "\nrowkey="+b.asString()+" row="+r;
+		}
+		return t;
+	}
+	
+	
 }
