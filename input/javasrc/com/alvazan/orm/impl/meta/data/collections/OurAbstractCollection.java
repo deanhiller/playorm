@@ -10,7 +10,7 @@ import java.util.Set;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -19,7 +19,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 	
 	private NoSqlSession session;
-	private MetaClass<T> classMeta;
+	private MetaAbstractClass<T> classMeta;
 	
 	protected List<byte[]> keys;
 	protected List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
@@ -28,7 +28,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private boolean removeAll;
 	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
 	
-    public OurAbstractCollection(NoSqlSession session2, MetaClass<T> classMeta2) {
+    public OurAbstractCollection(NoSqlSession session2, MetaAbstractClass<T> classMeta2) {
 		this.session = session2;
 		this.classMeta = classMeta2;
 	}

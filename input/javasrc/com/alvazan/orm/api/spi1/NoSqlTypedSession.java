@@ -1,19 +1,18 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi1;
 
 import java.util.Collection;
 import java.util.List;
 
+import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.IndexColumn;
-import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
-import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
-import com.google.inject.ImplementedBy;
 
-@ImplementedBy(NoSqlWriteCacheImpl.class)
-public interface NoSqlSession {
+@SuppressWarnings("rawtypes")
+public interface NoSqlTypedSession {
 
+	@Deprecated
+	public void setRawSession(NoSqlSession s);
+	
 	/**
 	 * Retrieves the rawest interface that all the providers implement(in-memory, cassandra, hadoop, etc) BUT
 	 * be warned, when you call persist, it is executed IMMEDIATELY, there is no flush method on that
@@ -22,20 +21,23 @@ public interface NoSqlSession {
 	 * actions to the nosql database.
 	 * @return
 	 */
-	public NoSqlRawSession getRawSession();
-	
-	public void persistIndex(String colFamily, byte[] rowKey, IndexColumn column);
-	public void removeFromIndex(String columnFamilyName, byte[] rowKeyBytes, IndexColumn c);
-	
-	public void persist(String colFamily, byte[] rowKey, List<Column> columns);
+	public NoSqlSession getRawSession();
 
+	/**
+	 * This api takes BigDecimal, BigInteger, or String as the types and no others for the rowKey
+	 * @param colFamily
+	 * @param rowKey rowkey which is BigDecimal, BigInteger, or String
+	 * @param columns
+	 */
+	public void persist(DboTableMeta meta, TypedRow row);
+	
 	/**
 	 * Remove entire row.
 	 * 
 	 * @param colFamily
 	 * @param rowKey
 	 */
-	public void remove(String colFamily, byte[] rowKey);
+	public void remove(DboTableMeta meta, TypedRow rowKey);
 	
 	/**
 	 * Remove specific columns from a row
@@ -44,14 +46,13 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @param columns
 	 */
-	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
+	public <T> void remove(DboTableMeta meta, T rowKey, Collection<byte[]> columnNames);
 	
-	public List<Row> find(String colFamily, List<byte[]> rowKeys);
-	
+	public <T> List<TypedRow<T>> find(DboTableMeta meta, List<T> rowKeys);
 	
 	public void flush();
 
-	public void clearDbAndIndexesIfInMemoryType();
+	public void clearDatabase();
 
 	/**
 	 * Returns a special Iterable loads itself first with "batchSize" records and then after you
@@ -65,9 +66,8 @@ public interface NoSqlSession {
 	 * @param batchSize
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize);
+	public Iterable<Column> columnRangeScan(DboTableMeta meta, Object rowKey,
+			Object from, Object to, int batchSize);
 
 	public void setOrmSessionForMeta(Object session);
-
 }

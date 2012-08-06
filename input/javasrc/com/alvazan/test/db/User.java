@@ -4,7 +4,7 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
@@ -15,7 +15,7 @@ public class User {
 	@Id
 	private String id;
 	
-	@Indexed
+	@NoSqlIndexed
 	private String name;
 
 	private String lastName;

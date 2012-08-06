@@ -11,21 +11,21 @@ import java.util.Set;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.impl.meta.data.MetaClass.Tuple;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 
 public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 
 	private static final long serialVersionUID = 1L;
 	private boolean cacheLoaded;
 	private NoSqlSession session;
-	private MetaClass<V> classMeta;
+	private MetaAbstractClass<V> classMeta;
 	private Field fieldForKey;
 	private List<byte[]> keys;
 	private Set<V> originals = new HashSet<V>();
 	private boolean removeAll;
 	
-	public MapProxyFetchAll(NoSqlSession session, MetaClass<V> classMeta,
+	public MapProxyFetchAll(NoSqlSession session, MetaAbstractClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey) {
 		this.session = session;
 		this.classMeta = classMeta;
@@ -48,11 +48,21 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 			//inject the row into the proxy object here to load it's fields
 			classMeta.fillInInstance(row, session, proxy);
 			
-			K key = (K) tuple.getEntityId();
-			super.put(key,  proxy);
+			Object mapKey = getKeyField(proxy);
+			super.put((K) mapKey,  proxy);
 			originals.add(proxy);
 		}
 		cacheLoaded = true;
+	}
+
+	private Object getKeyField(V proxy) {
+		try {
+			return fieldForKey.get(proxy);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

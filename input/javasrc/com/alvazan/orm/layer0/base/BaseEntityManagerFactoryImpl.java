@@ -24,6 +24,7 @@ import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.scan.ScannerForField;
@@ -95,8 +96,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	}
         }
         
-        Collection<MetaClass> allEntities = metaInfo.getAllEntities();
-        for(MetaClass meta : allEntities) {
+        Collection<MetaAbstractClass> allEntities = metaInfo.getAllEntities();
+        for(MetaAbstractClass meta : allEntities) {
         	setupQueryStuff(meta);
         }
         
@@ -159,7 +160,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void setupQueryStuff(MetaClass classMeta) {
+	public void setupQueryStuff(MetaAbstractClass classMeta) {
 		Class<?> clazz = classMeta.getMetaClass();
 		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
 		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);

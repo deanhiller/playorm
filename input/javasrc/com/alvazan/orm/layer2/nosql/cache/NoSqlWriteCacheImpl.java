@@ -17,15 +17,11 @@ import com.alvazan.orm.api.spi3.db.Remove;
 import com.alvazan.orm.api.spi3.db.RemoveEnum;
 import com.alvazan.orm.api.spi3.db.RemoveIndex;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Inject
 	private NoSqlRawSession rawSession;
-	@Inject
-	private IndexReaderWriter indexWriter;
-	
 	private List<Action> actions = new ArrayList<Action>();
 	private Object ormSession;
 	
@@ -83,13 +79,6 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public void flush() {
-		//Cassandra uses timestamp for conflict resolution so don't provide that
-//		long time = System.currentTimeMillis();
-//		
-//		for(Action action : actions) {
-//			insertTime(action, time);
-//		}
-
 		rawSession.sendChanges(actions, ormSession);
 		actions = new ArrayList<Action>();
 	}
@@ -103,11 +92,6 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public NoSqlRawSession getRawSession() {
 		return rawSession;
-	}
-
-	@Override
-	public IndexReaderWriter getRawIndex() {
-		return indexWriter;
 	}
 
 	@Override

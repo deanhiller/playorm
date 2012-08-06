@@ -1,8 +1,8 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.impl.meta.data.MetaClass.Tuple;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 
 /**
  * A class specifically so we can account for nulls.  ie. if we don't use holders and we get
@@ -18,11 +18,11 @@ public class Holder<T> {
 	private byte[] key;
 	private boolean hasValue;
 	private T value;
-	private MetaClass<T> metaClass;
+	private MetaAbstractClass<T> metaClass;
 	private NoSqlSession session;
 	private CacheLoadCallback cacheLoadCallback;
 
-	public Holder(MetaClass<T> metaClass, NoSqlSession session, byte[] key, CacheLoadCallback cb) {
+	public Holder(MetaAbstractClass<T> metaClass, NoSqlSession session, byte[] key, CacheLoadCallback cb) {
 		this.metaClass = metaClass;
 		this.session = session;
 		this.key = key;

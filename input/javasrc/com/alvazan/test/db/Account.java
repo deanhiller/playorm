@@ -6,7 +6,7 @@ import java.util.List;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
@@ -24,10 +24,10 @@ public class Account extends AccountSuper{
 	@Id
 	private String id;
 	
-	@Indexed
+	@NoSqlIndexed
 	private String name;
 	
-	@Indexed
+	@NoSqlIndexed
 	private Float users;
 
 	//@Transient

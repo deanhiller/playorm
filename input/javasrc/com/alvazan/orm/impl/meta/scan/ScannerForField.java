@@ -13,7 +13,7 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoConversion;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -23,7 +23,7 @@ import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.alvazan.orm.impl.meta.data.IdInfo;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
@@ -53,7 +53,7 @@ public class ScannerForField {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> MetaIdField<T> processId(Field field, MetaClass<T> metaClass) {
+	public <T> MetaIdField<T> processId(Field field, MetaAbstractClass<T> metaClass) {
 
 		Method idMethod = getIdMethod(field);
 		
@@ -74,7 +74,7 @@ public class ScannerForField {
 		if(!"".equals(idAnno.columnName()))
 			columnName = idAnno.columnName();
 		String indexPrefix = null;
-		if(field.isAnnotationPresent(Indexed.class))
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
 			indexPrefix = "/"+metaClass.getColumnFamily()+"/"+columnName;
 		
 		try {
@@ -132,7 +132,7 @@ public class ScannerForField {
 		}
 
 		String indexPrefix = null;
-		if(field.getAnnotation(Indexed.class) != null)
+		if(field.getAnnotation(NoSqlIndexed.class) != null)
 			indexPrefix = "/"+cf+"/"+colName;
 		
 		Class<?> type = field.getType();
@@ -242,7 +242,7 @@ public class ScannerForField {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+			throw new RuntimeException("type="+entityType.getName()+" needs the NoSqlEntity annotation" +
 					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 		
 		//field's type must be Map or List right now today
@@ -251,7 +251,7 @@ public class ScannerForField {
 			throw new RuntimeException("field="+field+" must be Set, Collection, List or Map since it is annotated with OneToMany");
 
 		MetaListField metaField = metaListProvider.get();
-		MetaClass<?> classMeta = metaInfo.findOrCreate(entityType);
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
 		metaField.setup(field, colName,  classMeta, fieldForKey);
 		
 		return metaField;
@@ -264,7 +264,7 @@ public class ScannerForField {
 			colName = colNameOrig;
 		
 		String indexPrefix = null;
-		if(field.getAnnotation(Indexed.class) != null)
+		if(field.getAnnotation(NoSqlIndexed.class) != null)
 			indexPrefix ="/"+colFamily+"/"+colName; 
 		
 		//at this point we only need to verify that 
@@ -274,7 +274,7 @@ public class ScannerForField {
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 		
 		MetaProxyField metaField = metaProxyProvider.get();
-		MetaClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(field.getType());
 		
 		metaField.setup(field, colName, classMeta, indexPrefix);
 		return metaField;

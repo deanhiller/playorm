@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements List<T> {
@@ -17,7 +17,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 	private List<Holder<T>> currentList = new ArrayList<Holder<T>>();
 	//immutable structures that hold the things cached that would need to be loaded
 
-	public ListProxyFetchAll(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
+	public ListProxyFetchAll(NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
 		super(session, classMeta);
 		this.keys = keys;
 		for(byte[] key : keys) {

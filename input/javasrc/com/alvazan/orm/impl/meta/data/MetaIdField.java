@@ -21,7 +21,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	private boolean useGenerator;
 	private KeyGenerator generator;
 	private Method method;
-	private MetaClass<OWNER> metaClass;
+	private MetaAbstractClass<OWNER> metaClass;
 
 	@Override
 	public String toString() {
@@ -63,9 +63,10 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 				throw new IllegalArgumentException("Entity has @NoSqlEntity(usegenerator=false) but this entity has no id="+entity);
 			return id;
 		} else if(id != null) {
-			if(!(entity instanceof NoSqlProxy))
-				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @Id annotation yet you supplied " +
-						"your own id...this will cause issues, please don't set the id OR you are using a primitive for your key which is not a good idea either if you are going to use a generator");
+			//kind of not a good idea if they new an entity and save it twice, this will then fail...should we enable this??? not sure.
+//			if(!(entity instanceof NoSqlProxy))
+//				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @Id annotation yet you supplied " +
+//						"your own id...this will cause issues, please don't set the id OR you are using a primitive for your key which is not a good idea either if you are going to use a generator");
 			return id;
 		}
 		

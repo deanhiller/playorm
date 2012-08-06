@@ -7,8 +7,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Embedded {
-    @SuppressWarnings("rawtypes")
-	Class targetEntity() default void.class;
-}
+public @interface NoSqlTransient {
 
+}

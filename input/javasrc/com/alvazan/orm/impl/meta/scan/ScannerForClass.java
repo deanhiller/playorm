@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.scan;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -15,18 +16,22 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.anno.Embeddable;
+import com.alvazan.orm.api.base.anno.NoDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
-import com.alvazan.orm.api.base.anno.Transient;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -51,21 +56,43 @@ public class ScannerForClass {
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
 		//of MetaClass that will be filled in here when Account gets scanned(if it gets scanned
 		//after Activity that is).  You can open call heirarchy on findOrCreateMetaClass ;).
-		MetaClass classMeta = metaInfo.findOrCreate(clazz);
-		classMeta.setMetaClass(clazz);
-		createAndSetProxy(classMeta);
-		scanClass(classMeta);
+		MetaAbstractClass classMeta = metaInfo.findOrCreate(clazz);
 		
-		metaInfo.addTableNameLookup(classMeta);
+		NoSqlInheritance annotation = clazz.getAnnotation(NoSqlInheritance.class);
+		if(classMeta instanceof MetaClassInheritance) {
+			MetaClassInheritance classMeta2 = (MetaClassInheritance) classMeta;
+			scanMultipleClasses(annotation, classMeta2, clazz);
+		} else {
+			MetaClassSingle classMeta2 = (MetaClassSingle)classMeta;
+			Class proxyClass = createTheProxy(clazz);
+			classMeta2.setProxyClass(proxyClass);
+			metaInfo.addTableNameLookup(classMeta);
+			scanClass(classMeta);
+			databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
+		}
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance metaClass, Class<?> mainClass) {
+		for(Class<?> clazz : annotation.columnfamily()) {
+			NoDiscriminatorColumn col = clazz.getAnnotation(NoDiscriminatorColumn.class);
+			if(col == null)
+				throw new IllegalArgumentException("Class "+mainClass.getName()+" in the NoSqlInheritance annotation, specifies a class" +
+						" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());
+			String columnValue = col.value();
+			Class proxyClass = createTheProxy(mainClass);
+			
+			metaClass.addProxy(columnValue, proxyClass);
 		
-		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
+			//throw new UnsupportedOperationException("not done yet");
+			//scanClass(classMeta);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T> void createAndSetProxy(MetaClass<T> classMeta) {
-		Class<T> fieldType = classMeta.getMetaClass();
+	private <T> Class<T> createTheProxy(Class<?> mainClass) {
 		ProxyFactory f = new ProxyFactory();
-		f.setSuperclass(fieldType);
+		f.setSuperclass(mainClass);
 		f.setInterfaces(new Class[] {NoSqlProxy.class});
 		f.setFilter(new MethodFilter() {
 			public boolean isHandled(Method m) {
@@ -82,7 +109,7 @@ public class ScannerForClass {
 		Class<T> clazz = f.createClass();
 		testInstanceCreation(clazz);
 		
-		classMeta.setProxyClass(clazz);
+		return clazz;
 	}
 	
 	/**
@@ -99,9 +126,9 @@ public class ScannerForClass {
 		}
 	}
 	
-	private void scanClass(MetaClass<?> meta) {
+	private void scanClass(MetaAbstractClass<?> meta) {
 		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
-		Embeddable embeddable = meta.getMetaClass().getAnnotation(Embeddable.class);
+		NoSqlEmbeddable embeddable = meta.getMetaClass().getAnnotation(NoSqlEmbeddable.class);
 		if(noSqlEntity != null) {
 			String colFamily = noSqlEntity.columnfamily();
 			if("".equals(colFamily))
@@ -116,7 +143,7 @@ public class ScannerForClass {
 		
 		scanFields(meta);
 	}
-	private void scanFields(MetaClass<?> meta) {
+	private void scanFields(MetaAbstractClass<?> meta) {
 		Class<?> metaClass = meta.getMetaClass();
 		List<Field[]> fields = new ArrayList<Field[]>();
 		findFields(metaClass, fields);
@@ -129,10 +156,10 @@ public class ScannerForClass {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void inspectField(MetaClass<?> metaClass, Field field) {
+	private void inspectField(MetaAbstractClass<?> metaClass, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
-				field.isAnnotationPresent(Transient.class))
+				field.isAnnotationPresent(NoSqlTransient.class))
 			return;
 		
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
@@ -152,12 +179,12 @@ public class ScannerForClass {
 			metaField = inspectorField.processManyToMany(field);
 		else if(field.isAnnotationPresent(OneToMany.class))
 			metaField = inspectorField.processOneToMany(field);
-		else if(field.isAnnotationPresent(Embeddable.class))
+		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
 		else
 			metaField = inspectorField.processColumn(field, cf);
 		
-		boolean isIndexed = field.isAnnotationPresent(Indexed.class);
+		boolean isIndexed = field.isAnnotationPresent(NoSqlIndexed.class);
 		metaClass.addMetaField(metaField, isIndexed);
 		metaDbo.addColumnMeta(metaField.getMetaDbo());
 	}

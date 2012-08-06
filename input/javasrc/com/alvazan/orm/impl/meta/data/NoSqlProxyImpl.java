@@ -24,12 +24,12 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	private NoSqlSession session;
 	private Object entityId;
 	private Method idMethod;
-	private MetaClass<T> classMeta;
+	private MetaAbstractClass<T> classMeta;
 	private boolean isInitialized = false;
 	private CacheLoadCallback cacheLoadCallback;
 	private Map<Field, Object> indexFieldToOriginalValue = new HashMap<Field, Object>();
 	
-	public NoSqlProxyImpl(NoSqlSession session, MetaClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
+	public NoSqlProxyImpl(NoSqlSession session, MetaAbstractClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;

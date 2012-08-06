@@ -19,8 +19,7 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
-		String columnName = getColumnName();
-		Column column = row.getColumn(columnName.getBytes());
+		Column column = row.getColumn(getMetaDbo().getColumnNameAsBytes());
 		
 		if(column == null) {
 			column = new Column();

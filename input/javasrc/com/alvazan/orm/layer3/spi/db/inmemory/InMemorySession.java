@@ -63,7 +63,6 @@ public class InMemorySession implements NoSqlRawSession {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
 		String colFamily = action.getColFamily();
 		Table table = database.findTable(colFamily);
@@ -84,21 +83,24 @@ public class InMemorySession implements NoSqlRawSession {
 			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
-		Class columnNameType = null;
 
 		SortType sortType = SortType.BYTES;
-		if(String.class.equals(columnNameType))
-			sortType = SortType.UTF8;
-		else if(Integer.class.equals(columnNameType)
-				|| Long.class.equals(columnNameType)
-				|| Short.class.equals(columnNameType)
-				|| Byte.class.equals(columnNameType))
-			sortType = SortType.INTEGER;
-		else if(Float.class.equals(columnNameType)
-				|| Double.class.equals(columnNameType))
+		switch (cf.getNameStorageType()) {
+		case BYTES:
+			sortType = SortType.BYTES;
+			break;
+		case DECIMAL:
 			sortType = SortType.DECIMAL;
-		else
-			throw new UnsupportedOperationException("type not supported="+columnNameType);
+			break;
+		case INTEGER:
+			sortType = SortType.INTEGER;
+			break;
+		case STRING:
+			sortType = SortType.UTF8;
+			break;
+		default:
+			throw new UnsupportedOperationException("type not supported="+cf.getNameStorageType());
+		}
 		
 		table = new Table(sortType);
 		database.putTable(colFamily, table);

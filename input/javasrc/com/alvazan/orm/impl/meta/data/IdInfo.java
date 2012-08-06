@@ -10,7 +10,7 @@ public class IdInfo {
 	private boolean useGenerator;
 	private KeyGenerator gen;
 	private Converter converter;
-	private MetaClass metaClass;
+	private MetaAbstractClass metaClass;
 	public Method getIdMethod() {
 		return idMethod;
 	}
@@ -35,10 +35,10 @@ public class IdInfo {
 	public void setConverter(Converter converter) {
 		this.converter = converter;
 	}
-	public MetaClass getMetaClass() {
+	public MetaAbstractClass getMetaClass() {
 		return metaClass;
 	}
-	public void setMetaClass(MetaClass metaClass) {
+	public void setMetaClass(MetaAbstractClass metaClass) {
 		this.metaClass = metaClass;
 	}
 	

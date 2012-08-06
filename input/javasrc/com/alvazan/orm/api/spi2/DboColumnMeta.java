@@ -1,16 +1,19 @@
 package com.alvazan.orm.api.spi2;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.spi3.db.conv.AdhocToolConverter;
+import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
-@SuppressWarnings("rawtypes")
 @NoSqlEntity
+@SuppressWarnings("rawtypes")
 public class DboColumnMeta {
 
 	@Id
@@ -37,6 +40,9 @@ public class DboColumnMeta {
 	private String indexPrefix;
 
 	private String columnFamily;
+
+	@NoSqlTransient
+	private transient byte[] columnAsBytes;
 	
 	public String getColumnName() {
 		return columnName;
@@ -196,4 +202,41 @@ public class DboColumnMeta {
 			throw new IllegalArgumentException("type="+type+" is not supported at this point");
 		return converter.convertFromNoSqlToString(dbValue)+"";		
 	}
+
+	public byte[] convertToStorage2(Object value) {
+		if(fkToColumnFamily != null) {
+			return fkToColumnFamily.getIdColumnMeta().convertToStorage2(value);
+		}
+		Converter converter = StandardConverters.get(getClassType());
+		if(converter == null)
+			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
+		
+		return converter.convertToNoSql(value);
+	}
+
+	public Object convertFromStorage2(byte[] data) {
+		if(fkToColumnFamily != null) {
+			return fkToColumnFamily.getIdColumnMeta().convertFromStorage2(data);
+		}
+		Converter converter = StandardConverters.get(getClassType());
+		if(converter == null)
+			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
+		
+		return converter.convertFromNoSql(data);		
+	}
+	
+	public byte[] getColumnNameAsBytes() {
+		if(columnAsBytes == null)
+			columnAsBytes = toUTF8(columnName);
+		return columnAsBytes;
+	}
+
+	private byte[] toUTF8(String columnName) {
+		try {
+			return columnName.getBytes("UTF8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 }

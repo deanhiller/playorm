@@ -4,7 +4,7 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
@@ -17,12 +17,12 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 public class TimeSeriesData {
 
 	@Id(usegenerator=false)
-	@Indexed
+	@NoSqlIndexed
 	private Long key;
 	
 	private String someName;
 
-	@Indexed
+	@NoSqlIndexed
 	private float temp;
 	
 	public Long getKey() {

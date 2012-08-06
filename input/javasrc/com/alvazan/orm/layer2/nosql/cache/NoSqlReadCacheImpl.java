@@ -69,11 +69,6 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public IndexReaderWriter getRawIndex() {
-		return session.getRawIndex();
-	}
-
-	@Override
 	public void clearDbAndIndexesIfInMemoryType() {
 		session.clearDbAndIndexesIfInMemoryType();
 	}

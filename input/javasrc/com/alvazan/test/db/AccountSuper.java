@@ -1,12 +1,12 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.anno.Indexed;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 
 public class AccountSuper {
 
-	@Indexed
+	@NoSqlIndexed
 	private int someField;
-	@Indexed
+	@NoSqlIndexed
 	private Boolean isActive;
 	
 	public int getSomeField() {

@@ -9,12 +9,13 @@ import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle.Tuple;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	//ClassMeta Will eventually have the idField that has the converter!!!
 	//once it is scanned
-	private MetaClass<PROXY> classMeta;
+	private MetaAbstractClass<PROXY> classMeta;
 	
 	@Override
 	public String toString() {
@@ -90,10 +91,11 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 	
 	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		return classMeta.convertIdToProxy(id, session, null).getProxy();
+		Tuple<PROXY> tuple = classMeta.convertIdToProxy(id, session, null);
+		return tuple.getProxy();
 	}
 	
-	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta, String indexPrefix) {
+	public void setup(Field field2, String colName, MetaAbstractClass<PROXY> classMeta, String indexPrefix) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		
 		super.setup(field2, colName, fkToTable, null, false, indexPrefix);

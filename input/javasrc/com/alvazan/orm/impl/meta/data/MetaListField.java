@@ -20,7 +20,7 @@ import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 
 public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
-	private MetaClass<PROXY> classMeta;
+	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
 	
 	@Override
@@ -187,7 +187,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return byteVal;
 	}
 
-	public void setup(Field field, String colName, MetaClass<PROXY> classMeta, Field fieldForKey) {
+	public void setup(Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		super.setup(field, colName, fkToTable, null, true, null);
 		this.classMeta = classMeta;
