@@ -69,6 +69,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	@Inject
 	private DboDatabaseMeta dbMetaFromOrmOnly;
+	private String keyspaceName;
 	
 	@Override
 	public void start(Map<String, String> properties) {
@@ -80,9 +81,11 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	public void startImpl(Map<String, String> properties) throws ConnectionException {
+		String clusterName = "SDICluster";
+		keyspaceName = "SDIKeyspace";
 		Builder builder = new AstyanaxContext.Builder()
-	    .forCluster("SDICluster")
-	    .forKeyspace("SDIKeyspace")
+	    .forCluster(clusterName)
+	    .forKeyspace(keyspaceName)
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
 	        .setDiscoveryType(NodeDiscoveryType.NONE)
 	    )
@@ -93,14 +96,34 @@ public class CassandraSession implements NoSqlRawSession {
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
 		
-		AstyanaxContext<Keyspace> context = builder.buildKeyspace(ThriftFamilyFactory.getInstance());
-		context.start();
-		
 		AstyanaxContext<Cluster> clusterContext = builder.buildCluster(ThriftFamilyFactory.getInstance());
 		clusterContext.start();
 		
-		keyspace = context.getEntity();
 		cluster = clusterContext.getEntity();
+		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
+		boolean exists = false;
+		for(KeyspaceDefinition kDef : keyspaces) {
+			if(keyspaceName.equalsIgnoreCase(kDef.getName())) {
+				exists = true;
+				break;
+			}
+		}
+
+		if(!exists) {
+			KeyspaceDefinition def = cluster.makeKeyspaceDefinition();
+			def.setName(keyspaceName);
+			def.setStrategyClass("org.apache.cassandra.locator.SimpleStrategy");
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("replication_factor", "3");
+			def.setStrategyOptions(map);
+			cluster.addKeyspace(def);
+		}
+		
+		AstyanaxContext<Keyspace> context = builder.buildKeyspace(ThriftFamilyFactory.getInstance());
+		context.start();
+		
+		keyspace = context.getEntity();
+
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		List<ColumnFamilyDefinition> cfList = keySpaceMeta.getColumnFamilyList();
@@ -442,8 +465,8 @@ public class CassandraSession implements NoSqlRawSession {
 		case COMPOSITE_INTEGERPREFIX:
 		case COMPOSITE_DECIMALPREFIX:
 			GenericComposite bigInt = new GenericComposite();
-			bigInt.value = indexedValue;
-			bigInt.pk = pk;
+			bigInt.setValue(indexedValue);
+			bigInt.setPk(pk);
 			toPersist = bigInt;
 			break;
 		default:
@@ -481,13 +504,18 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 	public void clearImpl() throws ConnectionException {
-		for(String cf : existingColumnFamilies2.keySet()) {
-			Info info = fetchColumnFamilyInfo(cf);
-			if(info != null) {
-				ColumnFamily colFamily = info.getColumnFamilyObj();
-				keyspace.truncateColumnFamily(colFamily);
+		
+		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
+		KeyspaceDefinition ourDef = null;
+		for(KeyspaceDefinition kDef : keyspaces) {
+			if(keyspaceName.equalsIgnoreCase(kDef.getName())) {
+				ourDef = kDef;
+				break;
 			}
 		}
+		
+		cluster.dropKeyspace(keyspaceName);
+		cluster.addKeyspace(ourDef);
 	}
 
 	@Override
@@ -613,7 +641,7 @@ public class CassandraSession implements NoSqlRawSession {
 			case COMPOSITE_DECIMALPREFIX:
 			case COMPOSITE_INTEGERPREFIX:
 				GenericComposite bigDec = (GenericComposite)obj;
-				name = bigDec.pk;
+				name = bigDec.getPk();
 				break;
 			default:
 				throw new UnsupportedOperationException("type not supported yet="+info.getColumnType());
