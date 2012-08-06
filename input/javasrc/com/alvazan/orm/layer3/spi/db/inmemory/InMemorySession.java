@@ -14,11 +14,15 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Persist;
+import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
+import com.alvazan.orm.api.spi3.db.RemoveIndex;
 import com.alvazan.orm.api.spi3.db.Row;
 
 public class InMemorySession implements NoSqlRawSession {
@@ -51,18 +55,38 @@ public class InMemorySession implements NoSqlRawSession {
 
 	@Override
 	public void sendChanges(List<Action> actions, Object ormSession) {
+		sendChangesImpl(actions, ormSession);
+	}
+	
+	public void sendChangesImpl(List<Action> actions, Object ormSession) {
 		for(Action action : actions) {
-			
 			Table table = lookupColFamily(action, (NoSqlEntityManager) ormSession);
-			
 			if(action instanceof Persist) {
 				persist((Persist)action, table);
 			} else if(action instanceof Remove) {
 				remove((Remove)action, table);
+			} else if(action instanceof PersistIndex) {
+				persistIndex((PersistIndex) action, table);
+			} else if(action instanceof RemoveIndex) {
+				removeIndex((RemoveIndex) action, table);
 			}
 		}
 	}
 
+	private void persistIndex(PersistIndex action, Table table) {
+		byte[] rowKey = action.getRowKey();
+		IndexColumn column = action.getColumn();
+		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
+		row.addIndexedColumn(column);
+	}
+
+	private void removeIndex(RemoveIndex action, Table table) {
+		byte[] rowKey = action.getRowKey();
+		IndexColumn column = action.getColumn();
+		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
+		row.removeIndexedColumn(column);		
+	}
+	
 	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
 		String colFamily = action.getColFamily();
 		Table table = database.findTable(colFamily);
@@ -84,22 +108,39 @@ public class InMemorySession implements NoSqlRawSession {
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
 
-		SortType sortType = SortType.BYTES;
-		switch (cf.getNameStorageType()) {
-		case BYTES:
-			sortType = SortType.BYTES;
-			break;
-		case DECIMAL:
-			sortType = SortType.DECIMAL;
-			break;
-		case INTEGER:
-			sortType = SortType.INTEGER;
-			break;
-		case STRING:
-			sortType = SortType.UTF8;
-			break;
-		default:
-			throw new UnsupportedOperationException("type not supported="+cf.getNameStorageType());
+		SortType sortType;
+		StorageTypeEnum prefixType = cf.getColNamePrefixType();
+		if(prefixType == null) {
+			switch (cf.getNameStorageType()) {
+			case BYTES:
+				sortType = SortType.BYTES;
+				break;
+			case DECIMAL:
+				sortType = SortType.DECIMAL;
+				break;
+			case INTEGER:
+				sortType = SortType.INTEGER;
+				break;
+			case STRING:
+				sortType = SortType.UTF8;
+				break;
+			default:
+				throw new UnsupportedOperationException("type not supported="+cf.getNameStorageType());
+			}
+		} else {
+			switch(prefixType) {
+			case DECIMAL:
+				sortType = SortType.DECIMAL_PREFIX;
+				break;
+			case INTEGER:
+				sortType = SortType.INTEGER_PREFIX;
+				break;
+			case STRING:
+				sortType = SortType.UTF8_PREFIX;
+				break;
+			default:
+				throw new UnsupportedOperationException("type not supported="+prefixType);
+			}
 		}
 		
 		table = new Table(sortType);
@@ -167,7 +208,7 @@ public class InMemorySession implements NoSqlRawSession {
 		Row row = table.findOrCreateRow(rowKey);
 		if(row == null)
 			return new HashSet<Column>();
-
+		
 		return row.columnSlice(from, to);
 	}
 }

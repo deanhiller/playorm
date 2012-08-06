@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 
 public class Row {
 	private byte[] key;
-	private SortedMap<ByteArray, Column> columns = new TreeMap<ByteArray, Column>();
+	private NavigableMap<ByteArray, Column> columns = new TreeMap<ByteArray, Column>();
 	
 	public Row() {
 	}
@@ -45,7 +46,7 @@ public class Row {
 	public Collection<Column> columnSlice(byte[] from, byte[] to) {
 		ByteArray fromArray = new ByteArray(from);
 		ByteArray toArray = new ByteArray(to);
-		SortedMap<ByteArray, Column> result = columns.subMap(fromArray, toArray);
+		SortedMap<ByteArray, Column> result = columns.subMap(fromArray, true, toArray, true);
 		return result.values();
 	}
 
