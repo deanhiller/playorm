@@ -5,6 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.alvazan.orm.api.base.spi.NoConversion;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 
 @Target({ElementType.FIELD})

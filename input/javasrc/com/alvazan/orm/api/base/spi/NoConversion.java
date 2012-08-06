@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base.anno;
+package com.alvazan.orm.api.base.spi;
 
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 

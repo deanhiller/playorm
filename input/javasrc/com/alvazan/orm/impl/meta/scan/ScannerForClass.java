@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
-import com.alvazan.orm.api.base.anno.NoDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -74,7 +74,7 @@ public class ScannerForClass {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance metaClass, Class<?> mainClass) {
 		for(Class<?> clazz : annotation.columnfamily()) {
-			NoDiscriminatorColumn col = clazz.getAnnotation(NoDiscriminatorColumn.class);
+			NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
 			if(col == null)
 				throw new IllegalArgumentException("Class "+mainClass.getName()+" in the NoSqlInheritance annotation, specifies a class" +
 						" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());

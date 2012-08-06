@@ -111,6 +111,8 @@ public class StandardConverters {
 	
 	@SuppressWarnings("unchecked")
 	public static <T> T convertFromBytes(Class<T> clazz, byte[] data) {
+		if(data == null)
+			return null;
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		

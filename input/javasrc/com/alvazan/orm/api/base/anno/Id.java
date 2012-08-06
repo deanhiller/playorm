@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
+import com.alvazan.orm.api.base.spi.NoConversion;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 

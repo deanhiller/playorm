@@ -1,8 +1,8 @@
 package com.alvazan.orm.api.spi2;
 
-import com.alvazan.orm.api.base.anno.NoDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 
-@NoDiscriminatorColumn(value="Id")
+@NoSqlDiscriminatorColumn(value="Id")
 public class DboColumnIdMeta extends DboAbstractColumnMeta {
 
 }

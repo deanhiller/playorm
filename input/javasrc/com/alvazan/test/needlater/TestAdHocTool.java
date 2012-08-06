@@ -1,4 +1,4 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.bindings.Bootstrap;
+import com.alvazan.test.FactorySingleton;
 
 public class TestAdHocTool {
 
@@ -35,7 +36,7 @@ public class TestAdHocTool {
 		
 	}
 	
-	@Test
+	//@Test
 	public void testBasic() {
 		DboDatabaseMeta metaDb = new DboDatabaseMeta();
 		addMetaClassDbo(metaDb, "MyEntity", "cat", "mouse", "dog");

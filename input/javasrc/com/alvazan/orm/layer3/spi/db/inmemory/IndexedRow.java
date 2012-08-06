@@ -40,6 +40,7 @@ public class IndexedRow extends Row {
 		for(IndexColumn c : resultMap.values()) {
 			Column col = new Column();
 			col.setName(c.getPrimaryKey());
+			results.add(col);
 		}
 		return results;
 	}
