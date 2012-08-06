@@ -3,6 +3,7 @@ package com.alvazan.orm.api.base.spi;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.joda.time.LocalDateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,12 +23,17 @@ import org.slf4j.LoggerFactory;
 public class UniqueKeyGenerator implements KeyGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(UniqueKeyGenerator.class);
-	private static String ipAddress;
-	private static long lastTimeStamp = System.currentTimeMillis();
+	private static final String ipAddress;
+
+	private static long lastTimeStamp;
 	
 	static {
+		LocalDateTime time = new LocalDateTime(2012, 6, 1, 0, 0);
+		long baseTime = time.toDate().getTime();
+		lastTimeStamp = System.currentTimeMillis() - baseTime;
+		
 		try {
-			createHostName();
+			ipAddress = createHostName();
 		} catch(Throwable e) {
 			log.warn("Could not create a ip needed for unique key gen.\n" +
 					"PLEASE if you are on linux configure it properly and\n" +
@@ -50,17 +56,19 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return time+":"+ipAddress;
 	}
 
-	private static void createHostName() throws UnknownHostException {
+	private static String createHostName() throws UnknownHostException {
+		String address;
 		InetAddress local = InetAddress.getLocalHost();
-		ipAddress = local.getHostName();
-		if(ipAddress.contains(".")) {
+		address = local.getHostName();
+		if(address.contains(".")) {
 			//let's strip it down to just the raw host name since all hosts will have the same domain
-			int index = ipAddress.indexOf(".");
-			ipAddress = ipAddress.substring(0, index);
+			int index = address.indexOf(".");
+			address = address.substring(0, index);
 		}
 		
-		if(ipAddress.contains("localhost"))
+		if(address.contains("localhost"))
 			throw new RuntimeException("Call to InetAddress.getLocalHost().getHostname() == localhost.  This must be fixed(you are most likely on linux!!) or unique keys will not be generated");
+		return address;
 	}
 
 }
