@@ -1,13 +1,15 @@
 package com.alvazan.orm.api.spi3.index;
 
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+
 public class StateAttribute {
 
+	private DboColumnMeta columnInfo; 
 	private String tableName;
-	private String columnName;
 	
-	public StateAttribute(String tableName2, String columnName2) {
+	public StateAttribute(String tableName2, DboColumnMeta columnName2) {
 		this.tableName = tableName2;
-		this.columnName = columnName2;
+		this.columnInfo = columnName2;
 	}
 
 	public String getTableName() {
@@ -18,12 +20,12 @@ public class StateAttribute {
 		this.tableName = tableName;
 	}
 
-	public String getColumnName() {
-		return columnName;
+	public DboColumnMeta getColumnInfo() {
+		return columnInfo;
 	}
 
-	public void setColumnName(String columnName) {
-		this.columnName = columnName;
+	public void setColumnInfo(DboColumnMeta columnName) {
+		this.columnInfo = columnName;
 	}	
 	
 	

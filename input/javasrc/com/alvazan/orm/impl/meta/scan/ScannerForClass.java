@@ -1,6 +1,5 @@
 package com.alvazan.orm.impl.meta.scan;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -16,17 +15,17 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.anno.NoDiscriminatorColumn;
-import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
-import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;

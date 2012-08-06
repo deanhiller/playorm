@@ -1,4 +1,4 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import java.util.List;
 
@@ -7,11 +7,11 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexAndOrParens {
@@ -37,7 +37,7 @@ public class TestIndexAndOrParens {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 	
-	@Test
+	//@Test
 	public void testSimpleAnd() {
 		List<Activity> findByName = Activity.findWithAnd(index, "hello", 5);
 		Assert.assertEquals(1, findByName.size());
@@ -46,7 +46,7 @@ public class TestIndexAndOrParens {
 		Assert.assertEquals(1, list.size());
 	}
 
-	@Test
+	//@Test
 	public void testSimpleOr() {
 		List<Activity> findByName = Activity.findWithOr(index, "hello", 6);
 		Assert.assertEquals(3, findByName.size());
@@ -55,7 +55,7 @@ public class TestIndexAndOrParens {
 		Assert.assertEquals(1, list.size());
 	}
 	
-	@Test
+	//@Test
 	public void testParensVsNoParens() {
 		//@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
 		//		" e.name=:name and (e.numTimes = :numTimes or e.isCool = :isCool)"),	

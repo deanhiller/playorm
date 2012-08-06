@@ -1,4 +1,4 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -11,6 +11,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi2.DboAbstractColumnMeta;
 import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
+import com.alvazan.test.FactorySingleton;
 
 public class TestInheritanceSingleTable {
 
@@ -33,7 +34,7 @@ public class TestInheritanceSingleTable {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 
-	@Test
+	//@Test
 	public void testBasicMultipleClasses() {
 		DboColumnCommonMeta common = new DboColumnCommonMeta();
 		common.setColumnName("generic");

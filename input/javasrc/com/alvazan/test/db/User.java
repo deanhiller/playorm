@@ -4,8 +4,8 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity

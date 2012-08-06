@@ -7,7 +7,6 @@ import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.index.IndexReaderWriter;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;
 import com.google.inject.ImplementedBy;
 

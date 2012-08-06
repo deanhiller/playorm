@@ -17,7 +17,6 @@ import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
 import com.alvazan.orm.api.spi3.index.ValAndType;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
-import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 
 public class QueryAdapter<T> implements Query<T> {

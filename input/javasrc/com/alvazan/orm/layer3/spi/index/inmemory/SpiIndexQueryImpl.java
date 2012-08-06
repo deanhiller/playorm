@@ -11,7 +11,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.index.ExpressionNode;
 import com.alvazan.orm.api.spi3.index.SpiQueryAdapter;
@@ -52,20 +54,17 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		log.info("root="+root.getExpressionAsString());
 		if(root.getType() == NoSqlLexer.EQ) {
 			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
-			String paramName = (String) root.getRightChild().getState();
-			ValAndType val = parameters.get(paramName);
-			if(val == null)
-				throw new IllegalStateException("You did not call setParameter for parameter= ':"+paramName+"'");
+			DboColumnMeta info = attr.getColumnInfo();
+			
+			byte[] data = retrieveValue(info, root.getRightChild());
 			
 			String table = attr.getTableName();
-			
-			String index = val.getColumnMeta().getIndexPrefix();
+			String index = info.getIndexPrefix();
 			//if doing a partion, you can add to indexPrefix here
 			//The indexPrefix is of format /<ColumnFamilyName>/<ColumnNameToIndex>/<PartitionKey>/<PartitionId> where key is like ByAccount or BySecurity and id is the id of account or security
 
-			String columnFamily = val.getColumnMeta().getStorageType().getIndexTableName();
+			String columnFamily = info.getStorageType().getIndexTableName();
 			byte[] rowKey = getBytes(index);
-			byte[] data = val.getIndexedData();
 			Iterable<Column> scan = session.columnRangeScan(columnFamily, rowKey, data, data, BATCH_SIZE);
 			
 			for(Column c : scan) {
@@ -78,6 +77,31 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		
 		//session.columnRangeScan(cf, indexKey, from, to, batchSize)
 		return objectKeys;
+	}
+
+	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
+		if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
+			return processParam(info, node);
+		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
+				|| node.getType() == NoSqlLexer.INT_VAL) {
+			return processConstant(info, node);
+		} else 
+			throw new UnsupportedOperationException("type not supported="+node.getType());
+	}
+
+	private byte[] processConstant(DboColumnMeta info, ExpressionNode node) {
+		String constant = (String) node.getState();
+		return info.convertToStorage(constant);
+	}
+
+	private byte[] processParam(DboColumnMeta info, ExpressionNode node) {
+		String paramName = (String) node.getState();		
+		ValAndType val = parameters.get(paramName);
+		if(val == null)
+			throw new IllegalStateException("You did not call setParameter for parameter= ':"+paramName+"'");
+
+		byte[] data = val.getIndexedData();
+		return data;
 	}
 
 	private short getLength(byte[] name) {

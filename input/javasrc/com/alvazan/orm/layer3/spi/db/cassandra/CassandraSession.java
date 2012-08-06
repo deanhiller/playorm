@@ -1,8 +1,6 @@
 package com.alvazan.orm.layer3.spi.db.cassandra;
 
 import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -33,7 +31,6 @@ import com.alvazan.orm.api.spi3.db.PersistIndex;
 import com.alvazan.orm.api.spi3.db.Remove;
 import com.alvazan.orm.api.spi3.db.RemoveIndex;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;

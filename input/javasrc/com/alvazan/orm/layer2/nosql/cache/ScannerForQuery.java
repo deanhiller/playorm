@@ -9,6 +9,7 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
+import org.hamcrest.core.IsAnything;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -272,16 +273,15 @@ public class ScannerForQuery {
 			//matching since developers can do that BEFORE they run the query anyways in the 
 			//java code.  ie. FIRST, let's find the side with type information
 			
-			if(hasTypeInfo(rightSide)) {
-				//reorder the children if the right side as the type information
+			if(isAttribute(rightSide)) {
 				expression.setChild(0, rightSide);
 				expression.setChild(1, leftSide);
 				CommonTree temp = rightSide;
 				rightSide = leftSide;
-				leftSide = temp;
-			} else if(!hasTypeInfo(leftSide))
-				throw new IllegalArgumentException("Cannot find type info from either side of expression="+node.getExpressionAsString()+" in query='"
-						+wiring.getQuery()+"' One of the sides must either be constant or columnname");
+				leftSide = temp;				
+			} else if(!isAttribute(leftSide)) {
+				throw new IllegalArgumentException("Currently, each param in the where clause must be compared to an attribute.  bad query="+wiring.getQuery()+" bad piece="+node.getExpressionAsString());
+			}
 			
 			ExpressionNode left  = new ExpressionNode(leftSide);
 			ExpressionNode right = new ExpressionNode(rightSide);
@@ -298,6 +298,12 @@ public class ScannerForQuery {
 	}
 
 	
+	private static boolean isAttribute(CommonTree node) {
+		if(node.getType() == NoSqlLexer.ATTR_NAME)
+			return true;
+		return false;
+	}
+
 	private static boolean hasTypeInfo(CommonTree node) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME || node.getType() == NoSqlLexer.DECIMAL
 				|| node.getType() == NoSqlLexer.INT_VAL || node.getType() == NoSqlLexer.STR_VAL)
@@ -408,7 +414,7 @@ public class ScannerForQuery {
 		if(!attributeField.isIndexed())
 			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
 		
-		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colName); 
+		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), attributeField); 
 		attributeNode2.setState(attr);
 		
 		TypeInfo typeInfo = new TypeInfo(attributeField);

@@ -1,4 +1,4 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +17,7 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.base.exc.TooManyResultException;
 import com.alvazan.orm.api.base.exc.TypeMismatchException;
+import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
@@ -43,7 +43,7 @@ public class TestIndexes {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 	
-	@Test
+	//@Test
 	public void testFailureOnTypeMismatch() {
 		Activity act = new Activity();
 		act.setName("hello");
@@ -75,7 +75,7 @@ public class TestIndexes {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testFailureOnGetSingleResultAndSuccess() {
 		//Activity has null reference to account
 		Activity act = new Activity();
@@ -109,7 +109,7 @@ public class TestIndexes {
 		Assert.assertNull(activityNull);
 	}
 	
-	@Test
+	//@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();
@@ -141,7 +141,7 @@ public class TestIndexes {
 		Assert.assertEquals(1, all2.size());
 	}
 	
-	@Test
+	//@Test
 	public void testBooleanWithAndClause() {
 		Account acc = new Account();
 		acc.setName("abc");
@@ -178,7 +178,7 @@ public class TestIndexes {
 		Assert.assertEquals(5, orList.size());
 	}
 	
-	@Test
+	//@Test
 	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
 		Account acc = new Account();
@@ -208,7 +208,7 @@ public class TestIndexes {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testSeparateIndexes() {
 		//Activity has null reference to account
 		Activity act = new Activity();

@@ -1,18 +1,16 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexGtLtRanges {
-
-	private static Index<Activity> index;
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
@@ -25,7 +23,7 @@ public class TestIndexGtLtRanges {
 	@Before
 	public void createEntityManager() {
 		mgr = factory.createEntityManager();
-		index = setupRecords();
+		setupRecords();
 	}
 	@After
 	public void clearDatabase() {
@@ -33,7 +31,7 @@ public class TestIndexGtLtRanges {
 		other.clearDbAndIndexesIfInMemoryType();
 	}
 
-	@Test
+	//@Test
 	public void testBasicString() {
 		//TODO: test some ranges out here
 	}

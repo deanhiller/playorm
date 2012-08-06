@@ -1,4 +1,4 @@
-package com.alvazan.test;
+package com.alvazan.test.needlater;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.layer1.typed.NoSqlTypedSessionImpl;
+import com.alvazan.test.FactorySingleton;
 
 public class TestNewRawLayer {
 
@@ -42,7 +43,7 @@ public class TestNewRawLayer {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testBasicChangeToIndex() {
 		NoSqlSession session = mgr.getSession();
 		

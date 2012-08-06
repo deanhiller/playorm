@@ -13,10 +13,10 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoConversion;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
