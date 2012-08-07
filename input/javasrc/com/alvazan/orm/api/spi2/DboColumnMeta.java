@@ -19,17 +19,16 @@ public class DboColumnMeta {
 	@Id(usegenerator=false)
 	private String id;
 	
+	private String columnName;
+
 	/**
 	 * This is either listOfFk, fk, generic, or id
 	 */
-	private String classType;
-	
-	private String columnName;
-	
+	private String columnType;
 	/**
 	 * null for FK relationships.  Contains primitive type..
 	 */
-	private String columnType;
+	private String columnValueType;
 	
 	/**
 	 * This field may be referencing another entity in another table so here is the meta data
@@ -71,7 +70,7 @@ public class DboColumnMeta {
 		this.columnName = colName;
 		this.fkToColumnFamily = fkToTable;
 		if(newType != null)
-			this.columnType = newType.getName();
+			this.columnValueType = newType.getName();
 		this.isToManyColumn = isToManyColumn;
 		this.indexPrefix = indexPrefix;
 	}
@@ -127,10 +126,10 @@ public class DboColumnMeta {
 	}
 
 	public Class getClassType() {
-		if(columnType == null)
+		if(columnValueType == null)
 			return null;
 		
-		return classForName(columnType);
+		return classForName(columnValueType);
 	}
 
 	public StorageTypeEnum getStorageType() {
