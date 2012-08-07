@@ -53,12 +53,13 @@ public class TestColumnSlice {
 		
 		DboColumnMeta idMeta = new DboColumnMeta();
 		idMeta.setup("id", null, String.class, false, null);
-		mgr.put(idMeta);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
 		tableMeta.setColNameType(double.class);
 		tableMeta.setRowKeyMeta(idMeta);
+		
+		mgr.put(idMeta);
 		mgr.put(tableMeta);
 
 		meta.addMetaClassDbo(tableMeta);
@@ -114,12 +115,13 @@ public class TestColumnSlice {
 		
 		DboColumnMeta idMeta = new DboColumnMeta();
 		idMeta.setup("id", null, String.class, false, null);
-		mgr.put(idMeta);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
 		tableMeta.setColNameType(long.class);
 		tableMeta.setRowKeyMeta(idMeta);
+		
+		mgr.put(idMeta);
 		mgr.put(tableMeta);
 
 		meta.addMetaClassDbo(tableMeta);

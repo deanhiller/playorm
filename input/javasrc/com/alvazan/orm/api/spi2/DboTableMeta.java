@@ -41,8 +41,8 @@ public class DboTableMeta {
 	}
 	
 	public void setRowKeyMeta(DboColumnMeta idMeta) {
-		this.idColumn.setOwner(this);
 		this.idColumn = idMeta;
+		this.idColumn.setOwner(this);
 	}
 	
 	public void addColumnMeta(DboColumnMeta fieldDbo) {
