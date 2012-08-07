@@ -41,14 +41,12 @@ public class DboTableMeta {
 	}
 	
 	public void setRowKeyMeta(DboColumnMeta idMeta) {
+		this.idColumn.setOwner(this);
 		this.idColumn = idMeta;
 	}
 	
-	public Map<String, DboColumnMeta> getColumns() {
-		return nameToField;
-	}
-	
 	public void addColumnMeta(DboColumnMeta fieldDbo) {
+		fieldDbo.setOwner(this);
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	

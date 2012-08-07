@@ -16,8 +16,13 @@ import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 @SuppressWarnings("rawtypes")
 public class DboColumnMeta {
 
-	@Id
+	@Id(usegenerator=false)
 	private String id;
+	
+	/**
+	 * This is either listOfFk, fk, generic, or id
+	 */
+	private String classType;
 	
 	private String columnName;
 	
@@ -39,7 +44,8 @@ public class DboColumnMeta {
 
 	private String indexPrefix;
 
-	private String columnFamily;
+	@ManyToOne
+	private DboTableMeta owner;
 
 	@NoSqlTransient
 	private transient byte[] columnAsBytes;
@@ -101,13 +107,23 @@ public class DboColumnMeta {
 		return c;
 	}
 	
-	
 	public String getId() {
 		return id;
 	}
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public DboTableMeta getOwner() {
+		return owner;
+	}
+
+	public void setOwner(DboTableMeta owner) {
+		this.owner = owner;
+		if(columnName == null)
+			throw new IllegalStateException("Please call setup method before adding to another entity");
+		id = owner.getColumnFamily()+":"+columnName;
 	}
 
 	public Class getClassType() {
