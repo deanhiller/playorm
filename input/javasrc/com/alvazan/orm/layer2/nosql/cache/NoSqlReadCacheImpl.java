@@ -83,4 +83,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		session.setOrmSessionForMeta(ormSession);
 	}
 
+	@Override
+	public Row find(String colFamily, byte[] rowKey) {
+		return session.find(colFamily, rowKey);
+	}
+
 }

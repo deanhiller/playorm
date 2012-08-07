@@ -76,6 +76,13 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public List<Row> find(String colFamily, List<byte[]> keys) {
 		return rawSession.find(colFamily, keys);
 	}
+	
+	public Row find(String colFamily, byte[] rowKey) {
+		List<byte[]> rowKeys = new ArrayList<byte[]>();
+		rowKeys.add(rowKey);
+		List<Row> rows = find(colFamily, rowKeys);
+		return rows.get(0);
+	}
 
 	@Override
 	public void flush() {

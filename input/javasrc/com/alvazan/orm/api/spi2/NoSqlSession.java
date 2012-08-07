@@ -47,6 +47,7 @@ public interface NoSqlSession {
 	
 	public List<Row> find(String colFamily, List<byte[]> rowKeys);
 	
+	public Row find(String colFamily, byte[] rowKey);
 	
 	public void flush();
 
