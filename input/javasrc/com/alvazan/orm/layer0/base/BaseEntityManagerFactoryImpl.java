@@ -17,6 +17,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
@@ -144,7 +145,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         		continue;
         	DboTableMeta cf = new DboTableMeta();
         	DboColumnMeta idMeta = new DboColumnMeta();
-        	idMeta.setup("id", null, String.class, false, null);
+        	idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
         	
         	cf.setColumnFamily(type.getIndexTableName());
         	cf.setColNamePrefixType(type);

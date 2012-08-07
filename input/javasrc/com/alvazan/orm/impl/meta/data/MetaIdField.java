@@ -7,6 +7,7 @@ import java.util.List;
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -83,7 +84,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();
-		super.setup(field, columnName, null, field.getType(), false, indexPrefix);
+		super.setup(field, columnName, null, field.getType(), ColumnTypeEnum.ID, indexPrefix);
 	}
 
 	public Converter getConverter() {

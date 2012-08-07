@@ -11,6 +11,7 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
@@ -66,7 +67,7 @@ public class TestAdHocTool {
 		
 		for(String field : fields) {
 			DboColumnMeta fieldDbo = new DboColumnMeta();
-			fieldDbo.setup(field, null, String.class, false, "field");
+			fieldDbo.setup(field, null, String.class, ColumnTypeEnum.GENERIC, "field");
 			meta.addColumnMeta(fieldDbo);
 		}
 	}

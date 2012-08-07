@@ -37,8 +37,6 @@ public class DboColumnMeta {
 	@ManyToOne
 	private DboTableMeta fkToColumnFamily;
 	
-	private boolean isToManyColumn;
-	
 	private String foreignKeyToExtensions;
 
 	private String indexPrefix;
@@ -58,20 +56,20 @@ public class DboColumnMeta {
 		return "Field["+columnName+"]";
 	}
 
-	public void setup(String colName, DboTableMeta fkToTable, Class classType, boolean isToManyColumn, String indexPrefix) {
-		if(fkToTable == null && isToManyColumn)
-			throw new IllegalArgumentException("isToManyColumn must be false if there is no fk");
-		else if(classType != null && fkToTable != null)
+	public void setup(String colName, DboTableMeta fkToTable, Class valuesType, ColumnTypeEnum colType, String indexPrefix) {
+		if(fkToTable == null && (colType == ColumnTypeEnum.LIST_OF_FK || colType == ColumnTypeEnum.FK))
+			throw new IllegalArgumentException("Must supply the fkToTable param if creating meta column of an FK");
+		else if(valuesType != null && fkToTable != null)
 			throw new IllegalArgumentException("classType should not be specified when this column is an FK column to another table");
-		else if(isToManyColumn && indexPrefix != null)
+		else if(colType == ColumnTypeEnum.LIST_OF_FK && indexPrefix != null)
 			throw new IllegalArgumentException("Cannot have a *ToMany and Index that column as well");
 		
-		Class newType = translateType(classType);
+		Class newType = translateType(valuesType);
 		this.columnName = colName;
 		this.fkToColumnFamily = fkToTable;
 		if(newType != null)
 			this.columnValueType = newType.getName();
-		this.isToManyColumn = isToManyColumn;
+		this.columnType = colType.getDbCode();
 		this.indexPrefix = indexPrefix;
 	}
 
@@ -179,10 +177,10 @@ public class DboColumnMeta {
 		return fkToColumnFamily;
 	}
 
-	public boolean isToManyColumn() {
-		return isToManyColumn;
+	public String getColumnType() {
+		return columnType;
 	}
-
+	
 	public boolean isIndexed() {
 		return indexPrefix != null;
 	}

@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
@@ -58,7 +59,7 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 	
 	public void setup(Field field2, String colName, Converter converter, String indexPrefix) {
-		super.setup(field2, colName, null, field2.getType(), false, indexPrefix);
+		super.setup(field2, colName, null, field2.getType(), ColumnTypeEnum.GENERIC, indexPrefix);
 		this.converter = converter;
 	}
 

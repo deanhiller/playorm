@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
@@ -189,7 +190,7 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	public void setup(Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		super.setup(field, colName, fkToTable, null, true, null);
+		super.setup(field, colName, fkToTable, null, ColumnTypeEnum.LIST_OF_FK, null);
 		this.classMeta = classMeta;
 		this.fieldForKey = fieldForKey;
 	}

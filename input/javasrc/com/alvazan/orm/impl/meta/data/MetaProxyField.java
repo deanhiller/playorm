@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
@@ -97,7 +98,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	public void setup(Field field2, String colName, MetaAbstractClass<PROXY> classMeta, String indexPrefix) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		
-		super.setup(field2, colName, fkToTable, null, false, indexPrefix);
+		super.setup(field2, colName, fkToTable, null, ColumnTypeEnum.FK, indexPrefix);
 		this.classMeta = classMeta;
 	}
 
