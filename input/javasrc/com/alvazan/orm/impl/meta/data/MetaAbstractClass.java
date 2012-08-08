@@ -98,7 +98,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	}
 
 	public abstract Class<? extends T> getProxyClass();
-	public abstract Tuple<T> convertIdToProxy(byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback);
+	public abstract Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback);
 	public abstract List<MetaField<T>> getIndexedColumns();
 	public abstract void fillInInstance(Row row, NoSqlSession session, T inst);
 

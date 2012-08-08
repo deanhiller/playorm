@@ -40,10 +40,15 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
 	@Override
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
+		MetaClassSingle<T> metaClassSingle = retrieveMeta(row);
+		return metaClassSingle.translateFromRow(row, session);
+	}
+
+	private MetaClassSingle<T> retrieveMeta(Row row) {
 		Column column = row.getColumn(discColAsBytes);
 		String type = StandardConverters.convertFromBytes(String.class, column.getValue());
 		MetaClassSingle<T> metaClassSingle = this.dbTypeToMeta.get(type);
-		return metaClassSingle.translateFromRow(row, session);
+		return metaClassSingle;
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -81,9 +86,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public Tuple<T> convertIdToProxy(byte[] id, NoSqlSession session,
+	public Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session,
 			CacheLoadCallback cacheLoadCallback) {
-		throw new UnsupportedOperationException("not done yet");
+		MetaClassSingle<T> metaClassSingle = retrieveMeta(row);
+		return metaClassSingle.convertIdToProxy(row, id, session, cacheLoadCallback);
 	}
 
 	@Override
@@ -93,7 +99,8 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
 	@Override
 	public void fillInInstance(Row row, NoSqlSession session, T inst) {
-		throw new UnsupportedOperationException("not done yet");
+		MetaClassSingle<T> metaClassSingle = retrieveMeta(row);
+		metaClassSingle.fillInInstance(row, session, inst);
 	}
 
 	public void setDiscriminatorColumnName(String discColumn) {

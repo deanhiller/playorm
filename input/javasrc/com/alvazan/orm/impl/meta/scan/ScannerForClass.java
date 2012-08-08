@@ -68,6 +68,10 @@ public class ScannerForClass {
 			scanForAnnotations(classMeta2);
 			scanSingle(classMeta2, metaDbo);
 		}
+		
+		if(classMeta.getIdField() == null)
+			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @Id and that is required");
+		
 		metaInfo.addTableNameLookup(classMeta);
 		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}

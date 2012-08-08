@@ -48,8 +48,8 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
 		for(int i = 0; i < this.size(); i++) {
 			byte[] key = keys.get(i);
-			Tuple<T> tuple = classMeta.convertIdToProxy(key, session, null);
 			Row row = rows.get(i);
+			Tuple<T> tuple = classMeta.convertIdToProxy(row, key, session, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +

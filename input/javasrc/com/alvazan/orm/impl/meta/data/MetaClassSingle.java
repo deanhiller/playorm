@@ -26,7 +26,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	private List<MetaField<T>> indexedColumns = new ArrayList<MetaField<T>>();
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
-		Tuple<T> tuple = convertIdToProxy(row.getKey(), session, null);
+		Tuple<T> tuple = convertIdToProxy(row, row.getKey(), session, null);
 		T inst = tuple.getProxy();
 		fillInInstance(row, session, inst);
 		NoSqlProxy temp = (NoSqlProxy)inst;
@@ -111,7 +111,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		return proxyClass;
 	}
 
-	public Tuple<T> convertIdToProxy(byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
+	public Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
 		Tuple<T> t = new Tuple<T>();
 		if(id == null)
 			return t;

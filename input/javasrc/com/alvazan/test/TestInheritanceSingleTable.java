@@ -11,6 +11,10 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi2.DboAbstractColumnMeta;
 import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
+import com.alvazan.test.db.InheritanceRelation;
+import com.alvazan.test.db.InheritanceSub1;
+import com.alvazan.test.db.InheritanceSub2;
+import com.alvazan.test.db.InheritanceSuper;
 
 public class TestInheritanceSingleTable {
 
@@ -35,22 +39,60 @@ public class TestInheritanceSingleTable {
 
 	@Test
 	public void testBasicMultipleClasses() {
-		DboColumnCommonMeta common = new DboColumnCommonMeta();
-		common.setColumnName("generic");
-		common.setColumnType(String.class.getName());
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
 		mgr.put(common);
 		
-		DboColumnToManyMeta toMany = new DboColumnToManyMeta();
-		toMany.setColumnName("many");
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setName("werew");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
 		mgr.put(toMany);
 		mgr.flush();
 		
-		DboAbstractColumnMeta abs = mgr.find(DboAbstractColumnMeta.class, common.getId());
-		Assert.assertTrue(DboColumnCommonMeta.class.isAssignableFrom(abs.getClass()));
-		Assert.assertEquals(common.getColumnType(), ((DboColumnCommonMeta)abs).getColumnType());
+		InheritanceSuper abs = mgr.find(InheritanceSuper.class, common.getId());
+		Assert.assertTrue(InheritanceSub1.class.isAssignableFrom(abs.getClass()));
+		Assert.assertEquals(common.getNum(), abs.getNum());
+		Assert.assertEquals(common.getName(), ((InheritanceSub1)abs).getName());
+		Assert.assertEquals(common.getDiff(), ((InheritanceSub1)abs).getDiff());
 		
-		DboAbstractColumnMeta many = mgr.find(DboAbstractColumnMeta.class, toMany.getId());
-		Assert.assertTrue(DboColumnToManyMeta.class.isAssignableFrom(many.getClass()));
+		InheritanceSuper many = mgr.find(InheritanceSuper.class, toMany.getId());
+		Assert.assertTrue(InheritanceSub2.class.isAssignableFrom(many.getClass()));
+		Assert.assertEquals(toMany.getNum(), many.getNum());
+		Assert.assertEquals(toMany.getName(), ((InheritanceSub2)many).getName());
 	}
 
+	@Test
+	public void testToManyRelationship() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setLastName("hiller");
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setLastName("smith");
+		toMany.setName("werew");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
+		mgr.put(toMany);
+		
+		InheritanceRelation rel = new InheritanceRelation();
+		rel.addEntity(common);
+		rel.addEntity(toMany);
+		mgr.put(rel);
+		
+		mgr.flush();
+		
+		InheritanceRelation newRel = mgr.find(InheritanceRelation.class, rel.getId());
+		InheritanceSuper sub1 = newRel.getNameToEntity().get(common.getLastName());
+		
+		InheritanceSuper sub2 = newRel.getNameToEntity().get(toMany.getLastName());
+		
+		
+		
+	}
 }

@@ -35,7 +35,7 @@ public class Holder<T> {
 	public synchronized T getValue() {
 		if(!hasValue) {
 			//otherwise, we need to create and cache the value
-			Tuple<T> tuple =  metaClass.convertIdToProxy(key, session, cacheLoadCallback);
+			Tuple<T> tuple =  metaClass.convertIdToProxy(null, key, session, cacheLoadCallback);
 			T proxy = tuple.getProxy();
 			value = proxy;
 			hasValue = true;

@@ -50,8 +50,8 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 		log.info("loading key list="+keys+" results="+rows);
 		for(int i = 0; i < this.size(); i++) {
 			byte[] key = keys.get(i);
-			Tuple<V> tuple = classMeta.convertIdToProxy(key, session, null);
 			Row row = rows.get(i);
+			Tuple<V> tuple = classMeta.convertIdToProxy(row, key, session, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +

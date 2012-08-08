@@ -30,7 +30,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			column = new Column();
 		}
 		
-		Object proxy = convertIdToProxy(column.getValue(), session);
+		Object proxy = convertIdToProxy(row, column.getValue(), session);
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
@@ -90,8 +90,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return pk;
 	}
 	
-	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		Tuple<PROXY> tuple = classMeta.convertIdToProxy(id, session, null);
+	public PROXY convertIdToProxy(Row row, byte[] id, NoSqlSession session) {
+		Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, id, session, null);
 		return tuple.getProxy();
 	}
 	
