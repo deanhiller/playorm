@@ -64,7 +64,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public void setup(Map<String, String> properties, Map<Class, Converter> converters) {
+	public void setup(Map<String, String> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");
 		else if(properties == null)
@@ -88,10 +88,10 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         // Add class annotation listener (optional)
         discoverer.addAnnotationListener(listener);
         // Fire it
-        discoverer.discover();
+        discoverer.discover(cl);
         
         if(log.isTraceEnabled()) {
-        	URL[] resources = discoverer.findResources();
+        	URL[] resources = discoverer.findResources(cl);
         	for(URL res : resources) {
         		log.trace("jar="+res);
         	}

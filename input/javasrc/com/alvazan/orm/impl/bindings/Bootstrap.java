@@ -17,7 +17,7 @@ public class Bootstrap extends AbstractBootstrap {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters) {
+	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters, ClassLoader cl2) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
 
@@ -27,8 +27,11 @@ public class Bootstrap extends AbstractBootstrap {
 		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;
 		impl.setInjector(injector);
 		
+		ClassLoader cl = cl2;
+		if(cl == null)
+			cl = Bootstrap.class.getClassLoader();
 		//The expensive scan all entities occurs here...
-		impl.setup(properties, converters);
+		impl.setup(properties, converters, cl);
 		
 		return impl;
 	}
