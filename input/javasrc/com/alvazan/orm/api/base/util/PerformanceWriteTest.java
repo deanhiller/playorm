@@ -47,7 +47,7 @@ public class PerformanceWriteTest {
 //		
 //		int timeInSeconds = Integer.parseInt(args[0]);
 		
-		int timeInSeconds = 120;
+		int timeInSeconds = 10*60;
 		int numColumns = 50;
 		int logEveryNRows = 1000;
 		new PerformanceWriteTest().start(timeInSeconds, numColumns, logEveryNRows);
@@ -70,7 +70,7 @@ public class PerformanceWriteTest {
 		//BEFORE Timer, let's get setup first
 		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
-		NoSqlEntityManagerFactory factory = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
+		NoSqlEntityManagerFactory factory = Bootstrap.create(DbTypeEnum.CASSANDRA, props, null, null);
 		DboTableMeta table = setupMetaData(numColumns, factory);
 		
 		timer.schedule(new StopTask(), timeInMinutes*1000);

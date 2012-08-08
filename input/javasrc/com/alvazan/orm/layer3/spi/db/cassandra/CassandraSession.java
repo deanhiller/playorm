@@ -309,8 +309,10 @@ public class CassandraSession implements NoSqlRawSession {
 		return info;
 	}
 	
-	private void createColFamily(String colFamily, NoSqlEntityManager mgr)
-			 {
+	private synchronized void createColFamily(String colFamily, NoSqlEntityManager mgr) {
+		if(existingColumnFamilies2.get(colFamily.toLowerCase()) != null)
+			return;
+			
 		log.info("CREATING column family="+colFamily+" in cassandra");
 		
 		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
