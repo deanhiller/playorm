@@ -17,7 +17,7 @@ public class DboDatabaseMeta {
 	public static final String META_DB_ROWKEY = "nosqlorm";
 	
 	@Id(usegenerator=false)
-	private String id;
+	private String id = META_DB_ROWKEY;
 	
 	@OneToMany(entityType=DboTableMeta.class, keyFieldForMap="columnFamily")
 	private Map<String, DboTableMeta> colFamilyToMeta = new HashMap<String, DboTableMeta>();

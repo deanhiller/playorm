@@ -496,7 +496,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void clearDatabaseIfInMemoryType() {
+	public void clearDatabase() {
 		try {
 			clearImpl();
 		} catch (ConnectionException e) {
@@ -679,6 +679,10 @@ public class CassandraSession implements NoSqlRawSession {
 			else 
 				subIterator = columns.iterator();
 		}
+	}
+	@Override
+	public void close() {
+		throw new UnsupportedOperationException("not done here yet");
 	}
 
 }

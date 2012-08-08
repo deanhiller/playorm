@@ -15,7 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -35,14 +35,14 @@ public class TestColumnSlice {
 	@Before
 	public void createEntityManager() {
 		Map<String, Object> props = new HashMap<String, Object>();
-		props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
-		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
+		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
 		mgr = factory.createEntityManager();
 	}
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		other.clearDatabase();
 	}
 	
 	@Test

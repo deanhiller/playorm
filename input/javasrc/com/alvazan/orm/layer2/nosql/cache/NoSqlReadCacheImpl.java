@@ -68,8 +68,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public void clearDbAndIndexesIfInMemoryType() {
-		session.clearDbAndIndexesIfInMemoryType();
+	public void clearDb() {
+		session.clearDb();
 	}
 
 	@Override

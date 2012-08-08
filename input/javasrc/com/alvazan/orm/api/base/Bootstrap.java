@@ -5,16 +5,19 @@ import java.util.Map;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 
 @SuppressWarnings("rawtypes")
-public abstract class AbstractBootstrap {
+public abstract class Bootstrap {
+
+	public static final String AUTO_CREATE_KEY = "autoCreateKey";
+	public static final String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "listOfClassesToScan";
 
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
-		return create(type, "com.alvazan.orm.impl.bindings.Bootstrap", properties, converters, cl);
+		return create(type, "com.alvazan.orm.impl.bindings.BootstrapImpl", properties, converters, cl);
 	}
 	
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, String impl, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		try {
 			Class<?> clazz = Class.forName(impl);
-			AbstractBootstrap newInstance = (AbstractBootstrap) clazz.newInstance();
+			Bootstrap newInstance = (Bootstrap) clazz.newInstance();
 			NoSqlEntityManagerFactory inst = newInstance.createInstance(type, properties, converters, cl);
 			
 			return inst;

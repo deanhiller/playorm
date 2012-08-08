@@ -51,7 +51,7 @@ public interface NoSqlSession {
 	
 	public void flush();
 
-	public void clearDbAndIndexesIfInMemoryType();
+	public void clearDb();
 
 	/**
 	 * Returns a special Iterable loads itself first with "batchSize" records and then after you
@@ -69,5 +69,6 @@ public interface NoSqlSession {
 			byte[] from, byte[] to, int batchSize);
 
 	public void setOrmSessionForMeta(Object session);
+
 
 }

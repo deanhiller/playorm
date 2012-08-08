@@ -20,7 +20,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void clearDatabaseIfInMemoryType() {
+	public void clearDatabase() {
 		throw new UnsupportedOperationException("Not supported by actual databases.  Only can be used with in-memory db.");
 	}
 
@@ -40,5 +40,11 @@ public class HadoopSession implements NoSqlRawSession {
 	public List<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize) {
 		throw new UnsupportedOperationException("not done here yet");
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
 	}
 }

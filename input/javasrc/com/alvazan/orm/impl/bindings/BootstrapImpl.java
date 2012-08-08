@@ -2,7 +2,7 @@ package com.alvazan.orm.impl.bindings;
 
 import java.util.Map;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
@@ -13,7 +13,7 @@ import com.alvazan.orm.layer0.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class Bootstrap extends AbstractBootstrap {
+public class BootstrapImpl extends Bootstrap {
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -29,7 +29,7 @@ public class Bootstrap extends AbstractBootstrap {
 		
 		ClassLoader cl = cl2;
 		if(cl == null)
-			cl = Bootstrap.class.getClassLoader();
+			cl = BootstrapImpl.class.getClassLoader();
 		//The expensive scan all entities occurs here...
 		impl.setup(properties, converters, cl);
 		

@@ -7,7 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -34,9 +34,9 @@ public class NoSql {
 		testClass = list.get(0);
 		
 		Map<String, Object> props = new HashMap<String, Object>();
-		props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
-		props.put(NoSqlEntityManagerFactory.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, list);
-		NoSqlEntityManagerFactory f = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null, cl);
+		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+		props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, list);
+		NoSqlEntityManagerFactory f = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, cl);
 		factory = f;
 	} // initialize
 	

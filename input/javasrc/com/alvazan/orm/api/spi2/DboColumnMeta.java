@@ -109,7 +109,7 @@ public class DboColumnMeta {
 	}
 
 	public void setId(String id) {
-		this.id = id;
+		throw new UnsupportedOperationException("Do NOT directly set the id, instead call DboTableMeta.addColumn or setRowKey and the id will be set for you correctly");
 	}
 
 	public DboTableMeta getOwner() {

@@ -13,6 +13,7 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
@@ -63,8 +64,12 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		return mgr;
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
-	public void rescan(List<Class> classes, ClassLoader cl) {
+	public void rescan(List<Class> classesToScan, ClassLoader cl) {
+		List<Class> classes = classesToScan;
+		if(classes == null)
+			classes = new ArrayList<Class>();
 		metaInfo.clearAll();
 		
 		listener.setClassLoader(cl);
@@ -112,7 +117,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		else if(properties == null)
 			throw new IllegalArgumentException("'properties' parameter must be supplied");
 		
-		String val = (String) properties.get(NoSqlEntityManagerFactory.AUTO_CREATE_KEY);
+		String val = (String) properties.get(Bootstrap.AUTO_CREATE_KEY);
 		if(val == null)
 			throw new IllegalArgumentException("Must provide property with key NoSqlEntityManagerFactory.AUTO_CREATE_KEY so we know to update or validate existing schema");
 		AutoCreateEnum autoCreate = AutoCreateEnum.translate(val);
@@ -123,7 +128,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		
 		log.info("Begin scanning for jars with nosql.Persistence.class");
 		
-        List<Class> classToScan = (List<Class>) properties.get(LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY);
+        List<Class> classToScan = (List<Class>) properties.get(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY);
         
         if(AutoCreateEnum.CREATE_ONLY != autoCreate)
         	throw new UnsupportedOperationException("not implemented yet");
@@ -233,6 +238,11 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 	public void setInjector(Object injector) {
 		this.injector = injector;
+	}
+
+	@Override
+	public void close() {
+		this.noSqlSessionFactory.close();
 	}
 
 }

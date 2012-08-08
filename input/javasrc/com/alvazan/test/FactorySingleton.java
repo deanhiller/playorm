@@ -6,7 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 
@@ -20,8 +20,8 @@ public class FactorySingleton {
 		if(factory == null) {
 			log.info("CREATING FACTORY FOR TESTS");
 			Map<String, Object> props = new HashMap<String, Object>();
-			props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
-			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
+			props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+			factory = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
 		}
 		return factory;
 	}

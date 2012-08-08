@@ -201,8 +201,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	}
 
 	@Override
-	public void clearDbAndIndexesIfInMemoryType() {
-		session.clearDbAndIndexesIfInMemoryType();
+	public void clearDatabase() {
+		session.clearDb();
 	}
 
 	public void setup() {

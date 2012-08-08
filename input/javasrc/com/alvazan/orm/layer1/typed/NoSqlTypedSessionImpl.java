@@ -106,7 +106,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	@Override
 	public void clearDatabase() {
-		session.clearDbAndIndexesIfInMemoryType();
+		session.clearDb();
 	}
 	
 	@Override

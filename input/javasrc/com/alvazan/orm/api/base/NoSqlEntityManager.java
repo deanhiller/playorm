@@ -152,5 +152,5 @@ public interface NoSqlEntityManager {
 	 * against cassandra live as well).
 	 * 
 	 */
-	public void clearDbAndIndexesIfInMemoryType();
+	public void clearDatabase();
 }

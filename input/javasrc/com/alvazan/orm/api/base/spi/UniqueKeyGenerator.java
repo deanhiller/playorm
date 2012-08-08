@@ -51,7 +51,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return generateKey();
 	}
 	
-	private static synchronized String generateKey() {
+	public static synchronized String generateKey() {
 		long time = lastTimeStamp++;
 		return time+":"+IP_ADDRESS;
 	}

@@ -8,11 +8,13 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(BaseEntityManagerFactoryImpl.class)
 public interface NoSqlEntityManagerFactory {
 	
-	public String AUTO_CREATE_KEY = "autoCreateKey"; 
-	public String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "listOfClassesToScan";
-	
 	public NoSqlEntityManager createEntityManager();
 	
+	@SuppressWarnings("rawtypes")
 	void rescan(List<Class> classes, ClassLoader cl);
 
+	/**
+	 * Releases the entire pool of connections and disconnects from the nosql store.
+	 */
+	void close();
 }
