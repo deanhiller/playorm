@@ -164,7 +164,7 @@ public class ScannerForClass {
 		}
 	}
 	
-	private void scanFields(MetaAbstractClass<?> meta, DboTableMeta metaDbo) {
+	private void scanFields(MetaClassSingle<?> meta, DboTableMeta metaDbo) {
 		Class<?> metaClass = meta.getMetaClass();
 		List<Field> fields = findAllFields(metaClass);
 		
@@ -174,7 +174,7 @@ public class ScannerForClass {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void inspectField(MetaAbstractClass<?> metaClass, DboTableMeta metaDbo, Field field) {
+	private void inspectField(MetaClassSingle<?> metaClass, DboTableMeta metaDbo, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
 				field.isAnnotationPresent(NoSqlTransient.class))

@@ -96,11 +96,6 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		throw new UnsupportedOperationException("not done yet");
 	}
 
-	@Override
-	public void addMetaField(MetaField<T> metaField, boolean isIndexed) {
-		throw new UnsupportedOperationException("not done yet");
-	}
-
 	public void setDiscriminatorColumnName(String discColumn) {
 		discriminatorColumnName = discColumn;
 		discColAsBytes = StandardConverters.convertToBytes(discColumn);
