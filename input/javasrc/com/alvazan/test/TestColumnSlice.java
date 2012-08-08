@@ -34,7 +34,7 @@ public class TestColumnSlice {
 
 	@Before
 	public void createEntityManager() {
-		Map<String, String> props = new HashMap<String, String>();
+		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
 		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
 		mgr = factory.createEntityManager();

@@ -16,7 +16,9 @@ public class MyClassAnnotationDiscoveryListener implements
 	private static final Logger log = LoggerFactory.getLogger(MyClassAnnotationDiscoveryListener.class);
 
 	@Inject
-	private ScannerForClass inspectorClass; 
+	private ScannerForClass inspectorClass;
+
+	private ClassLoader classLoader; 
 
 	@Override
 	public String[] supportedAnnotations() {
@@ -28,13 +30,20 @@ public class MyClassAnnotationDiscoveryListener implements
 	public void discovered(String clazzName, String annotation) {
 		log.debug("class="+clazzName+" anno="+annotation);
 		try {
-			Class clazz = Class.forName(clazzName);
+			Class<?> clazz = classLoader.loadClass(clazzName);
 			
-			
-			inspectorClass.addClass(clazz);
+			scanClass(clazz);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void scanClass(Class<?> clazz) {
+		inspectorClass.addClass(clazz);
+	}
+
+	public void setClassLoader(ClassLoader cl) {
+		this.classLoader = cl;
 	}
 
 }

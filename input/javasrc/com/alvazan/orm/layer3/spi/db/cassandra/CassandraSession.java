@@ -72,7 +72,7 @@ public class CassandraSession implements NoSqlRawSession {
 	private String keyspaceName;
 	
 	@Override
-	public void start(Map<String, String> properties) {
+	public void start(Map<String, Object> properties) {
 		try {
 			startImpl(properties);
 		} catch (ConnectionException e) {
@@ -80,7 +80,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 	
-	public void startImpl(Map<String, String> properties) throws ConnectionException {
+	public void startImpl(Map<String, Object> properties) throws ConnectionException {
 		String clusterName = "SDICluster";
 		keyspaceName = "SDIKeyspace";
 		Builder builder = new AstyanaxContext.Builder()

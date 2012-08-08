@@ -25,7 +25,7 @@ public interface NoSqlRawSession {
 
 	public void clearDatabaseIfInMemoryType();
 
-	public void start(Map<String, String> properties);
+	public void start(Map<String, Object> properties);
 	
 	public void stop();
 

@@ -188,7 +188,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void start(Map<String, String> properties) {
+	public void start(Map<String, Object> properties) {
 		
 	}
 

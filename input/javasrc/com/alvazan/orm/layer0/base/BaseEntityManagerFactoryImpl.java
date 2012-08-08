@@ -53,7 +53,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private DboDatabaseMeta databaseInfo;
 	
 	private Object injector;
-	
+
 	@Override
 	public NoSqlEntityManager createEntityManager() {
 		if(!isScanned)
@@ -63,23 +63,11 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		return mgr;
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void setup(Map<String, String> properties, Map<Class, Converter> converters, ClassLoader cl) {
-		if(isScanned)
-			throw new IllegalStateException("scanForEntities can only be called once");
-		else if(properties == null)
-			throw new IllegalArgumentException("'properties' parameter must be supplied");
+	@Override
+	public void rescan(List<Class> classes, ClassLoader cl) {
+		metaInfo.clearAll();
 		
-		String val = properties.get(NoSqlEntityManagerFactory.AUTO_CREATE_KEY);
-		if(val == null)
-			throw new IllegalArgumentException("Must provide property with key NoSqlEntityManagerFactory.AUTO_CREATE_KEY so we know to update or validate existing schema");
-		AutoCreateEnum autoCreate = AutoCreateEnum.translate(val);
-		if(autoCreate == null)
-			throw new IllegalArgumentException("Property NoSqlEntityManagerFactory.AUTO_CREATE_KEY can only have values validate,update, or create");
-		
-		inspectorField.setCustomConverters(converters);
-		
-		log.info("Begin scanning for jars with nosql.Persistence.class");
+		listener.setClassLoader(cl);
 		
 		//TODO: Fork annovention, it is a very small library AND then copy from
 		//http://code.google.com/p/reflections/source/browse/trunk/reflections/src/main/java/org/reflections/util/ClasspathHelper.java?r=103
@@ -89,6 +77,10 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         discoverer.addAnnotationListener(listener);
         // Fire it
         discoverer.discover(cl);
+        
+        for(Class c : classes) {
+        	listener.scanClass(c);
+        }
         
         if(log.isTraceEnabled()) {
         	URL[] resources = discoverer.findResources(cl);
@@ -105,10 +97,6 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         log.info("Finished scanning classes, saving meta data");
         isScanned = true;
         
-        if(AutoCreateEnum.CREATE_ONLY != autoCreate)
-        	throw new UnsupportedOperationException("not implemented yet");
-        
-        
         NoSqlEntityManager tempMgr = createEntityManager();
 
         saveMetaData(tempMgr);
@@ -116,11 +104,37 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         tempMgr.flush();
         log.info("Finished saving meta data, complelety done initializing");
 	}
+	
+	@SuppressWarnings("rawtypes")
+	public void setup(Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
+		if(isScanned)
+			throw new IllegalStateException("scanForEntities can only be called once");
+		else if(properties == null)
+			throw new IllegalArgumentException("'properties' parameter must be supplied");
+		
+		String val = (String) properties.get(NoSqlEntityManagerFactory.AUTO_CREATE_KEY);
+		if(val == null)
+			throw new IllegalArgumentException("Must provide property with key NoSqlEntityManagerFactory.AUTO_CREATE_KEY so we know to update or validate existing schema");
+		AutoCreateEnum autoCreate = AutoCreateEnum.translate(val);
+		if(autoCreate == null)
+			throw new IllegalArgumentException("Property NoSqlEntityManagerFactory.AUTO_CREATE_KEY can only have values validate,update, or create");
+		
+		inspectorField.setCustomConverters(converters);
+		
+		log.info("Begin scanning for jars with nosql.Persistence.class");
+		
+        List<Class> classToScan = (List<Class>) properties.get(LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY);
+        
+        if(AutoCreateEnum.CREATE_ONLY != autoCreate)
+        	throw new UnsupportedOperationException("not implemented yet");
+        
+		rescan(classToScan, cl);
+	}
 
 	private void saveMetaData(NoSqlEntityManager tempMgr) {
         DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-        if(existing != null)
-        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
+//        if(existing != null)
+//        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
 		
         for(DboTableMeta table : databaseInfo.getAllTables()) {
         	

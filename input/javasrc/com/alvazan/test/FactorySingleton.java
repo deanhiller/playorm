@@ -19,7 +19,7 @@ public class FactorySingleton {
 	public synchronized static NoSqlEntityManagerFactory createFactoryOnce() {
 		if(factory == null) {
 			log.info("CREATING FACTORY FOR TESTS");
-			Map<String, String> props = new HashMap<String, String>();
+			Map<String, Object> props = new HashMap<String, Object>();
 			props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
 			factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
 		}

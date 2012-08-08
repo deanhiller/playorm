@@ -69,5 +69,9 @@ public class MetaInfo {
 	public void addTableNameLookup(MetaAbstractClass classMeta) {
 		tableNameToClassMeta.put(classMeta.getColumnFamily(), classMeta);
 	}
+	public void clearAll() {
+		classToClassMeta.clear();
+		tableNameToClassMeta.clear();
+	}
 	
 }

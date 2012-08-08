@@ -17,7 +17,7 @@ public class Bootstrap extends AbstractBootstrap {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, String> properties, Map<Class, Converter> converters, ClassLoader cl2) {
+	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl2) {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
 
