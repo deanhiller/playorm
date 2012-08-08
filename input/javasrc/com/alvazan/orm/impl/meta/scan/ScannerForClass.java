@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javassist.util.proxy.MethodFilter;
@@ -60,34 +61,56 @@ public class ScannerForClass {
 		NoSqlInheritance annotation = clazz.getAnnotation(NoSqlInheritance.class);
 		if(classMeta instanceof MetaClassInheritance) {
 			MetaClassInheritance classMeta2 = (MetaClassInheritance) classMeta;
-			scanMultipleClasses(annotation, classMeta2, clazz);
+			scanMultipleClasses(annotation, classMeta2);
 		} else {
 			MetaClassSingle classMeta2 = (MetaClassSingle)classMeta;
-			Class proxyClass = createTheProxy(clazz);
-			classMeta2.setProxyClass(proxyClass);
-			metaInfo.addTableNameLookup(classMeta);
-			scanClass(classMeta);
-			databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
+			DboTableMeta metaDbo = classMeta2.getMetaDbo();
+			scanForAnnotations(classMeta2);
+			scanSingle(classMeta2, metaDbo);
 		}
+		metaInfo.addTableNameLookup(classMeta);
+		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance metaClass, Class<?> mainClass) {
+	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
+		Class<T> mainClass = metaClass.getMetaClass();
+		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
+		String colFamily = noSqlEntity.columnfamily();
+		if("".equals(colFamily))
+			colFamily = metaClass.getMetaClass().getSimpleName();
+		metaClass.setColumnFamily(colFamily);
+
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
+		List<Field> fields = findAllFields(mainClass);
+		for(Field field : fields) {
+			processIdFieldWorks(metaClass, field);
+		}
+		
+		String discColumn = annotation.discriminatorColumnName();
+		metaClass.setDiscriminatorColumnName(discColumn);
+		
 		for(Class<?> clazz : annotation.columnfamily()) {
 			NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
 			if(col == null)
 				throw new IllegalArgumentException("Class "+mainClass.getName()+" in the NoSqlInheritance annotation, specifies a class" +
 						" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());
-			String columnValue = col.value();
-			Class proxyClass = createTheProxy(mainClass);
+			else if(!mainClass.isAssignableFrom(clazz)) 
+				throw new IllegalArgumentException("Class "+clazz+" is not a subclass of "+mainClass+" but the" +
+						" NoSqlInheritance annotation specifies that class so it needs to be a subclass");
 			
-			metaClass.addProxy(columnValue, proxyClass);
-		
-			//throw new UnsupportedOperationException("not done yet");
-			//scanClass(classMeta);
+			String columnValue = col.value();
+			MetaClassSingle<T> metaSingle = metaInfo.createSubclass(clazz, metaClass);
+			metaClass.addProxy(columnValue, metaSingle);	
+			scanSingle(metaSingle, metaDbo);
 		}
 	}
 
+	private <T> void scanSingle(MetaClassSingle<T> classMeta, DboTableMeta metaDbo) {
+		Class<? extends T> proxyClass = createTheProxy(classMeta.getMetaClass());
+		classMeta.setProxyClass(proxyClass);
+		scanFields(classMeta, metaDbo);
+	}
+	
 	@SuppressWarnings("unchecked")
 	private <T> Class<T> createTheProxy(Class<?> mainClass) {
 		ProxyFactory f = new ProxyFactory();
@@ -125,7 +148,7 @@ public class ScannerForClass {
 		}
 	}
 	
-	private void scanClass(MetaAbstractClass<?> meta) {
+	private void scanForAnnotations(MetaAbstractClass<?> meta) {
 		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
 		NoSqlEmbeddable embeddable = meta.getMetaClass().getAnnotation(NoSqlEmbeddable.class);
 		if(noSqlEntity != null) {
@@ -137,36 +160,28 @@ public class ScannerForClass {
 			log.trace("nothing to do yet here until we implement");
 			//nothing to do at this point
 		} else {
-			throw new RuntimeException("bug, someone added an annotation but didn't add an else if here");
+			throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
 		}
-		
-		scanFields(meta);
 	}
-	private void scanFields(MetaAbstractClass<?> meta) {
+	
+	private void scanFields(MetaAbstractClass<?> meta, DboTableMeta metaDbo) {
 		Class<?> metaClass = meta.getMetaClass();
-		List<Field[]> fields = new ArrayList<Field[]>();
-		findFields(metaClass, fields);
+		List<Field> fields = findAllFields(metaClass);
 		
-		for(Field[] fieldArray : fields) {
-			for(Field field : fieldArray) {
-				inspectField(meta, field);
-			}
+		for(Field field : fields) {
+			inspectField(meta, metaDbo, field);
 		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void inspectField(MetaAbstractClass<?> metaClass, Field field) {
+	private void inspectField(MetaAbstractClass<?> metaClass, DboTableMeta metaDbo, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
 				field.isAnnotationPresent(NoSqlTransient.class))
 			return;
 		
-		DboTableMeta metaDbo = metaClass.getMetaDbo();
-		if(field.isAnnotationPresent(Id.class)) {
-			MetaIdField idField = inspectorField.processId(field, metaClass);
-			metaClass.setIdField(idField);
+		if(processIdFieldWorks(metaClass, field))
 			return;
-		}
 		
 		String cf = metaClass.getColumnFamily();
 		MetaField metaField;
@@ -186,6 +201,31 @@ public class ScannerForClass {
 		boolean isIndexed = field.isAnnotationPresent(NoSqlIndexed.class);
 		metaClass.addMetaField(metaField, isIndexed);
 		metaDbo.addColumnMeta(metaField.getMetaDbo());
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean processIdFieldWorks(MetaAbstractClass metaClass, Field field) {
+		if(!field.isAnnotationPresent(Id.class))
+			return false;
+		
+		if(metaClass.getIdField() != null)
+			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @Id annotation.  One of them may be in a superclass");
+		
+		MetaIdField idField = inspectorField.processId(field, metaClass);
+		metaClass.setIdField(idField);
+		return true;
+	}
+
+	private List<Field> findAllFields(Class<?> metaClass) {
+		List<Field[]> fields = new ArrayList<Field[]>();
+		findFields(metaClass, fields);
+		
+		List<Field> allFields = new ArrayList<Field>();
+		for(Field[] f : fields) {
+			List<Field> asList = Arrays.asList(f);
+			allFields.addAll(asList);
+		}
+		return allFields;
 	}
 	
 	@SuppressWarnings("rawtypes")

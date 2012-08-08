@@ -34,7 +34,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void put(Object entity) {
-		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
+		Class cl = entity.getClass();
+		MetaClass metaClass = metaInfo.getMetaClass(cl);
 		if(metaClass == null)
 			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
 		

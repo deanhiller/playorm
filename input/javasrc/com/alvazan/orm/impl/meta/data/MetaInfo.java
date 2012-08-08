@@ -35,6 +35,14 @@ public class MetaInfo {
 	}
 
 	@SuppressWarnings("unchecked")
+	public <T> MetaClassSingle<T> createSubclass(Class clazz, MetaClassInheritance<T> parent) {
+		MetaClassSingle<T> single = classMetaProvider.get();
+		single.setMetaClass(clazz);
+		classToClassMeta.put(clazz, parent);
+		return single;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public MetaAbstractClass<?> findOrCreate(Class clazz) {
 		MetaAbstractClass<?> metaClass = classToClassMeta.get(clazz);
 		if(metaClass != null)

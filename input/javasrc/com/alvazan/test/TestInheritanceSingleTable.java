@@ -1,4 +1,4 @@
-package com.alvazan.test.needlater;
+package com.alvazan.test;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -11,7 +11,6 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi2.DboAbstractColumnMeta;
 import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
-import com.alvazan.test.FactorySingleton;
 
 public class TestInheritanceSingleTable {
 
@@ -35,9 +34,6 @@ public class TestInheritanceSingleTable {
 	}
 
 	@Test
-	public void empty() {}
-
-	//@Test
 	public void testBasicMultipleClasses() {
 		DboColumnCommonMeta common = new DboColumnCommonMeta();
 		common.setColumnName("generic");
@@ -50,11 +46,11 @@ public class TestInheritanceSingleTable {
 		mgr.flush();
 		
 		DboAbstractColumnMeta abs = mgr.find(DboAbstractColumnMeta.class, common.getId());
-		Assert.assertEquals(DboColumnCommonMeta.class, abs.getClass());
+		Assert.assertTrue(DboColumnCommonMeta.class.isAssignableFrom(abs.getClass()));
 		Assert.assertEquals(common.getColumnType(), ((DboColumnCommonMeta)abs).getColumnType());
 		
 		DboAbstractColumnMeta many = mgr.find(DboAbstractColumnMeta.class, toMany.getId());
-		Assert.assertEquals(DboColumnToManyMeta.class, many.getClass());
+		Assert.assertTrue(DboColumnToManyMeta.class.isAssignableFrom(many.getClass()));
 	}
 
 }
