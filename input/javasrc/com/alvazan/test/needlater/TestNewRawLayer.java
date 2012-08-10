@@ -37,7 +37,7 @@ public class TestNewRawLayer {
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
 		try {
-			other.clearDbAndIndexesIfInMemoryType();
+			other.clearDatabase();
 		} catch(Exception e) {
 			log.warn("Could not clean up properly", e);
 		}

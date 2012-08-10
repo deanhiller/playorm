@@ -23,12 +23,14 @@ public interface NoSqlRawSession {
 	 */
 	public void sendChanges(List<Action> actions, Object session);
 
-	public void clearDatabaseIfInMemoryType();
+	public void clearDatabase();
 
-	public void start(Map<String, String> properties);
+	public void start(Map<String, Object> properties);
 	
 	public void stop();
 
 	public Iterable<Column> columnRangeScan(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, int batchSize);
+
+	public void close();
 }

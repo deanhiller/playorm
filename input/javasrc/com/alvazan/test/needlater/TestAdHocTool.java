@@ -19,7 +19,7 @@ import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.bindings.Bootstrap;
+import com.alvazan.orm.impl.bindings.BootstrapImpl;
 import com.alvazan.test.FactorySingleton;
 
 public class TestAdHocTool {
@@ -43,7 +43,7 @@ public class TestAdHocTool {
 		addMetaClassDbo(metaDb, "MyEntity", "cat", "mouse", "dog");
 		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
 
-		NoSqlSessionFactory factory = Bootstrap.createRawInstance(DbTypeEnum.IN_MEMORY, metaDb);
+		NoSqlSessionFactory factory = BootstrapImpl.createRawInstance(DbTypeEnum.IN_MEMORY, metaDb);
 		String sql = "ON /someindex select * FROM MyEntity e WHERE e.cat = \"deano\"";
 
 		NoSqlSession session = factory.createSession();

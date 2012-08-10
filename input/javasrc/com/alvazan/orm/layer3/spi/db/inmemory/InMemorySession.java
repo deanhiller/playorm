@@ -183,12 +183,12 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void clearDatabaseIfInMemoryType() {
+	public void clearDatabase() {
 		database.clear();
 	}
 
 	@Override
-	public void start(Map<String, String> properties) {
+	public void start(Map<String, Object> properties) {
 		
 	}
 
@@ -211,4 +211,11 @@ public class InMemorySession implements NoSqlRawSession {
 		
 		return row.columnSlice(from, to);
 	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

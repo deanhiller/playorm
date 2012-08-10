@@ -35,7 +35,7 @@ public class TestIndexAndOrParens {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		other.clearDatabase();
 	}
 	
 	@Test

@@ -72,7 +72,7 @@ public class CassandraSession implements NoSqlRawSession {
 	private String keyspaceName;
 	
 	@Override
-	public void start(Map<String, String> properties) {
+	public void start(Map<String, Object> properties) {
 		try {
 			startImpl(properties);
 		} catch (ConnectionException e) {
@@ -80,7 +80,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 	
-	public void startImpl(Map<String, String> properties) throws ConnectionException {
+	public void startImpl(Map<String, Object> properties) throws ConnectionException {
 		String clusterName = "SDICluster";
 		keyspaceName = "SDIKeyspace";
 		Builder builder = new AstyanaxContext.Builder()
@@ -309,8 +309,10 @@ public class CassandraSession implements NoSqlRawSession {
 		return info;
 	}
 	
-	private void createColFamily(String colFamily, NoSqlEntityManager mgr)
-			 {
+	private synchronized void createColFamily(String colFamily, NoSqlEntityManager mgr) {
+		if(existingColumnFamilies2.get(colFamily.toLowerCase()) != null)
+			return;
+			
 		log.info("CREATING column family="+colFamily+" in cassandra");
 		
 		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
@@ -496,7 +498,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void clearDatabaseIfInMemoryType() {
+	public void clearDatabase() {
 		try {
 			clearImpl();
 		} catch (ConnectionException e) {
@@ -679,6 +681,10 @@ public class CassandraSession implements NoSqlRawSession {
 			else 
 				subIterator = columns.iterator();
 		}
+	}
+	@Override
+	public void close() {
+		throw new UnsupportedOperationException("not done here yet");
 	}
 
 }

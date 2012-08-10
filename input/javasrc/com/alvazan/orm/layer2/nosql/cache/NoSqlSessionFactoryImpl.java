@@ -11,10 +11,13 @@ import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
+import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
 
 public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 
+	@Inject
+	private NoSqlRawSession rawSession;
 	@Inject
 	@Named("writecachelayer")
 	private Provider<NoSqlSession> provider;
@@ -75,6 +78,11 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 	@Override
 	public MetaQuery parseQueryForOrm(String query, String targetTable) {
 		return scanner.newsetupByVisitingTree(query, targetTable);
+	}
+
+	@Override
+	public void close() {
+		rawSession.close();
 	}
 
 }

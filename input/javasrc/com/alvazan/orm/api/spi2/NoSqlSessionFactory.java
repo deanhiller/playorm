@@ -24,4 +24,6 @@ public interface NoSqlSessionFactory {
 	@SuppressWarnings("rawtypes")
 	public MetaQuery parseQueryForOrm(String query, String targetTable);
 	
+	public void close();
+	
 }
