@@ -8,9 +8,6 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi2.DboAbstractColumnMeta;
-import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
 import com.alvazan.test.db.InheritanceRelation;
 import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
@@ -89,10 +86,13 @@ public class TestInheritanceSingleTable {
 		
 		InheritanceRelation newRel = mgr.find(InheritanceRelation.class, rel.getId());
 		InheritanceSuper sub1 = newRel.getNameToEntity().get(common.getLastName());
+		Assert.assertEquals(common.getId(), sub1.getId());
+		Assert.assertEquals(common.getName(), ((InheritanceSub1)sub1).getName());
+		Assert.assertEquals(common.getNum(), sub1.getNum());
 		
 		InheritanceSuper sub2 = newRel.getNameToEntity().get(toMany.getLastName());
-		
-		
-		
+		Assert.assertEquals(toMany.getId(), sub2.getId());
+		Assert.assertEquals(toMany.getNum(), sub2.getNum());
+		Assert.assertEquals(toMany.getName(), ((InheritanceSub2)sub2).getName());
 	}
 }

@@ -17,11 +17,11 @@ import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
 
-public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
+public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 
 	private static final Logger log = LoggerFactory.getLogger(MapProxyFetchAll.class);
 	private static final long serialVersionUID = 1L;
-	private boolean cacheLoaded;
+	private boolean cacheLoaded = false;
 	private NoSqlSession session;
 	private MetaAbstractClass<V> classMeta;
 	private Field fieldForKey;
@@ -30,7 +30,12 @@ public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCa
 	private boolean removeAll;
 	private Object owner;
 	
-	public MapProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<V> classMeta,
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static MapProxyFetchAll create(Object owner, NoSqlSession session, MetaAbstractClass classMeta,
+			List<byte[]> keys, Field fieldForKey) {
+		return new MapProxyFetchAll(owner, session, classMeta, keys, fieldForKey);
+	}
+	private MapProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey) {
 		this.session = session;
 		this.classMeta = classMeta;

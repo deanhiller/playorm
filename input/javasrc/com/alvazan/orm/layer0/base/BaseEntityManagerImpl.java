@@ -12,6 +12,7 @@ import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.IndexData;
@@ -55,7 +56,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		for(IndexData ind : row.getIndexToAdd()) {
 			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
-		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
+		String cf = metaClass.getColumnFamily();
+		byte[] key = row.getKey();
+		List<Column> cols = row.getColumns();
+		session.persist(cf, key, cols);
 	}
 
 	@Override

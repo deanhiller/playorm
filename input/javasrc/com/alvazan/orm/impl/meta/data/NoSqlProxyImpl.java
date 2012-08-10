@@ -30,6 +30,8 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	private Map<Field, Object> indexFieldToOriginalValue = new HashMap<Field, Object>();
 	
 	public NoSqlProxyImpl(NoSqlSession session, MetaAbstractClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
+		if(classMeta.getColumnFamily() == null)
+			throw new IllegalArgumentException("column family in the classMeta parameter cannot be null");
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;

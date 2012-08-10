@@ -24,7 +24,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	private String discriminatorColumnName;
 	private byte[] discColAsBytes;
 	
-	public void addProxy(String columnValue, MetaClassSingle<T> metaSingle) {
+	public void addMetaForSubclass(String columnValue, MetaClassSingle<T> metaSingle) {
 		MetaClassSingle<T> existing = dbTypeToMeta.get(columnValue);
 		if(existing != null)
 			throw new IllegalArgumentException("You are doing inheritance strategy single table but two of your" +

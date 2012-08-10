@@ -4,8 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import org.apache.commons.codec.binary.Hex;
-
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public class ByteArray implements Comparable<ByteArray> {
@@ -79,7 +77,7 @@ public class ByteArray implements Comparable<ByteArray> {
 		String asString = asString();
 		BigDecimal asDec = StandardConverters.convertFromBytesNoExc(BigDecimal.class, key);
 		BigInteger asInt = StandardConverters.convertFromBytesNoExc(BigInteger.class, key);
-		return "[asString:"+asString+"\nasDec:"+asDec+"\nasInt:"+asInt+"\nasHex:"+new String(Hex.encodeHex(this.key))+"]";
+		return "[asString:"+asString+"\nasDec:"+asDec+"\nasInt:"+asInt+"\n]";
 	}
 
 	public String asString() {

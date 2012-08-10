@@ -2,10 +2,12 @@ package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 
-@NoSqlDiscriminatorColumn(value="Common")
+@NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboAbstractColumnMeta {
 
 	private String columnType;
+
+	private String columnValueType;
 	
 	private String indexPrefix;
 

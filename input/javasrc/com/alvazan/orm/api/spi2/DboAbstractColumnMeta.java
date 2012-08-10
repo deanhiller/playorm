@@ -1,9 +1,11 @@
 package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 
 @NoSqlEntity
 @NoSqlInheritance(columnfamily={DboColumnCommonMeta.class, DboColumnToOneMeta.class, DboColumnToManyMeta.class},
@@ -15,6 +17,14 @@ public class DboAbstractColumnMeta {
 	
 	private String columnName;
 
+	private String foreignKeyToExtensions;
+	
+	@ManyToOne
+	private DboTableMeta owner;
+	
+	@NoSqlTransient
+	private transient byte[] columnAsBytes;
+	
 	public String getId() {
 		return id;
 	}

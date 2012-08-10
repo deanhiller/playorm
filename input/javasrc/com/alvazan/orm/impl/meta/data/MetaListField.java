@@ -19,7 +19,7 @@ import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 
-public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
+public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
@@ -52,7 +52,8 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
+		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session, classMeta, keys, fieldForKey);
+		//MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
 	

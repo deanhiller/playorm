@@ -104,7 +104,8 @@ public class ScannerForClass {
 			
 			String columnValue = col.value();
 			MetaClassSingle<T> metaSingle = metaInfo.createSubclass(clazz, metaClass);
-			metaClass.addProxy(columnValue, metaSingle);	
+			metaSingle.setColumnFamily(metaClass.getColumnFamily());
+			metaClass.addMetaForSubclass(columnValue, metaSingle);	
 			scanSingle(metaSingle, metaDbo);
 		}
 	}
