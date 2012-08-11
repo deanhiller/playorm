@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.scan;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -14,8 +15,10 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
@@ -24,6 +27,7 @@ import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
@@ -267,17 +271,58 @@ public class ScannerForField {
 		if(field.getAnnotation(NoSqlIndexed.class) != null)
 			indexPrefix ="/"+colFamily+"/"+colName; 
 		
+		Class<?> theSuperclass = null;
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
-		if(!field.getType().isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+		if(!field.getType().isAnnotationPresent(NoSqlEntity.class)) {
+			if(!field.getType().isAnnotationPresent(NoSqlDiscriminatorColumn.class))			
+				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
+			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
+			if(theSuperclass == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");
+			NoSqlInheritance anno = theSuperclass.getAnnotation(NoSqlInheritance.class);
+			if(anno == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlInheritance");
+			else if(!classExistsInList(anno, field.getType()))
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn and has a super class with NoSqlEntity and NoSqlInheritance but is not listed" +
+						"in the NoSqlInheritance tag as one of the subclasses to scan.  Please add it");
+		}
 		
 		MetaProxyField metaField = metaProxyProvider.get();
 		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		
+		if(theSuperclass != null) {
+			//we need to swap the classMeta to the more specific class meta which may have not been 
+			//created yet, oh joy...so we findOrCreate and the shell will be filled in when processing
+			//that @NoSqlEntity when it scans the subclasses.
+			MetaClassInheritance meta = (MetaClassInheritance) classMeta;
+			classMeta = meta.findOrCreate(field.getType(), theSuperclass);
+		}
 		
 		metaField.setup(field, colName, classMeta, indexPrefix);
 		return metaField;
 	}
 
+	@SuppressWarnings("unused")
+	private boolean classExistsInList(NoSqlInheritance anno, Class<?> class1) {
+		Class[] subclasses = anno.subclassesToScan();
+		Class c = null;
+		for(Class sub : subclasses) {
+			if(sub == class1)
+				return true;
+		}		
+		
+		return false;
+	}
+
+	private Class findSuperclassWithNoSqlEntity(Class<?> type) {
+		if(type.isAnnotationPresent(NoSqlEntity.class))
+			return type;
+		else if(type == Object.class)
+			return null;
+		return findSuperclassWithNoSqlEntity(type.getSuperclass());
+	}
 }

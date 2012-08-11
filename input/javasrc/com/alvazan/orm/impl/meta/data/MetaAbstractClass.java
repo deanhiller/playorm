@@ -75,7 +75,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		this.idField = field;
-		metaDbo.setRowKeyMeta(field.getMetaDbo());
+		metaDbo.setRowKeyMeta(field.getMetaIdDbo());
 	}
 
 	public MetaIdField<T> getIdField() {

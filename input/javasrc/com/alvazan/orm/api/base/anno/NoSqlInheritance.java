@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NoSqlInheritance {
     @SuppressWarnings("rawtypes")
-	Class[] columnfamily();
+	Class[] subclassesToScan();
     NoSqlInheritanceType strategy();
     String discriminatorColumnName() default "";
 }

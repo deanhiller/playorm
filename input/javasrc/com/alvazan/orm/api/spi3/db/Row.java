@@ -32,7 +32,8 @@ public class Row {
 	}
 
 	public Column getColumn(byte[] key) {
-		return columns.get(new ByteArray(key));
+		ByteArray bKey = new ByteArray(key);
+		return columns.get(bKey);
 	}
 	public void put(byte[] name, Column col) {
 		ByteArray key = new ByteArray(name);

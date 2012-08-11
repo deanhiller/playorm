@@ -12,7 +12,9 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi2.ColumnTypeEnum;
+import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -32,8 +34,8 @@ public class TestAdHocTool {
 		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		DboTableMeta table = database.getMeta("Activity");
 		DboColumnMeta columnMeta = table.getColumnMeta("account");
-		
-		Assert.assertEquals("id", columnMeta.getFkToColumnFamily().getIdColumnMeta().getColumnName());
+		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
+		Assert.assertEquals("id", toOne.getFkToColumnFamily().getIdColumnMeta().getColumnName());
 		
 	}
 	
@@ -66,8 +68,8 @@ public class TestAdHocTool {
 		map.addMetaClassDbo(meta);
 		
 		for(String field : fields) {
-			DboColumnMeta fieldDbo = new DboColumnMeta();
-			fieldDbo.setup(field, null, String.class, ColumnTypeEnum.GENERIC, "field");
+			DboColumnCommonMeta fieldDbo = new DboColumnCommonMeta();
+			fieldDbo.setup(field, String.class, "field");
 			meta.addColumnMeta(fieldDbo);
 		}
 	}

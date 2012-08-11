@@ -76,6 +76,7 @@ public class ScannerForClass {
 		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
 		Class<T> mainClass = metaClass.getMetaClass();
 		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
@@ -93,19 +94,11 @@ public class ScannerForClass {
 		String discColumn = annotation.discriminatorColumnName();
 		metaClass.setDiscriminatorColumnName(discColumn);
 		
-		for(Class<?> clazz : annotation.columnfamily()) {
-			NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
-			if(col == null)
-				throw new IllegalArgumentException("Class "+mainClass.getName()+" in the NoSqlInheritance annotation, specifies a class" +
-						" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());
-			else if(!mainClass.isAssignableFrom(clazz)) 
-				throw new IllegalArgumentException("Class "+clazz+" is not a subclass of "+mainClass+" but the" +
-						" NoSqlInheritance annotation specifies that class so it needs to be a subclass");
-			
-			String columnValue = col.value();
-			MetaClassSingle<T> metaSingle = metaInfo.createSubclass(clazz, metaClass);
+		for(Class clazz : annotation.subclassesToScan()) {
+			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
 			metaSingle.setColumnFamily(metaClass.getColumnFamily());
-			metaClass.addMetaForSubclass(columnValue, metaSingle);	
+			metaSingle.setMetaClass(clazz);
+			metaInfo.addSubclass(clazz, metaClass);
 			scanSingle(metaSingle, metaDbo);
 		}
 	}

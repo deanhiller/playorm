@@ -28,7 +28,7 @@ public class DboTableMeta {
 	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	@OneToOne
-	private DboColumnMeta idColumn;
+	private DboColumnIdMeta idColumn;
 	
 	private String foreignKeyToExtensions;
 	
@@ -40,7 +40,7 @@ public class DboTableMeta {
 		this.columnFamily = columnFamily;
 	}
 	
-	public void setRowKeyMeta(DboColumnMeta idMeta) {
+	public void setRowKeyMeta(DboColumnIdMeta idMeta) {
 		this.idColumn = idMeta;
 		this.idColumn.setOwner(this);
 	}
@@ -87,7 +87,7 @@ public class DboTableMeta {
 		return "[tablename="+columnFamily+" indexedcolumns="+nameToField.values()+" pk="+idColumn+"]";
 	}
 
-	public DboColumnMeta getIdColumnMeta() {
+	public DboColumnIdMeta getIdColumnMeta() {
 		return idColumn;
 	}
 

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.MetaQuery;
@@ -360,20 +361,10 @@ public class ScannerForQuery {
 
 	private static void validateTypes(InfoForWiring wiring, StorageTypeEnum constantType, TypeInfo typeInfo) {
 		DboColumnMeta info = typeInfo.getColumnInfo();
-		Class type = info.getClassType();
-		if(constantType == StorageTypeEnum.STRING && 
-				(type.equals(String.class) || type.equals(Boolean.class)
-						|| type.equals(Character.class)))
-			return;
-		else if(constantType == StorageTypeEnum.DECIMAL && 
-				(type.equals(Double.class) || type.equals(Float.class) ))
-			return;
-		else if(constantType == StorageTypeEnum.INTEGER &&
-				(type.equals(Long.class) || type.equals(Integer.class) 
-						|| type.equals(Short.class) || type.equals(Byte.class)))
-			return;
-		else
-			throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery());
+		if(info instanceof DboColumnToManyMeta)
+			throw new IllegalArgumentException("Cannot use column="+info.getColumnName()+" since that is a toMany relationship");
+		else if(constantType != info.getStorageType())
+			throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery()+" for column="+info.getColumnName()+" type1="+constantType+" type2="+info.getStorageType());
 	}
 	
 

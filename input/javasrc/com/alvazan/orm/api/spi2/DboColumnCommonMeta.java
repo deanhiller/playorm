@@ -1,30 +1,45 @@
 package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
+import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
+import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 @NoSqlDiscriminatorColumn(value="generic")
-public class DboColumnCommonMeta extends DboAbstractColumnMeta {
-
-	private String columnType;
+public class DboColumnCommonMeta extends DboColumnMeta {
 
 	private String columnValueType;
-	
 	private String indexPrefix;
 
-	public String getColumnType() {
-		return columnType;
+	@SuppressWarnings("rawtypes")
+	public void setup(String colName, Class valuesType, String indexPrefix) {
+		Class newType = translateType(valuesType);
+		this.columnName = colName;
+		this.columnValueType = newType.getName();
+		this.indexPrefix = indexPrefix;
 	}
-
-	public void setColumnType(String columnType) {
-		this.columnType = columnType;
-	}
-
+	
 	public String getIndexPrefix() {
 		return indexPrefix;
 	}
 
-	public void setIndexPrefix(String indexPrefix) {
-		this.indexPrefix = indexPrefix;
+	@Override
+	public boolean isIndexed() {
+		if(indexPrefix == null)
+			return false;
+		return true;
 	}
 	
+	@SuppressWarnings("rawtypes")
+	public Class getClassType() {
+		return classForName(columnValueType);
+	}
+
+	@SuppressWarnings("rawtypes")
+	public StorageTypeEnum getStorageType() {
+		Class fieldType = getClassType();
+		return getStorageType(fieldType);
+	}
+
+
+
 }

@@ -6,7 +6,7 @@ import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 
 @NoSqlEntity
-@NoSqlInheritance(columnfamily={InheritanceSub1.class, InheritanceSub2.class},
+@NoSqlInheritance(subclassesToScan={InheritanceSub1.class, InheritanceSub2.class},
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
 public class InheritanceSuper {
 

@@ -6,7 +6,11 @@ import java.util.Map;
 
 import javassist.util.proxy.Proxy;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import com.alvazan.orm.api.base.KeyValue;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -15,6 +19,9 @@ import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
+	@SuppressWarnings("rawtypes")
+	@Inject
+	private Provider<MetaClassSingle> classMetaProvider;	
 	/**
 	 * For inheritance for a single table, we have multiple proxies for this class that we may need to
 	 * create.
@@ -24,13 +31,25 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	private String discriminatorColumnName;
 	private byte[] discColAsBytes;
 	
-	public void addMetaForSubclass(String columnValue, MetaClassSingle<T> metaSingle) {
-		MetaClassSingle<T> existing = dbTypeToMeta.get(columnValue);
-		if(existing != null)
-			throw new IllegalArgumentException("You are doing inheritance strategy single table but two of your" +
-					" classes use the same column value="+columnValue+" from enttity="+getMetaClass());
+	@SuppressWarnings("unchecked")
+	public MetaClassSingle<?> findOrCreate(Class<?> clazz, Class<?> parent) {
+		NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
+		if(col == null)
+			throw new IllegalArgumentException("Class "+parent.getName()+" in the NoSqlInheritance annotation, specifies a class" +
+					" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());
+		else if(!parent.isAssignableFrom(clazz)) 
+			throw new IllegalArgumentException("Class "+clazz+" is not a subclass of "+parent+" but the" +
+					" NoSqlInheritance annotation specifies that class so it needs to be a subclass");
+		
+		String columnValue = col.value();
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(columnValue);
+		if(metaSingle != null)
+			return metaSingle;
+		
+		metaSingle = classMetaProvider.get();
 		dbTypeToMeta.put(columnValue, metaSingle);
-		classToType.put(metaSingle.getMetaClass(), columnValue);
+		classToType.put(clazz, columnValue);
+		return metaSingle;
 	}
 
 	@Override
@@ -46,6 +65,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
 	private MetaClassSingle<T> retrieveMeta(Row row) {
 		Column column = row.getColumn(discColAsBytes);
+		
 		String type = StandardConverters.convertFromBytes(String.class, column.getValue());
 		MetaClassSingle<T> metaClassSingle = this.dbTypeToMeta.get(type);
 		return metaClassSingle;

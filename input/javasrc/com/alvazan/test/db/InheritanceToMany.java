@@ -8,7 +8,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
-public class InheritanceRelation {
+public class InheritanceToMany {
 
 	@Id
 	private String id;

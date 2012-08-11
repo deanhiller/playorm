@@ -4,7 +4,8 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
+import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
@@ -16,6 +17,11 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	//ClassMeta Will eventually have the idField that has the converter!!!
 	//once it is scanned
 	private MetaAbstractClass<PROXY> classMeta;
+	private DboColumnToOneMeta metaDbo = new DboColumnToOneMeta();
+
+	public DboColumnMeta getMetaDbo() {
+		return metaDbo;
+	}
 	
 	@Override
 	public String toString() {
@@ -70,7 +76,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	private StorageTypeEnum getStorageType() {
-		StorageTypeEnum storageType = classMeta.getIdField().getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = classMeta.getIdField().getMetaIdDbo().getStorageType();
 		return storageType;
 	}
 	
@@ -97,8 +103,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	
 	public void setup(Field field2, String colName, MetaAbstractClass<PROXY> classMeta, String indexPrefix) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		
-		super.setup(field2, colName, fkToTable, null, ColumnTypeEnum.FK, indexPrefix);
+		metaDbo.setup(colName, fkToTable, indexPrefix);
+		super.setup(field2, colName);
 		this.classMeta = classMeta;
 	}
 

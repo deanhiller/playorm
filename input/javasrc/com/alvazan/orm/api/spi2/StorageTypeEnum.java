@@ -9,7 +9,8 @@ import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public enum StorageTypeEnum {
 
-	STRING("String", String.class), DECIMAL("Decimal", BigDecimal.class), INTEGER("Integer", Integer.class), BYTES("Bytes", byte[].class);
+	STRING("String", String.class), DECIMAL("Decimal", BigDecimal.class), INTEGER("Integer", Integer.class), 
+	BYTES("Bytes", byte[].class);
 	
 	private static Map<String, StorageTypeEnum> dbCodeToVal = new HashMap<String, StorageTypeEnum>();
 	static {

@@ -7,72 +7,78 @@ import java.math.BigInteger;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
+import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
-import com.alvazan.orm.api.spi3.db.conv.AdhocToolConverter;
-import com.alvazan.orm.api.spi3.db.conv.Converter;
+import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 @NoSqlEntity
-@SuppressWarnings("rawtypes")
-public class DboColumnMeta {
+@NoSqlInheritance(subclassesToScan={DboColumnCommonMeta.class, DboColumnToOneMeta.class, DboColumnToManyMeta.class, DboColumnIdMeta.class},
+		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
+public abstract class DboColumnMeta {
 
-	@Id(usegenerator=false)
+	@Id
 	private String id;
 	
-	private String columnName;
+	protected String columnName;
 
-	/**
-	 * This is either listOfFk, fk, generic, or id
-	 */
-	private String columnType;
-	/**
-	 * null for FK relationships.  Contains primitive type..
-	 */
-	private String columnValueType;
-	
-	/**
-	 * This field may be referencing another entity in another table so here is the meta data
-	 * on that table as well, but for now, I don't think we need it until we have joins
-	 */
-	@ManyToOne
-	private DboTableMeta fkToColumnFamily;
-	
 	private String foreignKeyToExtensions;
-
-	private String indexPrefix;
-
+	
 	@ManyToOne
 	private DboTableMeta owner;
-
+	
 	@NoSqlTransient
 	private transient byte[] columnAsBytes;
 	
+	protected transient BaseConverter converter;
+	
+	public String getId() {
+		return id;
+	}
+
 	public String getColumnName() {
 		return columnName;
 	}
 
-	@Override
-	public String toString() {
-		return "Field["+columnName+"]";
+	public abstract String getIndexPrefix();
+	public abstract boolean isIndexed();
+	/**
+	 * This is the more detailed type for programs to know what types the values fit into.  This would be
+	 * of type long.class, short.class, float, etc. etc.
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	public abstract Class getClassType();
+	/**
+	 * This is the raw database type of String, BigInteger or BigDecimal
+	 * @return
+	 */
+	public abstract StorageTypeEnum getStorageType();
+	//public abstract String convertToValue(byte[] dbValue);
+
+	protected synchronized void initConverter() {
+		converter = StandardConverters.get(getClassType());
+		if(converter == null)
+			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");		
+	}
+	
+	public byte[] convertToStorage(String value) {
+		initConverter();
+		return converter.convertToNoSqlFromString(value);
+	}
+	
+	public byte[] convertToStorage2(Object value) {
+		initConverter();
+		return converter.convertToNoSql(value);
 	}
 
-	public void setup(String colName, DboTableMeta fkToTable, Class valuesType, ColumnTypeEnum colType, String indexPrefix) {
-		if(fkToTable == null && (colType == ColumnTypeEnum.LIST_OF_FK || colType == ColumnTypeEnum.FK))
-			throw new IllegalArgumentException("Must supply the fkToTable param if creating meta column of an FK");
-		else if(valuesType != null && fkToTable != null)
-			throw new IllegalArgumentException("classType should not be specified when this column is an FK column to another table");
-		else if(colType == ColumnTypeEnum.LIST_OF_FK && indexPrefix != null)
-			throw new IllegalArgumentException("Cannot have a *ToMany and Index that column as well");
-		
-		Class newType = translateType(valuesType);
-		this.columnName = colName;
-		this.fkToColumnFamily = fkToTable;
-		if(newType != null)
-			this.columnValueType = newType.getName();
-		this.columnType = colType.getDbCode();
-		this.indexPrefix = indexPrefix;
+	public Object convertFromStorage2(byte[] data) {
+		initConverter();
+		return converter.convertFromNoSql(data);		
 	}
-
+	
+	@SuppressWarnings("rawtypes")
 	protected static Class translateType(Class classType) {
 		Class finalType = classType;
 		if(!StandardConverters.containsConverterFor(classType))
@@ -83,6 +89,7 @@ public class DboColumnMeta {
 		return finalType;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public static Class convertIfPrimitive(Class fieldType) {
 		Class c = fieldType;
 		if(long.class.equals(fieldType))
@@ -104,37 +111,7 @@ public class DboColumnMeta {
 		return c;
 	}
 	
-	public String getId() {
-		return id;
-	}
-
-	public void setId(String id) {
-		throw new UnsupportedOperationException("Do NOT directly set the id, instead call DboTableMeta.addColumn or setRowKey and the id will be set for you correctly");
-	}
-
-	public DboTableMeta getOwner() {
-		return owner;
-	}
-
-	public void setOwner(DboTableMeta owner) {
-		this.owner = owner;
-		if(columnName == null)
-			throw new IllegalStateException("Please call setup method before adding to another entity");
-		id = owner.getColumnFamily()+":"+columnName;
-	}
-
-	public Class getClassType() {
-		if(columnValueType == null)
-			return null;
-		
-		return classForName(columnValueType);
-	}
-
-	public StorageTypeEnum getStorageType() {
-		Class fieldType = getClassType();
-		return getStorageType(fieldType);
-	}
-
+	@SuppressWarnings("rawtypes")
 	public static StorageTypeEnum getStorageType(Class fieldType) {
 		StorageTypeEnum type = null;
 		if(byte[].class.equals(fieldType))
@@ -165,77 +142,13 @@ public class DboColumnMeta {
 		return type;
 	}
 	
+	@SuppressWarnings("rawtypes")
 	protected static Class classForName(String columnType) {
 		try {
 			return Class.forName(columnType);
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public DboTableMeta getFkToColumnFamily() {
-		return fkToColumnFamily;
-	}
-
-	public String getColumnType() {
-		return columnType;
-	}
-	
-	public boolean isIndexed() {
-		return indexPrefix != null;
-	}
-	public String getIndexPrefix() {
-		return indexPrefix;
-	}
-
-	public String getForeignKeyToExtensions() {
-		return foreignKeyToExtensions;
-	}
-
-	public void setForeignKeyToExtensions(String foreignKeyToExtensions) {
-		this.foreignKeyToExtensions = foreignKeyToExtensions;
-	}
-
-	public byte[] convertToStorage(String value) {
-		if(fkToColumnFamily != null) {
-			return fkToColumnFamily.getIdColumnMeta().convertToStorage(value);
-		}
-		AdhocToolConverter converter = StandardConverters.get(getClassType());
-		if(converter == null)
-			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
-		return converter.convertToNoSqlFromString(value);
-	}
-	
-	public String convertToValue(byte[] dbValue) {
-		if(fkToColumnFamily != null)
-			return fkToColumnFamily.getIdColumnMeta().convertToValue(dbValue);
-		Class type = getClassType();
-		AdhocToolConverter converter = StandardConverters.get(type);
-		if(converter == null)
-			throw new IllegalArgumentException("type="+type+" is not supported at this point");
-		return converter.convertFromNoSqlToString(dbValue)+"";		
-	}
-
-	public byte[] convertToStorage2(Object value) {
-		if(fkToColumnFamily != null) {
-			return fkToColumnFamily.getIdColumnMeta().convertToStorage2(value);
-		}
-		Converter converter = StandardConverters.get(getClassType());
-		if(converter == null)
-			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
-		
-		return converter.convertToNoSql(value);
-	}
-
-	public Object convertFromStorage2(byte[] data) {
-		if(fkToColumnFamily != null) {
-			return fkToColumnFamily.getIdColumnMeta().convertFromStorage2(data);
-		}
-		Converter converter = StandardConverters.get(getClassType());
-		if(converter == null)
-			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");
-		
-		return converter.convertFromNoSql(data);		
 	}
 	
 	public byte[] getColumnNameAsBytes() {
@@ -250,6 +163,21 @@ public class DboColumnMeta {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	public void setOwner(DboTableMeta owner) {
+		this.owner = owner;
+		if(columnName == null)
+			throw new IllegalStateException("Please call setup method on this DboColumnxxxMeta before adding to another entity");
+		id = owner.getColumnFamily()+":"+columnName;		
+	}
+
+	public String getForeignKeyToExtensions() {
+		return foreignKeyToExtensions;
+	}
+
+	public void setForeignKeyToExtensions(String foreignKeyToExtensions) {
+		this.foreignKeyToExtensions = foreignKeyToExtensions;
 	}
 	
 }

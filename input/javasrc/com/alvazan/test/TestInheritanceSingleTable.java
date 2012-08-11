@@ -8,14 +8,15 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.test.db.InheritanceRelation;
 import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.InheritanceSuper;
+import com.alvazan.test.db.InheritanceToMany;
+import com.alvazan.test.db.InheritanceToOne;
+import com.alvazan.test.db.InheritanceToOneSpecific;
 
 public class TestInheritanceSingleTable {
 
-	private static final String ACCOUNT_NAME = "declan";
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 
@@ -62,6 +63,67 @@ public class TestInheritanceSingleTable {
 	}
 
 	@Test
+	public void testToOneRelatipnshipSpecific() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setLastName("hiller");
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceToOneSpecific ent1 = new InheritanceToOneSpecific();
+		ent1.setInheritance(common);
+		
+		mgr.put(ent1);
+		
+		mgr.flush();
+		
+		InheritanceToOneSpecific result1 = mgr.find(InheritanceToOneSpecific.class, ent1.getId());
+		Assert.assertTrue(result1.getInheritance() instanceof InheritanceSub1);
+		Assert.assertEquals(common.getNum(), result1.getInheritance().getNum());
+		InheritanceSub1 subResult1 = (InheritanceSub1) result1.getInheritance();
+		Assert.assertEquals(common.getDiff(), subResult1.getDiff());
+		Assert.assertEquals(common.getName(), subResult1.getName());		
+	}
+	
+	@Test
+	public void testToOneRelationship() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setLastName("hiller");
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setLastName("smith");
+		toMany.setName("werew");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
+		mgr.put(toMany);
+		
+		InheritanceToOne ent1 = new InheritanceToOne();
+		ent1.setInheritance(common);
+		
+		InheritanceToOne ent2 = new InheritanceToOne();
+		ent2.setInheritance(toMany);
+		
+		mgr.put(ent1);
+		mgr.put(ent2);
+		
+		mgr.flush();
+		
+		InheritanceToOne result1 = mgr.find(InheritanceToOne.class, ent1.getId());
+		Assert.assertTrue(result1.getInheritance() instanceof InheritanceSub1);
+		Assert.assertEquals(common.getNum(), result1.getInheritance().getNum());
+		InheritanceSub1 subResult1 = (InheritanceSub1) result1.getInheritance();
+		Assert.assertEquals(common.getDiff(), subResult1.getDiff());
+		Assert.assertEquals(common.getName(), subResult1.getName());
+		
+		
+	}
+	
+	@Test
 	public void testToManyRelationship() {
 		InheritanceSub1 common = new InheritanceSub1();
 		common.setLastName("hiller");
@@ -77,14 +139,14 @@ public class TestInheritanceSingleTable {
 		toMany.setNumBalls(33);
 		mgr.put(toMany);
 		
-		InheritanceRelation rel = new InheritanceRelation();
+		InheritanceToMany rel = new InheritanceToMany();
 		rel.addEntity(common);
 		rel.addEntity(toMany);
 		mgr.put(rel);
 		
 		mgr.flush();
 		
-		InheritanceRelation newRel = mgr.find(InheritanceRelation.class, rel.getId());
+		InheritanceToMany newRel = mgr.find(InheritanceToMany.class, rel.getId());
 		InheritanceSuper sub1 = newRel.getNameToEntity().get(common.getLastName());
 		Assert.assertEquals(common.getId(), sub1.getId());
 		Assert.assertEquals(common.getName(), ((InheritanceSub1)sub1).getName());

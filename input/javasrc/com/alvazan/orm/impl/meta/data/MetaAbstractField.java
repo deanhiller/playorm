@@ -11,7 +11,6 @@ import com.alvazan.orm.api.spi2.StorageTypeEnum;
 
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 
-	private DboColumnMeta metaDbo = new DboColumnMeta();
 	protected Field field;
 	protected String columnName;
 	
@@ -19,24 +18,21 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return field;
 	}
 	
+	public abstract DboColumnMeta getMetaDbo();
+	
 	public String getColumnName() {
 		return columnName;
 	}
 
-	public DboColumnMeta getMetaDbo() {
-		return metaDbo;
-	}
-	
 	public final String getFieldName() {
 		return field.getName();
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void setup(Field field2, String colName, DboTableMeta fkToTable, Class classType, ColumnTypeEnum colType, String indexPrefix) {
+	public void setup(Field field2, String colName) {
 		this.field = field2;
 		this.field.setAccessible(true);
 		this.columnName = colName;
-		metaDbo.setup(columnName, fkToTable, classType, colType, indexPrefix);
 	}
 	
 	protected void removeIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {

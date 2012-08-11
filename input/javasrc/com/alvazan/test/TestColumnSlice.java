@@ -19,8 +19,7 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -52,8 +51,8 @@ public class TestColumnSlice {
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup("id", String.class, null);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
@@ -114,8 +113,8 @@ public class TestColumnSlice {
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup("id", String.class, null);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
