@@ -4,9 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {

@@ -18,7 +18,6 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.DboColumnMeta;

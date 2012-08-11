@@ -7,7 +7,6 @@ import java.util.List;
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;

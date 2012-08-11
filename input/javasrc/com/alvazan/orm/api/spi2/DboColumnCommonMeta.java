@@ -1,8 +1,6 @@
 package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
-import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 @NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboColumnMeta {

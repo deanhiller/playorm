@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
-import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;

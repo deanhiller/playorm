@@ -3,7 +3,6 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
 import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
