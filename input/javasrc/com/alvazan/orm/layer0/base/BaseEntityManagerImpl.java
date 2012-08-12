@@ -11,16 +11,16 @@ import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.exc.RowNotFoundException;
+import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.impl.meta.data.IndexData;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.impl.meta.data.RowToPersist;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
@@ -59,7 +59,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		String cf = metaClass.getColumnFamily();
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
-		session.persist(cf, key, cols);
+		session.put(cf, key, cols);
 	}
 
 	@Override

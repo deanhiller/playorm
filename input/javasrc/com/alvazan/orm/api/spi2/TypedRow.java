@@ -1,8 +1,9 @@
-package com.alvazan.orm.api.spi1;
+package com.alvazan.orm.api.spi2;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
 
 public class TypedRow<T> {
 
@@ -15,11 +16,8 @@ public class TypedRow<T> {
 	public void setRowKey(T rowKey) {
 		this.rowKey = rowKey;
 	}
-	public Map<String, TypedColumn> getColumns() {
-		return columns;
-	}
-	public void setColumns(Map<String, TypedColumn> columns) {
-		this.columns = columns;
+	public TypedColumn getColumn(String colName) {
+		return columns.get(colName);
 	}
 	public void addColumn(TypedColumn col) {
 		columns.put(col.getName(), col);

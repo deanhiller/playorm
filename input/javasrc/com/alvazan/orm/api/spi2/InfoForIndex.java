@@ -1,17 +1,17 @@
-package com.alvazan.orm.impl.meta.data;
+package com.alvazan.orm.api.spi2;
 
-import java.lang.reflect.Field;
 import java.util.Map;
+
 
 public class InfoForIndex<T> {
 	
 	private T entity;
 	private RowToPersist row;
 	private String columnFamily;
-	private Map<Field, Object> fieldToValue;
+	private Map fieldToValue;
 
 	public InfoForIndex(T entity2, RowToPersist row2, String columnFamily2,
-			Map<Field, Object> fieldToValue2) {
+			Map fieldToValue2) {
 		this.entity = entity2;
 		this.row = row2;
 		this.columnFamily = columnFamily2;
@@ -36,10 +36,10 @@ public class InfoForIndex<T> {
 	public void setColumnFamily(String columnFamily) {
 		this.columnFamily = columnFamily;
 	}
-	public Map<Field, Object> getFieldToValue() {
+	public Map getFieldToValue() {
 		return fieldToValue;
 	}
-	public void setFieldToValue(Map<Field, Object> fieldToValue) {
+	public void setFieldToValue(Map fieldToValue) {
 		this.fieldToValue = fieldToValue;
 	}
 	

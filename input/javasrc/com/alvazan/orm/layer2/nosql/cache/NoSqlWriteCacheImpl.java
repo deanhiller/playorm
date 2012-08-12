@@ -32,7 +32,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	private Object ormSession;
 	
 	@Override
-	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
+	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
 		Persist persist = new Persist();
 		persist.setColFamily(colFamily);
 		persist.setRowKey(rowKey);

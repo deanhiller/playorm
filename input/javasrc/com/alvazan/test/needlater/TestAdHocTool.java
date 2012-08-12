@@ -53,7 +53,7 @@ public class TestAdHocTool {
 		//session.addToIndex("/someindex", "myId", map);
 		byte[] myId = "myId".getBytes();
 		List<Column> columns = new ArrayList<Column>();
-		session.persist("MyEntity", myId, columns);
+		session.put("MyEntity", myId, columns);
 		
 		session.flush();
 		

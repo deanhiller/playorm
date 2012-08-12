@@ -11,7 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.KeyValue;
+import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;

@@ -141,7 +141,7 @@ public class PerformanceWriteTest {
 					String rowKey = UniqueKeyGenerator.generateKey();
 					byte[] key = table.getIdColumnMeta().convertToStorage2(rowKey);
 					List<Column> columns = createColumns(i, table);
-					session.persist(colFamily, key, columns);
+					session.put(colFamily, key, columns);
 					count++;
 				}
 				addCount(count);

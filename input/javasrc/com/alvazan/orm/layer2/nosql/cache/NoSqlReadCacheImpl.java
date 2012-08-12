@@ -18,8 +18,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	private NoSqlSession session;
 	
 	@Override
-	public void persist(String colFamily, byte[] rowKey, List<Column> columns) {
-		session.persist(colFamily, rowKey, columns);
+	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
+		session.put(colFamily, rowKey, columns);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.spi2;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -101,5 +102,23 @@ public class DboTableMeta {
 
 	public Collection<DboColumnMeta> getAllColumns() {
 		return nameToField.values();
+	}
+
+	public RowToPersist translateToRow(TypedRow typedRow) {
+		RowToPersist row = new RowToPersist();
+		Map<Field, Object> fieldToValue = null;
+		if(typedRow instanceof NoSqlTypedRowProxy) {
+			fieldToValue = ((NoSqlTypedRowProxy) typedRow).__getOriginalValues();
+		}
+		
+		InfoForIndex<TypedRow> info = new InfoForIndex<TypedRow>(typedRow, row, getColumnFamily(), fieldToValue);
+
+		idColumn.translateToColumn(info);
+
+		for(DboColumnMeta m : nameToField.values()) {
+			m.translateToColumn(info);
+		}
+		
+		return row;
 	}
 }
