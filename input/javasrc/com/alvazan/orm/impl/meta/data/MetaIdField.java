@@ -76,7 +76,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		} else if(id != null) {
 			//kind of not a good idea if they new an entity and save it twice, this will then fail...should we enable this??? not sure.
 //			if(!(entity instanceof NoSqlProxy))
-//				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @Id annotation yet you supplied " +
+//				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @NoSqlId annotation yet you supplied " +
 //						"your own id...this will cause issues, please don't set the id OR you are using a primitive for your key which is not a good idea either if you are going to use a generator");
 			return id;
 		}

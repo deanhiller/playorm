@@ -96,7 +96,7 @@ public class ScannerForField {
 					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
 							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
 							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
-							" or @Id(customConverter=YourConverter.class) " +
+							" or @NoSqlId(customConverter=YourConverter.class) " +
 							" or finally if we missed a standard converter, we need to add it in file "+getClass()+
 							" in the constructor and it is trivial code(and we can copy the existing pattern)");
 		}		 

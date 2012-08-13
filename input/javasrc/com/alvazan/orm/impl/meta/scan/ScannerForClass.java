@@ -69,7 +69,7 @@ public class ScannerForClass {
 		}
 		
 		if(classMeta.getIdField() == null)
-			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @Id and that is required");
+			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @NoSqlId and that is required");
 		
 		metaInfo.addTableNameLookup(classMeta);
 		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
@@ -206,7 +206,7 @@ public class ScannerForClass {
 			return false;
 		
 		if(metaClass.getIdField() != null)
-			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @Id annotation.  One of them may be in a superclass");
+			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass");
 		
 		MetaIdField idField = inspectorField.processId(field, metaClass);
 		metaClass.setIdField(idField);
