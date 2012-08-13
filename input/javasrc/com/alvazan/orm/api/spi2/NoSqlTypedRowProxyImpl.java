@@ -10,6 +10,9 @@ import javassist.util.proxy.MethodHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
+
 
 public class NoSqlTypedRowProxyImpl implements MethodHandler {
 

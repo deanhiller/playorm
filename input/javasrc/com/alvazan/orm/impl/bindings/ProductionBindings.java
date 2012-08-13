@@ -1,8 +1,8 @@
 package com.alvazan.orm.impl.bindings;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlWriteCacheImpl;

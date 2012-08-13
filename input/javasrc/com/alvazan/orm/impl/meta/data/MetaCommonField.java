@@ -3,14 +3,14 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;

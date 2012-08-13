@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi2.meta;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -15,6 +15,13 @@ import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
+import com.alvazan.orm.api.spi2.InfoForIndex;
+import com.alvazan.orm.api.spi2.KeyValue;
+import com.alvazan.orm.api.spi2.NoSqlTypedRowProxy;
+import com.alvazan.orm.api.spi2.NoSqlTypedRowProxyImpl;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi3.db.Row;
 
 @SuppressWarnings("rawtypes")

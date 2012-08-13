@@ -19,10 +19,10 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi2.DboColumnIdMeta;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 

@@ -6,15 +6,15 @@ import java.util.List;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
-import com.alvazan.orm.api.spi2.DboColumnIdMeta;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 

@@ -1,4 +1,5 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi2.meta;
+
 
 
 /**

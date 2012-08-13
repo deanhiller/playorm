@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.TypedColumn;
 import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
 import com.alvazan.orm.layer1.typed.NoSqlTypedSessionImpl;
 
 public class TestNewRawLayer {

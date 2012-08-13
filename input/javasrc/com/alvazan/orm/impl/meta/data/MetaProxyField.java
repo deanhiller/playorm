@@ -4,15 +4,15 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
+import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 

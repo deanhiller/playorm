@@ -1,6 +1,10 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi2.meta;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
+import com.alvazan.orm.api.spi2.InfoForIndex;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.TypedColumn;
+import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 

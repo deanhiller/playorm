@@ -31,7 +31,7 @@
 
 <package name="exc" package="com.alvazan.orm.api.exc"/>
 <package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
-<package name="NoSqlApi" package="com.alvazan.orm.api.spi2">
+<package name="NoSqlApi" package="com.alvazan.orm.api.spi2" subpackages="include">
 	<depends>RawNoSqlSpi</depends>
 	<depends>javassist</depends>
 	<depends>exc</depends>

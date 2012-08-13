@@ -3,10 +3,10 @@ package com.alvazan.orm.api.spi1;
 import java.util.Collection;
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 
 @SuppressWarnings("rawtypes")
