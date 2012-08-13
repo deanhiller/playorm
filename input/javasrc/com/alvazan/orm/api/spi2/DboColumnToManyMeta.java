@@ -2,10 +2,12 @@ package com.alvazan.orm.api.spi2;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 
 @NoSqlDiscriminatorColumn(value="listOfFk")
 public class DboColumnToManyMeta extends DboColumnMeta {
@@ -49,6 +51,55 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 //		StorageTypeEnum typeInTheArray = fkToColumnFamily.getIdColumnMeta().getStorageType();
 	}
 
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void translateFromColumn(Row row, TypedRow entity) {
+		List<Object> pks = translateFromColumnList(row, entity);
+
+		TypedColumn typedCol = new TypedColumn();
+		typedCol.setName(columnName);
+		typedCol.setValue(pks);
+		entity.addColumn(typedCol);
+	}
+
+	private List<Object> translateFromColumnList(Row row, TypedRow entity) {
+		List<byte[]> keys = parseOutKeyList(row);
+		List<Object> fks = new ArrayList<Object>();
+		for(byte[] key : keys) {
+			Object fk = convertFromStorage2(key);
+			fks.add(fk);
+		}
+
+		return fks;
+	}
+
+	private List<byte[]> parseOutKeyList(Row row) {
+		String columnName = getColumnName();
+		byte[] bytes = columnName.getBytes();
+		Collection<Column> columns = row.columnByPrefix(bytes);
+		List<byte[]> entities = new ArrayList<byte[]>();
+
+		//NOTE: Current implementation is just like a Set not a List in that it
+		//cannot have repeats right now.  We could take the approach the column name
+		//would be <prefix><index><pk> such that duplicates are allowed and when loaded
+		//we would have to keep the index in the proxy so if removed, we could put the col name
+		//back together so we could remove it and add the new one.  This is very complex though when 
+		//it comes to removing one item and shifting all other column names by one(ie. lots of removes/adds)
+		//so for now, just make everything Set like.
+		for(Column col : columns) {
+			byte[] colNameData = col.getName();
+			//strip off the prefix to get the foreign key
+			int pkLen = colNameData.length-bytes.length;
+			byte[] pk = new byte[pkLen];
+			for(int i = bytes.length; i < colNameData.length; i++) {
+				pk[i-bytes.length] =  colNameData[i];
+			}
+			entities.add(pk);
+		}
+		
+		return entities;
+	}
+	
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {

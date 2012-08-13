@@ -8,13 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -57,7 +58,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 		return retVal;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);

@@ -1,6 +1,7 @@
 package com.alvazan.test;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,10 +53,17 @@ public class TestNewRawLayer {
 		s.setRawSession(session);
 		s.setMetaInfo(db);
 		
-		TypedRow<String> row = createUser("someid", "dean", "hiller");
-		s.put("User", row);
+		String cf = "User";
+		String id = "someid";
+		TypedRow<String> row = createUser(id, "dean", "hiller");
+		s.put(cf, row);
 		s.flush();
 		
+		//NOW, let's find the row we put
+		TypedRow<String> result = s.find(cf, id);
+		Assert.assertEquals(id, result.getRowKey());
+		Assert.assertEquals(row.getColumn("name").getValue(), result.getColumn("name").getValue());
+		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
 	}
 
 	private TypedRow<String> createUser(String key, String name, String lastname) {
@@ -65,6 +73,5 @@ public class TestNewRawLayer {
 		row.addColumn(new TypedColumn("lastName", lastname));
 		return row;
 	}
-	
 	
 }

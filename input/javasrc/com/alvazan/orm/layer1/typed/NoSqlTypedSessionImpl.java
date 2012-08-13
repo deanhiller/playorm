@@ -1,27 +1,31 @@
 package com.alvazan.orm.layer1.typed;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
+import com.alvazan.orm.api.spi2.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.TypedColumn;
 import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	private NoSqlSession session;
 
 	private DboDatabaseMeta metaInfo;
+	
+	
 	/**
 	 * To be removed eventually
 	 * @param s
@@ -72,53 +76,98 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	
 	@Override
 	public void remove(String colFamily, TypedRow row) {
-		
+		throw new UnsupportedOperationException("not done yet");
 	}
 	
 	@Override
 	public <T> void remove(String colFamily, T rowKey,
 			Collection<byte[]> columnNames) {
-		// TODO Auto-generated method stub
-		
+		throw new UnsupportedOperationException("not done yet");
 	}
 	
 	@Override
-	public <T> List<TypedRow<T>> find(String colFamily, List<T> rowKeys) {
-		List<byte[]> rowKeysBytes = new ArrayList<byte[]>();
-
-		DboTableMeta meta = metaInfo.getMeta(colFamily);
-		DboColumnMeta idMeta = meta.getIdColumnMeta();
-		for(T k : rowKeys) {
-			byte[] rowK = idMeta.convertToStorage2(k);
-			rowKeysBytes.add(rowK);
-		}
-		
-		List<Row> rows = session.find(meta.getColumnFamily(), rowKeysBytes);
-
-		List<TypedRow<T>> result = new ArrayList<TypedRow<T>>();
-		for(Row r : rows) {
-			TypedRow<T> typed = new TypedRow<T>();
-			Object obj = idMeta.convertFromStorage2(r.getKey());
-			typed.setRowKey((T) obj);
-
-			for(DboColumnMeta colMeta : meta.getAllColumns()) {
-				TypedColumn col = new TypedColumn();
-				
-				Column c = r.getColumn(colMeta.getColumnNameAsBytes());
-				
-				typed.addColumn(col);
-			}
-				
-			result.add(typed);
-		}
-		throw new UnsupportedOperationException("need to complete this here");
+	public <T> TypedRow<T> find(String cf, T id) {
+		List<T> keys = new ArrayList<T>();
+		keys.add(id);
+		List<KeyValue<TypedRow<T>>> rows = findAll(cf, keys);
+		return rows.get(0).getValue();
 	}
 	
-	private String convert(byte[] name) {
-		try {
-			return new String(name, "UTF8");
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
+	@Override
+	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> keys) {
+		if(keys == null)
+			throw new IllegalArgumentException("keys list cannot be null");
+		DboTableMeta meta = metaInfo.getMeta(colFamily);
+		if(meta == null)
+			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
+
+		List<byte[]> noSqlKeys = new ArrayList<byte[]>();
+		DboColumnMeta idMeta = meta.getIdColumnMeta();
+		for(T k : keys) {
+			byte[] rowK = idMeta.convertToStorage2(k);
+			noSqlKeys.add(rowK);
+		}
+		
+		return findAllImpl(meta, keys, noSqlKeys, null);
+	}
+
+	<T> List<KeyValue<TypedRow<T>>> findAllImpl(DboTableMeta meta, List<T> keys, List<byte[]> noSqlKeys, String indexName) {
+		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
+		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
+		String cf = meta.getColumnFamily();
+		List<Row> rows = session.find(cf, noSqlKeys);
+		return getKeyValues(meta, keys, noSqlKeys, rows, indexName);
+	}
+	
+	private <T> List<KeyValue<TypedRow<T>>> getKeyValues(DboTableMeta meta, List<T> keys,List<byte[]> noSqlKeys,List<Row> rows, String indexName){
+		List<KeyValue<TypedRow<T>>> keyValues = new ArrayList<KeyValue<TypedRow<T>>>();
+
+		if(keys != null)
+			translateRows(meta, keys, rows, keyValues);
+		else
+			translateRowsForQuery(meta, noSqlKeys, rows, keyValues, indexName);
+		
+		return keyValues;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> void translateRowsForQuery(DboTableMeta meta, List<byte[]> noSqlKeys, List<Row> rows, List<KeyValue<TypedRow<T>>> keyValues, String indexName) {
+		for(int i = 0; i < rows.size(); i++) {
+			Row row = rows.get(i);
+			byte[] rowKey = noSqlKeys.get(i);
+			DboColumnIdMeta idField = meta.getIdColumnMeta();
+			T key = (T) idField.convertFromStorage2(rowKey);
+			
+			KeyValue<TypedRow<T>> keyVal;
+			if(row == null) {
+				keyVal = new KeyValue<TypedRow<T>>();
+				keyVal.setKey(key);
+				RowNotFoundException exc = new RowNotFoundException("Your query="+indexName+" contained a value with a pk where that entity no longer exists in the nosql store");
+				keyVal.setException(exc);
+			} else {
+				keyVal = meta.translateFromRow(row);
+			}
+			
+			keyValues.add(keyVal);
+		}		
+	}
+	
+	private <T> void translateRows(DboTableMeta meta,
+			List<T> keys, List<Row> rows,
+			List<KeyValue<TypedRow<T>>> keyValues) {
+		for(int i = 0; i < rows.size(); i++) {
+			Row row = rows.get(i);
+			T key = keys.get(i);
+			
+			KeyValue<TypedRow<T>> keyVal;
+			if(row == null) {
+				keyVal = new KeyValue<TypedRow<T>>();
+				keyVal.setKey(key);
+			} else {
+				keyVal = meta.translateFromRow(row);
+			}
+			
+			keyValues.add(keyVal);
 		}
 	}
 	
@@ -134,9 +183,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public Iterable<Column> columnRangeScan(String colFamily, Object rowKey,
 			Object from, Object to, int batchSize) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("not done yet");
 	}
+	
 	@Override
 	public void setOrmSessionForMeta(Object s) {
 		session.setOrmSessionForMeta(s);

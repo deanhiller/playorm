@@ -1,6 +1,7 @@
-package com.alvazan.orm.api.base.exc;
+package com.alvazan.orm.api.exc;
 
 import java.util.List;
+
 
 @SuppressWarnings("rawtypes")
 public class StorageMissingEntitesException extends NoSqlOrmException {

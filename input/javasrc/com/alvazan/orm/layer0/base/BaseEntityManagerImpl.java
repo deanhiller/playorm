@@ -8,10 +8,10 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.Index;
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.exc.RowNotFoundException;
+import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi3.db.Column;

@@ -1,6 +1,7 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.spi2;
 
-import com.alvazan.orm.api.base.exc.RowNotFoundException;
+import com.alvazan.orm.api.exc.RowNotFoundException;
+
 
 public class KeyValue<T> {
 

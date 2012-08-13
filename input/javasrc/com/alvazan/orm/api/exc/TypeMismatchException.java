@@ -1,4 +1,5 @@
-package com.alvazan.orm.api.base.exc;
+package com.alvazan.orm.api.exc;
+
 
 public class TypeMismatchException extends NoSqlOrmException {
 

@@ -2,6 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
 import com.google.inject.ImplementedBy;

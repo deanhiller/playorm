@@ -7,6 +7,7 @@ import java.util.Map;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.InfoForIndex;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi2.StorageTypeEnum;
 
@@ -29,7 +30,6 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return field.getName();
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public void setup(Field field2, String colName) {
 		this.field = field2;
 		this.field.setAccessible(true);

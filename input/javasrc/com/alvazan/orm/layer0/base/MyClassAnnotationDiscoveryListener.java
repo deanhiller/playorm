@@ -26,7 +26,6 @@ public class MyClassAnnotationDiscoveryListener implements
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public void discovered(String clazzName, String annotation) {
 		log.debug("class="+clazzName+" anno="+annotation);
 		try {

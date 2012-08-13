@@ -29,9 +29,12 @@
 	<depends>javassist</depends>
 </package>
 
+<package name="exc" package="com.alvazan.orm.api.exc"/>
 <package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
 <package name="NoSqlApi" package="com.alvazan.orm.api.spi2">
 	<depends>RawNoSqlSpi</depends>
+	<depends>javassist</depends>
+	<depends>exc</depends>
 </package>
 <package name="RawNoSqlApiWithIndexing" package="com.alvazan.orm.api.spi1">
 	<depends>NoSqlApi</depends>
@@ -43,7 +46,7 @@
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
-<package name ="exceptions" package="com.alvazan.orm.api.base.exc" subpackages="include"/> 
+
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
 </package>

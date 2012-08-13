@@ -9,9 +9,9 @@ import javassist.util.proxy.Proxy;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi3.db.Column;

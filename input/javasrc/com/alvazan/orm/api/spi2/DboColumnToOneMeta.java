@@ -3,6 +3,7 @@ package com.alvazan.orm.api.spi2;
 import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 
 @NoSqlDiscriminatorColumn(value="fk")
 public class DboColumnToOneMeta extends DboColumnMeta {
@@ -49,6 +50,20 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		return fkToColumnFamily.getIdColumnMeta().getStorageType();
 	}
 
+	public void translateFromColumn(Row row, TypedRow entity) {
+		Column column = row.getColumn(getColumnNameAsBytes());
+		if(column == null) {
+			return;
+		}
+
+		Object value = convertFromStorage2(column.getValue());
+		TypedColumn typedCol = new TypedColumn();
+		typedCol.setName(columnName);
+		typedCol.setValue(value);
+		typedCol.setTimestamp(column.getTimestamp());
+		entity.addColumn(typedCol);
+	}
+	
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow entity = info.getEntity();

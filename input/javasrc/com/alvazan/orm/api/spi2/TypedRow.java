@@ -26,5 +26,5 @@ public class TypedRow<T> {
 	public Collection<TypedColumn> getColumnsAsColl() {
 		return columns.values();
 	}
-
+	
 }

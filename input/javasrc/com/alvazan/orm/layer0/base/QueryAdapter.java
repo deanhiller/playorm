@@ -6,11 +6,11 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.exc.TooManyResultException;
-import com.alvazan.orm.api.base.exc.TypeMismatchException;
+import com.alvazan.orm.api.exc.TooManyResultException;
+import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.api.spi2.TypeInfo;

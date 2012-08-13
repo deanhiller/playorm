@@ -2,8 +2,8 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.util.List;
 
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.RowToPersist;

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
@@ -51,7 +52,9 @@ public interface NoSqlTypedSession {
 	 */
 	public <T> void remove(String colFamily, T rowKey, Collection<byte[]> columnNames);
 	
-	public <T> List<TypedRow<T>> find(String colFamily, List<T> rowKeys);
+	public <T> TypedRow<T> find(String cf, T id);
+	
+	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> rowKeys);
 	
 	public void flush();
 
@@ -73,4 +76,5 @@ public interface NoSqlTypedSession {
 			Object from, Object to, int batchSize);
 
 	public void setOrmSessionForMeta(Object session);
+	
 }

@@ -23,6 +23,7 @@ import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.NoConversion;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.alvazan.orm.impl.meta.data.IdInfo;
@@ -34,7 +35,6 @@ import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaListField;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
-import com.alvazan.orm.impl.meta.data.ReflectionUtil;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {

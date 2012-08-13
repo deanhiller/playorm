@@ -2,6 +2,7 @@ package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.db.Row;
 
 @NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboColumnMeta {
@@ -39,6 +40,20 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		return getStorageType(fieldType);
 	}
 
+	public void translateFromColumn(Row row, TypedRow entity) {
+		Column column = row.getColumn(getColumnNameAsBytes());
+		if(column == null) {
+			return;
+		}
+
+		Object value = convertFromStorage2(column.getValue());
+		TypedColumn typedCol = new TypedColumn();
+		typedCol.setName(columnName);
+		typedCol.setValue(value);
+		typedCol.setTimestamp(column.getTimestamp());
+		entity.addColumn(typedCol);
+	}
+	
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow typedRow = info.getEntity();
 		RowToPersist row = info.getRow();
@@ -56,4 +71,5 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		addIndexInfo(info, value, byteVal, storageType);
 		removeIndexInfo(info, value, byteVal, storageType);
 	}
+
 }

@@ -1,7 +1,9 @@
 package com.alvazan.orm.api.spi2;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
+import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 @NoSqlDiscriminatorColumn(value="id")
 public class DboColumnIdMeta extends DboColumnCommonMeta {
 
@@ -23,5 +25,9 @@ public class DboColumnIdMeta extends DboColumnCommonMeta {
 		//the old entity was not deleted during this save....we remove from index on remove of old entity only
 	}
 
-	
+	public void translateFromColumn(Row row, TypedRow entity) {
+		byte[] rowKey = row.getKey();
+		Object pk = convertFromStorage2(rowKey);
+		entity.setRowKey(pk);
+	}
 }

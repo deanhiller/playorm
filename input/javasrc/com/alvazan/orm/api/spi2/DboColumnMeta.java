@@ -13,6 +13,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
+import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
@@ -269,5 +270,7 @@ public abstract class DboColumnMeta {
 		data.getIndexColumn().setPrimaryKey(pk);
 		return data;
 	}
+
+	public abstract void translateFromColumn(Row row, TypedRow inst);
 	
 }
