@@ -30,7 +30,7 @@ import com.alvazan.orm.api.spi3.db.Column;
 public class PerformanceWriteTest {
 
 	private static final Logger log = LoggerFactory.getLogger(PerformanceWriteTest.class);
-	private static final int NUM_THREADS = 10;
+	private static final int NUM_THREADS = 50;
 	
 	private ExecutorService exec = Executors.newFixedThreadPool(NUM_THREADS);
 	private Timer timer = new Timer();
@@ -147,8 +147,8 @@ public class PerformanceWriteTest {
 			
 			while(shouldRun) {
 				
-				//let's write 20 rows for every flush we do..
-				for(int i = 0; i < 20; i++) {
+				//let's write  rows for every flush we do..
+				for(int i = 0; i < 1; i++) {
 					String rowKey = UniqueKeyGenerator.generateKey();
 					byte[] key = table.getIdColumnMeta().convertToStorage2(rowKey);
 					List<Column> columns = createColumns(i, table);

@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base.play;
+package com.alvazan.orm.api.base.util;
 
 import java.util.HashMap;
 import java.util.List;
