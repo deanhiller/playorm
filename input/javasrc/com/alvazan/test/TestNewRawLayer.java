@@ -1,5 +1,8 @@
 package com.alvazan.test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -21,8 +24,9 @@ public class TestNewRawLayer {
 
 	private static final Logger log = LoggerFactory.getLogger(TestNewRawLayer.class);
 	private static NoSqlEntityManagerFactory factory;
+	private DboDatabaseMeta db;
 	private NoSqlEntityManager mgr;
-
+	
 	@BeforeClass
 	public static void setup() {
 		factory = FactorySingleton.createFactoryOnce();
@@ -31,22 +35,17 @@ public class TestNewRawLayer {
 	@Before
 	public void createEntityManager() {
 		mgr = factory.createEntityManager();
+		db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 	}
+	
 	@After
 	public void clearDatabase() {
-		NoSqlEntityManager other = factory.createEntityManager();
-		try {
-			other.clearDatabase();
-		} catch(Exception e) {
-			log.warn("Could not clean up properly", e);
-		}
+
 	}
 	
 	@Test
 	public void testBasicChangeToIndex() {
 		NoSqlSession session = mgr.getSession();
-		
-		DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		//A simple trick for now so we can test this layer
 		NoSqlTypedSession s = new NoSqlTypedSessionImpl();
@@ -66,6 +65,33 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
 	}
 
+	@Test
+	public void testTimeSeries() {
+		NoSqlSession session = mgr.getSession();
+		
+		//A simple trick for now so we can test this layer
+		NoSqlTypedSession s = new NoSqlTypedSessionImpl();
+		s.setRawSession(session);
+		s.setMetaInfo(db);
+
+		String cf = "TimeSeriesData";
+		TypedRow<BigInteger> row = new TypedRow<BigInteger>();
+		row.setRowKey(BigInteger.valueOf(25));
+		row.addColumn(new TypedColumn("temp", new BigDecimal(55.6)));
+		row.addColumn(new TypedColumn("someName", "dean"));
+		
+		s.put(cf, row);
+		s.flush();
+		
+		//NOW, let's find the row we put
+		TypedRow<BigInteger> result = s.find(cf, row.getRowKey());
+		Assert.assertEquals(row.getRowKey(), result.getRowKey());
+		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
+		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
+		
+		
+	}
+	
 	private TypedRow<String> createUser(String key, String name, String lastname) {
 		TypedRow<String> row = new TypedRow<String>();
 		row.setRowKey(key);

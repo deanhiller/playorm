@@ -67,11 +67,27 @@ public abstract class DboColumnMeta {
 	//public abstract String convertToValue(byte[] dbValue);
 
 	protected synchronized void initConverter() {
-		converter = StandardConverters.get(getClassType());
+		converter = StandardConverters.get(getStorageTypeAsClass());
 		if(converter == null)
 			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");		
 	}
 	
+	@SuppressWarnings("rawtypes")
+	private Class getStorageTypeAsClass() {
+		switch (getStorageType()) {
+		case STRING:
+			return String.class;
+		case INTEGER:
+			return BigInteger.class;
+		case DECIMAL:
+			return BigDecimal.class;
+		case BYTES:
+			return byte[].class;
+		default:
+			throw new UnsupportedOperationException("type not supported="+getStorageType());
+		}
+	}
+
 	public byte[] convertToStorage(String value) {
 		initConverter();
 		return converter.convertToNoSqlFromString(value);
