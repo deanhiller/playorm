@@ -1,4 +1,4 @@
-package com.alvazan.orm.impl.meta.data;
+package com.alvazan.orm.api.spi2;
 
 import java.io.UnsupportedEncodingException;
 

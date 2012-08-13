@@ -8,18 +8,19 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.Index;
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.exc.RowNotFoundException;
+import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.impl.meta.data.IndexData;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.impl.meta.data.RowToPersist;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
@@ -55,7 +56,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		for(IndexData ind : row.getIndexToAdd()) {
 			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
-		session.persist(metaClass.getColumnFamily(), row.getKey(), row.getColumns());
+		String cf = metaClass.getColumnFamily();
+		byte[] key = row.getKey();
+		List<Column> cols = row.getColumns();
+		session.put(cf, key, cols);
 	}
 
 	@Override

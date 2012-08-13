@@ -2,6 +2,8 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
+import com.alvazan.orm.api.spi2.KeyValue;
+
 public interface Query<T> {
 
 	public void setParameter(String name, Object value);

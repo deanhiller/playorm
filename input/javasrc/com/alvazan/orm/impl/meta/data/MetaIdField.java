@@ -7,9 +7,14 @@ import java.util.List;
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
+import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
@@ -23,7 +28,12 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	private KeyGenerator generator;
 	private Method method;
 	private MetaAbstractClass<OWNER> metaClass;
-
+	private DboColumnIdMeta metaDbo = new DboColumnIdMeta();
+	
+	public DboColumnMeta getMetaDbo() {
+		return metaDbo;
+	}
+	
 	@Override
 	public String toString() {
 		return "MetaField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ ")";
@@ -44,7 +54,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		byte[] byteVal = converter.convertToNoSql(id);
 		row.setKey(byteVal);
 		
-		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = metaDbo.getStorageType();
 		addIndexInfo(info, id, byteVal, storageType);
 		//NOTICE: there is no call to remove because if an id is changed, it is a new entity and we only need to add index not remove since
 		//the old entity was not deleted during this save....we remove from index on remove of old entity only
@@ -52,7 +62,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
-		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = metaDbo.getStorageType();
 		removingThisEntity(info, indexRemoves, pk, storageType);
 	}
 	
@@ -84,7 +94,8 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();
-		super.setup(field, columnName, null, field.getType(), ColumnTypeEnum.ID, indexPrefix);
+		metaDbo.setup(columnName, field.getType(), indexPrefix);
+		super.setup(field, columnName);
 	}
 
 	public Converter getConverter() {
@@ -119,6 +130,10 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	@Override
 	public byte[] translateValue(Object value) {
 		return converter.convertToNoSql(value);
+	}
+
+	public DboColumnIdMeta getMetaIdDbo() {
+		return metaDbo;
 	}
 
 }

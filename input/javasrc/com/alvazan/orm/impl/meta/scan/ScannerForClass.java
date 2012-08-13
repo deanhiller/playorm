@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToMany;
 import com.alvazan.orm.api.base.anno.ManyToOne;
-import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -27,8 +26,8 @@ import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaClassSingle;
@@ -76,6 +75,7 @@ public class ScannerForClass {
 		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
 		Class<T> mainClass = metaClass.getMetaClass();
 		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
@@ -93,18 +93,11 @@ public class ScannerForClass {
 		String discColumn = annotation.discriminatorColumnName();
 		metaClass.setDiscriminatorColumnName(discColumn);
 		
-		for(Class<?> clazz : annotation.columnfamily()) {
-			NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
-			if(col == null)
-				throw new IllegalArgumentException("Class "+mainClass.getName()+" in the NoSqlInheritance annotation, specifies a class" +
-						" that is missing the NoSqlDiscriminatorColumn annotation.  Class to add annotation to="+clazz.getName());
-			else if(!mainClass.isAssignableFrom(clazz)) 
-				throw new IllegalArgumentException("Class "+clazz+" is not a subclass of "+mainClass+" but the" +
-						" NoSqlInheritance annotation specifies that class so it needs to be a subclass");
-			
-			String columnValue = col.value();
-			MetaClassSingle<T> metaSingle = metaInfo.createSubclass(clazz, metaClass);
-			metaClass.addProxy(columnValue, metaSingle);	
+		for(Class clazz : annotation.subclassesToScan()) {
+			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
+			metaSingle.setColumnFamily(metaClass.getColumnFamily());
+			metaSingle.setMetaClass(clazz);
+			metaInfo.addSubclass(clazz, metaClass);
 			scanSingle(metaSingle, metaDbo);
 		}
 	}

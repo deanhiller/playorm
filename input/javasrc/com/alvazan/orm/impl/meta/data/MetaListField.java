@@ -8,10 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
-import com.alvazan.orm.api.spi2.DboTableMeta;
+import com.alvazan.orm.api.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
@@ -19,10 +24,15 @@ import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 
-public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
+public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
+	private DboColumnToManyMeta metaDbo = new DboColumnToManyMeta();
+	
+	public DboColumnMeta getMetaDbo() {
+		return metaDbo;
+	}
 	
 	@Override
 	public void translateFromColumn(Row row, OWNER entity,
@@ -48,11 +58,12 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return retVal;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseOutKeyList(row);
-		MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
+		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session, classMeta, keys, fieldForKey);
+		//MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
 	
@@ -190,7 +201,8 @@ public class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	public void setup(Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		super.setup(field, colName, fkToTable, null, ColumnTypeEnum.LIST_OF_FK, null);
+		metaDbo.setup(colName, fkToTable);
+		super.setup(field, colName);
 		this.classMeta = classMeta;
 		this.fieldForKey = fieldForKey;
 	}

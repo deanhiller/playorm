@@ -3,9 +3,14 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
+import com.alvazan.orm.api.spi2.IndexData;
+import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
+import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
@@ -13,7 +18,12 @@ import com.alvazan.orm.api.spi3.db.conv.Converter;
 public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	
 	private Converter converter;
-
+	private DboColumnCommonMeta metaDbo = new DboColumnCommonMeta();
+	
+	public DboColumnMeta getMetaDbo() {
+		return metaDbo;
+	}
+	
 	@Override
 	public String toString() {
 		return "MetaCommonField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
@@ -42,14 +52,14 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		col.setName(columnName.getBytes());
 		col.setValue(byteVal);
 		
-		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = metaDbo.getStorageType();
 		addIndexInfo(info, value, byteVal, storageType);
 		removeIndexInfo(info, value, byteVal, storageType);
 	}
 	
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
-		StorageTypeEnum storageType = getMetaDbo().getStorageType();
+		StorageTypeEnum storageType = metaDbo.getStorageType();
 		removingThisEntity(info, indexRemoves, pk, storageType);
 	}
 	
@@ -59,7 +69,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 	
 	public void setup(Field field2, String colName, Converter converter, String indexPrefix) {
-		super.setup(field2, colName, null, field2.getType(), ColumnTypeEnum.GENERIC, indexPrefix);
+		metaDbo.setup(colName, field2.getType(), indexPrefix);
+		super.setup(field2, colName);
 		this.converter = converter;
 	}
 

@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -19,11 +18,12 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 
 
@@ -100,16 +100,16 @@ public class PerformanceWriteTest {
 			meta = new DboDatabaseMeta();
 		}
 		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup("id", String.class, null);
 		
 		DboTableMeta table = new DboTableMeta();
 		table.setColumnFamily("testWrites");
 		table.setRowKeyMeta(idMeta);
 		
 		for(int i = 0; i < numColumns; i++) {
-			DboColumnMeta col = new DboColumnMeta();
-			col.setup("col"+i, null, long.class, ColumnTypeEnum.GENERIC, null);
+			DboColumnCommonMeta col = new DboColumnCommonMeta();
+			col.setup("col"+i, long.class, null);
 			
 			table.addColumnMeta(col);
 			mgr.put(col);
@@ -152,7 +152,7 @@ public class PerformanceWriteTest {
 					String rowKey = UniqueKeyGenerator.generateKey();
 					byte[] key = table.getIdColumnMeta().convertToStorage2(rowKey);
 					List<Column> columns = createColumns(i, table);
-					session.persist(colFamily, key, columns);
+					session.put(colFamily, key, columns);
 					count++;
 				}
 				addCount(count);

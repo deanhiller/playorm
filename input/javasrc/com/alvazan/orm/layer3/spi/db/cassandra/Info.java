@@ -1,6 +1,6 @@
 package com.alvazan.orm.layer3.spi.db.cassandra;
 
-import com.alvazan.orm.api.spi2.StorageTypeEnum;
+import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;

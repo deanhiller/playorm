@@ -8,13 +8,13 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
-public class InheritanceRelation {
+public class InheritanceToMany {
 
 	@Id
 	private String id;
 	
 	@OneToMany(entityType=InheritanceSuper.class, keyFieldForMap="lastName")
-	private Map<String, InheritanceSuper> nameToEntity = new HashMap<String, InheritanceSuper>();
+	private final Map<String, InheritanceSuper> nameToEntity = new HashMap<String, InheritanceSuper>();
 
 	public String getId() {
 		return id;
@@ -28,9 +28,9 @@ public class InheritanceRelation {
 		return nameToEntity;
 	}
 
-	public void setNameToEntity(Map<String, InheritanceSuper> nameToEntity) {
-		this.nameToEntity = nameToEntity;
-	}
+//	public void setNameToEntity(Map<String, InheritanceSuper> nameToEntity) {
+//		this.nameToEntity = nameToEntity;
+//	}
 
 	public void addEntity(InheritanceSuper entity) {
 		nameToEntity.put(entity.getLastName(), entity);

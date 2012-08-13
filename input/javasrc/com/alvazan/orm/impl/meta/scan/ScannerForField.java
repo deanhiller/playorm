@@ -11,26 +11,30 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.Column;
 import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.OneToMany;
 import com.alvazan.orm.api.base.anno.OneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.NoConversion;
+import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaListField;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
-import com.alvazan.orm.impl.meta.data.ReflectionUtil;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {
@@ -262,22 +266,76 @@ public class ScannerForField {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
-		
+
 		String indexPrefix = null;
 		if(field.getAnnotation(NoSqlIndexed.class) != null)
-			indexPrefix ="/"+colFamily+"/"+colName; 
+			indexPrefix ="/"+colFamily+"/"+colName;
 		
+		Class<?> theSuperclass = null;
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
-		if(!field.getType().isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+		if(!field.getType().isAnnotationPresent(NoSqlEntity.class) && 
+				field.getType() != ToOneProvider.class) {
+			if(!field.getType().isAnnotationPresent(NoSqlDiscriminatorColumn.class))
+				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
+			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
+			if(theSuperclass == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");
+			NoSqlInheritance anno = theSuperclass.getAnnotation(NoSqlInheritance.class);
+			if(anno == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlInheritance");
+			else if(!classExistsInList(anno, field.getType()))
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn and has a super class with NoSqlEntity and NoSqlInheritance but is not listed" +
+						"in the NoSqlInheritance tag as one of the subclasses to scan.  Please add it");
+		} else if(field.getType().isAnnotationPresent(NoSqlInheritance.class)){
+			throw new IllegalArgumentException("Okay, so here is the deal.  You have a ToOne relationship defined with an " +
+					"Abstract class that has N number of subclasses.  I do not know which subclass to create a " +
+					"proxy for unless I read yet another row in, BUT you may not want the extra hit so instead, " +
+					"you MUST change this field to javax.inject.Provider instead so you can call provider.get() " +
+					"at which point I will go to the nosql database and read the row in and the type information " +
+					"and create the correct object for this type.  This is a special case, sorry about that.  In summary, all you " +
+					"need to do is change this Field="+field+" to='private ToOneProvider<YourType> provider = new ToOneProvider<YourType>() " +
+					"and then your getter should just be return provider.get() and the setter should be provider.set(yourInst) and all" +
+					"will be fine with the world");
+		} else if(field.getType() == ToOneProvider.class) {
+			throw new UnsupportedOperationException("I can quickly add this one if you need");
+		}
 		
 		MetaProxyField metaField = metaProxyProvider.get();
 		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		
+		if(theSuperclass != null) {
+			//we need to swap the classMeta to the more specific class meta which may have not been 
+			//created yet, oh joy...so we findOrCreate and the shell will be filled in when processing
+			//that @NoSqlEntity when it scans the subclasses.
+			MetaClassInheritance meta = (MetaClassInheritance) classMeta;
+			classMeta = meta.findOrCreate(field.getType(), theSuperclass);
+		}
 		
 		metaField.setup(field, colName, classMeta, indexPrefix);
 		return metaField;
 	}
 
+	@SuppressWarnings("unused")
+	private boolean classExistsInList(NoSqlInheritance anno, Class<?> class1) {
+		Class[] subclasses = anno.subclassesToScan();
+		Class c = null;
+		for(Class sub : subclasses) {
+			if(sub == class1)
+				return true;
+		}		
+		
+		return false;
+	}
+
+	private Class findSuperclassWithNoSqlEntity(Class<?> type) {
+		if(type.isAnnotationPresent(NoSqlEntity.class))
+			return type;
+		else if(type == Object.class)
+			return null;
+		return findSuperclassWithNoSqlEntity(type.getSuperclass());
+	}
 }

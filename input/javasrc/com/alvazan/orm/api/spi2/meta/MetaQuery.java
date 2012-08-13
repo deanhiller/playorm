@@ -1,7 +1,11 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi2.meta;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.SpiMetaQuery;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 
 
 public class MetaQuery<T> {

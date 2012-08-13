@@ -19,11 +19,10 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi2.ColumnTypeEnum;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
@@ -52,8 +51,8 @@ public class TestColumnSlice {
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup("id", String.class, null);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
@@ -90,7 +89,7 @@ public class TestColumnSlice {
 		columns.add(new Column(toDecBytes(new BigDecimal("3")), new byte[0]));
 		columns.add(new Column(toDecBytes(new BigDecimal("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns);
+		session.put(colFamily, rowKey, columns);
 		session.flush();
 
 		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toDecBytes(-250), toDecBytes(12), 2);
@@ -114,8 +113,8 @@ public class TestColumnSlice {
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, ColumnTypeEnum.ID, null);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup("id", String.class, null);
 		
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
@@ -152,7 +151,7 @@ public class TestColumnSlice {
 		columns.add(new Column(toIntBytes(new BigInteger("3")), new byte[0]));
 		columns.add(new Column(toIntBytes(new BigInteger("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns);
+		session.put(colFamily, rowKey, columns);
 		session.flush();
 
 		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toIntBytes(-250), toIntBytes(50), 2);

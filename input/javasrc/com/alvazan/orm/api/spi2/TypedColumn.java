@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi1;
+package com.alvazan.orm.api.spi2;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

@@ -34,12 +34,8 @@ public class MetaInfo {
 		return tableNameToClassMeta.get(tableName);
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> MetaClassSingle<T> createSubclass(Class clazz, MetaClassInheritance<T> parent) {
-		MetaClassSingle<T> single = classMetaProvider.get();
-		single.setMetaClass(clazz);
+	public void addSubclass(Class clazz, MetaClassInheritance parent) {
 		classToClassMeta.put(clazz, parent);
-		return single;
 	}
 	
 	@SuppressWarnings("unchecked")
