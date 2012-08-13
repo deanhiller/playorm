@@ -2,6 +2,7 @@ package com.alvazan.orm.api.spi2;
 
 import java.util.List;
 
+import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlSessionFactoryImpl;
@@ -12,6 +13,8 @@ public interface NoSqlSessionFactory {
 
 	public NoSqlSession createSession();
 	
+	public MetaAndIndexTuple parseQueryForAdHoc(String query);
+		
 	public List<Row> runQuery(String query);
 
 	/**

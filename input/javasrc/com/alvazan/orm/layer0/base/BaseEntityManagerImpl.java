@@ -10,6 +10,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.orm.api.spi1.NoSqlTypedSession;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -31,6 +32,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@SuppressWarnings("rawtypes")
 	@Inject
 	private Provider<IndexImpl> indexProvider; 
+	@Inject
+	private NoSqlTypedSession typedSession;
+	private boolean isTypedSessionInitialized = false;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -240,6 +244,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		}
 		
 		session.remove(metaClass.getColumnFamily(), rowKey);
+	}
+
+	@Override
+	public NoSqlTypedSession getTypedSession() {
+		if(!isTypedSessionInitialized) {
+			typedSession.setRawSession(session);
+		}
+		return typedSession;
 	}
 
 }

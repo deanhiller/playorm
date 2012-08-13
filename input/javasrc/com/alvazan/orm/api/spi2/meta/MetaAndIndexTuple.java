@@ -1,6 +1,5 @@
-package com.alvazan.orm.layer2.nosql.cache;
+package com.alvazan.orm.api.spi2.meta;
 
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
 
 @SuppressWarnings("rawtypes")
 public class MetaAndIndexTuple {

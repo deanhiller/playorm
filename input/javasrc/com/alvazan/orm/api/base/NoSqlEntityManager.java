@@ -2,6 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
+import com.alvazan.orm.api.spi1.NoSqlTypedSession;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
@@ -18,6 +19,13 @@ public interface NoSqlEntityManager {
 	 */
 	public NoSqlSession getSession();
 
+	/**
+	 * Retrieve a special interface that deals with rows and still does indexing when you persist/remove rows.  This interface is
+	 * used when inserting unknown datasets into a nosql store where you want indexing to be automatic still.  Generally used
+	 * for research datasets where a user uploading data is telling you the columns and what columns to index for him.
+	 */
+	public NoSqlTypedSession getTypedSession();
+	
 	/**
 	 * Creates a 'Remove' action in the write cache that will be sent to nosql store when flush is called.  This 
 	 * method also creates RemoveIndex actions that will be sent when flush is called as well. 

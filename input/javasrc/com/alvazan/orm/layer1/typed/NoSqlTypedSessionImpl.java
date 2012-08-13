@@ -1,31 +1,38 @@
 package com.alvazan.orm.layer1.typed;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+
+import javax.inject.Inject;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
+import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.RowToPersist;
+import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.meta.DboTableMeta;
+import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
+import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
+	@Inject
+	private DboDatabaseMeta metaInfo;
+	@Inject
+	private NoSqlSessionFactory noSqlSessionFactory;
+	
 	private NoSqlSession session;
 
-	private DboDatabaseMeta metaInfo;
-	
-	
 	/**
 	 * To be removed eventually
 	 * @param s
@@ -34,18 +41,12 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public void setRawSession(NoSqlSession s) {
 		this.session = s;
 	}
-	@Override
-	@Deprecated
-	public void setMetaInfo(DboDatabaseMeta meta) {
-		this.metaInfo = meta;
-	}
 	
 	@Override
 	public NoSqlSession getRawSession() {
 		return session;
 	}
 	
-	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public void put(String colFamily, TypedRow typedRow) {
 		DboTableMeta metaClass = metaInfo.getMeta(colFamily);
@@ -76,12 +77,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	
 	@Override
 	public void remove(String colFamily, TypedRow row) {
-		throw new UnsupportedOperationException("not done yet");
-	}
-	
-	@Override
-	public <T> void remove(String colFamily, T rowKey,
-			Collection<byte[]> columnNames) {
 		throw new UnsupportedOperationException("not done yet");
 	}
 	
@@ -175,20 +170,20 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public void flush() {
 		session.flush();
 	}
-	@Override
-	public void clearDatabase() {
-		session.clearDb();
-	}
-	
-	@Override
-	public Iterable<Column> columnRangeScan(String colFamily, Object rowKey,
-			Object from, Object to, int batchSize) {
-		throw new UnsupportedOperationException("not done yet");
-	}
-	
-	@Override
-	public void setOrmSessionForMeta(Object s) {
-		session.setOrmSessionForMeta(s);
-	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<KeyValue<TypedRow>> runQuery(String query) {
+		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query);
+		String indexName = tuple.getIndexName();
+		MetaQuery metaQuery = tuple.getMetaQuery();
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName, session);
+		
+		List primaryKeys = spiQueryAdapter.getResultList();
+		
+		String colFamily = metaQuery.getTargetTable().getColumnFamily();
+
+		List rows = this.findAll(colFamily, primaryKeys);
+		return rows;
+	}
 }

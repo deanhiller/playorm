@@ -10,6 +10,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
+import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -52,7 +53,7 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private MetaAndIndexTuple parseQueryForAdHoc(String query) {
+	public MetaAndIndexTuple parseQueryForAdHoc(String query) {
 		String[] split = query.split("\\s+");
 		if(split.length < 1 || "on".compareToIgnoreCase(split[0]) != 0)
 			throw new IllegalArgumentException("Query must start with 'ON <indexName>' (and after add select statement like normal sql) and does not start with keyword ON");

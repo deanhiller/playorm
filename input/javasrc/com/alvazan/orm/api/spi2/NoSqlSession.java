@@ -37,7 +37,7 @@ public interface NoSqlSession {
 	public void remove(String colFamily, byte[] rowKey);
 	
 	/**
-	 * Remove specific columns from a row
+	 * Remove specific columns from a row, mainly 
 	 * 
 	 * @param colFamily
 	 * @param rowKey

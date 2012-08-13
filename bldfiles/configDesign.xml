@@ -43,6 +43,7 @@
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
 	<depends>NoSqlApi</depends>
 	<depends>RawNoSqlSpi</depends>
+	<depends>RawNoSqlApiWithIndexing</depends>
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
