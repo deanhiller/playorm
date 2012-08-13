@@ -12,15 +12,15 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.ToOneProvider;
-import com.alvazan.orm.api.base.anno.Column;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlColumn;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
-import com.alvazan.orm.api.base.anno.OneToMany;
-import com.alvazan.orm.api.base.anno.OneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.NoConversion;
 import com.alvazan.orm.api.spi2.ReflectionUtil;
@@ -61,7 +61,7 @@ public class ScannerForField {
 
 		Method idMethod = getIdMethod(field);
 		
-		Id idAnno = field.getAnnotation(Id.class);
+		NoSqlId idAnno = field.getAnnotation(NoSqlId.class);
 		MetaIdField<T> metaField = idMetaProvider.get();
 		KeyGenerator gen = null;
 		if(idAnno.usegenerator()) {
@@ -127,7 +127,7 @@ public class ScannerForField {
 	}
 
 	public MetaField processColumn(Field field, String cf) {
-		Column col = field.getAnnotation(Column.class);
+		NoSqlColumn col = field.getAnnotation(NoSqlColumn.class);
 		MetaCommonField metaField = metaProvider.get();
 		String colName = field.getName();
 		if(col != null) {
@@ -181,20 +181,20 @@ public class ScannerForField {
 	}
 
 	public MetaField processManyToOne(Field field, String colFamily) {
-		ManyToOne annotation = field.getAnnotation(ManyToOne.class);
+		NoSqlManyToOne annotation = field.getAnnotation(NoSqlManyToOne.class);
 		String colName = annotation.columnName();
 		return processToOne(field, colFamily, colName);
 	}
 
 	public MetaField processOneToOne(Field field, String colFamily) {
-		OneToOne annotation = field.getAnnotation(OneToOne.class);
+		NoSqlOneToOne annotation = field.getAnnotation(NoSqlOneToOne.class);
 		String colName = annotation.columnName();
 		
 		return processToOne(field, colFamily, colName);
 	}
 	
 	public MetaField processManyToMany(Field field) {
-		OneToMany annotation = field.getAnnotation(OneToMany.class);
+		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
@@ -204,7 +204,7 @@ public class ScannerForField {
 	}
 	
 	public MetaField processOneToMany(Field field) {
-		OneToMany annotation = field.getAnnotation(OneToMany.class);
+		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();

@@ -3,7 +3,7 @@ package com.alvazan.test.db;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
@@ -12,7 +12,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlQuery(name="findByName", query="select u from TABLE u where :name = u.name")
 public class User {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	@NoSqlIndexed

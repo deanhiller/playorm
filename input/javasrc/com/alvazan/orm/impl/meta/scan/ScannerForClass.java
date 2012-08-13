@@ -16,16 +16,16 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.ManyToMany;
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
-import com.alvazan.orm.api.base.anno.OneToMany;
-import com.alvazan.orm.api.base.anno.OneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -182,13 +182,13 @@ public class ScannerForClass {
 		
 		String cf = metaClass.getColumnFamily();
 		MetaField metaField;
-		if(field.isAnnotationPresent(ManyToOne.class))
+		if(field.isAnnotationPresent(NoSqlManyToOne.class))
 			metaField = inspectorField.processManyToOne(field, cf);
-		else if(field.isAnnotationPresent(OneToOne.class))
+		else if(field.isAnnotationPresent(NoSqlOneToOne.class))
 			metaField = inspectorField.processOneToOne(field, cf);
-		else if(field.isAnnotationPresent(ManyToMany.class))
+		else if(field.isAnnotationPresent(NoSqlManyToMany.class))
 			metaField = inspectorField.processManyToMany(field);
-		else if(field.isAnnotationPresent(OneToMany.class))
+		else if(field.isAnnotationPresent(NoSqlOneToMany.class))
 			metaField = inspectorField.processOneToMany(field);
 		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
@@ -202,7 +202,7 @@ public class ScannerForClass {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private boolean processIdFieldWorks(MetaAbstractClass metaClass, Field field) {
-		if(!field.isAnnotationPresent(Id.class))
+		if(!field.isAnnotationPresent(NoSqlId.class))
 			return false;
 		
 		if(metaClass.getIdField() != null)

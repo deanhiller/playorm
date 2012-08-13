@@ -12,7 +12,7 @@ import com.alvazan.orm.api.spi3.db.conv.Converter;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Id {
+public @interface NoSqlId {
 //    @SuppressWarnings("rawtypes")
 //	Class targetEntity() default void.class;
 

@@ -84,21 +84,22 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		for(byte[] k : keys) {
 			theKeys.add(new ByteArray(k));
 		}
-		log.info("cf="+colFamily+" finding all keys="+theKeys);
+		log.debug("cf="+colFamily+" finding all keys="+theKeys);
 		return rawSession.find(colFamily, keys);
 	}
 	
 	public Row find(String colFamily, byte[] rowKey) {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
-		log.info("cf="+colFamily+" finding the key="+new ByteArray(rowKey));
+		log.debug("cf="+colFamily+" finding the key="+new ByteArray(rowKey));
 		List<Row> rows = rawSession.find(colFamily, rowKeys);
 		return rows.get(0);
 	}
 
 	@Override
 	public void flush() {
-		logInformation();
+		//if(log.isDebugEnabled())
+		//	logInformation();
 		
 		rawSession.sendChanges(actions, ormSession);
 		actions = new ArrayList<Action>();
@@ -126,7 +127,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 			}
 		}
 		
-		log.info(msg);
+		log.debug(msg);
 	}
 
 //	private void insertTime(Action action, long time) {

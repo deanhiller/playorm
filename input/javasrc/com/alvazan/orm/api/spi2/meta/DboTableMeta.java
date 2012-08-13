@@ -11,10 +11,10 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
-import com.alvazan.orm.api.base.anno.OneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlTypedRowProxy;
@@ -28,7 +28,7 @@ import com.alvazan.orm.api.spi3.db.Row;
 @NoSqlEntity
 public class DboTableMeta {
 
-	@Id(usegenerator=false)
+	@NoSqlId(usegenerator=false)
 	private String columnFamily;
 	
 	private String colNamePrefixType = null;
@@ -41,9 +41,9 @@ public class DboTableMeta {
 //	private String 
 //	private String valueType = void.class.getName();
 	
-	@OneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
+	@NoSqlOneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
-	@OneToOne
+	@NoSqlOneToOne
 	private DboColumnIdMeta idColumn;
 
 	private String foreignKeyToExtensions;

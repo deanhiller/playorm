@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity()
 public class DboDatabaseMeta {
@@ -16,10 +16,10 @@ public class DboDatabaseMeta {
 	 */
 	public static final String META_DB_ROWKEY = "nosqlorm";
 	
-	@Id(usegenerator=false)
+	@NoSqlId(usegenerator=false)
 	private String id = META_DB_ROWKEY;
 	
-	@OneToMany(entityType=DboTableMeta.class, keyFieldForMap="columnFamily")
+	@NoSqlOneToMany(entityType=DboTableMeta.class, keyFieldForMap="columnFamily")
 	private Map<String, DboTableMeta> colFamilyToMeta = new HashMap<String, DboTableMeta>();
 	
 	public String getId() {

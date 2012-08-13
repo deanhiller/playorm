@@ -7,8 +7,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
@@ -27,14 +27,14 @@ import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
 public abstract class DboColumnMeta {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	protected String columnName;
 
 	private String foreignKeyToExtensions;
 	
-	@ManyToOne
+	@NoSqlManyToOne
 	protected DboTableMeta owner;
 	
 	@NoSqlTransient

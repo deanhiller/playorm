@@ -4,19 +4,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity
 public class SomeEntity {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	private String name;
 
-	@OneToMany(entityType=Activity.class, keyFieldForMap="name")
+	@NoSqlOneToMany(entityType=Activity.class, keyFieldForMap="name")
 	private Map<String, Activity> activities = new HashMap<String, Activity>();
 	
 	public String getId() {

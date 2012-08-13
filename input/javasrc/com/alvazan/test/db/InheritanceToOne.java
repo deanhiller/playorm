@@ -1,12 +1,12 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 
 @NoSqlEntity
 public class InheritanceToOne {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	//@ManyToOne

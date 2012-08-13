@@ -91,10 +91,11 @@ public class ColumnFamilyHelper {
 	    .forCluster(clusterName)
 	    .forKeyspace(keyspaceName)
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
-	        .setDiscoveryType(NodeDiscoveryType.NONE)
+	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setMaxConnsPerHost(50)
+	        .setMaxConnsPerHost(2)
+	        .setInitConnsPerHost(2)
 	        .setSeeds(seeds)
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());

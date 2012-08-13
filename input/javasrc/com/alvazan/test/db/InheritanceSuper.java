@@ -1,6 +1,6 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
@@ -10,7 +10,7 @@ import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
 public class InheritanceSuper {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	private long num;

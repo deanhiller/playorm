@@ -7,7 +7,17 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ManyToOne {
-	String columnName() default "";
-}
+public @interface NoSqlManyToMany {
+    @SuppressWarnings("rawtypes")
+	Class entityType();
 
+	String columnName() default "";
+
+	/**
+	 * When using Map instead of a List, the field in entityType() needs to 
+	 * be specified here...
+	 * @return
+	 */
+	String keyFieldForMap() default "";
+
+}

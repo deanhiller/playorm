@@ -3,7 +3,7 @@ package com.alvazan.test.db;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
@@ -16,7 +16,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class TimeSeriesData {
 
-	@Id(usegenerator=false)
+	@NoSqlId(usegenerator=false)
 	@NoSqlIndexed
 	private Long key;
 	

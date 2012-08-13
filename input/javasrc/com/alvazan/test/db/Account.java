@@ -5,12 +5,12 @@ import java.util.List;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -21,7 +21,7 @@ import com.alvazan.orm.api.base.anno.OneToMany;
 })
 public class Account extends AccountSuper{
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	@NoSqlIndexed
@@ -31,7 +31,7 @@ public class Account extends AccountSuper{
 	private Float users;
 
 	//@Transient
-	@OneToMany(entityType=Activity.class)
+	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 
 	public String getId() {

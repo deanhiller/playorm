@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
@@ -30,10 +30,10 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class Activity {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
-	@ManyToOne
+	@NoSqlManyToOne
 	private Account account;
 	
 	@NoSqlIndexed

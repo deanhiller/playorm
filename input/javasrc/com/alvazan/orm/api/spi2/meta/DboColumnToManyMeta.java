@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.RowToPersist;
@@ -20,7 +20,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	 * This field may be referencing another entity in another table so here is the meta data
 	 * on that table as well, but for now, I don't think we need it until we have joins
 	 */
-	@ManyToOne
+	@NoSqlManyToOne
 	private DboTableMeta fkToColumnFamily;
 
 	@Override
