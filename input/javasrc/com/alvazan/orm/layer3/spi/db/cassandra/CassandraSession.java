@@ -17,6 +17,7 @@ import org.apache.cassandra.db.marshal.UTF8Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi2.DboColumnMeta;
 import com.alvazan.orm.api.spi2.DboDatabaseMeta;
@@ -81,8 +82,19 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	public void startImpl(Map<String, Object> properties) throws ConnectionException {
-		String clusterName = "SDICluster";
-		keyspaceName = "SDIKeyspace";
+		Object seedsObj = properties.get(Bootstrap.SEEDS);
+		Object keyspaceNameObj = properties.get(Bootstrap.KEYSPACE);
+		Object clusterNameObj = properties.get(Bootstrap.CLUSTER_NAME);
+		if(seedsObj == null || !(seedsObj instanceof String))
+			throw new IllegalArgumentException("The property Bootstrap.HOST was not in the Map or was in the Map but not as a String");
+		else if(keyspaceNameObj == null || !(keyspaceNameObj instanceof String))
+			throw new IllegalArgumentException("The property Bootstrap.KEYSPACE was not in the Map or was in the Map but not as a String");
+		else if(clusterNameObj == null || !(clusterNameObj instanceof String))
+			throw new IllegalArgumentException("The property Bootstrap.CLUSTER_NAME was not in the Map or was in the Map but not as a String");
+		
+		String clusterName = (String) clusterNameObj; //"SDICluster";
+		keyspaceName = (String) keyspaceNameObj; // "SDIKeyspace";
+		String seeds = (String) seedsObj;
 		Builder builder = new AstyanaxContext.Builder()
 	    .forCluster(clusterName)
 	    .forKeyspace(keyspaceName)
@@ -90,9 +102,9 @@ public class CassandraSession implements NoSqlRawSession {
 	        .setDiscoveryType(NodeDiscoveryType.NONE)
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setPort(9160)
+//	        .setPort(9160)
 	        .setMaxConnsPerHost(1)
-	        .setSeeds("127.0.0.1:9160")
+	        .setSeeds(seeds)
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
 		

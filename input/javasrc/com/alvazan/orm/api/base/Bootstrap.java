@@ -7,8 +7,11 @@ import com.alvazan.orm.api.spi3.db.conv.Converter;
 @SuppressWarnings("rawtypes")
 public abstract class Bootstrap {
 
-	public static final String AUTO_CREATE_KEY = "autoCreateKey";
-	public static final String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "listOfClassesToScan";
+	public static final String AUTO_CREATE_KEY = "nosql.autoCreateKey";
+	public static final String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "nosql.listOfClassesToScan";
+	public static final String SEEDS = "nosql.host";
+	public static final String KEYSPACE = "nosql.keyspace";
+	public static final String CLUSTER_NAME = "nosql.clustername";
 
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		return create(type, "com.alvazan.orm.impl.bindings.BootstrapImpl", properties, converters, cl);

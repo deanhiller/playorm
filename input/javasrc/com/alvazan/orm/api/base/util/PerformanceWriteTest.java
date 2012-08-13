@@ -30,7 +30,7 @@ import com.alvazan.orm.api.spi3.db.Column;
 public class PerformanceWriteTest {
 
 	private static final Logger log = LoggerFactory.getLogger(PerformanceWriteTest.class);
-	private static final int NUM_THREADS = 30;
+	private static final int NUM_THREADS = 10;
 	
 	private ExecutorService exec = Executors.newFixedThreadPool(NUM_THREADS);
 	private Timer timer = new Timer();
@@ -40,21 +40,25 @@ public class PerformanceWriteTest {
 	private int numThreadsLeft = NUM_THREADS;
 	
 	public static void main(String[] args) {
-//		if(args.length != 1) {
-//			log.warn("Run java com.alvazan.orm.api.base.util.PerformanceWriteTest <timeInSeconds>");
-//			return;
-//		}
-//		
-//		int timeInSeconds = Integer.parseInt(args[0]);
-		
-		int timeInSeconds = 10*60;
-		int numColumns = 50;
-		int logEveryNRows = 1000;
-		new PerformanceWriteTest().start(timeInSeconds, numColumns, logEveryNRows);
+		if(args.length != 5) {
+			log.warn("Run java com.alvazan.orm.api.base.util.PerformanceWriteTest <host> <clusterName> <timeInSeconds> <numColumnsInTable> <logEveryNthTime>");
+			return;
+		}
+
+		String host = args[0];
+		String clusterName = args[1];
+		int timeInSeconds = Integer.parseInt(args[2]);
+		int numColumns = Integer.parseInt(args[3]);
+		int logEveryNRows = Integer.parseInt(args[4]);
+//		int timeInSeconds = 10*60;
+//		int numColumns = 50;
+//		int logEveryNRows = 1000;
+		new PerformanceWriteTest().start(host, clusterName, timeInSeconds, numColumns, logEveryNRows);
 	}
 
-	private synchronized void finished() {
+	private synchronized void finished(int threadNum) {
 		numThreadsLeft--;
+		log.info("thread num="+threadNum+" finished.  cnt left="+numThreadsLeft);
 		if(numThreadsLeft == 0)
 			log.info("final count of rows="+totalRowsWritten);
 	}
@@ -65,22 +69,27 @@ public class PerformanceWriteTest {
 			log.info("total rows written so far="+totalRowsWritten);
 	}
 	
-	private void start(int timeInMinutes, int numColumns, int logEveryNRows) {
+	private void start(String host, String clusterName, int timeInMinutes, int numColumns, int logEveryNRows) {
 		logEveryN = logEveryNRows;
 		//BEFORE Timer, let's get setup first
 		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+		props.put(Bootstrap.SEEDS, host+":9160");
+		props.put(Bootstrap.KEYSPACE, "SDIKeyspace");
+		props.put(Bootstrap.CLUSTER_NAME, clusterName);
 		NoSqlEntityManagerFactory factory = Bootstrap.create(DbTypeEnum.CASSANDRA, props, null, null);
 		DboTableMeta table = setupMetaData(numColumns, factory);
 		
 		timer.schedule(new StopTask(), timeInMinutes*1000);
 		
 		for(int i = 0; i < NUM_THREADS; i++) {
-			Runnable r = new SlamDataIn(factory, table);
+			Runnable r = new SlamDataIn(factory, table, i);
 			exec.execute(r);
 		}
 		
+		log.info("calling shutdown");
 		exec.shutdown();
+		log.info("done calling shutdown");
 	}
 
 	private DboTableMeta setupMetaData(int numColumns, NoSqlEntityManagerFactory factory) {
@@ -120,10 +129,12 @@ public class PerformanceWriteTest {
 		private NoSqlEntityManagerFactory mgrFactory;
 		private DboTableMeta table;
 		private Random r = new Random(System.currentTimeMillis());
+		private int threadNum;
 		
-		public SlamDataIn(NoSqlEntityManagerFactory mgrFactory, DboTableMeta table) {
+		public SlamDataIn(NoSqlEntityManagerFactory mgrFactory, DboTableMeta table, int i) {
 			this.mgrFactory = mgrFactory;
 			this.table = table;
+			this.threadNum = i;
 		}
 
 		@Override
@@ -150,7 +161,7 @@ public class PerformanceWriteTest {
 				session.flush();
 			}
 			
-			finished();
+			finished(threadNum);
 		}
 
 		private List<Column> createColumns(int i, DboTableMeta table2) {
@@ -171,6 +182,7 @@ public class PerformanceWriteTest {
 	private class StopTask extends TimerTask {
 		@Override
 		public void run() {
+			log.info("changing shouldRun flag to false so we should be stopping");
 			shouldRun = false;
 		}
 	}
