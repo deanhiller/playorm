@@ -468,6 +468,8 @@
 				<exclude name="**/test/**"/>
 				<exclude name="logback.xml"/>
 			</fileset>
+			<fileset dir="${javacode}" excludes="**/test/**"  />
+			<fileset dir="${gen.src}" excludes="**/test/**"  />
 		</jar>
 
 	</target>
