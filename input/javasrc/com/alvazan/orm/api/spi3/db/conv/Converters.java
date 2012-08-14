@@ -70,10 +70,9 @@ public class Converters {
 		}
 
 		@Override
-		public byte[] convertToNoSqlFromString(String value) {
-			return convertToNoSql(new BigDecimal(value));
+		public Object convertToType(String value) {
+			return new BigDecimal(value);
 		}
-		
 	}
 	
 	public static class BigIntegerConverter extends BaseConverter {
@@ -91,8 +90,8 @@ public class Converters {
 		}
 
 		@Override
-		public byte[] convertToNoSqlFromString(String value) {
-			return convertToNoSql(new BigInteger(value));
+		public Object convertToType(String value) {
+			return new BigInteger(value);
 		}
 		
 	}
@@ -109,26 +108,44 @@ public class Converters {
 			return value;
 		}
 		
-		public byte[] convertToNoSqlFromString(String value) {
+		@Override
+		public String convertToString(Object dbValue) {
+			byte[] data = (byte[]) dbValue;
+			return new String(Hex.encodeHex(data));
+		}
+
+		@Override
+		public Object convertToType(String value) {
 			try {
 				return Hex.decodeHex(value.toCharArray());
 			} catch (DecoderException e) {
-				throw new RuntimeException(e);
+				throw new RuntimeException("could not decode", e);
 			}
-		}
-		
-		public String convertFromNoSqlToString(byte[] dbValue) {
-			return new String(Hex.encodeHex(dbValue));
 		}
 	}
 	
 	public static abstract class BaseConverter implements Converter, AdhocToolConverter {
-		public String convertFromNoSqlToString(byte[] dbValue) {
-			return convertFromNoSql(dbValue)+"";
+		public Object convertStringToType(String value) {
+			if(value == null)
+				return null;
+			
+			return convertToType(value);
+		}
+		
+		public String convertTypeToString(Object dbValue) {
+			if(dbValue == null)
+				return null;
+			return convertToString(dbValue);
+		}
+		
+		protected abstract Object convertToType(String value);
+		
+		protected String convertToString(Object value) {
+			return value+"";
 		}
 	}
 	
-	public static abstract class DecimalConverter extends AbstractConverter {
+	public static abstract class DecimalConverter extends BaseConverter {
 		public byte[] convertToNoSql(Object value) {
 			if(value == null)
 				return null;
@@ -147,7 +164,7 @@ public class Converters {
 		protected abstract BigDecimal convertToForSmallStorage(Object value);
 	}
 
-	public static abstract class IntegerConverter extends AbstractConverter {
+	public static abstract class IntegerConverter extends BaseConverter {
 		public byte[] convertToNoSql(Object value) {
 			if(value == null)
 				return null;
@@ -166,23 +183,9 @@ public class Converters {
 		protected abstract BigInteger convertToForSmallStorage(Object value);
 	}
 	
-	public static abstract class AbstractConverter extends BaseConverter {
-		
-		public byte[] convertToNoSqlFromString(String value) {
-			if(value == null)
-				return null;
-			
-			Object typedValue = convertToPrimitive(value);
-			return convertToNoSql(typedValue);
-		}
-		
-		protected abstract Object convertToPrimitive(String value);
-
-	}
-	
 	public static class StringConverter extends BaseConverter {
 
-		public byte[] convertToNoSqlFromString(String value) {
+		public byte[] convertStringToType(String value) {
 			if(value == null)
 				return null;
 			
@@ -211,11 +214,16 @@ public class Converters {
 				throw new RuntimeException(e);
 			}
 		}
+
+		@Override
+		protected Object convertToType(String value) {
+			return value;
+		}
 	}
 	
 	public static class ByteConverter extends IntegerConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Byte.parseByte(value);
 		}
 		@Override
@@ -232,7 +240,7 @@ public class Converters {
 	
 	public static class ShortConverter extends IntegerConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Short.parseShort(value);
 		}
 		@Override
@@ -248,7 +256,7 @@ public class Converters {
 	
 	public static class IntConverter extends IntegerConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Integer.parseInt(value);
 		}
 		@Override
@@ -264,7 +272,7 @@ public class Converters {
 
 	public static class LongConverter extends IntegerConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Long.parseLong(value);
 		}
 		@Override
@@ -280,7 +288,7 @@ public class Converters {
 	
 	public static class FloatConverter extends DecimalConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Float.parseFloat(value);
 		}
 
@@ -300,7 +308,7 @@ public class Converters {
 	
 	public static class DoubleConverter extends DecimalConverter {
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Double.parseDouble(value);
 		}
 
@@ -318,7 +326,7 @@ public class Converters {
 		}
 	}
 	
-	public static class BooleanConverter extends AbstractConverter {
+	public static class BooleanConverter extends BaseConverter {
 		@Override
 		public byte[] convertToNoSql(Object value) {
 			try {
@@ -347,7 +355,7 @@ public class Converters {
 		}
 		
 		@Override
-		protected Object convertToPrimitive(String value) {
+		protected Object convertToType(String value) {
 			return Boolean.parseBoolean(value);
 		}
 	}

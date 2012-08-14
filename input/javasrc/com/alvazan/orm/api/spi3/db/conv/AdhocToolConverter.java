@@ -8,8 +8,8 @@ package com.alvazan.orm.api.spi3.db.conv;
  */
 public interface AdhocToolConverter {
 
-	byte[] convertToNoSqlFromString(String value);
+	Object convertStringToType(String value);
 
-	String convertFromNoSqlToString(byte[] dbValue);
+	String convertTypeToString(Object dbValue);
 
 }

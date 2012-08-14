@@ -99,6 +99,10 @@ public abstract class DboColumnMeta {
 		}
 	}
 	
+	public Object convertStringToType(String value) {
+		initConverter();
+		return converter.convertStringToType(value);
+	}
 	public byte[] convertToStorage2(Object value) {
 		initConverter();
 		return converter.convertToNoSql(value);
