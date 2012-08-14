@@ -1,9 +1,7 @@
-package com.alvazan.orm.api.spi2.meta;
+package com.alvazan.orm.api.spi1.meta;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
-import com.alvazan.orm.api.spi2.InfoForIndex;
-import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi1.TypedRow;
 import com.alvazan.orm.api.spi3.db.Row;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -3,7 +3,7 @@ package com.alvazan.orm.layer2.nosql.cache;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.meta.DboTableMeta;
 import com.alvazan.orm.layer2.indexing.ExpressionNode;
 
 public class InfoForWiring {

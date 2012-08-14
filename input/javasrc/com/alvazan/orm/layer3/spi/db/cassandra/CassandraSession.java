@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +46,8 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	@Inject
 	private ColumnFamilyHelper columnFamilies;
+	@Inject
+	private Provider<Row> rowProvider;
 	
 	@Override
 	public void start(Map<String, Object> properties) {
@@ -97,7 +100,7 @@ public class CassandraSession implements NoSqlRawSession {
 				//then
 				retVal.add(null);
 			} else {
-				Row r = new Row();
+				Row r = rowProvider.get();
 				r.setKey(key);
 				processColumns(row, r);
 				retVal.add(r);

@@ -8,22 +8,22 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.NoSqlTypedSession;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi2.IndexData;
-import com.alvazan.orm.api.spi2.KeyValue;
+import com.alvazan.orm.api.spi1.KeyValue;
+import com.alvazan.orm.api.spi1.NoSqlTypedSession;
+import com.alvazan.orm.api.spi1.TypedRow;
+import com.alvazan.orm.api.spi1.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi1.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.spi1.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.spi1.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.meta.IndexData;
+import com.alvazan.orm.api.spi1.meta.MetaAndIndexTuple;
+import com.alvazan.orm.api.spi1.meta.MetaQuery;
+import com.alvazan.orm.api.spi1.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi1.meta.RowToPersist;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
-import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
-import com.alvazan.orm.api.spi2.TypedRow;
-import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi2.meta.DboColumnToManyMeta;
-import com.alvazan.orm.api.spi2.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
-import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
@@ -42,9 +42,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	 * @param s
 	 */
 	@Deprecated
-	public void setInformation(NoSqlSession s, NoSqlEntityManager mgr) {
+	public void setInformation(NoSqlSession s, Object mgr) {
 		this.session = s;
-		this.mgr = mgr;
+		this.mgr = (NoSqlEntityManager) mgr;
 	}
 	
 	@Override

@@ -1,10 +1,8 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.spi1;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.layer1.typed.NoSqlTypedSessionImpl;
 import com.google.inject.ImplementedBy;
 
@@ -13,7 +11,7 @@ import com.google.inject.ImplementedBy;
 public interface NoSqlTypedSession {
 
 	@Deprecated
-	public void setInformation(NoSqlSession s, NoSqlEntityManager mgr);
+	public void setInformation(NoSqlSession s, Object mgr);
 	
 	/**
 	 * Retrieves the rawest interface that all the providers implement(in-memory, cassandra, hadoop, etc) BUT

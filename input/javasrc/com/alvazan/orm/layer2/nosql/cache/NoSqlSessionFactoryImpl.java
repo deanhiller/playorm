@@ -7,11 +7,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.spi1.meta.MetaAndIndexTuple;
+import com.alvazan.orm.api.spi1.meta.MetaQuery;
+import com.alvazan.orm.api.spi1.meta.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.NoSqlSessionFactory;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
-import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi3.db.Row;
 

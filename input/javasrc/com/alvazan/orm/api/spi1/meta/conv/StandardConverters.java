@@ -1,11 +1,11 @@
-package com.alvazan.orm.api.spi3.db.conv;
+package com.alvazan.orm.api.spi1.meta.conv;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
+import com.alvazan.orm.api.spi1.meta.conv.Converters.BaseConverter;
 
 @SuppressWarnings("rawtypes")
 public class StandardConverters {

@@ -1,9 +1,8 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
+import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.layer2.nosql.cache.NoSqlSessionFactoryImpl;
 import com.google.inject.ImplementedBy;

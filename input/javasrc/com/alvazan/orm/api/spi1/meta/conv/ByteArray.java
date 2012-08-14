@@ -1,10 +1,9 @@
-package com.alvazan.orm.api.spi3.db;
+package com.alvazan.orm.api.spi1.meta.conv;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public class ByteArray implements Comparable<ByteArray> {
 	private byte[] key;

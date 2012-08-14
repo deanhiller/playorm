@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi3.db.conv;
+package com.alvazan.orm.api.spi1.meta.conv;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

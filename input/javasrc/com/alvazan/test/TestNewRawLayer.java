@@ -12,10 +12,10 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.NoSqlTypedSession;
-import com.alvazan.orm.api.spi2.KeyValue;
-import com.alvazan.orm.api.spi2.TypedColumn;
-import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi1.KeyValue;
+import com.alvazan.orm.api.spi1.NoSqlTypedSession;
+import com.alvazan.orm.api.spi1.TypedColumn;
+import com.alvazan.orm.api.spi1.TypedRow;
 
 public class TestNewRawLayer {
 

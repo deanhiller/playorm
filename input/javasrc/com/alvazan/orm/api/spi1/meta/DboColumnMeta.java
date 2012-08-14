@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2.meta;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -13,14 +13,10 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
-import com.alvazan.orm.api.spi2.IndexData;
-import com.alvazan.orm.api.spi2.InfoForIndex;
-import com.alvazan.orm.api.spi2.NoSqlTypedRowProxy;
-import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi1.TypedRow;
+import com.alvazan.orm.api.spi1.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi1.meta.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.db.conv.Converters.BaseConverter;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 @NoSqlEntity
 @NoSqlInheritance(subclassesToScan={DboColumnCommonMeta.class, DboColumnToOneMeta.class, DboColumnToManyMeta.class, DboColumnIdMeta.class},

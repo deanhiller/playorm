@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -10,8 +10,8 @@ import javassist.util.proxy.MethodHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.TypedColumn;
+import com.alvazan.orm.api.spi1.TypedRow;
 
 
 public class NoSqlTypedRowProxyImpl implements MethodHandler {

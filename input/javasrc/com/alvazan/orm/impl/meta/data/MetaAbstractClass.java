@@ -4,12 +4,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.spi1.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.meta.MetaQuery;
+import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi1.meta.conv.Converter;
 import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi2.ReflectionUtil;
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public abstract class MetaAbstractClass<T> implements MetaClass<T> {

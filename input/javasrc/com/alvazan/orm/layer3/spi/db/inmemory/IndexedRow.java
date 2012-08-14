@@ -6,12 +6,11 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import com.alvazan.orm.api.spi3.db.ByteArray;
+import com.alvazan.orm.api.spi1.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
-import com.alvazan.orm.api.spi3.db.Row;
 
-public class IndexedRow extends Row {
+public class IndexedRow extends RowImpl {
 	
 	private NavigableMap<OurKey, IndexColumn> columns = new TreeMap<OurKey, IndexColumn>();
 	

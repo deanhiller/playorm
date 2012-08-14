@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi3.db.conv;
+package com.alvazan.orm.api.spi1.meta.conv;
 
 /**
  * Any adhoc tool is string queries to convert to byte[] of nosql OR the opposite so this is the interface

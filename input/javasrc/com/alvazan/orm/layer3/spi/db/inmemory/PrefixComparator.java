@@ -2,7 +2,7 @@ package com.alvazan.orm.layer3.spi.db.inmemory;
 
 import java.util.Comparator;
 
-import com.alvazan.orm.api.spi3.db.ByteArray;
+import com.alvazan.orm.api.spi1.meta.conv.ByteArray;
 import com.alvazan.orm.layer3.spi.db.inmemory.IndexedRow.OurKey;
 
 public class PrefixComparator implements Comparator<OurKey> {

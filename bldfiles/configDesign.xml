@@ -29,17 +29,27 @@
 	<depends>javassist</depends>
 </package>
 
-<package name="exc" package="com.alvazan.orm.api.exc"/>
-<package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
-<package name="NoSqlApi" package="com.alvazan.orm.api.spi2" subpackages="include">
-	<depends>RawNoSqlSpi</depends>
+<package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>
+
+<package name="api3" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
+<package name="api2" package="com.alvazan.orm.api.spi2" subpackages="include">
+	<depends>api3</depends>
+</package>
+<package name="api1" package="com.alvazan.orm.api.spi1">
+	<depends>api2</depends>
+</package>
+
+<package name="dbmeta" package="com.alvazan.orm.api.spi1.meta" subpackages="include">
 	<depends>javassist</depends>
-	<depends>exc</depends>
+	<depends>api1</depends>
+	<depends>api2</depends>
+	<depends>api3</depends>
 </package>
 
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
-	<depends>NoSqlApi</depends>
-	<depends>RawNoSqlSpi</depends>
+	<depends>api1</depends>
+	<depends>api2</depends>
+	<depends>dbmeta</depends>
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
@@ -50,8 +60,6 @@
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
 <package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
-
-
 
 <package name="metadata" package="com.alvazan.orm.impl.meta.data"  subpackages="include">
 	<depends>allapis</depends>
@@ -76,27 +84,24 @@
 </package>
 
 <package name="cache" package="com.alvazan.orm.layer2" subpackages="include">
-	<depends>NoSqlApi</depends>
-	<depends>RawNoSqlSpi</depends>
+	<depends>api2</depends>
+	<depends>api3</depends>
+	<depends>dbmeta</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
 </package>
 
 <!-- This section is just the database adapters depending on the spi -->
 <package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
-	<depends>RawNoSqlSpi</depends> <!-- implements this SPI -->
-	<depends>api</depends> <!-- ironically uses not implements -->
-	<depends>NoSqlApi</depends>
+	<depends>allapis</depends>
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
-	<depends>RawNoSqlSpi</depends>
+	<depends>api3</depends>
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
-	<depends>RawNoSqlSpi</depends>
-	<depends>api</depends> <!-- ironically uses not implements -->
-	<depends>NoSqlApi</depends>	
+	<depends>allapis</depends>
 </package>
 
 <package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>

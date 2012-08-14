@@ -2,7 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi2.KeyValue;
+import com.alvazan.orm.api.spi1.KeyValue;
 
 public interface Query<T> {
 

@@ -1,11 +1,11 @@
-package com.alvazan.orm.api.spi2.meta;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alvazan.orm.api.spi1.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi3.db.ColumnType;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 
 public enum StorageTypeEnum {
 
@@ -20,8 +20,10 @@ public enum StorageTypeEnum {
 	}
 	
 	private String dbValue;
+	@SuppressWarnings("rawtypes")
 	private Class javaType;
 
+	@SuppressWarnings("rawtypes")
 	private StorageTypeEnum(String dbValue, Class clazz) {
 		this.dbValue = dbValue;
 		this.javaType = clazz;
@@ -54,6 +56,7 @@ public enum StorageTypeEnum {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	public Class getJavaType() {
 		return javaType;
 	}

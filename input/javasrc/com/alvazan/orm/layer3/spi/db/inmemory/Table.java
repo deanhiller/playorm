@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.alvazan.orm.api.spi3.db.ByteArray;
+import com.alvazan.orm.api.spi1.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.IndexColumn;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -45,19 +45,19 @@ public class Table {
 		switch (columnSortType) {
 		case BYTES:
 			tree = new TreeMap<ByteArray, Column>();
-			row = new Row(tree);
+			row = new RowImpl(tree);
 			break;
 		case UTF8:
 			tree = new TreeMap<ByteArray, Column>(UTF_COMPARATOR);
-			row = new Row(tree);
+			row = new RowImpl(tree);
 			break;
 		case INTEGER:
 			tree = new TreeMap<ByteArray, Column>(INTEGER_COMPARATOR);
-			row = new Row(tree);
+			row = new RowImpl(tree);
 			break;
 		case DECIMAL:
 			tree = new TreeMap<ByteArray, Column>(DECIMAL_COMPARATOR);
-			row = new Row(tree);
+			row = new RowImpl(tree);
 			break;
 		case DECIMAL_PREFIX:
 			TreeMap<OurKey, IndexColumn> map = new TreeMap<OurKey, IndexColumn>(decimalPrefixComparator);

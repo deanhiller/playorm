@@ -1,6 +1,6 @@
 package com.alvazan.orm.layer2.indexing;
 
-import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
 
 public class StateAttribute {
 

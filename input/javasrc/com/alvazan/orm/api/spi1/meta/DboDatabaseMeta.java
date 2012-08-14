@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2.meta;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.util.Collection;
 import java.util.HashMap;

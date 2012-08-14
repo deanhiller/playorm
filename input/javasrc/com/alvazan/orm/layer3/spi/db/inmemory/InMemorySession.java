@@ -12,9 +12,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
-import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi1.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Action;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.IndexColumn;

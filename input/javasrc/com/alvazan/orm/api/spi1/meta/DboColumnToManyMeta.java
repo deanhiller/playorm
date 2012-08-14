@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2.meta;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -6,10 +6,8 @@ import java.util.List;
 
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
-import com.alvazan.orm.api.spi2.InfoForIndex;
-import com.alvazan.orm.api.spi2.RowToPersist;
-import com.alvazan.orm.api.spi2.TypedColumn;
-import com.alvazan.orm.api.spi2.TypedRow;
+import com.alvazan.orm.api.spi1.TypedColumn;
+import com.alvazan.orm.api.spi1.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 

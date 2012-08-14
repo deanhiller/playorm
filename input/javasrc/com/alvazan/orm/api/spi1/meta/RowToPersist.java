@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi2;
+package com.alvazan.orm.api.spi1.meta;
 
 import java.util.ArrayList;
 import java.util.HashSet;

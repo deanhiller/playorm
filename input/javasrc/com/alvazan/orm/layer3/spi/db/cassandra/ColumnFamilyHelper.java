@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.meta.DboTableMeta;
-import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi1.meta.DboTableMeta;
+import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.ColumnType;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.Cluster;

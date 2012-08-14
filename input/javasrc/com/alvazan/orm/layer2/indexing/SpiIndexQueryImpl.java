@@ -11,10 +11,10 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi1.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
-import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.db.ByteArray;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 

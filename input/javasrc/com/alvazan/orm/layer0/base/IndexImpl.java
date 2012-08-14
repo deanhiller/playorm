@@ -6,9 +6,9 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.spi1.meta.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
 import com.alvazan.orm.api.spi2.SpiQueryAdapter;
-import com.alvazan.orm.api.spi2.meta.MetaQuery;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 
