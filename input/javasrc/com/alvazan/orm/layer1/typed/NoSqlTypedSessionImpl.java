@@ -1,12 +1,15 @@
 package com.alvazan.orm.layer1.typed;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.NoSqlTypedSession;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi1.NoSqlTypedSession;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -16,7 +19,8 @@ import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.api.spi2.TypedRow;
 import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi2.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.spi2.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi2.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi2.meta.MetaQuery;
@@ -26,20 +30,21 @@ import com.alvazan.orm.api.spi3.db.Row;
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
-	@Inject
-	private DboDatabaseMeta metaInfo;
+	private static Map<String, DboTableMeta> cachedMeta = new HashMap<String, DboTableMeta>();
 	@Inject
 	private NoSqlSessionFactory noSqlSessionFactory;
 	
 	private NoSqlSession session;
-
+	private NoSqlEntityManager mgr;
+	
 	/**
 	 * To be removed eventually
 	 * @param s
 	 */
 	@Deprecated
-	public void setRawSession(NoSqlSession s) {
+	public void setInformation(NoSqlSession s, NoSqlEntityManager mgr) {
 		this.session = s;
+		this.mgr = mgr;
 	}
 	
 	@Override
@@ -47,9 +52,41 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return session;
 	}
 	
+	private DboTableMeta getMeta(String colFamily) {
+		DboTableMeta dboTableMeta = cachedMeta.get(colFamily);
+		if(dboTableMeta != null)
+			return dboTableMeta;
+		return loadAllTableData(colFamily);
+	}
+	
+	private DboTableMeta loadAllTableData(String colFamily) {
+		synchronized(NoSqlTypedSessionImpl.class){
+			DboTableMeta dboTableMeta = cachedMeta.get(colFamily);
+			if(dboTableMeta != null)
+				return dboTableMeta;
+			
+			DboTableMeta table = mgr.find(DboTableMeta.class, colFamily);
+			
+			//We don't want lots of threads writing data into this structure as it reads from the database so instead
+			//we will prefetch everything that is typically used here....
+			table.getIdColumnMeta().getColumnName(); //load this id stuff
+			//load all columns as well
+			for(DboColumnMeta col : table.getAllColumns()) {
+				if(col instanceof DboColumnToManyMeta) {
+					((DboColumnToManyMeta)col).getFkToColumnFamily().getIdColumnMeta().getColumnName();
+				} else if(col instanceof DboColumnToOneMeta) {
+					((DboColumnToOneMeta)col).getFkToColumnFamily().getIdColumnMeta().getColumnName();
+				}
+			}
+
+			cachedMeta.put(colFamily, table);
+			return table;
+		}
+	}
+
 	@Override
 	public void put(String colFamily, TypedRow typedRow) {
-		DboTableMeta metaClass = metaInfo.getMeta(colFamily);
+		DboTableMeta metaClass = getMeta(colFamily);
 		if(metaClass == null)
 			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
 
@@ -92,7 +129,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
-		DboTableMeta meta = metaInfo.getMeta(colFamily);
+		DboTableMeta meta = getMeta(colFamily);
 		if(meta == null)
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
 
