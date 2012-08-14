@@ -102,6 +102,9 @@ public abstract class DboColumnMeta {
 	
 	public String convertTypeToString(Object value) {
 		initConverter();
+		//BIG NOTE: This seems pretty stupid as long+"" is the STring, etc. etc and BigDecimal+"" is the STring
+		//BUT it unfortunately, this does not work for byte[] which needs to be output in hex and translated back from
+		//hex when put in the gui and such.  other more complex types would probably not work as well.
 		return converter.convertTypeToString(value);
 	}
 	public Object convertStringToType(String value) {
