@@ -61,6 +61,7 @@ public abstract class DboColumnMeta {
 		id = owner.getColumnFamily()+":"+columnName;	
 	}
 	
+	public abstract String getIndexTableName();
 	public abstract String getIndexPrefix();
 	public abstract boolean isIndexed();
 	/**

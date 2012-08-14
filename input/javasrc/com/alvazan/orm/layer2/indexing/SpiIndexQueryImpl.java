@@ -61,7 +61,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			//if doing a partion, you can add to indexPrefix here
 			//The indexPrefix is of format /<ColumnFamilyName>/<ColumnNameToIndex>/<PartitionKey>/<PartitionId> where key is like ByAccount or BySecurity and id is the id of account or security
 
-			String columnFamily = info.getStorageType().getIndexTableName();
+			String columnFamily = info.getIndexTableName();
 			byte[] rowKey = getBytes(index);
 			Iterable<Column> scan = session.columnRangeScan(columnFamily, rowKey, data, data, BATCH_SIZE);
 			

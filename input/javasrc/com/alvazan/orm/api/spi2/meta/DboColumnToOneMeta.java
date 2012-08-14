@@ -21,13 +21,6 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 	@NoSqlManyToOne
 	private DboTableMeta fkToColumnFamily;
 
-	@Override
-	public boolean isIndexed() {
-		if(indexPrefix == null)
-			return false;
-		return true;
-	}
-
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable,
 			String indexPrefix2) {
 		super.setup(owner, colName);
@@ -35,6 +28,17 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		this.indexPrefix = indexPrefix2;
 	}
 
+	@Override
+	public boolean isIndexed() {
+		if(indexPrefix == null)
+			return false;
+		return true;
+	}
+	@Override
+	public String getIndexTableName() {
+		return getStorageType().getIndexTableName();
+	}
+	@Override
 	public String getIndexPrefix() {
 		return indexPrefix;
 	}

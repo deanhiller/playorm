@@ -22,6 +22,11 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		this.indexPrefix = indexPrefix;
 	}
 	
+	@Override
+	public String getIndexTableName() {
+		return getStorageType().getIndexTableName();
+	}
+	
 	public String getIndexPrefix() {
 		return indexPrefix;
 	}

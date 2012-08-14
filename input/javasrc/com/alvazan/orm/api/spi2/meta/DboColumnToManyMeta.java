@@ -23,23 +23,26 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	@NoSqlManyToOne
 	private DboTableMeta fkToColumnFamily;
 
-	@Override
-	public boolean isIndexed() {
-		return false;
-	}
-
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable) {
 		super.setup(owner, colName);
 		this.fkToColumnFamily = fkToTable;
 	}
-
-	public DboTableMeta getFkToColumnFamily() {
-		return fkToColumnFamily;
+	
+	@Override
+	public boolean isIndexed() {
+		return false;
 	}
-
 	@Override
 	public String getIndexPrefix() {
 		throw new UnsupportedOperationException("bug, this should not be called.  it's not supported");
+	}
+	@Override
+	public String getIndexTableName() {
+		throw new UnsupportedOperationException("bug, this should not be called.  it's not supported");
+	}
+	
+	public DboTableMeta getFkToColumnFamily() {
+		return fkToColumnFamily;
 	}
 
 	@SuppressWarnings("rawtypes")
