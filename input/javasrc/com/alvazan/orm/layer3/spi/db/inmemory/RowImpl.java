@@ -12,7 +12,7 @@ import com.alvazan.orm.api.spi1.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
-public class RowImpl implements Row, RowTemp {
+public class RowImpl implements Row {
 	private byte[] key;
 	private NavigableMap<ByteArray, Column> columns = new TreeMap<ByteArray, Column>();
 	
