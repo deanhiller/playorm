@@ -100,6 +100,10 @@ public abstract class DboColumnMeta {
 		}
 	}
 	
+	public String convertTypeToString(Object value) {
+		initConverter();
+		return converter.convertTypeToString(value);
+	}
 	public Object convertStringToType(String value) {
 		initConverter();
 		return converter.convertStringToType(value);
