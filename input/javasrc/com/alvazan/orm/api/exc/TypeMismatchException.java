@@ -20,5 +20,6 @@ public class TypeMismatchException extends NoSqlOrmException {
 	public TypeMismatchException(Throwable cause) {
 		super(cause);
 	}
+
 	
 }

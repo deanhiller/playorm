@@ -2,6 +2,8 @@ package com.alvazan.orm.api.spi2;
 
 import java.lang.reflect.Field;
 
+import com.alvazan.orm.api.exc.TypeMismatchException;
+
 public class ReflectionUtil {
 
 	public static <T> T create(Class<T> c) {
@@ -34,7 +36,7 @@ public class ReflectionUtil {
 		try {
 			return field.get(entity);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			throw new TypeMismatchException("Entity="+entity.getClass()+" was passed to field of a different type.  field type="+field.getType(), e);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}

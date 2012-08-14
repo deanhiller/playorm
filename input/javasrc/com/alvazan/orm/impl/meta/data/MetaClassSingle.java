@@ -10,6 +10,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi2.IndexData;
 import com.alvazan.orm.api.spi2.InfoForIndex;
 import com.alvazan.orm.api.spi2.KeyValue;
@@ -70,11 +71,14 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		InfoForIndex<T> info = new InfoForIndex<T>(entity, row, getColumnFamily(), fieldToValue);
 		
 		idField.translateToColumn(info);
-		
+
 		for(MetaField<T> m : columnNameToField.values()) {
-			m.translateToColumn(info);
+			try {
+				m.translateToColumn(info);
+			} catch(TypeMismatchException e) {
+				throw new TypeMismatchException("The entity "+getMetaClass()+" has an incorrect annotation on field="+m.getField().getName()+".  The attribute 'entityType' on the annotation is incorrect for the types you are saving.", e);
+			}
 		}
-		
 		return row;
 	}
 

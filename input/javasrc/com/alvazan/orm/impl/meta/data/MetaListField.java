@@ -104,6 +104,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
+		
 		RowToPersist row = info.getRow();
 		if(field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
@@ -127,6 +128,8 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void translateToColumnMap(OWNER entity, RowToPersist row) {
+		
+		
 		Map mapOfProxies = (Map) ReflectionUtil.fetchFieldValue(entity, field);
 		Collection collection = mapOfProxies.values();
 		Collection<PROXY> toBeAdded = collection;
@@ -181,8 +184,6 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	}
 
 	private byte[] translateOne(PROXY proxy) {
-		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
-		//the database is the ID inside this Account.java object!!!!
 		byte[] byteVal = classMeta.convertEntityToId(proxy);
 		if(byteVal == null) {
 			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
