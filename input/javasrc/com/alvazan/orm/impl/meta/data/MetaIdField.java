@@ -14,6 +14,7 @@ import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi2.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Row;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
@@ -87,14 +88,14 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setup(IdInfo info, Field field, String columnName,	String indexPrefix) {
+	public void setup(DboTableMeta tableMeta, IdInfo info, Field field, String columnName,	String indexPrefix) {
 		this.method = info.getIdMethod();
 		this.method.setAccessible(true);
 		this.useGenerator = info.isUseGenerator();
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();
-		metaDbo.setup(columnName, field.getType(), indexPrefix);
+		metaDbo.setup(tableMeta, columnName, field.getType(), indexPrefix);
 		super.setup(field, columnName);
 	}
 

@@ -68,8 +68,7 @@ public class TestAdHocTool {
 		
 		for(String field : fields) {
 			DboColumnCommonMeta fieldDbo = new DboColumnCommonMeta();
-			fieldDbo.setup(field, String.class, "field");
-			meta.addColumnMeta(fieldDbo);
+			fieldDbo.setup(meta, field, String.class, "field");
 		}
 	}
 }

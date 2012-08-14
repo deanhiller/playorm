@@ -11,13 +11,13 @@ import com.alvazan.orm.api.spi3.db.Row;
 @NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboColumnMeta {
 
-	private String columnValueType;
-	private String indexPrefix;
+	protected String columnValueType;
+	protected String indexPrefix;
 
 	@SuppressWarnings("rawtypes")
-	public void setup(String colName, Class valuesType, String indexPrefix) {
+	public void setup(DboTableMeta owner, String colName, Class valuesType, String indexPrefix) {
+		super.setup(owner, colName);
 		Class newType = translateType(valuesType);
-		this.columnName = colName;
 		this.columnValueType = newType.getName();
 		this.indexPrefix = indexPrefix;
 	}

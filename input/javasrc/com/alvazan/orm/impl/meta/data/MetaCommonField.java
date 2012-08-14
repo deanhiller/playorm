@@ -10,6 +10,7 @@ import com.alvazan.orm.api.spi2.ReflectionUtil;
 import com.alvazan.orm.api.spi2.RowToPersist;
 import com.alvazan.orm.api.spi2.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi2.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi2.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
@@ -68,8 +69,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		return converter.convertToNoSql(value);
 	}
 	
-	public void setup(Field field2, String colName, Converter converter, String indexPrefix) {
-		metaDbo.setup(colName, field2.getType(), indexPrefix);
+	public void setup(DboTableMeta tableMeta, Field field2, String colName, Converter converter, String indexPrefix) {
+		metaDbo.setup(tableMeta, colName, field2.getType(), indexPrefix);
 		super.setup(field2, colName);
 		this.converter = converter;
 	}

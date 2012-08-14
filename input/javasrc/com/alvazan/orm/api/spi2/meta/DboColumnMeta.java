@@ -28,7 +28,7 @@ import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 public abstract class DboColumnMeta {
 
 	@NoSqlId
-	private String id;
+	protected String id;
 	
 	protected String columnName;
 
@@ -50,6 +50,17 @@ public abstract class DboColumnMeta {
 		return columnName;
 	}
 
+	public void setup(DboTableMeta owner2, String colName) {
+		if(owner2.getColumnFamily() == null)
+			throw new IllegalArgumentException("The owner passed in must have a non-null column family name");
+		else if(colName == null)
+			throw new IllegalStateException("colName parameter must not be null");
+		this.owner = owner2;
+		this.columnName = colName;
+		owner2.addColumnMeta(this);
+		id = owner.getColumnFamily()+":"+columnName;	
+	}
+	
 	public abstract String getIndexPrefix();
 	public abstract boolean isIndexed();
 	/**
@@ -183,13 +194,6 @@ public abstract class DboColumnMeta {
 		} catch (UnsupportedEncodingException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	public void setOwner(DboTableMeta owner) {
-		this.owner = owner;
-		if(columnName == null)
-			throw new IllegalStateException("Please call setup method on this DboColumnxxxMeta before adding to another entity");
-		id = owner.getColumnFamily()+":"+columnName;		
 	}
 
 	public String getForeignKeyToExtensions() {

@@ -28,8 +28,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		return false;
 	}
 
-	public void setup(String colName, DboTableMeta fkToTable) {
-		this.columnName = colName;
+	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable) {
+		super.setup(owner, colName);
 		this.fkToColumnFamily = fkToTable;
 	}
 

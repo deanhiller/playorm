@@ -94,13 +94,11 @@ public class DboTableMeta {
 		this.columnFamily = columnFamily;
 	}
 	
-	public void setRowKeyMeta(DboColumnIdMeta idMeta) {
+	void setRowKeyMeta(DboColumnIdMeta idMeta) {
 		this.idColumn = idMeta;
-		this.idColumn.setOwner(this);
 	}
 	
-	public void addColumnMeta(DboColumnMeta fieldDbo) {
-		fieldDbo.setOwner(this);
+	void addColumnMeta(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	

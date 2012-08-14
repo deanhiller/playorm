@@ -24,6 +24,7 @@ import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.NoConversion;
 import com.alvazan.orm.api.spi2.ReflectionUtil;
+import com.alvazan.orm.api.spi2.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.db.conv.Converter;
 import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
 import com.alvazan.orm.impl.meta.data.IdInfo;
@@ -57,7 +58,7 @@ public class ScannerForField {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> MetaIdField<T> processId(Field field, MetaAbstractClass<T> metaClass) {
+	public <T> MetaIdField<T> processId(DboTableMeta t, Field field, MetaAbstractClass<T> metaClass) {
 
 		Method idMethod = getIdMethod(field);
 		
@@ -89,7 +90,7 @@ public class ScannerForField {
 			info.setGen(gen);
 			info.setUseGenerator(idAnno.usegenerator());
 			info.setMetaClass(metaClass);
-			metaField.setup(info, field, columnName, indexPrefix);
+			metaField.setup(t, info, field, columnName, indexPrefix);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -126,7 +127,7 @@ public class ScannerForField {
 		}
 	}
 
-	public MetaField processColumn(Field field, String cf) {
+	public MetaField processColumn(DboTableMeta t, Field field) {
 		NoSqlColumn col = field.getAnnotation(NoSqlColumn.class);
 		MetaCommonField metaField = metaProvider.get();
 		String colName = field.getName();
@@ -137,7 +138,7 @@ public class ScannerForField {
 
 		String indexPrefix = null;
 		if(field.getAnnotation(NoSqlIndexed.class) != null)
-			indexPrefix = "/"+cf+"/"+colName;
+			indexPrefix = "/"+t.getColumnFamily()+"/"+colName;
 		
 		Class<?> type = field.getType();
 		Converter converter = null;
@@ -146,7 +147,7 @@ public class ScannerForField {
 
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, colName, converter, indexPrefix);
+			metaField.setup(t, field, colName, converter, indexPrefix);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -180,40 +181,40 @@ public class ScannerForField {
 		this.customConverters = converters;
 	}
 
-	public MetaField processManyToOne(Field field, String colFamily) {
+	public MetaField processManyToOne(DboTableMeta t, Field field) {
 		NoSqlManyToOne annotation = field.getAnnotation(NoSqlManyToOne.class);
 		String colName = annotation.columnName();
-		return processToOne(field, colFamily, colName);
+		return processToOne(t, field, colName);
 	}
 
-	public MetaField processOneToOne(Field field, String colFamily) {
+	public MetaField processOneToOne(DboTableMeta t, Field field) {
 		NoSqlOneToOne annotation = field.getAnnotation(NoSqlOneToOne.class);
 		String colName = annotation.columnName();
 		
-		return processToOne(field, colFamily, colName);
+		return processToOne(t, field, colName);
 	}
 	
-	public MetaField processManyToMany(Field field) {
+	public MetaField processManyToMany(DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(field, colName, entityType,
+		return processToManyRelationship(t, field, colName, entityType,
 				keyFieldForMap);		
 	}
 	
-	public MetaField processOneToMany(Field field) {
+	public MetaField processOneToMany(DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(field, colName, entityType,
+		return processToManyRelationship(t, field, colName, entityType,
 				keyFieldForMap);
 	}
 
-	private MetaField processToManyRelationship(Field field, String colNameOrig,
+	private MetaField processToManyRelationship(DboTableMeta t, Field field, String colNameOrig,
 			Class entityType, String keyFieldForMap) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
@@ -238,11 +239,11 @@ public class ScannerForField {
 			}
 		}
 		
-		return processToMany(field, colName, entityType, fieldForKey);
+		return processToMany(t, field, colName, entityType, fieldForKey);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private MetaField processToMany(Field field, String colName, Class entityType, Field fieldForKey) {
+	private MetaField processToMany(DboTableMeta t, Field field, String colName, Class entityType, Field fieldForKey) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
@@ -256,20 +257,20 @@ public class ScannerForField {
 
 		MetaListField metaField = metaListProvider.get();
 		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
-		metaField.setup(field, colName,  classMeta, fieldForKey);
+		metaField.setup(t, field, colName,  classMeta, fieldForKey);
 		
 		return metaField;
 	}
 
 	@SuppressWarnings("unchecked")
-	public MetaField processToOne(Field field, String colFamily, String colNameOrig) {
+	public MetaField processToOne(DboTableMeta t, Field field, String colNameOrig) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
 
 		String indexPrefix = null;
 		if(field.getAnnotation(NoSqlIndexed.class) != null)
-			indexPrefix ="/"+colFamily+"/"+colName;
+			indexPrefix ="/"+t.getColumnFamily()+"/"+colName;
 		
 		Class<?> theSuperclass = null;
 		//at this point we only need to verify that 
@@ -315,7 +316,7 @@ public class ScannerForField {
 			classMeta = meta.findOrCreate(field.getType(), theSuperclass);
 		}
 		
-		metaField.setup(field, colName, classMeta, indexPrefix);
+		metaField.setup(t, field, colName, classMeta, indexPrefix);
 		return metaField;
 	}
 

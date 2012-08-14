@@ -200,9 +200,9 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 		return byteVal;
 	}
 
-	public void setup(Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
+	public void setup(DboTableMeta tableMeta, Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(colName, fkToTable);
+		metaDbo.setup(tableMeta, colName, fkToTable);
 		super.setup(field, colName);
 		this.classMeta = classMeta;
 		this.fieldForKey = fieldForKey;

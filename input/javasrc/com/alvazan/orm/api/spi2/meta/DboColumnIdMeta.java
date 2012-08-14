@@ -10,6 +10,24 @@ import com.alvazan.orm.api.spi3.db.Row;
 @NoSqlDiscriminatorColumn(value="id")
 public class DboColumnIdMeta extends DboColumnCommonMeta {
 
+	
+	@Override
+	public void setup(DboTableMeta owner, String colName, Class valuesType,
+			String indexPrefix) {
+		if(owner.getColumnFamily() == null)
+			throw new IllegalArgumentException("The owner passed in must have a non-null column family name");
+		else if(colName == null)
+			throw new IllegalStateException("colName parameter must not be null");
+		this.owner = owner;
+		this.columnName = colName;
+		owner.setRowKeyMeta(this);
+		id = owner.getColumnFamily()+":"+columnName;
+		
+		Class newType = translateType(valuesType);
+		this.columnValueType = newType.getName();
+		this.indexPrefix = indexPrefix;
+	}
+
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow entity = info.getEntity();

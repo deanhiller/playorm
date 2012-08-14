@@ -28,9 +28,9 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		return true;
 	}
 
-	public void setup(String colName, DboTableMeta fkToTable,
+	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable,
 			String indexPrefix2) {
-		this.columnName = colName;
+		super.setup(owner, colName);
 		this.fkToColumnFamily = fkToTable;
 		this.indexPrefix = indexPrefix2;
 	}

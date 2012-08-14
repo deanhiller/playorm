@@ -50,14 +50,13 @@ public class TestColumnSlice {
 		String colFamily = "float_indexes";
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-		
-		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup("id", String.class, null);
-		
+
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
 		tableMeta.setColNameType(double.class);
-		tableMeta.setRowKeyMeta(idMeta);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(tableMeta, "id", String.class, null);
 		
 		mgr.put(idMeta);
 		mgr.put(tableMeta);
@@ -112,14 +111,13 @@ public class TestColumnSlice {
 		String colFamily = "time_indexes";
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-		
-		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup("id", String.class, null);
-		
+
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
 		tableMeta.setColNameType(long.class);
-		tableMeta.setRowKeyMeta(idMeta);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(tableMeta, "id", String.class, null);
 		
 		mgr.put(idMeta);
 		mgr.put(tableMeta);

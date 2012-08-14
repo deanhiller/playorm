@@ -87,7 +87,7 @@ public class ScannerForClass {
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		List<Field> fields = findAllFields(mainClass);
 		for(Field field : fields) {
-			processIdFieldWorks(metaClass, field);
+			processIdFieldWorks(metaClass, metaDbo, field);
 		}
 		
 		String discColumn = annotation.discriminatorColumnName();
@@ -177,38 +177,36 @@ public class ScannerForClass {
 				field.isAnnotationPresent(NoSqlTransient.class))
 			return;
 		
-		if(processIdFieldWorks(metaClass, field))
+		if(processIdFieldWorks(metaClass, metaDbo, field))
 			return;
 		
-		String cf = metaClass.getColumnFamily();
 		MetaField metaField;
 		if(field.isAnnotationPresent(NoSqlManyToOne.class))
-			metaField = inspectorField.processManyToOne(field, cf);
+			metaField = inspectorField.processManyToOne(metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlOneToOne.class))
-			metaField = inspectorField.processOneToOne(field, cf);
+			metaField = inspectorField.processOneToOne(metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlManyToMany.class))
-			metaField = inspectorField.processManyToMany(field);
+			metaField = inspectorField.processManyToMany(metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlOneToMany.class))
-			metaField = inspectorField.processOneToMany(field);
+			metaField = inspectorField.processOneToMany(metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
 		else
-			metaField = inspectorField.processColumn(field, cf);
+			metaField = inspectorField.processColumn(metaDbo, field);
 		
 		boolean isIndexed = field.isAnnotationPresent(NoSqlIndexed.class);
 		metaClass.addMetaField(metaField, isIndexed);
-		metaDbo.addColumnMeta(metaField.getMetaDbo());
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private boolean processIdFieldWorks(MetaAbstractClass metaClass, Field field) {
+	private boolean processIdFieldWorks(MetaAbstractClass metaClass, DboTableMeta metaDbo, Field field) {
 		if(!field.isAnnotationPresent(NoSqlId.class))
 			return false;
 		
 		if(metaClass.getIdField() != null)
 			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass");
 		
-		MetaIdField idField = inspectorField.processId(field, metaClass);
+		MetaIdField idField = inspectorField.processId(metaDbo, field, metaClass);
 		metaClass.setIdField(idField);
 		return true;
 	}

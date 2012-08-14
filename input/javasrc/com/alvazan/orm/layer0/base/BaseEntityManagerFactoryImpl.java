@@ -163,12 +163,11 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	if(type == StorageTypeEnum.BYTES)
         		continue;
         	DboTableMeta cf = new DboTableMeta();
-        	DboColumnIdMeta idMeta = new DboColumnIdMeta();
-        	idMeta.setup("id", String.class, null);
-        	
         	cf.setColumnFamily(type.getIndexTableName());
         	cf.setColNamePrefixType(type);
-        	cf.setRowKeyMeta(idMeta);
+        	
+        	DboColumnIdMeta idMeta = new DboColumnIdMeta();
+        	idMeta.setup(cf, "id", String.class, null);
         	
         	tempMgr.put(idMeta);
         	tempMgr.put(cf);

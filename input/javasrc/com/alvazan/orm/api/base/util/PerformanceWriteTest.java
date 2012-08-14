@@ -99,19 +99,17 @@ public class PerformanceWriteTest {
 		if(meta != null) {
 			meta = new DboDatabaseMeta();
 		}
-		
-		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup("id", String.class, null);
-		
+
 		DboTableMeta table = new DboTableMeta();
 		table.setColumnFamily("testWrites");
-		table.setRowKeyMeta(idMeta);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(table, "id", String.class, null);
 		
 		for(int i = 0; i < numColumns; i++) {
 			DboColumnCommonMeta col = new DboColumnCommonMeta();
-			col.setup("col"+i, long.class, null);
+			col.setup(table, "col"+i, long.class, null);
 			
-			table.addColumnMeta(col);
 			mgr.put(col);
 		}
 		
