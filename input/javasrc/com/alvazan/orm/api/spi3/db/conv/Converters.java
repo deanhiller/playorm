@@ -184,13 +184,6 @@ public class Converters {
 	}
 	
 	public static class StringConverter extends BaseConverter {
-
-		public byte[] convertStringToType(String value) {
-			if(value == null)
-				return null;
-			
-			return convertToNoSql(value);
-		}
 		
 		@Override
 		public byte[] convertToNoSql(Object value) {
