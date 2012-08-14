@@ -88,8 +88,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private byte[] processConstant(DboColumnMeta info, ExpressionNode node) {
-		String constant = (String) node.getState();
-		return info.convertToStorage(constant);
+		//constant is either BigDecimal, BigInteger or a String
+		Object constant = node.getState();
+		return info.convertToStorage2(constant);
 	}
 
 	private byte[] processParam(DboColumnMeta info, ExpressionNode node) {

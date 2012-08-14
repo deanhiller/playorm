@@ -87,11 +87,6 @@ public abstract class DboColumnMeta {
 			throw new UnsupportedOperationException("type not supported="+getStorageType());
 		}
 	}
-
-	public byte[] convertToStorage(String value) {
-		initConverter();
-		return converter.convertToNoSqlFromString(value);
-	}
 	
 	public byte[] convertToStorage2(Object value) {
 		initConverter();

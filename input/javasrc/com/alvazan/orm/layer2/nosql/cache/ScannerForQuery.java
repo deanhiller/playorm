@@ -1,5 +1,7 @@
 package com.alvazan.orm.layer2.nosql.cache;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -324,22 +326,22 @@ public class ScannerForQuery {
 
 	private static TypeInfo processConstant(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		String constant = node.getASTNode().getText();
-		String withoutQuotes = constant.substring(1, constant.length()-1);
-		
 		
 		StorageTypeEnum ourType;
 		if(node.getType() == NoSqlLexer.DECIMAL){
 			ourType = StorageTypeEnum.DECIMAL;
-			//FIXME 
-			node.setState(Double.parseDouble(withoutQuotes)); 
+			BigDecimal dec = new BigDecimal(constant);
+			node.setState(dec); 
 		}
 		else if(node.getType() == NoSqlLexer.STR_VAL){
+			String withoutQuotes = constant.substring(1, constant.length()-1);		
 			ourType = StorageTypeEnum.STRING;
 			node.setState(withoutQuotes);
 		}
 		else if(node.getType() == NoSqlLexer.INT_VAL){
 			ourType = StorageTypeEnum.INTEGER;
-			node.setState(Integer.getInteger(withoutQuotes));
+			BigInteger bigInt = new BigInteger(constant);
+			node.setState(bigInt);
 		}
 			
 		else 

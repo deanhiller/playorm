@@ -52,6 +52,12 @@ public class ExpressionNode {
 		}
 		return this.node+"("+node.getType()+")";
 	}
+
+	@Override
+	public String toString() {
+		return getExpressionAsString();
+	}
+	
 	
 
 }

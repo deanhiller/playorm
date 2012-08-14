@@ -2,6 +2,7 @@ package com.alvazan.test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
+import com.alvazan.orm.api.spi2.KeyValue;
 import com.alvazan.orm.api.spi2.TypedColumn;
 import com.alvazan.orm.api.spi2.TypedRow;
 
@@ -71,12 +73,12 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-//		List<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25");
-//		KeyValue<TypedRow> keyValue = rows.get(0);
-//		TypedRow theRow = keyValue.getValue();
-//		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
-//		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
-//		
+		List<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25");
+		KeyValue<TypedRow> keyValue = rows.get(0);
+		TypedRow theRow = keyValue.getValue();
+		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
+		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
+		
 	}
 	
 	private TypedRow<String> createUser(String key, String name, String lastname) {

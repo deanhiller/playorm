@@ -53,25 +53,12 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public MetaAndIndexTuple parseQueryForAdHoc(String query) {
-		String[] split = query.split("\\s+");
-		if(split.length < 1 || "on".compareToIgnoreCase(split[0]) != 0)
-			throw new IllegalArgumentException("Query must start with 'ON <indexName>' (and after add select statement like normal sql) and does not start with keyword ON");
-		else if(split.length < 3)
-			throw new IllegalArgumentException("There are not enough arguments.  Syntax is 'ON <indexName> SELECT * FROM <tablename> e WHERE e.<columnName> = 'parameter'");
-		
-		//TODO: fix this as this works only for spaces!!! and only for single spaces
-		//use grammar once we figure out how to match REST of the string including spaces
-		int index = query.indexOf(' ');
-		String endOf = query.substring(index+1);
-		int secondIndex = endOf.indexOf(' ');
-		String selectQuery= endOf.substring(secondIndex+1);
-		
-		MetaQuery metaQuery = scanner.parseQuery(selectQuery);
+	public MetaAndIndexTuple parseQueryForAdHoc(String query) {		
+		MetaQuery metaQuery = scanner.parseQuery(query);
 		
 		MetaAndIndexTuple tuple = new MetaAndIndexTuple();
 		tuple.setMetaQuery(metaQuery);
-		tuple.setIndexName(split[1]);
+		//tuple.setIndexName(split[1]);
 		return tuple;
 	}
 

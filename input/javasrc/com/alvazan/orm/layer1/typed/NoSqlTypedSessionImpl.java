@@ -179,11 +179,10 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName, session);
 		
-		List primaryKeys = spiQueryAdapter.getResultList();
+		List<byte[]> primaryKeys = spiQueryAdapter.getResultList();
 		
-		String colFamily = metaQuery.getTargetTable().getColumnFamily();
-
-		List rows = this.findAll(colFamily, primaryKeys);
+		DboTableMeta meta = metaQuery.getTargetTable();
+		List rows = this.findAllImpl(meta, null, primaryKeys, null);
 		return rows;
 	}
 }
