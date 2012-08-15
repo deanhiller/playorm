@@ -124,12 +124,12 @@ public interface NoSqlEntityManager {
 	 * @param indexName
 	 * @return
 	 */
-	public <T> Index<T> getIndex(Class<T> forEntity, String entityFieldName, Object partitionObj);
+	public <T> Partition<T> getPartition(Class<T> forEntity, String entityFieldName, Object partitionObj);
 
 	@Deprecated
-	public <T> Index<T> getIndex(Class<T> forEntity, String blah);
+	public <T> Partition<T> getIndex(Class<T> forEntity, String blah);
 	
-	public <T> Index<T> getIndex(Class<T> forEntity);
+	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery);
 	
 	/**
 	 * In certain cases where you have a bi-directional association, you need a primary key in

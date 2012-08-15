@@ -11,7 +11,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
@@ -60,7 +60,7 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		
 		double from = 100;
 		Query<Activity> query = index.getNamedQuery("findBetween");
@@ -94,8 +94,8 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		Index<Activity> index2 = mgr.getIndex(Activity.class, "/activity/bysecurity/security1");
+		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index2 = mgr.getIndex(Activity.class, "/activity/bysecurity/security1");
 		
 		mgr.flush();
 		
@@ -129,8 +129,8 @@ public class TestIndexes {
 		acc3.setUsers(2.9f);
 		mgr.put(acc3);
 		
-		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
-		Index<Account> index2 = mgr.getIndex(Account.class, "/otherindex");
+		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
+		Partition<Account> index2 = mgr.getIndex(Account.class, "/otherindex");
 		
 		mgr.flush();
 		
@@ -168,7 +168,7 @@ public class TestIndexes {
 		acc5.setIsActive(null);
 		mgr.put(acc5);
 		
-		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
+		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
 
 		mgr.flush();
 		
@@ -198,7 +198,7 @@ public class TestIndexes {
 		acc3.setIsActive(true);
 		mgr.fillInWithKey(acc3); //Fill in with key is required by the index
 		
-		Index<Account> index = mgr.getIndex(Account.class, "/someindex");
+		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
 
 		mgr.flush();
 		
@@ -224,14 +224,14 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		
 		Activity act3 = new Activity();
 		act3.setName("hello");
 		act3.setNumTimes(6);
 		mgr.put(act3);
 		
-		Index<Activity> index2 = mgr.getIndex(Activity.class, "/activity/byaccount/account2");
+		Partition<Activity> index2 = mgr.getIndex(Activity.class, "/activity/byaccount/account2");
 		
 		//flush the persists and the index modifications to the database and index storage 
 		mgr.flush();

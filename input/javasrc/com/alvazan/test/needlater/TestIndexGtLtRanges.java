@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.FactorySingleton;
@@ -40,7 +40,7 @@ public class TestIndexGtLtRanges {
 		//TODO: test some ranges out here
 	}
 
-	private Index<Activity> setupRecords() {
+	private Partition<Activity> setupRecords() {
 		Activity act = new Activity();
 		act.setName("hello");
 		act.setMyFloat(5.65f);
@@ -49,7 +49,7 @@ public class TestIndexGtLtRanges {
 		act.setIsCool(true);
 		mgr.put(act);
 		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		
 		mgr.flush();
 		return index;

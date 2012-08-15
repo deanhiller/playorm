@@ -3,7 +3,7 @@ package com.alvazan.orm.layer0.base;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.JoinInfo;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.spi1.meta.MetaQuery;
@@ -12,7 +12,7 @@ import com.alvazan.orm.api.spi2.SpiQueryAdapter;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 
-public class IndexImpl<T> implements Index<T> {
+public class IndexImpl<T> implements Partition<T> {
 
 	@SuppressWarnings("rawtypes")
 	@Inject

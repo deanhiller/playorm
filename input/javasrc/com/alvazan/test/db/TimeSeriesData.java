@@ -1,6 +1,6 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlId;
@@ -50,14 +50,14 @@ public class TimeSeriesData {
 	}
 
 	public static TimeSeriesData findById(NoSqlEntityManager mgr, Long id) {
-		Index<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
+		Partition<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
 		Query<TimeSeriesData> query = index.getNamedQuery("findById");
 		query.setParameter("key", id);
 		return query.getSingleObject();
 	}
 
 	public static TimeSeriesData findByTemp(NoSqlEntityManager mgr, float f) {
-		Index<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
+		Partition<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
 		Query<TimeSeriesData> query = index.getNamedQuery("findByTemp");
 		query.setParameter("temp", f);
 		return query.getSingleObject();		

@@ -15,7 +15,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE e WHERE e.uniqueColumn = :unique")
 })
-public class PartitionTrade {
+public class PartitionedTrade {
 
 	@NoSqlId
 	private String id;
@@ -23,7 +23,7 @@ public class PartitionTrade {
 	@NoSqlPartitionKey
 	@NoSqlIndexed
 	@NoSqlManyToOne
-	private PartitionAccount account;
+	private PartAccount account;
 
 	@NoSqlPartitionKey
 	@NoSqlIndexed
@@ -40,11 +40,11 @@ public class PartitionTrade {
 		this.id = id;
 	}
 
-	public PartitionAccount getAccount() {
+	public PartAccount getAccount() {
 		return account;
 	}
 
-	public void setAccount(PartitionAccount account) {
+	public void setAccount(PartAccount account) {
 		this.account = account;
 	}
 

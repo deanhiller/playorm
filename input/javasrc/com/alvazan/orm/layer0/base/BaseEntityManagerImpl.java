@@ -7,8 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi1.KeyValue;
 import com.alvazan.orm.api.spi1.NoSqlTypedSession;
@@ -165,14 +166,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public <T> Index<T> getIndex(Class<T> forEntity, String indexName) {
+	public <T> Partition<T> getIndex(Class<T> forEntity, String indexName) {
 		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl indexImpl = indexProvider.get();
 		indexImpl.setup(metaClass, indexName, this, session);
 		return indexImpl;
 	}
 	@Override
-	public <T> Index<T> getIndex(Class<T> forEntity, String entityFieldName,
+	public <T> Partition<T> getPartition(Class<T> forEntity, String entityFieldName,
 			Object partitionObj) {
 		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl indexImpl = indexProvider.get();
@@ -181,11 +182,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	}
 	
 	@Override
-	public <T> Index<T> getIndex(Class<T> forEntity) {
+	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl indexImpl = indexProvider.get();
 		indexImpl.setup(metaClass, "/"+metaClass.getColumnFamily(), this, session);
-		return indexImpl;		
+		return indexImpl.getNamedQuery(namedQuery);		
 	}
 	
 	@SuppressWarnings("unchecked")

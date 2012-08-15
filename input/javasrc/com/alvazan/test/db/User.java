@@ -1,6 +1,6 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlId;
@@ -45,7 +45,7 @@ public class User {
 	}
 
 	public static User findByName(NoSqlEntityManager mgr, String name) {
-		Index<User> index = mgr.getIndex(User.class, "");
+		Partition<User> index = mgr.getIndex(User.class, "");
 		Query<User> query = index.getNamedQuery("findByName");
 		query.setParameter("name", name);
 		return query.getSingleObject();

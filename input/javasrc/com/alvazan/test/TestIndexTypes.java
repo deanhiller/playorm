@@ -9,14 +9,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexTypes {
 
-	private static Index<Activity> index;
+	private static Partition<Activity> index;
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
@@ -73,7 +73,7 @@ public class TestIndexTypes {
 		Assert.assertEquals(0, zero.size());		
 	}
 	
-	private Index<Activity> setupRecords() {
+	private Partition<Activity> setupRecords() {
 		Activity act = new Activity();
 		act.setName("hello");
 		act.setMyFloat(5.65f);
@@ -82,7 +82,7 @@ public class TestIndexTypes {
 		act.setIsCool(true);
 		mgr.put(act);
 		
-		Index<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		
 		mgr.flush();
 		return index;

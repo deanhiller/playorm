@@ -3,7 +3,7 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -58,24 +58,24 @@ public class Account extends AccountSuper{
 		this.users = users;
 	}
 	
-	public static List<Account> findBetween(Index<Account> index, float begin, float to) {
+	public static List<Account> findBetween(Partition<Account> index, float begin, float to) {
 		Query<Account> query = index.getNamedQuery("findBetween");
 		query.setParameter("begin", begin);
 		query.setParameter("end", to);
 		return query.getResultList();
 	}
-	public static List<Account> findAll(Index<Account> index) {
+	public static List<Account> findAll(Partition<Account> index) {
 		Query<Account> query = index.getNamedQuery("findAll");
 		return query.getResultList();
 	}
-	public static List<Account> findAnd(Index<Account> index, String name, Boolean active) {
+	public static List<Account> findAnd(Partition<Account> index, String name, Boolean active) {
 		Query<Account> query = index.getNamedQuery("findAnd");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();
 	}
 
-	public static List<Account> findOr(Index<Account> index, String name,
+	public static List<Account> findOr(Partition<Account> index, String name,
 			boolean active) {
 		Query<Account> query = index.getNamedQuery("findOr");
 		query.setParameter("name", name);

@@ -1,6 +1,6 @@
 package com.alvazan.orm.api.base;
 
-public interface Index<T> {
+public interface Partition<T> {
 
 	public Query<T> getNamedQuery(String name);
 	

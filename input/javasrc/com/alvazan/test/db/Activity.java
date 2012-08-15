@@ -2,13 +2,12 @@ package com.alvazan.test.db;
 
 import java.util.List;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.NoSqlId;
-import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
-import com.alvazan.orm.api.base.anno.NoSqlPartitionKey;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
@@ -119,57 +118,57 @@ public class Activity {
 		this.isCool = isCool;
 	}
 
-	public static List<Activity> findBetween(Index<Activity> index, long from, long to) {
+	public static List<Activity> findBetween(Partition<Activity> index, long from, long to) {
 		Query<Activity> query = index.getNamedQuery("findBetween");
 		query.setParameter("begin", from);
 		query.setParameter("to", to);
 		return query.getResultList();
 	}
 	
-	public static Activity findSingleResult(Index<Activity> index, String key) {
+	public static Activity findSingleResult(Partition<Activity> index, String key) {
 		Query<Activity> query = index.getNamedQuery("findUnique");
 		query.setParameter("unique", key);
 		return query.getSingleObject();
 	}
-	public static List<Activity> findByName(Index<Activity> index, String name) {
+	public static List<Activity> findByName(Partition<Activity> index, String name) {
 		Query<Activity> query = index.getNamedQuery("findByName");
 		query.setParameter("name", name);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findByCool(Index<Activity> index, boolean isCool) {
+	public static List<Activity> findByCool(Partition<Activity> index, boolean isCool) {
 		Query<Activity> query = index.getNamedQuery("findByCool");
 		query.setParameter("cool", isCool);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findNumTimes(Index<Activity> index, long numTimes) {
+	public static List<Activity> findNumTimes(Partition<Activity> index, long numTimes) {
 		Query<Activity> query = index.getNamedQuery("findByNumTimes");
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 	
-	public static List<Activity> findByFloat(Index<Activity> index, float myFloat) {
+	public static List<Activity> findByFloat(Partition<Activity> index, float myFloat) {
 		Query<Activity> query = index.getNamedQuery("findByFloat");
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList();
 	}
 	
-	public static List<Activity> findWithAnd(Index<Activity> index, String name, long numTimes) {
+	public static List<Activity> findWithAnd(Partition<Activity> index, String name, long numTimes) {
 		Query<Activity> query = index.getNamedQuery("findWithAnd");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithOr(Index<Activity> index, String name, long numTimes) {
+	public static List<Activity> findWithOr(Partition<Activity> index, String name, long numTimes) {
 		Query<Activity> query = index.getNamedQuery("findWithOr");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithoutParens(Index<Activity> index,
+	public static List<Activity> findWithoutParens(Partition<Activity> index,
 			String name, long numTimes, float myFloat) {
 		Query<Activity> query = index.getNamedQuery("findWithoutParens");
 		query.setParameter("name", name);
@@ -178,7 +177,7 @@ public class Activity {
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithParens(Index<Activity> index,
+	public static List<Activity> findWithParens(Partition<Activity> index,
 			String name, long numTimes, float myFloat) {
 		Query<Activity> query = index.getNamedQuery("findWithParens");
 		query.setParameter("name", name);

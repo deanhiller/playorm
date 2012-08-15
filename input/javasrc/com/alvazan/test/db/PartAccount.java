@@ -3,7 +3,7 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -19,7 +19,7 @@ import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 	@NoSqlQuery(name="findAnd", query="select *  FROM Account a WHERE a.name=:name and a.isActive=:active"),
 	@NoSqlQuery(name="findOr", query="select *  FROM Account a WHERE a.name=:name or a.isActive=:active")
 })
-public class PartitionAccount extends AccountSuper{
+public class PartAccount extends AccountSuper{
 
 	@NoSqlId
 	private String id;
@@ -29,8 +29,8 @@ public class PartitionAccount extends AccountSuper{
 	
 	private int someNumber;
 
-	@NoSqlOneToMany(entityType=PartitionTrade.class)
-	private List<PartitionTrade> activities = new ArrayList<PartitionTrade>();
+	@NoSqlOneToMany(entityType=PartitionedTrade.class)
+	private List<PartitionedTrade> activities = new ArrayList<PartitionedTrade>();
 
 	public String getId() {
 		return id;
@@ -48,36 +48,36 @@ public class PartitionAccount extends AccountSuper{
 		this.someNumber = someNumber;
 	}
 
-	public static List<PartitionAccount> findBetween(Index<PartitionAccount> index, float begin, float to) {
-		Query<PartitionAccount> query = index.getNamedQuery("findBetween");
+	public static List<PartAccount> findBetween(Partition<PartAccount> index, float begin, float to) {
+		Query<PartAccount> query = index.getNamedQuery("findBetween");
 		query.setParameter("begin", begin);
 		query.setParameter("end", to);
 		return query.getResultList();
 	}
-	public static List<PartitionAccount> findAll(Index<PartitionAccount> index) {
-		Query<PartitionAccount> query = index.getNamedQuery("findAll");
+	public static List<PartAccount> findAll(Partition<PartAccount> index) {
+		Query<PartAccount> query = index.getNamedQuery("findAll");
 		return query.getResultList();
 	}
-	public static List<PartitionAccount> findAnd(Index<PartitionAccount> index, String name, Boolean active) {
-		Query<PartitionAccount> query = index.getNamedQuery("findAnd");
+	public static List<PartAccount> findAnd(Partition<PartAccount> index, String name, Boolean active) {
+		Query<PartAccount> query = index.getNamedQuery("findAnd");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();
 	}
 
-	public static List<PartitionAccount> findOr(Index<PartitionAccount> index, String name,
+	public static List<PartAccount> findOr(Partition<PartAccount> index, String name,
 			boolean active) {
-		Query<PartitionAccount> query = index.getNamedQuery("findOr");
+		Query<PartAccount> query = index.getNamedQuery("findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();
 	}
 
-	public List<PartitionTrade> getActivities() {
+	public List<PartitionedTrade> getActivities() {
 		return activities;
 	}
 
-	public void addActivity(PartitionTrade act1) {
+	public void addActivity(PartitionedTrade act1) {
 		activities.add(act1);
 	}
 	

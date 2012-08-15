@@ -10,16 +10,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Index;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.test.db.Account;
-import com.alvazan.test.db.Activity;
-import com.alvazan.test.db.PartitionAccount;
-import com.alvazan.test.db.PartitionTrade;
+import com.alvazan.test.db.PartAccount;
+import com.alvazan.test.db.PartitionedTrade;
 
 public class TestPartitioning {
 
@@ -48,30 +44,30 @@ public class TestPartitioning {
 	public void testEmpty() {}
 	
 	public void testPartitioning() {
-		PartitionAccount acc = new PartitionAccount();
+		PartAccount acc = new PartAccount();
 		acc.setIsActive(true);
 		acc.setSomeNumber(5);
 		
-		PartitionAccount acc2 = new PartitionAccount();
+		PartAccount acc2 = new PartAccount();
 		acc.setIsActive(false);
 		acc.setSomeNumber(6);
 		
-		PartitionTrade trade = new PartitionTrade();
+		PartitionedTrade trade = new PartitionedTrade();
 		trade.setAccount(acc);
 		trade.setSecurityName("qwer");
 		trade.setUniqueColumn("first");
 		
-		PartitionTrade trade2 = new PartitionTrade();
+		PartitionedTrade trade2 = new PartitionedTrade();
 		trade2.setAccount(acc);
 		trade2.setSecurityName("asdf");
 		trade2.setUniqueColumn("first");
 		
-		PartitionTrade trade3 = new PartitionTrade();
+		PartitionedTrade trade3 = new PartitionedTrade();
 		trade3.setAccount(acc);
 		trade3.setSecurityName("asdf");
 		trade3.setUniqueColumn("asdfdsf");
 		
-		PartitionTrade trade4 = new PartitionTrade();
+		PartitionedTrade trade4 = new PartitionedTrade();
 		trade4.setAccount(acc2);
 		trade4.setSecurityName("asdf");
 		trade4.setUniqueColumn("asdfdsf");
@@ -83,10 +79,10 @@ public class TestPartitioning {
 		mgr.put(trade3);
 		mgr.put(trade4);
 
-		Index<PartitionTrade> index = mgr.getIndex(PartitionTrade.class, "account", acc);
-		Query<PartitionTrade> query = index.getNamedQuery("findByUnique");
+		Partition<PartitionedTrade> index = mgr.getPartition(PartitionedTrade.class, "account", acc);
+		Query<PartitionedTrade> query = index.getNamedQuery("findByUnique");
 		query.setParameter("unique", trade.getUniqueColumn());
-		List<PartitionTrade> tradesInAcc1Partition = query.getResultList();
+		List<PartitionedTrade> tradesInAcc1Partition = query.getResultList();
 		
 		Assert.assertEquals(2, tradesInAcc1Partition.size());
 		
