@@ -48,7 +48,7 @@ public abstract class DboColumnMeta {
 		return columnName;
 	}
 
-	public void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
+	protected void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
 		if(owner2.getColumnFamily() == null)
 			throw new IllegalArgumentException("The owner passed in must have a non-null column family name");
 		else if(colName == null)
