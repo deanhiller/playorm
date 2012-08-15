@@ -62,7 +62,12 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
-	public String fetchFieldAndTranslate(Object entity) {
+	public Object fetchField(Object entity) {
+		throw new UnsupportedOperationException("only used for partitioning and id can't partition.  easy to implement if anyone else starts using this though, but for now unsupported");
+	}
+
+	@Override
+	public String translateToString(Object fieldsValue) {
 		throw new UnsupportedOperationException("only used for partitioning and id can't partition.  easy to implement if anyone else starts using this though, but for now unsupported");
 	}
 	

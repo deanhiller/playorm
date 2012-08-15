@@ -32,7 +32,7 @@ public class IndexedRow extends RowImpl {
 	@Override
 	public Collection<Column> columnSlice(byte[] from, byte[] to) {
 		OurKey fromKey = new OurKey(from, new byte[0]);
-		OurKey toKey = new OurKey(to, new byte[0]);
+		OurKey toKey = new OurKey(to, null);
 		NavigableMap<OurKey, IndexColumn> resultMap = columns.subMap(fromKey, true, toKey, true);
 		
 		List<Column> results = new ArrayList<Column>();
@@ -57,6 +57,10 @@ public class IndexedRow extends RowImpl {
 
 		public OurKey(byte[] indexedValue, byte[] primaryKey) {
 			prefix = new ByteArray(indexedValue);
+			if(primaryKey == null) {
+				postfix = null;
+				return;
+			}
 			postfix = new ByteArray(primaryKey);
 		}
 

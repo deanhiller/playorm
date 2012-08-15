@@ -92,13 +92,14 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		List<PartitionTypeInfo> partInfo = new ArrayList<PartitionTypeInfo>();
 		for(MetaField<T> m : partitionColumns) {
 			String colName = m.getColumnName();
-			String value = m.fetchFieldAndTranslate(entity);
-			partInfo.add(new PartitionTypeInfo(colName, value));
+			Object fieldVal = m.fetchField(entity);
+			String value = m.translateToString(fieldVal);
+			partInfo.add(new PartitionTypeInfo(colName, value, m));
 		}
 		
 		if(partInfo.size() == 0) {
 			//This table is not partitioned so we still need the default null, null partTypeInfo so indexes will process correctly
-			partInfo.add(new PartitionTypeInfo(null, null));
+			partInfo.add(new PartitionTypeInfo(null, null, null));
 		}
 		
 		return partInfo;

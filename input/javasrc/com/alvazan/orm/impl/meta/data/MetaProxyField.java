@@ -81,9 +81,14 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public String fetchFieldAndTranslate(Object entity) {
+	public Object fetchField(Object entity) {
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
-		Object id = classMeta.fetchId(value);
+		return value;
+	}
+	
+	@Override
+	public String translateToString(Object fieldsValue) {
+		Object id = classMeta.fetchId((PROXY) fieldsValue);
 		return classMeta.getIdField().getConverter().convertTypeToString(id);
 	}
 	

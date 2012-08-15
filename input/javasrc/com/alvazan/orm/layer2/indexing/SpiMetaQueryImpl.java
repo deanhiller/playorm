@@ -18,10 +18,10 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private ExpressionNode astTreeRoot;
 	
 	@Override
-	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, NoSqlSession session) {
-		log.info("creating query for index="+indexName);
+	public SpiQueryAdapter createQueryInstanceFromQuery(String partitionBy, String partitionId, NoSqlSession session) {
+		log.info("creating query for partition=/"+partitionBy+"/"+partitionId);
 		SpiIndexQueryImpl indexQuery = factory.get();
-		indexQuery.setup(indexName, this, session);
+		indexQuery.setup(partitionBy, partitionId, this, session);
 		return indexQuery;
 	}
 

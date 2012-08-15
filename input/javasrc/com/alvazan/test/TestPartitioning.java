@@ -34,9 +34,8 @@ public class TestPartitioning {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase();
 	}
-	
+
 	@Test
-	public void testEmpty() {}
 	public void testPartitioning() {
 		PartAccount acc = new PartAccount();
 		acc.setIsActive(true);
@@ -69,10 +68,15 @@ public class TestPartitioning {
 		mgr.put(acc);
 		mgr.put(acc2);
 		mgr.put(trade);
-		mgr.put(trade2);
 		mgr.put(trade3);
 		mgr.put(trade4);
+		
+		mgr.flush();
+		
+		mgr.put(trade2);
 
+		mgr.flush();
+		
 		Partition<PartitionedTrade> index = mgr.getPartition(PartitionedTrade.class, "account", acc);
 		Query<PartitionedTrade> query = index.getNamedQuery("findByUnique");
 		query.setParameter("unique", trade.getUniqueColumn());

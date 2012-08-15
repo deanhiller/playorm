@@ -59,9 +59,13 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 	
 	@Override
-	public String fetchFieldAndTranslate(Object entity) {
-		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		return converter.convertTypeToString(value);
+	public Object fetchField(Object entity) {
+		return ReflectionUtil.fetchFieldValue(entity, field);
+	}
+
+	@Override
+	public String translateToString(Object fieldsValue) {
+		return converter.convertTypeToString(fieldsValue);
 	}
 	
 	@Override

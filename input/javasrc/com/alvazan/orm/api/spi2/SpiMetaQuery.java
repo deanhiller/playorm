@@ -16,10 +16,11 @@ public interface SpiMetaQuery {
 	 * different parameters to it.  
 	 * 
 	 * @param indexName
+	 * @param partitionId 
 	 * @param session 
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
-	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, NoSqlSession session);
+	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, String partitionId, NoSqlSession session);
 	
 	
 	//public void setASTTree(ExpressionNode node);

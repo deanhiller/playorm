@@ -14,7 +14,19 @@ public class PrefixComparator implements Comparator<OurKey> {
 	@Override
 	public int compare(OurKey o1, OurKey o2) {
 		int result = comparator.compare(o1.getPrefix(), o2.getPrefix());
-		return result;
+		if(result != 0)
+			return result;
+		
+		//If prefixes are equal, we still need to sort them and order doesn't really matter so we will sort by
+		//the postfix ByteArray
+		
+		//If postfix is null, it is greater than everything and should ONLY be used when querying anyways!!!
+		if(o2.getPostfix() == null)
+			return -1;
+		else if(o1.getPostfix() == null)
+			return 1;
+		
+		return o1.getPostfix().compareTo(o2.getPostfix());
 	}
 
 }

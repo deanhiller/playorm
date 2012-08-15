@@ -42,8 +42,8 @@ public class MetaQuery<T> {
 		return parameterFieldMap;
 	}
 
-	public SpiQueryAdapter createSpiMetaQuery(String indexName, NoSqlSession session) {
-		return spiMetaQuery.createQueryInstanceFromQuery(indexName, session);
+	public SpiQueryAdapter createSpiMetaQuery(String partitionBy, String partitionId, NoSqlSession session) {
+		return spiMetaQuery.createQueryInstanceFromQuery(partitionBy, partitionId, session);
 	}
 
 	public String getIndexName() {
@@ -59,7 +59,7 @@ public class MetaQuery<T> {
 	}
 
 	public void setIndexName(String indexName) {
-		this.indexName = indexName;
+		throw new UnsupportedOperationException("not supported, fix this");
 	}
 
 	public String getQuery() {

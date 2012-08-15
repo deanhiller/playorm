@@ -242,7 +242,6 @@ public abstract class DboColumnMeta {
 	@SuppressWarnings("unchecked")
 	private void addIndexRemoves(InfoForIndex<TypedRow> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<String, Object> fieldToValue = info.getFieldToValue();
 		
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
@@ -254,36 +253,44 @@ public abstract class DboColumnMeta {
 
 		byte[] oldIndexedVal = this.convertToStorage2(originalValue);
 		byte[] pk = row.getKey();
+		List<IndexData> indexList = row.getIndexToRemove();
 		//original value and current value differ so we need to remove from the index
+		addToIndexList(info, oldIndexedVal, storageType, pk, indexList);
+	}
+
+	private void addToIndexList(InfoForIndex<TypedRow> info,
+			byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk,
+			List<IndexData> indexList) {
 		List<PartitionTypeInfo> partTypes = info.getPartitions();
 		for(PartitionTypeInfo part : partTypes) {
-			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
-			row.addIndexToRemove(data);
+			//NOTE: Here if we partition by account and security both AND we index both of those to, we only
+			//want indexes of /entityCF/account/security/<securityid>
+			//           and /entityCF/security/account/<accountid>  
+			// It would not be useful at all to have /entityCF/account/account/<accountid> since all the account ids in that index row would be the same!!!!
+			if(part.getColMeta() == this)
+				continue;
+			IndexData data = createAddIndexData(info.getColumnFamily(), oldIndexedVal, storageType, pk, part);
+			indexList.add(data);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
 	protected void removingThisEntity(InfoForIndex<TypedRow> info,
 			List<IndexData> indexRemoves, byte[] pk, StorageTypeEnum storageType) {
-		String columnFamily = info.getColumnFamily();
 		Map<String, Object> fieldToValue = info.getFieldToValue();
 		Object valueInDatabase = fieldToValue.get(columnName);
 		if(valueInDatabase == null)
 			return;
 
 		byte[] oldIndexedVal = convertToStorage2(valueInDatabase);
-		List<PartitionTypeInfo> partTypes = info.getPartitions();
-		for(PartitionTypeInfo part : partTypes) {
-			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
-			indexRemoves.add(data);
-		}
+		
+		addToIndexList(info, oldIndexedVal, storageType, pk, indexRemoves);
 	}
 	
 	@SuppressWarnings("unchecked")
 	protected void addIndexInfo(InfoForIndex<TypedRow> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		TypedRow entity = info.getEntity();
 		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		
 		if(!isIndexed())
@@ -296,11 +303,9 @@ public abstract class DboColumnMeta {
 		
 		//original value and current value differ so we need to persist new value
 		byte[] pk = row.getKey();
-		List<PartitionTypeInfo> partTypes = info.getPartitions();
-		for(PartitionTypeInfo part : partTypes) {
-			IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk, part);
-			row.addIndexToPersist(data);
-		}
+		List<IndexData> indexList = row.getIndexToAdd();
+		
+		addToIndexList(info, byteVal, storageType, pk, indexList);
 	}
 
 	private boolean isNeedPersist(TypedRow entity, Object value, Map<Field, Object> fieldToValue) {

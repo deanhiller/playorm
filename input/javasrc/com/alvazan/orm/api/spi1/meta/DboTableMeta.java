@@ -180,12 +180,12 @@ public class DboTableMeta {
 		for(DboColumnMeta m : cacheOfPartitionedBy) {
 			String by = m.getColumnName();
 			String value = m.fetchColumnValueAsString(row);
-			partTypes.add(new PartitionTypeInfo(by, value));
+			partTypes.add(new PartitionTypeInfo(by, value, m));
 		}
 		
 		if(partTypes.size() == 0) {
 			//if the table is not partitioned, then we still need to create the one huge partition
-			partTypes.add(new PartitionTypeInfo(null, null));
+			partTypes.add(new PartitionTypeInfo(null, null, null));
 		}
 		return partTypes;
 	}

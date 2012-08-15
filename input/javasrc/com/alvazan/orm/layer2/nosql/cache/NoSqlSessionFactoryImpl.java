@@ -37,7 +37,7 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 		MetaAndIndexTuple tuple = parseQueryForAdHoc(query);
 		String indexName = tuple.getIndexName();
 		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(indexName, session);
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
 		
 		List<String> primaryKeys = spiQueryAdapter.getResultList();
 		String colFamily = metaQuery.getTargetTable().getColumnFamily();

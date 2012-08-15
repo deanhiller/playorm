@@ -169,16 +169,16 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public <T> Partition<T> getIndex(Class<T> forEntity, String indexName) {
 		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, indexName, this, session);
+		indexImpl.setup(metaClass, null, null, this, session);
 		return indexImpl;
 	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Partition<T> getPartition(Class<T> forEntity, String entityFieldName,
+	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName,
 			Object partitionObj) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl<T> indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, entityFieldName, this, session);
+		indexImpl.setup(metaClass, tableColumnName, partitionObj, this, session);
 		return indexImpl;
 	}
 	
@@ -187,7 +187,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
 		IndexImpl<T> indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, "/"+metaClass.getColumnFamily(), this, session);
+		indexImpl.setup(metaClass, null, null, this, session);
 		return indexImpl.getNamedQuery(namedQuery);		
 	}
 	

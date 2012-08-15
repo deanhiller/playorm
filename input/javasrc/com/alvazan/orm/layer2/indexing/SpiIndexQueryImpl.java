@@ -24,13 +24,16 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private static final int BATCH_SIZE = 2000;
 	
-	private String indexName;
 	private SpiMetaQueryImpl spiMeta;
 	private NoSqlSession session;
 	private Map<String, ByteArray> parameters = new HashMap<String, ByteArray>();
+
+	private String partitionBy;
+	private String partitionId;
 	
-	public void setup(String indexName, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
-		this.indexName = indexName;
+	public void setup(String partitionBy, String partitionId, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
+		this.partitionBy = partitionBy;
+		this.partitionId = partitionId;
 		this.spiMeta = spiMetaQueryImpl;
 		this.session = session;
 	}
@@ -57,11 +60,10 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			byte[] data = retrieveValue(info, root.getRightChild());
 			
 			String table = attr.getTableName();
-			String indexRowKey = info.getIndexRowKey(null, null);
+			String columnFamily = info.getIndexTableName();
+			String indexRowKey = info.getIndexRowKey(partitionBy, partitionId);
 			//if doing a partion, you can add to indexPrefix here
 			//The indexPrefix is of format /<ColumnFamilyName>/<ColumnNameToIndex>/<PartitionKey>/<PartitionId> where key is like ByAccount or BySecurity and id is the id of account or security
-
-			String columnFamily = info.getIndexTableName();
 			byte[] rowKey = getBytes(indexRowKey);
 			Iterable<Column> scan = session.columnRangeScan(columnFamily, rowKey, data, data, BATCH_SIZE);
 			

@@ -121,10 +121,13 @@ public interface NoSqlEntityManager {
 	 * can be queried.
 	 * 
 	 * @param forEntity
-	 * @param indexName
+	 * @param tableColumnName NOT the field name IF you named the column.  It is the column name which may or may
+	 * @param partitionObj The object that identifies the partition.  Entities all with the same partitionObj end up
+	 * in the same partition.
+	 * not be field name.
 	 * @return
 	 */
-	public <T> Partition<T> getPartition(Class<T> forEntity, String entityFieldName, Object partitionObj);
+	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj);
 
 	@Deprecated
 	public <T> Partition<T> getIndex(Class<T> forEntity, String blah);

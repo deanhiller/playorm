@@ -12,6 +12,7 @@ import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
 import com.alvazan.orm.api.spi1.meta.RowToPersist;
 import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
 
+@SuppressWarnings("unchecked")
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 
 	protected Field field;
@@ -37,7 +38,6 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		this.columnName = colName;
 	}
 	
-	@SuppressWarnings("unchecked")
 	protected void removeIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		
@@ -53,7 +53,6 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	
 	private void addIndexRemoves(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
 		Object originalValue = fieldToValue.get(field);
@@ -64,34 +63,42 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 			
 		byte[] pk = row.getKey();
 		byte[] oldIndexedVal = translateValue(originalValue);
+		
+		List<IndexData> indexList = row.getIndexToRemove();
+		
+		addToList(info, oldIndexedVal, storageType, pk, indexList);
+	}
+
+	private void addToList(InfoForIndex<OWNER> info, byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk, List<IndexData> indexList) {
 		//original value and current value differ so we need to remove from the index
 		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
 		for(PartitionTypeInfo part : partitionTypes) {
-			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
-			row.addIndexToRemove(data);
+			//NOTE: Here if we partition by account and security both AND we index both of those to, we only
+			//want indexes of /entityCF/account/security/<securityid>
+			//           and /entityCF/security/account/<accountid>  
+			// It would not be useful at all to have /entityCF/account/account/<accountid> since all the account ids in that index row would be the same!!!!
+			if(part.getColMeta() == this)
+				continue; //skip indexing if this IS the partition.  
+			IndexData data = createAddIndexData(info.getColumnFamily(), oldIndexedVal, storageType, pk, part);
+			indexList.add(data);
 		}
 	}
 	
 	protected void removingThisEntity(InfoForIndex<OWNER> info,
 			List<IndexData> indexRemoves, byte[] pk, StorageTypeEnum storageType) {
-		String columnFamily = info.getColumnFamily();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		Object valueInDatabase = fieldToValue.get(field);
 		if(valueInDatabase == null)
 			return;
 		
 		byte[] oldIndexedVal = translateValue(valueInDatabase);
-		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
-		for(PartitionTypeInfo part : partitionTypes) {
-			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
-			indexRemoves.add(data);
-		}
+		
+		addToList(info, oldIndexedVal, storageType, pk, indexRemoves);
 	}
 	
 	protected void addIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		OWNER entity = info.getEntity();
 		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		
 		if(!this.getMetaDbo().isIndexed())
@@ -104,12 +111,8 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		
 		//original value and current value differ so we need to persist new value
 		byte[] pk = row.getKey();
-		
-		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
-		for(PartitionTypeInfo part : partitionTypes) {
-			IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk, part);
-			row.addIndexToPersist(data);
-		}
+		List<IndexData> indexList = row.getIndexToAdd();
+		addToList(info, byteVal, storageType, pk, indexList);
 	}
 
 	private boolean isNeedPersist(OWNER entity, Object value, Map<Field, Object> fieldToValue) {
