@@ -83,7 +83,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 			}
 		}
 		
-		List<Row> rowsFromDb = session.find(colFamily, rowKeysToFetch);
+		List<Row> rowsFromDb = new ArrayList<Row>();
+		if(rowKeysToFetch.size() > 0)
+			rowsFromDb = session.find(colFamily, rowKeysToFetch);
 		
 		for(int i = 0; i < rowKeysToFetch.size(); i++) {
 			Integer index = indexForRow.get(i);
