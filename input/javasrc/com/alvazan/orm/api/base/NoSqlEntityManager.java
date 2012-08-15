@@ -110,7 +110,7 @@ public interface NoSqlEntityManager {
 	 * would be 1000's of times faster to fetch the small index and query it.  Pretend
 	 * the entity representing this 1 billion row table was ActionsTaken.class, then to
 	 * get the index for all rows relating to a user that you can then query you would
-	 * call entityMgr.getIndex(ActionsTaken.class, "/byUser/"+user.getId());
+	 * call entityMgr.getIndex(ActionsTaken.class, <ActionsTaken field>, user);
 	 * 
 	 * Going on, let's say that same 1 billion activity table is also related to 500k
 	 * commentors.  You may have another 500k indexes for querying when you have the 
@@ -124,8 +124,11 @@ public interface NoSqlEntityManager {
 	 * @param indexName
 	 * @return
 	 */
-	public <T> Index<T> getIndex(Class<T> forEntity, String indexName);
+	public <T> Index<T> getIndex(Class<T> forEntity, String entityFieldName, Object partitionObj);
 
+	@Deprecated
+	public <T> Index<T> getIndex(Class<T> forEntity, String blah);
+	
 	public <T> Index<T> getIndex(Class<T> forEntity);
 	
 	/**

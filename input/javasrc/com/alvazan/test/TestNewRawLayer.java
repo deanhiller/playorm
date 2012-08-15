@@ -53,7 +53,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("name").getValue(), result.getColumn("name").getValue());
 		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
 	}
-
+	
 	@Test
 	public void testTimeSeries() {
 		NoSqlTypedSession s = mgr.getTypedSession();
