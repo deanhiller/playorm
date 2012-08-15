@@ -9,33 +9,26 @@ import com.alvazan.orm.api.spi3.db.Row;
 @NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboColumnMeta {
 
-	protected String columnValueType;
-	protected String indexPrefix;
-
+	private String columnValueType;
+	private boolean isPartitionedByThisColumn;
+	
 	@SuppressWarnings("rawtypes")
-	public void setup(DboTableMeta owner, String colName, Class valuesType, String indexPrefix) {
-		super.setup(owner, colName);
+	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed, boolean isPartitionedBy) {
+		super.setup(owner, colName, isIndexed);
 		Class newType = translateType(valuesType);
 		this.columnValueType = newType.getName();
-		this.indexPrefix = indexPrefix;
+		this.isPartitionedByThisColumn = isPartitionedBy;
+	}
+	
+	public boolean isPartitionedByThisColumn() {
+		return isPartitionedByThisColumn;
 	}
 	
 	@Override
 	public String getIndexTableName() {
 		return getStorageType().getIndexTableName();
 	}
-	
-	public String getIndexPrefix() {
-		return indexPrefix;
-	}
 
-	@Override
-	public boolean isIndexed() {
-		if(indexPrefix == null)
-			return false;
-		return true;
-	}
-	
 	@SuppressWarnings("rawtypes")
 	public Class getClassType() {
 		return classForName(columnValueType);

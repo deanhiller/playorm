@@ -104,11 +104,11 @@ public class PerformanceWriteTest {
 		table.setColumnFamily("testWrites");
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup(table, "id", String.class, null);
+		idMeta.setup(table, "id", String.class, false);
 		
 		for(int i = 0; i < numColumns; i++) {
 			DboColumnCommonMeta col = new DboColumnCommonMeta();
-			col.setup(table, "col"+i, long.class, null);
+			col.setup(table, "col"+i, long.class, false, false);
 			
 			mgr.put(col);
 		}

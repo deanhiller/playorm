@@ -105,9 +105,9 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return tuple.getProxy();
 	}
 	
-	public void setup(DboTableMeta tableMeta, Field field2, String colName, MetaAbstractClass<PROXY> classMeta, String indexPrefix) {
+	public void setup(DboTableMeta tableMeta, Field field2, String colName, MetaAbstractClass<PROXY> classMeta, boolean isIndexed, boolean isPartitionedBy) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(tableMeta, colName, fkToTable, indexPrefix);
+		metaDbo.setup(tableMeta, colName, fkToTable, isIndexed, isPartitionedBy);
 		super.setup(field2, colName);
 		this.classMeta = classMeta;
 	}

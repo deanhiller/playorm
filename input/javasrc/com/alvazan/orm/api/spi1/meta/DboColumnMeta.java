@@ -28,6 +28,8 @@ public abstract class DboColumnMeta {
 	
 	protected String columnName;
 
+	protected boolean isIndexed;
+	
 	private String foreignKeyToExtensions;
 	
 	@NoSqlManyToOne
@@ -46,7 +48,7 @@ public abstract class DboColumnMeta {
 		return columnName;
 	}
 
-	public void setup(DboTableMeta owner2, String colName) {
+	public void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
 		if(owner2.getColumnFamily() == null)
 			throw new IllegalArgumentException("The owner passed in must have a non-null column family name");
 		else if(colName == null)
@@ -54,12 +56,24 @@ public abstract class DboColumnMeta {
 		this.owner = owner2;
 		this.columnName = colName;
 		owner2.addColumnMeta(this);
-		id = owner.getColumnFamily()+":"+columnName;	
+		id = owner.getColumnFamily()+":"+columnName;
+		this.isIndexed = isIndexed;
 	}
 	
+	public abstract boolean isPartitionedByThisColumn();
 	public abstract String getIndexTableName();
-	public abstract String getIndexPrefix();
-	public abstract boolean isIndexed();
+	
+	public final String getIndexRowKey(String partitionedBy, String partitionId) {
+		String firstPart = "/"+owner.getColumnFamily()+"/"+columnName;
+		if(partitionedBy == null)
+			return firstPart;
+		return firstPart+"/"+partitionedBy+"/"+partitionId;
+	}
+	
+	public final boolean isIndexed() {
+		return isIndexed;
+	}
+	
 	/**
 	 * This is the more detailed type for programs to know what types the values fit into.  This would be
 	 * of type long.class, short.class, float, etc. etc.

@@ -6,24 +6,39 @@ import com.alvazan.orm.api.spi3.db.Row;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @NoSqlDiscriminatorColumn(value="id")
-public class DboColumnIdMeta extends DboColumnCommonMeta {
+public class DboColumnIdMeta extends DboColumnMeta {
 
-	
+	protected String columnValueType;
+
 	@Override
-	public void setup(DboTableMeta owner, String colName, Class valuesType,
-			String indexPrefix) {
+	public String getIndexTableName() {
+		return getStorageType().getIndexTableName();
+	}
+
+	public Class getClassType() {
+		return classForName(columnValueType);
+	}
+
+	public StorageTypeEnum getStorageType() {
+		Class fieldType = getClassType();
+		return getStorageType(fieldType);
+	}
+	
+	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed) {
 		if(owner.getColumnFamily() == null)
 			throw new IllegalArgumentException("The owner passed in must have a non-null column family name");
 		else if(colName == null)
 			throw new IllegalStateException("colName parameter must not be null");
 		this.owner = owner;
 		this.columnName = colName;
+		//NOTE: We don't call super.setup here BECAUSE super.setup calls owner.addColumn and this is the row key
+		//and so we call owner.setRowKeyMeta here instead
 		owner.setRowKeyMeta(this);
 		id = owner.getColumnFamily()+":"+columnName;
 		
 		Class newType = translateType(valuesType);
 		this.columnValueType = newType.getName();
-		this.indexPrefix = indexPrefix;
+		this.isIndexed = isIndexed;
 	}
 
 	@Override
@@ -48,5 +63,10 @@ public class DboColumnIdMeta extends DboColumnCommonMeta {
 		byte[] rowKey = row.getKey();
 		Object pk = convertFromStorage2(rowKey);
 		entity.setRowKey(pk);
+	}
+
+	@Override
+	public boolean isPartitionedByThisColumn() {
+		return false;
 	}
 }

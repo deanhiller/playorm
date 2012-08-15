@@ -56,7 +56,7 @@ public class TestColumnSlice {
 		tableMeta.setColNameType(double.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup(tableMeta, "id", String.class, null);
+		idMeta.setup(tableMeta, "id", String.class, false);
 		
 		mgr.put(idMeta);
 		mgr.put(tableMeta);
@@ -117,7 +117,7 @@ public class TestColumnSlice {
 		tableMeta.setColNameType(long.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup(tableMeta, "id", String.class, null);
+		idMeta.setup(tableMeta, "id", String.class, false);
 		
 		mgr.put(idMeta);
 		mgr.put(tableMeta);

@@ -9,8 +9,6 @@ import com.alvazan.orm.api.spi3.db.Row;
 
 @NoSqlDiscriminatorColumn(value="fk")
 public class DboColumnToOneMeta extends DboColumnMeta {
-
-	private String indexPrefix;
 	
 	/**
 	 * This field may be referencing another entity in another table so here is the meta data
@@ -19,26 +17,22 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 	@NoSqlManyToOne
 	private DboTableMeta fkToColumnFamily;
 
+	private boolean isPartitionedByThisColumn;
+
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable,
-			String indexPrefix2) {
-		super.setup(owner, colName);
+			boolean isIndexed, boolean isPartitionedBy) {
+		super.setup(owner, colName, isIndexed);
 		this.fkToColumnFamily = fkToTable;
-		this.indexPrefix = indexPrefix2;
+		this.isPartitionedByThisColumn = isPartitionedBy;
+	}
+
+	public boolean isPartitionedByThisColumn() {
+		return isPartitionedByThisColumn;
 	}
 
 	@Override
-	public boolean isIndexed() {
-		if(indexPrefix == null)
-			return false;
-		return true;
-	}
-	@Override
 	public String getIndexTableName() {
 		return getStorageType().getIndexTableName();
-	}
-	@Override
-	public String getIndexPrefix() {
-		return indexPrefix;
 	}
 
 	public DboTableMeta getFkToColumnFamily() {

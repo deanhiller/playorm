@@ -167,7 +167,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	cf.setColNamePrefixType(type);
         	
         	DboColumnIdMeta idMeta = new DboColumnIdMeta();
-        	idMeta.setup(cf, "id", String.class, null);
+        	idMeta.setup(cf, "id", String.class, false);
         	
         	tempMgr.put(idMeta);
         	tempMgr.put(cf);

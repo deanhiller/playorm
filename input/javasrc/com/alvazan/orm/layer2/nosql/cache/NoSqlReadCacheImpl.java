@@ -40,6 +40,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Override
 	public void remove(String colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
+		cacheRow(colFamily, rowKey, null);
 	}
 
 	@Override

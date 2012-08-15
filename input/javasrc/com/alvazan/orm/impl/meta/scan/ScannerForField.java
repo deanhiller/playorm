@@ -21,6 +21,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.base.spi.NoConversion;
 import com.alvazan.orm.api.spi1.meta.DboTableMeta;
@@ -78,9 +79,10 @@ public class ScannerForField {
 		String columnName = field.getName();
 		if(!"".equals(idAnno.columnName()))
 			columnName = idAnno.columnName();
-		String indexPrefix = null;
+		
+		boolean isIndexed = false;
 		if(field.isAnnotationPresent(NoSqlIndexed.class))
-			indexPrefix = "/"+metaClass.getColumnFamily()+"/"+columnName;
+			isIndexed = true;
 		
 		try {
 			converter = lookupConverter(type, converter);
@@ -90,7 +92,7 @@ public class ScannerForField {
 			info.setGen(gen);
 			info.setUseGenerator(idAnno.usegenerator());
 			info.setMetaClass(metaClass);
-			metaField.setup(t, info, field, columnName, indexPrefix);
+			metaField.setup(t, info, field, columnName, isIndexed);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -136,10 +138,14 @@ public class ScannerForField {
 				colName = col.columnName();
 		}
 
-		String indexPrefix = null;
-		if(field.getAnnotation(NoSqlIndexed.class) != null)
-			indexPrefix = "/"+t.getColumnFamily()+"/"+colName;
+		boolean isIndexed = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
+			isIndexed = true;
 		
+		boolean isPartitioned = false;
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			isPartitioned = true;
+			
 		Class<?> type = field.getType();
 		Converter converter = null;
 		if(col != null && !NoConversion.class.isAssignableFrom(col.customConverter()))
@@ -147,7 +153,7 @@ public class ScannerForField {
 
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(t, field, colName, converter, indexPrefix);
+			metaField.setup(t, field, colName, converter, isIndexed, isPartitioned);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -268,9 +274,13 @@ public class ScannerForField {
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
 
-		String indexPrefix = null;
-		if(field.getAnnotation(NoSqlIndexed.class) != null)
-			indexPrefix ="/"+t.getColumnFamily()+"/"+colName;
+		boolean isIndexed = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
+			isIndexed = true;
+		
+		boolean isPartitionedBy = false;
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			isPartitionedBy = true;
 		
 		Class<?> theSuperclass = null;
 		//at this point we only need to verify that 
@@ -316,7 +326,7 @@ public class ScannerForField {
 			classMeta = meta.findOrCreate(field.getType(), theSuperclass);
 		}
 		
-		metaField.setup(t, field, colName, classMeta, indexPrefix);
+		metaField.setup(t, field, colName, classMeta, isIndexed, isPartitionedBy);
 		return metaField;
 	}
 

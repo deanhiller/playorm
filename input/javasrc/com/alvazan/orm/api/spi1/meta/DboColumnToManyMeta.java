@@ -22,18 +22,10 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	private DboTableMeta fkToColumnFamily;
 
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable) {
-		super.setup(owner, colName);
+		super.setup(owner, colName, false);
 		this.fkToColumnFamily = fkToTable;
 	}
 	
-	@Override
-	public boolean isIndexed() {
-		return false;
-	}
-	@Override
-	public String getIndexPrefix() {
-		throw new UnsupportedOperationException("bug, this should not be called.  it's not supported");
-	}
 	@Override
 	public String getIndexTableName() {
 		throw new UnsupportedOperationException("bug, this should not be called.  it's not supported");
@@ -164,6 +156,11 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 				name[i] = pkData[i-prefix.length];
 		}
 		return name;
+	}
+
+	@Override
+	public boolean isPartitionedByThisColumn() {
+		return false;
 	}	
 
 }

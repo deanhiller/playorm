@@ -4,7 +4,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
-import com.alvazan.orm.api.base.anno.NoSqlPartitionKey;
+import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
@@ -20,12 +20,12 @@ public class PartitionedTrade {
 	@NoSqlId
 	private String id;
 	
-	@NoSqlPartitionKey
+	@NoSqlPartitionByThisField
 	@NoSqlIndexed
 	@NoSqlManyToOne
 	private PartAccount account;
 
-	@NoSqlPartitionKey
+	@NoSqlPartitionByThisField
 	@NoSqlIndexed
 	private String securityName;
 	

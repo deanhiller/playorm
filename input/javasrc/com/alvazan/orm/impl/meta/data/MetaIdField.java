@@ -88,14 +88,14 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void setup(DboTableMeta tableMeta, IdInfo info, Field field, String columnName,	String indexPrefix) {
+	public void setup(DboTableMeta tableMeta, IdInfo info, Field field, String columnName,	boolean isIndexed) {
 		this.method = info.getIdMethod();
 		this.method.setAccessible(true);
 		this.useGenerator = info.isUseGenerator();
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();
-		metaDbo.setup(tableMeta, columnName, field.getType(), indexPrefix);
+		metaDbo.setup(tableMeta, columnName, field.getType(), isIndexed);
 		super.setup(field, columnName);
 	}
 
