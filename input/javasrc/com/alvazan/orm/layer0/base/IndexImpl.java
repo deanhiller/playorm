@@ -4,7 +4,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.Partition;
-import com.alvazan.orm.api.base.JoinInfo;
+import com.alvazan.orm.api.base.PartitionInfo;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.spi1.meta.MetaQuery;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -39,7 +39,7 @@ public class IndexImpl<T> implements Partition<T> {
 	}
 
 	@Override
-	public Query<T> getNamedQueryJoin(String name, JoinInfo... info) {
+	public Query<T> getNamedQueryJoin(String name, PartitionInfo... info) {
 		throw new UnsupportedOperationException("We do not support joins just yet");
 	}
 

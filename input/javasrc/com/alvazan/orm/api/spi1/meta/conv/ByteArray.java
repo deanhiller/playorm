@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public class ByteArray implements Comparable<ByteArray> {
 	private byte[] key;
+	private int hash;
 	
 	public ByteArray(byte[] key) {
 		this.key = key;

@@ -4,6 +4,6 @@ public interface Partition<T> {
 
 	public Query<T> getNamedQuery(String name);
 	
-	public Query<T> getNamedQueryJoin(String name, JoinInfo... info);
+	public Query<T> getNamedQueryJoin(String name, PartitionInfo... info);
 	
 }
