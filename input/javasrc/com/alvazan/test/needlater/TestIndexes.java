@@ -11,9 +11,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;

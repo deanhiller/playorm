@@ -31,24 +31,24 @@
 
 <package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>
 
-<package name="api3" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
-<package name="api2" package="com.alvazan.orm.api.spi2" subpackages="include">
-	<depends>api3</depends>
+<package name="api9" package="com.alvazan.orm.api.spi9.db" subpackages="include"/>
+<package name="api5" package="com.alvazan.orm.api.spi5" subpackages="include">
+	<depends>api9</depends>
 </package>
-<package name="api1" package="com.alvazan.orm.api.spi1">
-	<depends>api2</depends>
+<package name="api3" package="com.alvazan.orm.api.spi3">
+	<depends>api5</depends>
 </package>
 
-<package name="dbmeta" package="com.alvazan.orm.api.spi1.meta" subpackages="include">
+<package name="dbmeta" package="com.alvazan.orm.api.spi3.meta" subpackages="include">
 	<depends>javassist</depends>
-	<depends>api1</depends>
-	<depends>api2</depends>
 	<depends>api3</depends>
+	<depends>api5</depends>
+	<depends>api9</depends>
 </package>
 
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
-	<depends>api1</depends>
-	<depends>api2</depends>
+	<depends>api3</depends>
+	<depends>api5</depends>
 	<depends>dbmeta</depends>
 </package>
 
@@ -72,35 +72,41 @@
 	<depends>javassist</depends>
 </package>
 
+<package name="typedlayer" package="com.alvazan.orm.layer3.typed">
+	<depends>allapis</depends>
+</package>
+
 <package name="base" package="com.alvazan.orm.layer0.base">
 	<depends>allapis</depends>
 	<depends>metascan</depends>
 	<depends>metadata</depends>
 	<depends>annotationParser</depends>
+	<depends>typedlayer</depends>
 </package>
 
-<package name="typedlayer" package="com.alvazan.orm.layer1.typed">
-	<depends>allapis</depends>
-</package>
-
-<package name="cache" package="com.alvazan.orm.layer2" subpackages="include">
-	<depends>api2</depends>
-	<depends>api3</depends>
+<package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
+	<depends>api5</depends>
+	<depends>api9</depends>
 	<depends>dbmeta</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
 </package>
 
+<package name="loggingX" package="com.alvazan.orm.layer7.logging" subpackages="include">
+	<depends>api9</depends>
+	<depends>dbmeta</depends>
+</package>
+
 <!-- This section is just the database adapters depending on the spi -->
-<package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
+<package name="cass" package="com.alvazan.orm.layer9.spi.db.cassandra">
 	<depends>allapis</depends>
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
 </package>
-<package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
-	<depends>api3</depends>
+<package name="hadoop" package="com.alvazan.orm.layer9.spi.db.hadoop">
+	<depends>api9</depends>
 </package>
-<package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
+<package name="inMemDb"    package="com.alvazan.orm.layer9.spi.db.inmemory">
 	<depends>allapis</depends>
 </package>
 

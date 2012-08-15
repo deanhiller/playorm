@@ -18,13 +18,13 @@ import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
-import com.alvazan.orm.api.spi1.meta.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
 
 
 public class PerformanceWriteTest {

@@ -9,16 +9,17 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnToManyMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.InfoForIndex;
-import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
@@ -76,7 +77,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 
 	private List<byte[]> parseOutKeyList(Row row) {
 		String columnName = getColumnName();
-		byte[] bytes = columnName.getBytes();
+		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
 		List<byte[]> entities = new ArrayList<byte[]>();
 
@@ -182,7 +183,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	private byte[] formTheNameImpl(PROXY p) throws UnsupportedEncodingException {
 		byte[] pkData = translateOne(p);
 		
-		byte[] prefix = columnName.getBytes("UTF8");
+		byte[] prefix = StandardConverters.convertToBytes(columnName);
 		byte[] name = new byte[prefix.length + pkData.length];
 		for(int i = 0; i < name.length; i++) {
 			if(i < prefix.length)

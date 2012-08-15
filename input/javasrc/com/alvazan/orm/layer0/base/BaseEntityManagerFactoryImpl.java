@@ -18,18 +18,19 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.spi1.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.MetaQuery;
-import com.alvazan.orm.api.spi1.meta.NoSqlSessionFactory;
-import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.MetaQuery;
+import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.scan.ScannerForField;
+import com.alvazan.orm.layer3.typed.CachedMeta;
 import com.impetus.annovention.ClasspathDiscoverer;
 import com.impetus.annovention.Filter;
 
@@ -52,6 +53,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	private MetaInfo metaInfo;
 	@Inject
 	private DboDatabaseMeta databaseInfo;
+	@Inject
+	private CachedMeta cache;
 	
 	private Object injector;
 
@@ -107,6 +110,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         saveMetaData(tempMgr);
         
         tempMgr.flush();
+        
+        cache.init(this);
         log.info("Finished saving meta data, complelety done initializing");
 	}
 	

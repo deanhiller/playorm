@@ -7,22 +7,23 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi1.KeyValue;
-import com.alvazan.orm.api.spi1.NoSqlTypedSession;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.KeyValue;
+import com.alvazan.orm.api.spi3.NoSqlTypedSession;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
+import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
@@ -34,7 +35,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Inject
 	private Provider<IndexImpl> indexProvider; 
 	@Inject
-	private NoSqlTypedSession typedSession;
+	private NoSqlTypedSessionImpl typedSession;
 	private boolean isTypedSessionInitialized = false;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -51,17 +52,18 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
 			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
-		
+
+		String cf = metaClass.getColumnFamily();
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			session.removeFromIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			session.persistIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.persistIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
-		String cf = metaClass.getColumnFamily();
+
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
 		session.put(cf, key, cols);
@@ -249,18 +251,19 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		
 		List<IndexData> indexToRemove = metaClass.findIndexRemoves((NoSqlProxy)proxy, rowKey);
 		
+		String cf = metaClass.getColumnFamily();
 		//REMOVE EVERYTHING HERE, we are probably removing extra and could optimize this later
 		for(IndexData ind : indexToRemove) {
-			session.removeFromIndex(ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		session.remove(metaClass.getColumnFamily(), rowKey);
+		session.remove(cf, rowKey);
 	}
 
 	@Override
 	public NoSqlTypedSession getTypedSession() {
 		if(!isTypedSessionInitialized) {
-			typedSession.setInformation(session, this);
+			typedSession.setInformation(session);
 		}
 		return typedSession;
 	}

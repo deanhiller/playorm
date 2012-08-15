@@ -1,6 +1,6 @@
 package com.alvazan.orm.api.base.spi;
 
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
 
 public class NoConversion implements Converter {
 	@Override

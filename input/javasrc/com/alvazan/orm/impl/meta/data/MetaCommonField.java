@@ -3,18 +3,19 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
-import com.alvazan.orm.api.spi1.meta.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.InfoForIndex;
-import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 
 public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	
@@ -50,7 +51,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
 		byte[] byteVal = translateValue(value);
-		col.setName(columnName.getBytes());
+		byte[] colBytes = StandardConverters.convertToBytes(columnName);
+		col.setName(colBytes);
 		col.setValue(byteVal);
 		
 		StorageTypeEnum storageType = metaDbo.getStorageType();

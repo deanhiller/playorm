@@ -19,12 +19,13 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi1.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 public class TestColumnSlice {
 
@@ -66,7 +67,7 @@ public class TestColumnSlice {
 		
 		mgr.flush();
 		
-		byte[] rowKey = "myone_index".getBytes("UTF8");
+		byte[] rowKey = StandardConverters.convertToBytes("myone_index");
 		
 		List<Column> columns = new ArrayList<Column>();
 		
@@ -91,7 +92,8 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toDecBytes(-250), toDecBytes(12), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toDecBytes(-250), toDecBytes(12), 2);
 		
 		int counter = 0;
 		for(Column col : results) {
@@ -127,7 +129,7 @@ public class TestColumnSlice {
 		
 		mgr.flush();
 		
-		byte[] rowKey = "myone_index".getBytes("UTF8");
+		byte[] rowKey = StandardConverters.convertToBytes("myone_index");
 		
 		List<Column> columns = new ArrayList<Column>();
 		
@@ -152,7 +154,8 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toIntBytes(-250), toIntBytes(50), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toIntBytes(-250), toIntBytes(50), 2);
 		
 		int counter = 0;
 		for(Column col : results) {

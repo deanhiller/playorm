@@ -5,13 +5,16 @@ import java.util.Map;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi1.meta.NoSqlSessionFactory;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
-import com.alvazan.orm.api.spi3.db.NoSqlRawSession;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.layer0.base.BaseEntityManagerFactoryImpl;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.name.Named;
+import com.google.inject.name.Names;
 
 public class BootstrapImpl extends Bootstrap {
 
@@ -21,7 +24,9 @@ public class BootstrapImpl extends Bootstrap {
 		Injector injector = Guice.createInjector(new ProductionBindings(type));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
 
-		NoSqlRawSession inst = injector.getInstance(NoSqlRawSession.class);
+		Named named = Names.named("logger");
+		Key<NoSqlRawSession> key = Key.get(NoSqlRawSession.class, named);
+		NoSqlRawSession inst = injector.getInstance(key);
 		inst.start(properties);
 		
 		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;

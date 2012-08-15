@@ -1,8 +1,8 @@
 package com.alvazan.test.db;
 
+import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
-import com.alvazan.orm.api.base.anno.NoSqlEntity;
 
 @NoSqlEntity
 public class InheritanceToOneSpecific {

@@ -1,7 +1,7 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 

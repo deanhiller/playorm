@@ -7,17 +7,17 @@ import java.util.List;
 import javassist.util.proxy.Proxy;
 
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi1.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.InfoForIndex;
-import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!

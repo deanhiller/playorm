@@ -2,7 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.Map;
 
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
 
 @SuppressWarnings("rawtypes")
 public abstract class Bootstrap {

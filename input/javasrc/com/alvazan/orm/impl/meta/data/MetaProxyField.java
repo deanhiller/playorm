@@ -4,17 +4,18 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi1.meta.DboTableMeta;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.InfoForIndex;
-import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
@@ -34,7 +35,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
 		String columnName = getColumnName();
-		Column column = row.getColumn(columnName.getBytes());
+		byte[] colBytes = StandardConverters.convertToBytes(columnName);
+		Column column = row.getColumn(colBytes);
 		
 		if(column == null) {
 			column = new Column();
@@ -70,7 +72,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
 		}
 		
-		col.setName(columnName.getBytes());
+		byte[] colBytes = StandardConverters.convertToBytes(columnName);
+		col.setName(colBytes);
 		col.setValue(byteVal);
 		
 		StorageTypeEnum storageType = getStorageType();

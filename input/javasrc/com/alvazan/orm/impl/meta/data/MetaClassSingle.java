@@ -11,15 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.orm.api.spi1.KeyValue;
-import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.InfoForIndex;
-import com.alvazan.orm.api.spi1.meta.PartitionTypeInfo;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.conv.Converter;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.KeyValue;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.PartitionTypeInfo;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClassSingle<T> extends MetaAbstractClass<T> {

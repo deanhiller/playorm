@@ -10,13 +10,13 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
-import com.alvazan.orm.api.spi1.KeyValue;
-import com.alvazan.orm.api.spi1.meta.IndexData;
-import com.alvazan.orm.api.spi1.meta.RowToPersist;
-import com.alvazan.orm.api.spi1.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.spi3.KeyValue;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClassInheritance<T> extends MetaAbstractClass<T> {

@@ -1,0 +1,6 @@
+package com.alvazan.orm.api.spi9.db;
+
+public enum ColumnType {
+
+	ANY_EXCEPT_COMPOSITE, COMPOSITE_STRINGPREFIX, COMPOSITE_DECIMALPREFIX, COMPOSITE_INTEGERPREFIX;
+}
