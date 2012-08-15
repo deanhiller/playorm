@@ -36,4 +36,6 @@ public interface MetaField<OWNER> {
 	 * @return
 	 */
 	public byte[] translateValue(Object value);
+
+	public String fetchFieldAndTranslate(Object entity);
 }

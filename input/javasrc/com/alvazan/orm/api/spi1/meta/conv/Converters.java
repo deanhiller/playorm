@@ -124,7 +124,7 @@ public class Converters {
 		}
 	}
 	
-	public static abstract class BaseConverter implements Converter, AdhocToolConverter {
+	public static abstract class BaseConverter implements Converter {
 		public Object convertStringToType(String value) {
 			if(value == null)
 				return null;

@@ -79,6 +79,14 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		removeIndexInfo(info, primaryKey, byteVal, storageType);
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public String fetchFieldAndTranslate(Object entity) {
+		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
+		Object id = classMeta.fetchId(value);
+		return classMeta.getIdField().getConverter().convertTypeToString(id);
+	}
+	
 	private StorageTypeEnum getStorageType() {
 		StorageTypeEnum storageType = classMeta.getIdField().getMetaIdDbo().getStorageType();
 		return storageType;

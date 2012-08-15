@@ -12,8 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi1.KeyValue;
+import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi1.meta.IndexData;
 import com.alvazan.orm.api.spi1.meta.InfoForIndex;
+import com.alvazan.orm.api.spi1.meta.PartitionTypeInfo;
 import com.alvazan.orm.api.spi1.meta.RowToPersist;
 import com.alvazan.orm.api.spi1.meta.conv.Converter;
 import com.alvazan.orm.api.spi2.NoSqlSession;
@@ -32,6 +34,8 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	private Map<String,MetaField<T>> columnNameToField = new HashMap<String, MetaField<T>>();
 	
 	private List<MetaField<T>> indexedColumns = new ArrayList<MetaField<T>>();
+	
+	private List<MetaField<T>> partitionColumns = new ArrayList<MetaField<T>>();
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
 		Tuple<T> tuple = convertIdToProxy(row, row.getKey(), session, null);
@@ -68,7 +72,9 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 			fieldToValue = ((NoSqlProxy) entity).__getOriginalValues();
 		}
 		
-		InfoForIndex<T> info = new InfoForIndex<T>(entity, row, getColumnFamily(), fieldToValue);
+		//We need to get the PartitionTypeInfo's here so we can pass them down
+		List<PartitionTypeInfo> partitions = formPartitionTypes(entity);
+		InfoForIndex<T> info = new InfoForIndex<T>(entity, row, getColumnFamily(), fieldToValue, partitions);
 		
 		idField.translateToColumn(info);
 
@@ -82,10 +88,27 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		return row;
 	}
 
+	private List<PartitionTypeInfo> formPartitionTypes(Object entity) {
+		List<PartitionTypeInfo> partInfo = new ArrayList<PartitionTypeInfo>();
+		for(MetaField<T> m : partitionColumns) {
+			String colName = m.getColumnName();
+			String value = m.fetchFieldAndTranslate(entity);
+			partInfo.add(new PartitionTypeInfo(colName, value));
+		}
+		
+		if(partInfo.size() == 0) {
+			//This table is not partitioned so we still need the default null, null partTypeInfo so indexes will process correctly
+			partInfo.add(new PartitionTypeInfo(null, null));
+		}
+		
+		return partInfo;
+	}
+
 	@SuppressWarnings("unchecked")
 	public List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey) {
 		Map<Field, Object> fieldToValue = proxy.__getOriginalValues();
-		InfoForIndex<T> info = new InfoForIndex<T>((T) proxy, null, getColumnFamily(), fieldToValue);
+		List<PartitionTypeInfo> partTypes = formPartitionTypes(proxy);
+		InfoForIndex<T> info = new InfoForIndex<T>((T) proxy, null, getColumnFamily(), fieldToValue, partTypes);
 		List<IndexData> indexRemoves = new ArrayList<IndexData>();
 		idField.removingEntity(info, indexRemoves, rowKey);
 		for(MetaField<T> indexed : indexedColumns) {
@@ -95,13 +118,17 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		return indexRemoves;
 	}
 	
-	public void addMetaField(MetaField<T> field, boolean isIndexed) {
+	public void addMetaField(MetaField<T> field) {
 		if(field == null)
 			throw new IllegalArgumentException("field cannot be null");
 		columnNameToField.put(field.getColumnName(), field);
 		
-		if(isIndexed)
+		DboColumnMeta metaCol = field.getMetaDbo();
+		if(metaCol.isIndexed())
 			indexedColumns.add(field);
+		
+		if(metaCol.isPartitionedByThisColumn())
+			partitionColumns.add(field);
 	}
 	
 	public MetaField<T> getMetaFieldByCol(String columnName){

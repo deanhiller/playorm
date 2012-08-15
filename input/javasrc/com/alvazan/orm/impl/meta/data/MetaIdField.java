@@ -62,6 +62,11 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	@Override
+	public String fetchFieldAndTranslate(Object entity) {
+		throw new UnsupportedOperationException("only used for partitioning and id can't partition.  easy to implement if anyone else starts using this though, but for now unsupported");
+	}
+	
+	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
 		StorageTypeEnum storageType = metaDbo.getStorageType();
 		removingThisEntity(info, indexRemoves, pk, storageType);

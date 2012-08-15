@@ -6,13 +6,13 @@ import com.alvazan.orm.api.spi1.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings("rawtypes")
 @NoSqlDiscriminatorColumn(value="generic")
 public class DboColumnCommonMeta extends DboColumnMeta {
 
 	private String columnValueType;
 	private boolean isPartitionedByThisColumn;
 	
-	@SuppressWarnings("rawtypes")
 	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed, boolean isPartitionedBy) {
 		super.setup(owner, colName, isIndexed);
 		Class newType = translateType(valuesType);
@@ -29,12 +29,10 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		return getStorageType().getIndexTableName();
 	}
 
-	@SuppressWarnings("rawtypes")
 	public Class getClassType() {
 		return classForName(columnValueType);
 	}
 
-	@SuppressWarnings("rawtypes")
 	public StorageTypeEnum getStorageType() {
 		Class fieldType = getClassType();
 		return getStorageType(fieldType);
@@ -70,6 +68,13 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		StorageTypeEnum storageType = this.getStorageType();
 		addIndexInfo(info, value, byteVal, storageType);
 		removeIndexInfo(info, value, byteVal, storageType);
+	}
+
+	@Override
+	public String fetchColumnValueAsString(TypedRow row) {
+		TypedColumn typedCol = row.getColumn(columnName);
+		Object value = typedCol.getValue();
+		return convertTypeToString(value);
 	}
 
 }

@@ -29,7 +29,7 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	public String toString() {
 		return "MetaCommonField [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
 	}
-
+	
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
 		Column column = row.getColumn(getMetaDbo().getColumnNameAsBytes());
 		
@@ -56,6 +56,12 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		StorageTypeEnum storageType = metaDbo.getStorageType();
 		addIndexInfo(info, value, byteVal, storageType);
 		removeIndexInfo(info, value, byteVal, storageType);
+	}
+	
+	@Override
+	public String fetchFieldAndTranslate(Object entity) {
+		Object value = ReflectionUtil.fetchFieldValue(entity, field);
+		return converter.convertTypeToString(value);
 	}
 	
 	@Override

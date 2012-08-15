@@ -18,6 +18,7 @@ import com.alvazan.orm.api.spi1.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi1.meta.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings("rawtypes")
 @NoSqlEntity
 @NoSqlInheritance(subclassesToScan={DboColumnCommonMeta.class, DboColumnToOneMeta.class, DboColumnToManyMeta.class, DboColumnIdMeta.class},
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
@@ -67,7 +68,10 @@ public abstract class DboColumnMeta {
 		String firstPart = "/"+owner.getColumnFamily()+"/"+columnName;
 		if(partitionedBy == null)
 			return firstPart;
-		return firstPart+"/"+partitionedBy+"/"+partitionId;
+		firstPart += "/"+partitionedBy;
+		if(partitionId == null)
+			return firstPart;
+		return firstPart+"/"+partitionId;
 	}
 	
 	public final boolean isIndexed() {
@@ -79,7 +83,6 @@ public abstract class DboColumnMeta {
 	 * of type long.class, short.class, float, etc. etc.
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
 	public abstract Class getClassType();
 	/**
 	 * This is the raw database type of String, BigInteger or BigDecimal
@@ -94,7 +97,6 @@ public abstract class DboColumnMeta {
 			throw new IllegalArgumentException("type="+getClassType()+" is not supported at this point");		
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private Class getStorageTypeAsClass() {
 		switch (getStorageType()) {
 		case STRING:
@@ -131,7 +133,6 @@ public abstract class DboColumnMeta {
 		return converter.convertFromNoSql(data);		
 	}
 	
-	@SuppressWarnings("rawtypes")
 	protected static Class translateType(Class classType) {
 		Class finalType = classType;
 		if(!StandardConverters.containsConverterFor(classType))
@@ -142,7 +143,6 @@ public abstract class DboColumnMeta {
 		return finalType;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public static Class convertIfPrimitive(Class fieldType) {
 		Class c = fieldType;
 		if(long.class.equals(fieldType))
@@ -164,7 +164,6 @@ public abstract class DboColumnMeta {
 		return c;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	public static StorageTypeEnum getStorageType(Class fieldType) {
 		StorageTypeEnum type = null;
 		if(byte[].class.equals(fieldType))
@@ -195,7 +194,6 @@ public abstract class DboColumnMeta {
 		return type;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	protected static Class classForName(String columnType) {
 		try {
 			return Class.forName(columnType);
@@ -228,11 +226,9 @@ public abstract class DboColumnMeta {
 
 	public abstract void translateToColumn(InfoForIndex<TypedRow> info);
 
+	@SuppressWarnings("unchecked")
 	protected void removeIndexInfo(InfoForIndex<TypedRow> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
-		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<String, Object> fieldToValue = info.getFieldToValue();
-		
 		if(!isIndexed())
 			return;
 		else if(storageType == StorageTypeEnum.BYTES)
@@ -240,11 +236,15 @@ public abstract class DboColumnMeta {
 		else if(fieldToValue == null)
 			return;
 		
-		addIndexRemoves(row, columnFamily, value, byteVal, storageType, fieldToValue);
+		addIndexRemoves(info, value, byteVal, storageType);
 	}
 	
-	private void addIndexRemoves(RowToPersist row, String columnFamily,
-			Object value, byte[] byteVal, StorageTypeEnum storageType, Map<String, Object> fieldToValue) {
+	@SuppressWarnings("unchecked")
+	private void addIndexRemoves(InfoForIndex<TypedRow> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
+		RowToPersist row = info.getRow();
+		String columnFamily = info.getColumnFamily();
+		Map<String, Object> fieldToValue = info.getFieldToValue();
+		
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
 		Object originalValue = fieldToValue.get(columnName);
 		if(originalValue == null)
@@ -255,10 +255,14 @@ public abstract class DboColumnMeta {
 		byte[] oldIndexedVal = this.convertToStorage2(originalValue);
 		byte[] pk = row.getKey();
 		//original value and current value differ so we need to remove from the index
-		IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk );
-		row.addIndexToRemove(data);
+		List<PartitionTypeInfo> partTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partTypes) {
+			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
+			row.addIndexToRemove(data);
+		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void removingThisEntity(InfoForIndex<TypedRow> info,
 			List<IndexData> indexRemoves, byte[] pk, StorageTypeEnum storageType) {
 		String columnFamily = info.getColumnFamily();
@@ -268,10 +272,14 @@ public abstract class DboColumnMeta {
 			return;
 
 		byte[] oldIndexedVal = convertToStorage2(valueInDatabase);
-		IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk);
-		indexRemoves.add(data);
+		List<PartitionTypeInfo> partTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partTypes) {
+			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
+			indexRemoves.add(data);
+		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void addIndexInfo(InfoForIndex<TypedRow> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
 		TypedRow entity = info.getEntity();
 		RowToPersist row = info.getRow();
@@ -288,8 +296,11 @@ public abstract class DboColumnMeta {
 		
 		//original value and current value differ so we need to persist new value
 		byte[] pk = row.getKey();
-		IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk);
-		row.addIndexToPersist(data);
+		List<PartitionTypeInfo> partTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partTypes) {
+			IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk, part);
+			row.addIndexToPersist(data);
+		}
 	}
 
 	private boolean isNeedPersist(TypedRow entity, Object value, Map<Field, Object> fieldToValue) {
@@ -304,15 +315,18 @@ public abstract class DboColumnMeta {
 		return true;
 	}
 	private IndexData createAddIndexData(String columnFamily,
-			byte[] byteVal, StorageTypeEnum storageType, byte[] pk) {
+			byte[] byteVal, StorageTypeEnum storageType, byte[] pk, PartitionTypeInfo part) {
 		IndexData data = new IndexData();
 		data.setColumnFamilyName(storageType.getIndexTableName());
-		data.setRowKey("/"+columnFamily+"/"+getColumnName());
+		String rowKey = getIndexRowKey(part.getPartitionBy(), part.getPartitionId());
+		data.setRowKey(rowKey);
 		data.getIndexColumn().setIndexedValue(byteVal);
 		data.getIndexColumn().setPrimaryKey(pk);
 		return data;
 	}
 
 	public abstract void translateFromColumn(Row row, TypedRow inst);
+
+	public abstract String fetchColumnValueAsString(TypedRow row);
 	
 }

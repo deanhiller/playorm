@@ -195,7 +195,7 @@ public class ScannerForClass {
 			metaField = inspectorField.processColumn(metaDbo, field);
 		
 		boolean isIndexed = field.isAnnotationPresent(NoSqlIndexed.class);
-		metaClass.addMetaField(metaField, isIndexed);
+		metaClass.addMetaField(metaField);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })

@@ -25,16 +25,19 @@ public class DboTableMeta {
 
 	@NoSqlId(usegenerator=false)
 	private String columnFamily;
-	
+
+	/**
+	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
+	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
+	 * In general, this is always a composite type of <indexed value type>.<primary key type> such that we can do a column
+	 * scan on the indexed value type and then get the pk...the pk is part of the name because otherwise, it would not be unique
+	 * and would collide with others that had the same indexed value.
+	 */
 	private String colNamePrefixType = null;
+	/**
+	 * This is the type of the column name which is nearly always a String (IT IS ALWAYS a string when usign the ORM layer).
+	 */
 	private String colNameType = String.class.getName();
-//	/**
-//	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
-//	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
-//	 */
-//	private String columnNameType = String.class.getName();
-//	private String 
-//	private String valueType = void.class.getName();
 	
 	@NoSqlOneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
@@ -44,6 +47,7 @@ public class DboTableMeta {
 	private String foreignKeyToExtensions;
 
 	private transient List<DboColumnMeta> indexedColumnsCache;
+	private transient List<DboColumnMeta> cacheOfPartitionedBy;
 	
 	private static Class typedRowProxyClass;
 	
@@ -155,7 +159,8 @@ public class DboTableMeta {
 			fieldToValue = ((NoSqlTypedRowProxy) typedRow).__getOriginalValues();
 		}
 		
-		InfoForIndex<TypedRow> info = new InfoForIndex<TypedRow>(typedRow, row, getColumnFamily(), fieldToValue);
+		List<PartitionTypeInfo> partTypes = formPartitionTypesList(typedRow);
+		InfoForIndex<TypedRow> info = new InfoForIndex<TypedRow>(typedRow, row, getColumnFamily(), fieldToValue, partTypes);
 
 		idColumn.translateToColumn(info);
 
@@ -166,6 +171,25 @@ public class DboTableMeta {
 		return row;
 	}
 	
+
+	
+	private List<PartitionTypeInfo> formPartitionTypesList(TypedRow row) {
+		initCaches();
+		
+		List<PartitionTypeInfo> partTypes = new ArrayList<PartitionTypeInfo>();
+		for(DboColumnMeta m : cacheOfPartitionedBy) {
+			String by = m.getColumnName();
+			String value = m.fetchColumnValueAsString(row);
+			partTypes.add(new PartitionTypeInfo(by, value));
+		}
+		
+		if(partTypes.size() == 0) {
+			//if the table is not partitioned, then we still need to create the one huge partition
+			partTypes.add(new PartitionTypeInfo(null, null));
+		}
+		return partTypes;
+	}
+
 	public <T> KeyValue<TypedRow<T>> translateFromRow(Row row) {
 		TypedRow typedRow = convertIdToProxy(row, row.getKey(), typedRowProxyClass);
 		fillInInstance(row, typedRow);
@@ -212,14 +236,26 @@ public class DboTableMeta {
 	}
 
 	public List<DboColumnMeta> getIndexedColumns() {
-		if(indexedColumnsCache == null) {
-			indexedColumnsCache = new ArrayList<DboColumnMeta>();
-			for(DboColumnMeta meta : nameToField.values()) {
-				if(meta.isIndexed())
-					indexedColumnsCache.add(meta);
-			}
-		}
+		initCaches();
 		return indexedColumnsCache;
+	}
+
+
+	private void initCaches() {
+		if(indexedColumnsCache != null)
+			return;
+		
+		indexedColumnsCache = new ArrayList<DboColumnMeta>();
+		for(DboColumnMeta meta : nameToField.values()) {
+			if(meta.isIndexed())
+				indexedColumnsCache.add(meta);
+		}
+			
+		cacheOfPartitionedBy = new ArrayList<DboColumnMeta>();
+		for(DboColumnMeta meta : nameToField.values()) {
+			if(meta.isPartitionedByThisColumn())
+				cacheOfPartitionedBy.add(meta);
+		}
 	}
 	
 }

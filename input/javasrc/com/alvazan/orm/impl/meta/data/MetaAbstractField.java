@@ -7,6 +7,7 @@ import java.util.Map;
 import com.alvazan.orm.api.spi1.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi1.meta.IndexData;
 import com.alvazan.orm.api.spi1.meta.InfoForIndex;
+import com.alvazan.orm.api.spi1.meta.PartitionTypeInfo;
 import com.alvazan.orm.api.spi1.meta.ReflectionUtil;
 import com.alvazan.orm.api.spi1.meta.RowToPersist;
 import com.alvazan.orm.api.spi1.meta.StorageTypeEnum;
@@ -36,9 +37,8 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		this.columnName = colName;
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void removeIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
-		RowToPersist row = info.getRow();
-		String columnFamily = info.getColumnFamily();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		
 		if(!this.getMetaDbo().isIndexed())
@@ -48,11 +48,13 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		else if(fieldToValue == null)
 			return;
 		
-		addIndexRemoves(row, columnFamily, value, byteVal, storageType, fieldToValue);
+		addIndexRemoves(info, value, byteVal, storageType);
 	}
 	
-	private void addIndexRemoves(RowToPersist row, String columnFamily,
-			Object value, byte[] byteVal, StorageTypeEnum storageType, Map<Field, Object> fieldToValue) {
+	private void addIndexRemoves(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
+		RowToPersist row = info.getRow();
+		String columnFamily = info.getColumnFamily();
+		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
 		Object originalValue = fieldToValue.get(field);
 		if(originalValue == null)
@@ -60,11 +62,14 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		else if(originalValue.equals(value))
 			return; //previous value is the same, yeah, nothing to do here!!!
 			
-		byte[] oldIndexedVal = translateValue(originalValue);
 		byte[] pk = row.getKey();
+		byte[] oldIndexedVal = translateValue(originalValue);
 		//original value and current value differ so we need to remove from the index
-		IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk );
-		row.addIndexToRemove(data);
+		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partitionTypes) {
+			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
+			row.addIndexToRemove(data);
+		}
 	}
 	
 	protected void removingThisEntity(InfoForIndex<OWNER> info,
@@ -76,8 +81,11 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 			return;
 		
 		byte[] oldIndexedVal = translateValue(valueInDatabase);
-		IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk);
-		indexRemoves.add(data);
+		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partitionTypes) {
+			IndexData data = createAddIndexData(columnFamily, oldIndexedVal, storageType, pk, part);
+			indexRemoves.add(data);
+		}
 	}
 	
 	protected void addIndexInfo(InfoForIndex<OWNER> info, Object value, byte[] byteVal, StorageTypeEnum storageType) {
@@ -96,8 +104,12 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		
 		//original value and current value differ so we need to persist new value
 		byte[] pk = row.getKey();
-		IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk);
-		row.addIndexToPersist(data);
+		
+		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
+		for(PartitionTypeInfo part : partitionTypes) {
+			IndexData data = createAddIndexData(columnFamily, byteVal, storageType, pk, part);
+			row.addIndexToPersist(data);
+		}
 	}
 
 	private boolean isNeedPersist(OWNER entity, Object value, Map<Field, Object> fieldToValue) {
@@ -112,10 +124,12 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return true;
 	}
 	private IndexData createAddIndexData(String columnFamily,
-			byte[] byteVal, StorageTypeEnum storageType, byte[] pk) {
+			byte[] byteVal, StorageTypeEnum storageType, byte[] pk, PartitionTypeInfo info) {
 		IndexData data = new IndexData();
-		data.setColumnFamilyName(storageType.getIndexTableName());
-		data.setRowKey("/"+columnFamily+"/"+getMetaDbo().getColumnName());
+		String colFamily = getMetaDbo().getIndexTableName();
+		data.setColumnFamilyName(colFamily);
+		String indexRowKey = getMetaDbo().getIndexRowKey(info.getPartitionBy(), info.getPartitionId());
+		data.setRowKey(indexRowKey);
 		data.getIndexColumn().setIndexedValue(byteVal);
 		data.getIndexColumn().setPrimaryKey(pk);
 		return data;

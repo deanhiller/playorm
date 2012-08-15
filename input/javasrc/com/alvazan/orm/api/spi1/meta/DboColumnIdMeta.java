@@ -69,4 +69,9 @@ public class DboColumnIdMeta extends DboColumnMeta {
 	public boolean isPartitionedByThisColumn() {
 		return false;
 	}
+
+	@Override
+	public String fetchColumnValueAsString(TypedRow row) {
+		throw new UnsupportedOperationException("only used by partitioning and can't partition a primary key column....that is kind of useless");
+	}
 }

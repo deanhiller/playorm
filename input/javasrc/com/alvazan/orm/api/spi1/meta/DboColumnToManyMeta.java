@@ -11,6 +11,7 @@ import com.alvazan.orm.api.spi1.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings("rawtypes")
 @NoSqlDiscriminatorColumn(value="listOfFk")
 public class DboColumnToManyMeta extends DboColumnMeta {
 
@@ -35,7 +36,6 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		return fkToColumnFamily;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public Class getClassType() {
 		throw new UnsupportedOperationException("Need to figure out how to convert Class to a type of Array Class");
@@ -48,7 +48,6 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 //		StorageTypeEnum typeInTheArray = fkToColumnFamily.getIdColumnMeta().getStorageType();
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void translateFromColumn(Row row, TypedRow entity) {
 		List<Object> pks = translateFromColumnList(row, entity);
@@ -97,7 +96,6 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		return entities;
 	}
 	
-	@SuppressWarnings("rawtypes")
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow entity = info.getEntity();
@@ -105,7 +103,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		translateToColumnList(entity, row);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	private void translateToColumnList(TypedRow entity, RowToPersist row) {
 		TypedColumn column = entity.getColumn(columnName);
 		Object valueObj = column.getValue();
@@ -162,5 +160,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	public boolean isPartitionedByThisColumn() {
 		return false;
 	}	
-
+	@Override
+	public String fetchColumnValueAsString(TypedRow row) {
+		throw new UnsupportedOperationException("only used by partitioning and can't partition a multe value column....that is kind of useless");
+	}
 }

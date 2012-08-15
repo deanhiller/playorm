@@ -102,6 +102,10 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	}
 
 	@Override
+	public String fetchFieldAndTranslate(Object entity) {
+		throw new UnsupportedOperationException("bug, only used for partitioning and can't partition a multi value column by anything");
+	}
+	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
 		

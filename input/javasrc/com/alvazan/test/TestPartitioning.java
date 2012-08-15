@@ -42,7 +42,6 @@ public class TestPartitioning {
 	
 	@Test
 	public void testEmpty() {}
-	
 	public void testPartitioning() {
 		PartAccount acc = new PartAccount();
 		acc.setIsActive(true);

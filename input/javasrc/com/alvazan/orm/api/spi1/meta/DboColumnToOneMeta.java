@@ -7,6 +7,7 @@ import com.alvazan.orm.api.spi1.TypedRow;
 import com.alvazan.orm.api.spi3.db.Column;
 import com.alvazan.orm.api.spi3.db.Row;
 
+@SuppressWarnings("rawtypes")
 @NoSqlDiscriminatorColumn(value="fk")
 public class DboColumnToOneMeta extends DboColumnMeta {
 	
@@ -39,7 +40,6 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		return fkToColumnFamily;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public Class getClassType() {
 		return fkToColumnFamily.getIdColumnMeta().getClassType();
@@ -81,6 +81,13 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		StorageTypeEnum storageType = getStorageType();
 		addIndexInfo(info, primaryKey, byteVal, storageType);
 		removeIndexInfo(info, primaryKey, byteVal, storageType);		
+	}
+
+	@Override
+	public String fetchColumnValueAsString(TypedRow row) {
+		TypedColumn typedCol = row.getColumn(columnName);
+		Object value = typedCol.getValue();
+		return convertTypeToString(value);
 	}
 	
 }

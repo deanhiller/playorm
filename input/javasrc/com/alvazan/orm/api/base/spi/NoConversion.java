@@ -11,4 +11,14 @@ public class NoConversion implements Converter {
 	public Object convertFromNoSql(byte[] value) {
 		return null;
 	}
+	@Override
+	public Object convertStringToType(String value) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public String convertTypeToString(Object dbValue) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
