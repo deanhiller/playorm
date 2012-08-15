@@ -78,7 +78,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 				//hit the database with rows that are still needed..
 				rows.add(null);
 			} else {
-				log.info("cache hit on k="+new ByteArray(key));
+				log.info("cache hit(need to profile/optimize)");
 				rows.add(result.getValue());
 			}
 		}
