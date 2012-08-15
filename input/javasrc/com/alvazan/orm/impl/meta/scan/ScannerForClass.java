@@ -16,16 +16,15 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.anno.NoSqlId;
-import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
-import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
-import com.alvazan.orm.api.base.anno.NoSqlTransient;
+import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.spi1.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi1.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -194,7 +193,6 @@ public class ScannerForClass {
 		else
 			metaField = inspectorField.processColumn(metaDbo, field);
 		
-		boolean isIndexed = field.isAnnotationPresent(NoSqlIndexed.class);
 		metaClass.addMetaField(metaField);
 	}
 	

@@ -4,6 +4,7 @@ import java.util.List;
 
 public interface PlayCallback {
 
+	@SuppressWarnings("rawtypes")
 	List<Class> getClassesToScan();
 
 	ClassLoader getClassLoader();

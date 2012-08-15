@@ -84,6 +84,9 @@ public class ScannerForField {
 		if(field.isAnnotationPresent(NoSqlIndexed.class))
 			isIndexed = true;
 		
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			throw new IllegalArgumentException("Field="+field+" is a primary key so it cannot have annotation="+NoSqlPartitionByThisField.class.getName());
+		
 		try {
 			converter = lookupConverter(type, converter);
 			IdInfo info = new IdInfo();
@@ -225,6 +228,9 @@ public class ScannerForField {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
+		
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			throw new IllegalArgumentException("Field="+field+" is ToMany annotation so it cannot have annotation="+NoSqlPartitionByThisField.class.getName());
 		
 		Field fieldForKey = null;
 

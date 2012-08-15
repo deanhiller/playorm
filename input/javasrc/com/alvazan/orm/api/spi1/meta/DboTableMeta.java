@@ -190,6 +190,7 @@ public class DboTableMeta {
 		return partTypes;
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T> KeyValue<TypedRow<T>> translateFromRow(Row row) {
 		TypedRow typedRow = convertIdToProxy(row, row.getKey(), typedRowProxyClass);
 		fillInInstance(row, typedRow);
@@ -209,16 +210,6 @@ public class DboTableMeta {
 		Proxy inst = (Proxy) ReflectionUtil.create(typedRowProxyClass);
 		inst.setHandler(new NoSqlTypedRowProxyImpl(this));
 		return (TypedRow) inst;
-	}
-
-	private TypedRow createInstance(Class<? extends TypedRow> typedRowProxyClass) {
-		try {
-			return typedRowProxyClass.newInstance();
-		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
 	}
 	
 	/**

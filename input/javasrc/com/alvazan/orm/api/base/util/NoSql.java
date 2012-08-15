@@ -18,6 +18,7 @@ public class NoSql {
 	private static NoSqlEntityManagerFactory factory;
 	
 	private static ThreadLocal<State> entityManager = new ThreadLocal<State>();
+	@SuppressWarnings("rawtypes")
 	private static Class testClass;
 	private static PlayCallback playCallback;
 	
@@ -60,7 +61,6 @@ public class NoSql {
 	public static NoSqlEntityManager em() {
 		testForRescan();
 		Object request = playCallback.getCurrentRequest();
-		NoSqlEntityManagerFactory f = factory;
 		State state = entityManager.get();
 		if(state == null) {
 			return createNewEm(request);
