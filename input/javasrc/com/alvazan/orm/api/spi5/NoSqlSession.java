@@ -68,7 +68,7 @@ public interface NoSqlSession {
 	 */
 	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, byte[] to, int batchSize);
 
-	public void setOrmSessionForMeta(Object session);
+	public void setOrmSessionForMeta(Object entityMgr);
 
 
 }

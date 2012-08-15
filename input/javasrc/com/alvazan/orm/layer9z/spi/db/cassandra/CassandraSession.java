@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9.spi.db.cassandra;
+package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.ArrayList;
 import java.util.Iterator;

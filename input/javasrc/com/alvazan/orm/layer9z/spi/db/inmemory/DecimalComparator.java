@@ -1,11 +1,12 @@
-package com.alvazan.orm.layer9.spi.db.inmemory;
+package com.alvazan.orm.layer9z.spi.db.inmemory;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 
-public class Utf8Comparator implements Comparator<ByteArray> {
+public class DecimalComparator implements Comparator<ByteArray> {
 
 	@Override
 	public int compare(ByteArray o1, ByteArray o2) {
@@ -16,8 +17,8 @@ public class Utf8Comparator implements Comparator<ByteArray> {
 		else if(o2.getKey() == null && o1.getKey() == null)
 			return 0;
 		
-		String left = StandardConverters.convertFromBytes(String.class, o1.getKey());
-		String right = StandardConverters.convertFromBytes(String.class, o2.getKey());
+		BigDecimal left = StandardConverters.convertFromBytes(BigDecimal.class, o1.getKey());
+		BigDecimal right = StandardConverters.convertFromBytes(BigDecimal.class, o2.getKey());
 		return left.compareTo(right);
 	}
 

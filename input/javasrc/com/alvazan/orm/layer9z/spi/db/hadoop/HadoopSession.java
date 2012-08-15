@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9.spi.db.hadoop;
+package com.alvazan.orm.layer9z.spi.db.hadoop;
 
 import java.util.List;
 import java.util.Map;

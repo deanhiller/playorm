@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9.spi.db.inmemory;
+package com.alvazan.orm.layer9z.spi.db.inmemory;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,7 +9,7 @@ import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.layer9.spi.db.inmemory.IndexedRow.OurKey;
+import com.alvazan.orm.layer9z.spi.db.inmemory.IndexedRow.OurKey;
 
 public class Table {
 

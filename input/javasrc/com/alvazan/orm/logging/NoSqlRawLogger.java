@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer7.logging;
+package com.alvazan.orm.logging;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,20 +35,21 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		if(log.isInfoEnabled()) {
-			logKeys(colFamily, keys);
-		}
+		logKeys("[rawlogger]", databaseInfo, colFamily, keys);
 		return session.find(colFamily, keys);
 	}
 
-	private void logKeys(String colFamily, List<byte[]> keys) {
+	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
+		if(!log.isInfoEnabled())
+			return;
+		
 		try {
-			logKeysImpl(colFamily, keys);
+			logKeysImpl(prefix, databaseInfo, colFamily, keys);
 		} catch(Exception e) {
-			log.info("(Exception logging a find operation, turn on trace to see)");
+			log.info(prefix+"(Exception logging a find operation, turn on trace to see)");
 		}
 	}
-	private void logKeysImpl(String colFamily, List<byte[]> keys) {
+	private static void logKeysImpl(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
 		DboTableMeta meta = databaseInfo.getMeta(colFamily);
 		if(meta == null)
 			return;
@@ -58,7 +59,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String str = meta.getIdColumnMeta().convertTypeToString(obj);
 			realKeys.add(str);
 		}
-		log.info("CF="+colFamily+" finding keys="+realKeys);
+		log.info(prefix+"CF="+colFamily+" finding keys="+realKeys);
 	}
 
 	@Override

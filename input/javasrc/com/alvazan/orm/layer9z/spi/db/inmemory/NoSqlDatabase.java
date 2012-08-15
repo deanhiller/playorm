@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9.spi.db.inmemory;
+package com.alvazan.orm.layer9z.spi.db.inmemory;
 
 import java.util.HashMap;
 import java.util.Map;

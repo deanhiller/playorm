@@ -92,21 +92,22 @@
 	<depends>ourParser</depends>
 </package>
 
-<package name="loggingX" package="com.alvazan.orm.layer7.logging" subpackages="include">
+<package name="loggingX" package="com.alvazan.orm.logging" subpackages="include">
 	<depends>api9</depends>
+	<depends>api5</depends>
 	<depends>dbmeta</depends>
 </package>
 
 <!-- This section is just the database adapters depending on the spi -->
-<package name="cass" package="com.alvazan.orm.layer9.spi.db.cassandra">
+<package name="cass" package="com.alvazan.orm.layer9z.spi.db.cassandra">
 	<depends>allapis</depends>
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
 </package>
-<package name="hadoop" package="com.alvazan.orm.layer9.spi.db.hadoop">
+<package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
 	<depends>api9</depends>
 </package>
-<package name="inMemDb"    package="com.alvazan.orm.layer9.spi.db.inmemory">
+<package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
 	<depends>allapis</depends>
 </package>
 

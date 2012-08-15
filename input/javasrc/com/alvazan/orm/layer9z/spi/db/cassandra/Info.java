@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9.spi.db.cassandra;
+package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi9.db.ColumnType;
