@@ -6,6 +6,12 @@ PlayOrm Feature List
 * Inhertance class heirarchy in one table is supported like hibernate
 * flush() If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
 * first level read cache
+* Automatically creates ColumnFamilies at runtime
+* Support for in-memory database for TDD in your unit tests!!!!!
+* All primitive types converterd to stored as smallest possibly unit so long is stored with only one byte IF that long is between -128 and 127 so using playorm, you automatically store everything as the smallest possibly units and all your indexes and queries still work
+* logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
+* A raw interface using only BigDecimal, BigInteger, and String types
+* An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 
 Flush - 
 A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations for the end of the transation so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work.  In typical nosql fashion of course, this is NOT a transaction, more like a unit of work.
