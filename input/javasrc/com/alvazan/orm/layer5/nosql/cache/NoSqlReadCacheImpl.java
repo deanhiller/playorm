@@ -181,8 +181,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
-		return session.columnRangeScan(info, from, to, batchSize);
+	public Iterable<Column> columnRangeScan(ScanInfo info,byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+		return session.columnRangeScan(info, from, fromInclusive, to, toInclusive);
 	}
 
 	@Override
@@ -191,8 +191,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
-		return session.columnRangeScanAll(scanInfo, batchSize);
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
+		return session.columnRangeScanAll(scanInfo);
 	}
 
 }

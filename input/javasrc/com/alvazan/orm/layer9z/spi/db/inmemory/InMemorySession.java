@@ -200,7 +200,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Collection<Column> columnRangeScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
+	public Collection<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);
@@ -215,7 +215,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Collection<Column> columnRangeScanAll(ScanInfo info, int batchSize) {
+	public Collection<Column> columnRangeScanAll(ScanInfo info) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);

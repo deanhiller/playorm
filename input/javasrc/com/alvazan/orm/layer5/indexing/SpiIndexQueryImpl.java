@@ -56,8 +56,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		if(root == null) {
 			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
-			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
-			Iterable<Column> scan = session.columnRangeScanAll(scanInfo, BATCH_SIZE);
+			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
+			Iterable<Column> scan = session.columnRangeScanAll(scanInfo);
 			processKeys(objectKeys, scan);
 		} else if(root.getType() == NoSqlLexer.EQ) {
 			log.info("root="+root);
@@ -66,15 +66,20 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			
 			byte[] data = retrieveValue(info, root.getRightChild());
 			
-			ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId);
-			Iterable<Column> scan = session.columnRangeScan(scanInfo, data, data, BATCH_SIZE);
+			ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
+			Iterable<Column> scan = session.columnRangeScan(scanInfo, data, true, data, true);
 			
 			processKeys(objectKeys, scan);
 			
-		} else
-			throw new UnsupportedOperationException("not supported yet");
+		} else if(root.getType() == NoSqlLexer.GT
+				|| root.getType() == NoSqlLexer.GE
+				|| root.getType() == NoSqlLexer.LT
+				|| root.getType() == NoSqlLexer.LE) {
+			processKeys(null, null);
+			
+		} else 
+			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 		
-		//session.columnRangeScan(cf, indexKey, from, to, batchSize)
 		return objectKeys;
 	}
 

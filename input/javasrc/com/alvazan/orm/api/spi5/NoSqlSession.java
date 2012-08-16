@@ -63,10 +63,9 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @param from
 	 * @param to
-	 * @param batchSize
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, byte[] to, int batchSize);
+	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive);
 
 	/**
 	 * Scans the entire row while batchSize columns at a time are fetched.
@@ -75,7 +74,7 @@ public interface NoSqlSession {
 	 * @param batchSize
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize);
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo);
 	
 	public void setOrmSessionForMeta(Object entityMgr);
 

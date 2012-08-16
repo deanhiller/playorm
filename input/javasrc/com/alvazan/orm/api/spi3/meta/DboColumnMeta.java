@@ -331,13 +331,13 @@ public abstract class DboColumnMeta {
 		return owner;
 	}
 
-	public ScanInfo createScanInfo(String partitionBy, String partitionId) {
+	public ScanInfo createScanInfo(String partitionBy, String partitionId, int batchSize) {
 		String realColFamily = getOwner().getColumnFamily();
 		String colName = getColumnName();
 		String columnFamily = getIndexTableName();
 		String indexRowKey = getIndexRowKey(partitionBy, partitionId);
 		byte[] rowKey = StandardConverters.convertToBytes(indexRowKey);
-		ScanInfo scanInfo = new ScanInfo(realColFamily, colName, columnFamily, rowKey);
+		ScanInfo scanInfo = new ScanInfo(realColFamily, colName, columnFamily, rowKey, batchSize);
 		return scanInfo;
 	}
 	

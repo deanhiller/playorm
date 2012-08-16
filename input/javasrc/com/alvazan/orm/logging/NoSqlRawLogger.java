@@ -155,23 +155,23 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo info,
-			byte[] from, byte[] to, int batchSize) {
+			byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
 		if(log.isInfoEnabled()) {
-			logColScan(info, from, to, batchSize);
+			logColScan(info, from, fromInclusive, to, toInclusive);
 		}
-		return session.columnRangeScan(info, from, to, batchSize);
+		return session.columnRangeScan(info, from, fromInclusive, to, toInclusive);
 	}
 	
-	private void logColScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
+	private void logColScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
 		try {
-			String msg = logColScanImpl(info, from, to, batchSize);
+			String msg = logColScanImpl(info, from, fromInclusive, to, toInclusive);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
 			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
-	private String logColScanImpl(ScanInfo info, byte[] from, byte[] to, int batchSize) {
+	private String logColScanImpl(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
 		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -188,27 +188,35 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		Object toObj = colMeta.convertFromStorage2(to);
 		String toStr = colMeta.convertTypeToString(toObj);
 		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		return msg+" scanning index rowkey="+rowKey+" from="+fromStr+" to="+toStr+" with batchSize="+batchSize;
+
+		String firstSign = " < ";
+		if(fromInclusive)
+			firstSign = " <= ";
+		String secondSign = " < ";
+		if(toInclusive)
+			secondSign = " <= ";
+		
+		return msg+" scanning index rowkey="+rowKey+" for value in range:"+fromStr+firstSign+"VALUE"+secondSign+toStr+" with batchSize="+info.getBatchSize();
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
 		if(log.isInfoEnabled()) {
-			logColScan2(scanInfo, batchSize);
+			logColScan2(scanInfo);
 		}
-		return session.columnRangeScanAll(scanInfo, batchSize);
+		return session.columnRangeScanAll(scanInfo);
 	}
 	
-	private void logColScan2(ScanInfo info, int batchSize) {
+	private void logColScan2(ScanInfo info) {
 		try {
-			String msg = logColScanImpl2(info, batchSize);
+			String msg = logColScanImpl2(info);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
 			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
-	private String logColScanImpl2(ScanInfo info, int batchSize) {
+	private String logColScanImpl2(ScanInfo info) {
 		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -221,7 +229,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			return msg + " (CF meta found but columnMeta not found)";
 		
 		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		return msg+" full index scan on rowkey="+rowKey+" with batchSize="+batchSize;
+		return msg+" full index scan on rowkey="+rowKey+" with batchSize="+info.getBatchSize();
 	}
 	
 	@Override

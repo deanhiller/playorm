@@ -278,7 +278,9 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo info,
-			byte[] from, byte[] to, int batchSize) {
+			byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+		if(info.getBatchSize() == 0)
+			throw new IllegalArgumentException("batch size must be supplied");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
@@ -288,22 +290,41 @@ public class CassandraSession implements NoSqlRawSession {
 			return new ArrayList<Column>();
 		}
 		
+		int batchSize = info.getBatchSize();
 		ColumnType type = info1.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
 			ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+			
 			return findBasic(rowKey, range, info1);
+			
 		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
-			CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(from).lessThanEquals(to).limit(batchSize);
+			CompositeRangeBuilder range = setupRangeBuilder(from,
+					fromInclusive, to, toInclusive, info1);
+			range = range.limit(batchSize);
 			return findBasic(rowKey, range, info1);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
+
+	private CompositeRangeBuilder setupRangeBuilder(byte[] from,
+			boolean fromInclusive, byte[] to, boolean toInclusive, Info info1) {
+		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
+		CompositeRangeBuilder range = serializer.buildRange();
+		if(fromInclusive)
+			range = range.greaterThanEquals(from);
+		else
+			range = range.greaterThan(from);
+		if(toInclusive)
+			range = range.lessThanEquals(to);
+		else
+			range = range.lessThan(to);
+		return range;
+	}
 	
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
 		String colFamily = scanInfo.getIndexColFamily();
 		byte[] rowKey = scanInfo.getRowKey();
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
@@ -313,6 +334,7 @@ public class CassandraSession implements NoSqlRawSession {
 			return new ArrayList<Column>();
 		}
 		
+		int batchSize = scanInfo.getBatchSize();
 		ColumnType type = info.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
 			ByteBufferRange range = new RangeBuilder().setLimit(batchSize).build();

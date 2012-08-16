@@ -91,8 +91,8 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
-		Iterable<Column> results = session.columnRangeScan(scanInfo, toDecBytes(-250), toDecBytes(12), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey, 2);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toDecBytes(-250), true, toDecBytes(12), true);
 		
 		int counter = 0;
 		for(Column col : results) {
@@ -151,8 +151,8 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
-		Iterable<Column> results = session.columnRangeScan(scanInfo, toIntBytes(-250), toIntBytes(50), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey, 2);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toIntBytes(-250), true, toIntBytes(50), true);
 		
 		int counter = 0;
 		for(Column col : results) {

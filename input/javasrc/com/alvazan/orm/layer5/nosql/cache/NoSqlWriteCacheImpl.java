@@ -122,12 +122,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
-		return rawSession.columnRangeScan(info, from, to, batchSize);
+	public Iterable<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+		return rawSession.columnRangeScan(info, from, fromInclusive, to, toInclusive);
 	}
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
-		return rawSession.columnRangeScanAll(scanInfo, batchSize);
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
+		return rawSession.columnRangeScanAll(scanInfo);
 	}
 	
 	@Override

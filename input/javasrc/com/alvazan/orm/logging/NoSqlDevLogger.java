@@ -86,9 +86,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from,
-			byte[] to, int batchSize) {
-		return session.columnRangeScan(scanInfo, from, to, batchSize);
+	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+		return session.columnRangeScan(scanInfo, from, fromInclusive, to, toInclusive);
 	}
 
 	@Override
@@ -97,8 +96,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
-		return session.columnRangeScanAll(scanInfo, batchSize);
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
+		return session.columnRangeScanAll(scanInfo);
 	}
 
 }

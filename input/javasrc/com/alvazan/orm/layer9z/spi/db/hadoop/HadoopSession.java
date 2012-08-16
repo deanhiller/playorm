@@ -38,12 +38,12 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public List<Column> columnRangeScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
+	public List<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
 		throw new UnsupportedOperationException("not done here yet");
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
 		throw new UnsupportedOperationException("not done here yet");
 	}
 
