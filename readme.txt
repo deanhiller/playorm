@@ -28,11 +28,11 @@ List<Activity> activities = query.getResultList();
 
 This is another virtual view like looking into an RDBMS.
 
-So what about the denormalization hype in noSQL?  Well, be careful.  I was on one project where one request was taking 80 seconds and by re-normalizing all their data and not repeating so much of it, I brought the query down to 200ms.  Behind the scenes the denormalization was causing 1 megabyte of data to be written on the request which denormalization avoided.  Denormalization can be good but partitioning of your indexes and not denormalizing the data is yet another way to solve similar issues.
+So what about the denormalization hype in noSQL?  Well, be careful.  I was on one project where one request was taking 80 seconds and by re-normalizing all their data and not repeating so much of it, I brought the query down to 200ms.  Behind the scenes the denormalization was causing 1 megabyte of data to be written on the request which normalization avoided.  Denormalization can be good but partitioning of your indexes and normalizing the data is yet another way to solve similar issues.  Do be careful of having one small table that can be a hotspot though.  Like anything, this is a tool and needs to be used correctly.  Like hibernate, it can be used wrong.
 
 What Joins would look like
 
-(We currently don't support joins but the indexing library we are using does have joins so we just need to add it)
+(We currently don't support joins but are in the process of adding them)
 Taking our previous example of the million indexes we have by acount or the huge amount of indexes we have by security, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those million indexes by account or and of the security indexes like so
 
 IndexInfo info = new IndexInfo(ActivityTypeInfo.class, "/onlyoneactivityTypeIndexSinceTableIsSmall");
