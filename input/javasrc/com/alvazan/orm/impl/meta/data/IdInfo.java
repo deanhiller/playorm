@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 
+@SuppressWarnings("rawtypes")
 public class IdInfo {
 	private Method idMethod;
 	private boolean useGenerator;

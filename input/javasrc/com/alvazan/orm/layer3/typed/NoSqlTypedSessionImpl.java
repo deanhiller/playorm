@@ -174,7 +174,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public List<KeyValue<TypedRow>> runQuery(String query) {
 		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query);
-		String indexName = tuple.getIndexName();
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
 		

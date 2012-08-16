@@ -37,6 +37,7 @@ import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
 import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 
+@SuppressWarnings("rawtypes")
 public class ColumnFamilyHelper {
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
 	
@@ -171,6 +172,7 @@ public class ColumnFamilyHelper {
 		return CompositeType.class.getName()+"("+class1.getName()+","+class2.getName()+")";
 	}
 
+	@SuppressWarnings("unchecked")
 	public Info createInfo(String colFamily, ColumnType type, StorageTypeEnum keyType) {
 		if(keyType == null)
 			return null;

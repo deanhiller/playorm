@@ -11,12 +11,9 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexTypes {
-
-	private static Partition<Activity> index;
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;

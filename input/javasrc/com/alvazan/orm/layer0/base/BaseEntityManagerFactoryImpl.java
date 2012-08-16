@@ -105,7 +105,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         log.info("Finished saving meta data, complelety done initializing");
 	}
 	
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setup(Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		if(isScanned)
 			throw new IllegalStateException("scanForEntities can only be called once");

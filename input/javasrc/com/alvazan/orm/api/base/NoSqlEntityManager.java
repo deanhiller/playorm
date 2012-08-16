@@ -129,9 +129,6 @@ public interface NoSqlEntityManager {
 	 */
 	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj);
 
-	@Deprecated
-	public <T> Partition<T> getIndex(Class<T> forEntity, String blah);
-	
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery);
 	
 	/**

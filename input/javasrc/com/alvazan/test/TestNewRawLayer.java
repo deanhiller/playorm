@@ -19,6 +19,7 @@ import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedColumn;
 import com.alvazan.orm.api.spi3.TypedRow;
 
+@SuppressWarnings("rawtypes")
 public class TestNewRawLayer {
 
 	private static final Logger log = LoggerFactory.getLogger(TestNewRawLayer.class);

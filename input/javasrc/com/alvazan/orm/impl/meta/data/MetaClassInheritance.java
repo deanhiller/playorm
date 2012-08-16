@@ -19,9 +19,9 @@ import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
+@SuppressWarnings("rawtypes")
 public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
-	@SuppressWarnings("rawtypes")
 	@Inject
 	private Provider<MetaClassSingle> classMetaProvider;	
 	/**
@@ -32,6 +32,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	private Map<Class, String> classToType = new HashMap<Class, String>();
 	private String discriminatorColumnName;
 	private byte[] discColAsBytes;
+	
+	public String getDiscriminatorColumnName() {
+		return discriminatorColumnName;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public MetaClassSingle<?> findOrCreate(Class<?> clazz, Class<?> parent) {
@@ -73,7 +77,6 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		return metaClassSingle;
 	}
 
-	@SuppressWarnings("rawtypes")
 	@Override
 	public RowToPersist translateToRow(T entity) {
 		Class clazz = entity.getClass();

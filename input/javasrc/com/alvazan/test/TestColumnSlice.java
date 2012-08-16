@@ -10,7 +10,6 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.apache.commons.codec.binary.Hex;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,8 +97,6 @@ public class TestColumnSlice {
 		int counter = 0;
 		for(Column col : results) {
 			if(counter == 0) {
-				byte[] data = col.getName();
-				String hex = new String(Hex.encodeHex(data));
 				Assert.assertEquals(-200.23, toDouble(col.getName()).doubleValue());
 			}
 			counter++;

@@ -308,12 +308,12 @@ public class ScannerForQuery {
 		return false;
 	}
 
-	private static boolean hasTypeInfo(CommonTree node) {
-		if(node.getType() == NoSqlLexer.ATTR_NAME || node.getType() == NoSqlLexer.DECIMAL
-				|| node.getType() == NoSqlLexer.INT_VAL || node.getType() == NoSqlLexer.STR_VAL)
-			return true;
-		return false;
-	}
+//	private static boolean hasTypeInfo(CommonTree node) {
+//		if(node.getType() == NoSqlLexer.ATTR_NAME || node.getType() == NoSqlLexer.DECIMAL
+//				|| node.getType() == NoSqlLexer.INT_VAL || node.getType() == NoSqlLexer.STR_VAL)
+//			return true;
+//		return false;
+//	}
 
 	private static TypeInfo processSide(MetaQuery metaQuery, ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME) {
@@ -404,7 +404,6 @@ public class ScannerForQuery {
 				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
 		}
 		
-		String colName = attributeField.getColumnName();
 		if(!attributeField.isIndexed())
 			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
 		

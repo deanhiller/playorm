@@ -174,30 +174,18 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		session.flush();
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	@Override
-	public <T> Partition<T> getIndex(Class<T> forEntity, String indexName) {
-		MetaClass metaClass = metaInfo.getMetaClass(forEntity);
-		PartitionImpl indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, null, null, this, session);
-		return indexImpl;
-	}
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName,
-			Object partitionObj) {
+	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
 		PartitionImpl<T> indexImpl = indexProvider.get();
 		indexImpl.setup(metaClass, tableColumnName, partitionObj, this, session);
 		return indexImpl;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
-		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
-		PartitionImpl<T> indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, null, null, this, session);
+		Partition<T> indexImpl = getPartition(forEntity, null, null);
 		return indexImpl.createNamedQuery(namedQuery);		
 	}
 	
