@@ -2,12 +2,12 @@ package com.alvazan.test.db;
 
 import java.util.List;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
-import com.alvazan.orm.api.base.anno.ManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
@@ -25,28 +25,30 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 	@NoSqlQuery(name="findByName", query="select * FROM TABLE e WHERE e.name=:name"),
 	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE e WHERE e.numTimes=:numTimes"),
 	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE e WHERE e.myFloat=:myFloat"),
-	@NoSqlQuery(name="findByCool", query="select * FROM TABLE e WHERE e.isCool=:cool")
+	@NoSqlQuery(name="findByCool", query="select * FROM TABLE e WHERE e.isCool=:cool"),
+	@NoSqlQuery(name="findAll", query="select * FROM TABLE e")
 	
 })
 public class Activity {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
-	@ManyToOne
+	@NoSqlManyToOne
 	private Account account;
 	
-	@Indexed
+	@NoSqlIndexed
 	private String uniqueColumn;
-	
-	@Indexed
+
+	@NoSqlIndexed
 	private String name;
-	@Indexed
+	
+	@NoSqlIndexed
 	private long numTimes;
 
-	@Indexed
+	@NoSqlIndexed
 	private Boolean isCool;
-	@Indexed 
+	@NoSqlIndexed 
 	private float myFloat;
 	
 	private String somethingElse;
@@ -117,71 +119,76 @@ public class Activity {
 		this.isCool = isCool;
 	}
 
-	public static List<Activity> findBetween(Index<Activity> index, long from, long to) {
-		Query<Activity> query = index.getNamedQuery("findBetween");
+	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);
 		query.setParameter("to", to);
 		return query.getResultList();
 	}
 	
-	public static Activity findSingleResult(Index<Activity> index, String key) {
-		Query<Activity> query = index.getNamedQuery("findUnique");
+	public static Activity findSingleResult(NoSqlEntityManager mgr, String key) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findUnique");
 		query.setParameter("unique", key);
 		return query.getSingleObject();
 	}
-	public static List<Activity> findByName(Index<Activity> index, String name) {
-		Query<Activity> query = index.getNamedQuery("findByName");
+	public static List<Activity> findByName(NoSqlEntityManager mgr, String name) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByName");
 		query.setParameter("name", name);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findByCool(Index<Activity> index, boolean isCool) {
-		Query<Activity> query = index.getNamedQuery("findByCool");
+	public static List<Activity> findByCool(NoSqlEntityManager mgr, boolean isCool) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByCool");
 		query.setParameter("cool", isCool);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findNumTimes(Index<Activity> index, long numTimes) {
-		Query<Activity> query = index.getNamedQuery("findByNumTimes");
+	public static List<Activity> findNumTimes(NoSqlEntityManager mgr, long numTimes) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByNumTimes");
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 	
-	public static List<Activity> findByFloat(Index<Activity> index, float myFloat) {
-		Query<Activity> query = index.getNamedQuery("findByFloat");
+	public static List<Activity> findByFloat(NoSqlEntityManager mgr, float myFloat) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByFloat");
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList();
 	}
 	
-	public static List<Activity> findWithAnd(Index<Activity> index, String name, long numTimes) {
-		Query<Activity> query = index.getNamedQuery("findWithAnd");
+	public static List<Activity> findWithAnd(NoSqlEntityManager mgr, String name, long numTimes) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithAnd");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithOr(Index<Activity> index, String name, long numTimes) {
-		Query<Activity> query = index.getNamedQuery("findWithOr");
+	public static List<Activity> findWithOr(NoSqlEntityManager mgr, String name, long numTimes) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithOr");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithoutParens(Index<Activity> index,
+	public static List<Activity> findWithoutParens(NoSqlEntityManager mgr,
 			String name, long numTimes, float myFloat) {
-		Query<Activity> query = index.getNamedQuery("findWithoutParens");
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithoutParens");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList();
 	}
 
-	public static List<Activity> findWithParens(Index<Activity> index,
+	public static List<Activity> findWithParens(NoSqlEntityManager mgr,
 			String name, long numTimes, float myFloat) {
-		Query<Activity> query = index.getNamedQuery("findWithParens");
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithParens");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList();
+	}
+
+	public static List<Activity> findAll(NoSqlEntityManager mgr) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAll");
+		return query.getResultList();		
 	}
 }

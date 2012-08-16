@@ -15,11 +15,12 @@
 <package name="slf4j" package="org.slf4j" needdeclarations="false"/>
 <package name="inject" package="javax.inject" needdeclarations="false"/>
 <package name="commons" package="org.apache.commons" needdeclarations="false" subpackages="include"/>
+<package name="jodatime" package="org.joda" needdeclarations="false" subpackages="include"/>
 
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
-<package name="lucene" package="org.apache.lucene" subpackages="include"/>
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>
 <package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
+<package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
 
 <package name="def" package="nosql"/>
 
@@ -28,29 +29,37 @@
 	<depends>javassist</depends>
 </package>
 
-<package name="RawIndexSpi" package="com.alvazan.orm.api.spi3.index" subpackages="include">
-	<depends>antlr</depends>
-</package> 
-<package name="RawNoSqlSpi" package="com.alvazan.orm.api.spi3.db" subpackages="include"/>
-<package name="NoSqlApi" package="com.alvazan.orm.api.spi2">
-	<depends>RawNoSqlSpi</depends>
-	<depends>RawIndexSpi</depends>
+<package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>
+
+<package name="api9" package="com.alvazan.orm.api.spi9.db" subpackages="include"/>
+<package name="api5" package="com.alvazan.orm.api.spi5" subpackages="include">
+	<depends>api9</depends>
 </package>
+<package name="api3" package="com.alvazan.orm.api.spi3">
+	<depends>api5</depends>
+</package>
+
+<package name="dbmeta" package="com.alvazan.orm.api.spi3.meta" subpackages="include">
+	<depends>javassist</depends>
+	<depends>api3</depends>
+	<depends>api5</depends>
+	<depends>api9</depends>
+</package>
+
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
-	<depends>NoSqlApi</depends>
-	<depends>RawNoSqlSpi</depends>
+	<depends>api3</depends>
+	<depends>api5</depends>
+	<depends>dbmeta</depends>
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
-<package name ="exceptions" package="com.alvazan.orm.api.base.exc" subpackages="include"/> 
+
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
 </package>
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
 <package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
-
-
 
 <package name="metadata" package="com.alvazan.orm.impl.meta.data"  subpackages="include">
 	<depends>allapis</depends>
@@ -63,45 +72,43 @@
 	<depends>javassist</depends>
 </package>
 
-<package name="base" package="com.alvazan.orm.layer1.base">
+<package name="typedlayer" package="com.alvazan.orm.layer3.typed">
+	<depends>allapis</depends>
+</package>
+
+<package name="base" package="com.alvazan.orm.layer0.base">
 	<depends>allapis</depends>
 	<depends>metascan</depends>
 	<depends>metadata</depends>
 	<depends>annotationParser</depends>
+	<depends>typedlayer</depends>
 </package>
 
-<package name="cache" package="com.alvazan.orm.layer2.nosql.cache">
-	<depends>NoSqlApi</depends>
-	<depends>RawNoSqlSpi</depends>
-	<depends>RawIndexSpi</depends>
+<package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
+	<depends>api5</depends>
+	<depends>api9</depends>
+	<depends>dbmeta</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
 </package>
 
-<!-- This section is just the database adapters depending on the spi -->
-<package name="cass" package="com.alvazan.orm.layer3.spi.db.cassandra">
-	<depends>RawNoSqlSpi</depends> <!-- implements this SPI -->
-	<depends>api</depends> <!-- ironically uses not implements -->
-	<depends>NoSqlApi</depends>
-	<depends>astyanax</depends>
-</package>
-<package name="hadoop" package="com.alvazan.orm.layer3.spi.db.hadoop">
-	<depends>RawNoSqlSpi</depends>
-</package>
-<package name="inMemDb"    package="com.alvazan.orm.layer3.spi.db.inmemory">
-	<depends>RawNoSqlSpi</depends>
-	<depends>api</depends> <!-- ironically uses not implements -->
-	<depends>NoSqlApi</depends>	
+<package name="loggingX" package="com.alvazan.orm.logging" subpackages="include">
+	<depends>api9</depends>
+	<depends>api5</depends>
+	<depends>dbmeta</depends>
 </package>
 
-<!-- This section is just the index adapters depending on the spi -->
-<package name="solr"       package="com.alvazan.orm.layer3.spi.index.solr">
-	<depends>RawIndexSpi</depends>
+<!-- This section is just the database adapters depending on the spi -->
+<package name="cass" package="com.alvazan.orm.layer9z.spi.db.cassandra">
+	<depends>allapis</depends>
+	<depends>astyanax</depends>
+	<depends>cassandra</depends>
 </package>
-<package name="inMemIndex" package="com.alvazan.orm.layer3.spi.index.inmemory">
-	<depends>RawIndexSpi</depends>
-	<depends>lucene</depends>
-	<depends>antlr</depends>
+<package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
+	<depends>api9</depends>
+</package>
+<package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
+	<depends>allapis</depends>
 </package>
 
 <package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>

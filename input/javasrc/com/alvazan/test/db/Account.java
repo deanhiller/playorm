@@ -3,14 +3,14 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.base.Index;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.base.anno.OneToMany;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -21,17 +21,17 @@ import com.alvazan.orm.api.base.anno.OneToMany;
 })
 public class Account extends AccountSuper{
 
-	@Id
+	@NoSqlId
 	private String id;
 	
-	@Indexed
+	@NoSqlIndexed
 	private String name;
 	
-	@Indexed
+	@NoSqlIndexed
 	private Float users;
 
 	//@Transient
-	@OneToMany(entityType=Activity.class)
+	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 
 	public String getId() {
@@ -58,26 +58,26 @@ public class Account extends AccountSuper{
 		this.users = users;
 	}
 	
-	public static List<Account> findBetween(Index<Account> index, float begin, float to) {
-		Query<Account> query = index.getNamedQuery("findBetween");
+	public static List<Account> findBetween(NoSqlEntityManager mgr, float begin, float to) {
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findBetween");
 		query.setParameter("begin", begin);
 		query.setParameter("end", to);
 		return query.getResultList();
 	}
-	public static List<Account> findAll(Index<Account> index) {
-		Query<Account> query = index.getNamedQuery("findAll");
+	public static List<Account> findAll(NoSqlEntityManager mgr) {
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findAll");
 		return query.getResultList();
 	}
-	public static List<Account> findAnd(Index<Account> index, String name, Boolean active) {
-		Query<Account> query = index.getNamedQuery("findAnd");
+	public static List<Account> findAnd(NoSqlEntityManager mgr, String name, Boolean active) {
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findAnd");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();
 	}
 
-	public static List<Account> findOr(Index<Account> index, String name,
+	public static List<Account> findOr(NoSqlEntityManager mgr, String name,
 			boolean active) {
-		Query<Account> query = index.getNamedQuery("findOr");
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();

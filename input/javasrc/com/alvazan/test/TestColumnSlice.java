@@ -15,16 +15,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.AbstractBootstrap;
+import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi2.DboColumnMeta;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 public class TestColumnSlice {
 
@@ -33,15 +34,15 @@ public class TestColumnSlice {
 
 	@Before
 	public void createEntityManager() {
-		Map<String, String> props = new HashMap<String, String>();
-		props.put(NoSqlEntityManagerFactory.AUTO_CREATE_KEY, "create");
-		factory = AbstractBootstrap.create(DbTypeEnum.IN_MEMORY, props, null);
+		Map<String, Object> props = new HashMap<String, Object>();
+		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
 		mgr = factory.createEntityManager();
 	}
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		other.clearDatabase();
 	}
 	
 	@Test
@@ -50,15 +51,15 @@ public class TestColumnSlice {
 		String colFamily = "float_indexes";
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, false);
-		mgr.put(idMeta);
-		
+
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
-		tableMeta.setColumnNameType(double.class);
-		tableMeta.setRowKeyMeta(idMeta);
+		tableMeta.setColNameType(double.class);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(tableMeta, "id", String.class, false);
+		
+		mgr.put(idMeta);
 		mgr.put(tableMeta);
 
 		meta.addMetaClassDbo(tableMeta);
@@ -66,7 +67,7 @@ public class TestColumnSlice {
 		
 		mgr.flush();
 		
-		byte[] rowKey = "myone_index".getBytes("UTF8");
+		byte[] rowKey = StandardConverters.convertToBytes("myone_index");
 		
 		List<Column> columns = new ArrayList<Column>();
 		
@@ -88,10 +89,11 @@ public class TestColumnSlice {
 		columns.add(new Column(toDecBytes(new BigDecimal("3")), new byte[0]));
 		columns.add(new Column(toDecBytes(new BigDecimal("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns );
+		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toDecBytes(-250), toDecBytes(12), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toDecBytes(-250), toDecBytes(12), 2);
 		
 		int counter = 0;
 		for(Column col : results) {
@@ -111,15 +113,15 @@ public class TestColumnSlice {
 		String colFamily = "time_indexes";
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-		
-		DboColumnMeta idMeta = new DboColumnMeta();
-		idMeta.setup("id", null, String.class, false);
-		mgr.put(idMeta);
-		
+
 		DboTableMeta tableMeta = new DboTableMeta();
 		tableMeta.setColumnFamily(colFamily);
-		tableMeta.setColumnNameType(long.class);
-		tableMeta.setRowKeyMeta(idMeta);
+		tableMeta.setColNameType(long.class);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(tableMeta, "id", String.class, false);
+		
+		mgr.put(idMeta);
 		mgr.put(tableMeta);
 
 		meta.addMetaClassDbo(tableMeta);
@@ -127,7 +129,7 @@ public class TestColumnSlice {
 		
 		mgr.flush();
 		
-		byte[] rowKey = "myone_index".getBytes("UTF8");
+		byte[] rowKey = StandardConverters.convertToBytes("myone_index");
 		
 		List<Column> columns = new ArrayList<Column>();
 		
@@ -149,10 +151,11 @@ public class TestColumnSlice {
 		columns.add(new Column(toIntBytes(new BigInteger("3")), new byte[0]));
 		columns.add(new Column(toIntBytes(new BigInteger("-3")), new byte[0]));
 		
-		session.persist(colFamily, rowKey, columns );
+		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		Iterable<Column> results = session.columnRangeScan(colFamily, rowKey, toIntBytes(-250), toIntBytes(50), 2);
+		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
+		Iterable<Column> results = session.columnRangeScan(scanInfo, toIntBytes(-250), toIntBytes(50), 2);
 		
 		int counter = 0;
 		for(Column col : results) {
@@ -164,7 +167,7 @@ public class TestColumnSlice {
 	}
 	
 	private byte[] toIntBytes(Object obj) {
-		return StandardConverters.convertToIntegerBytes(obj);
+		return StandardConverters.convertToBytes(obj);
 	}
 	private byte[] toDecBytes(Object obj) {
 		return StandardConverters.convertToDecimalBytes(obj);

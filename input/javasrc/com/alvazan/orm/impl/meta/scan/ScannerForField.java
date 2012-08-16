@@ -11,24 +11,32 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.anno.Column;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.ManyToOne;
-import com.alvazan.orm.api.base.anno.NoConversion;
+import com.alvazan.orm.api.base.ToOneProvider;
+import com.alvazan.orm.api.base.anno.NoSqlColumn;
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
-import com.alvazan.orm.api.base.anno.OneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.spi.KeyGenerator;
-import com.alvazan.orm.api.spi3.db.conv.Converter;
-import com.alvazan.orm.api.spi3.db.conv.StandardConverters;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.api.base.spi.NoConversion;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.impl.meta.data.IdInfo;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaListField;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
-import com.alvazan.orm.impl.meta.data.ReflectionUtil;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {
@@ -51,13 +59,11 @@ public class ScannerForField {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T> MetaIdField<T> processId(Field field, MetaClass<T> metaClass) {
-		if(!String.class.isAssignableFrom(field.getType()))
-			throw new IllegalArgumentException("The id is not of type String and has to be.  field="+field+" in class="+field.getDeclaringClass());
-		
+	public <T> MetaIdField<T> processId(DboTableMeta t, Field field, MetaAbstractClass<T> metaClass) {
+
 		Method idMethod = getIdMethod(field);
 		
-		Id idAnno = field.getAnnotation(Id.class);
+		NoSqlId idAnno = field.getAnnotation(NoSqlId.class);
 		MetaIdField<T> metaField = idMetaProvider.get();
 		KeyGenerator gen = null;
 		if(idAnno.usegenerator()) {
@@ -73,16 +79,30 @@ public class ScannerForField {
 		String columnName = field.getName();
 		if(!"".equals(idAnno.columnName()))
 			columnName = idAnno.columnName();
+		
+		boolean isIndexed = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
+			isIndexed = true;
+		
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			throw new IllegalArgumentException("Field="+field+" is a primary key so it cannot have annotation="+NoSqlPartitionByThisField.class.getName());
+		
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, columnName, idMethod, idAnno.usegenerator(), gen, converter, metaClass);
+			IdInfo info = new IdInfo();
+			info.setIdMethod(idMethod);
+			info.setConverter(converter);
+			info.setGen(gen);
+			info.setUseGenerator(idAnno.usegenerator());
+			info.setMetaClass(metaClass);
+			metaField.setup(t, info, field, columnName, isIndexed);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
 					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
 							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
 							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
-							" or @Id(customConverter=YourConverter.class) " +
+							" or @NoSqlId(customConverter=YourConverter.class) " +
 							" or finally if we missed a standard converter, we need to add it in file "+getClass()+
 							" in the constructor and it is trivial code(and we can copy the existing pattern)");
 		}		 
@@ -112,15 +132,23 @@ public class ScannerForField {
 		}
 	}
 
-	public MetaField processColumn(Field field) {
-		Column col = field.getAnnotation(Column.class);
+	public MetaField processColumn(DboTableMeta t, Field field) {
+		NoSqlColumn col = field.getAnnotation(NoSqlColumn.class);
 		MetaCommonField metaField = metaProvider.get();
 		String colName = field.getName();
 		if(col != null) {
 			if(!"".equals(col.columnName()))
 				colName = col.columnName();
 		}
+
+		boolean isIndexed = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
+			isIndexed = true;
 		
+		boolean isPartitioned = false;
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			isPartitioned = true;
+			
 		Class<?> type = field.getType();
 		Converter converter = null;
 		if(col != null && !NoConversion.class.isAssignableFrom(col.customConverter()))
@@ -128,7 +156,7 @@ public class ScannerForField {
 
 		try {
 			converter = lookupConverter(type, converter);
-			metaField.setup(field, colName, converter);
+			metaField.setup(t, field, colName, converter, isIndexed, isPartitioned);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
 			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
@@ -162,44 +190,47 @@ public class ScannerForField {
 		this.customConverters = converters;
 	}
 
-	public MetaField processManyToOne(Field field) {
-		ManyToOne annotation = field.getAnnotation(ManyToOne.class);
+	public MetaField processManyToOne(DboTableMeta t, Field field) {
+		NoSqlManyToOne annotation = field.getAnnotation(NoSqlManyToOne.class);
 		String colName = annotation.columnName();
-		return processToOne(field, colName);
+		return processToOne(t, field, colName);
 	}
 
-	public MetaField processOneToOne(Field field) {
-		OneToOne annotation = field.getAnnotation(OneToOne.class);
+	public MetaField processOneToOne(DboTableMeta t, Field field) {
+		NoSqlOneToOne annotation = field.getAnnotation(NoSqlOneToOne.class);
 		String colName = annotation.columnName();
 		
-		return processToOne(field, colName);
+		return processToOne(t, field, colName);
 	}
 	
-	public MetaField processManyToMany(Field field) {
-		OneToMany annotation = field.getAnnotation(OneToMany.class);
+	public MetaField processManyToMany(DboTableMeta t, Field field) {
+		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(field, colName, entityType,
+		return processToManyRelationship(t, field, colName, entityType,
 				keyFieldForMap);		
 	}
 	
-	public MetaField processOneToMany(Field field) {
-		OneToMany annotation = field.getAnnotation(OneToMany.class);
+	public MetaField processOneToMany(DboTableMeta t, Field field) {
+		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(field, colName, entityType,
+		return processToManyRelationship(t, field, colName, entityType,
 				keyFieldForMap);
 	}
 
-	private MetaField processToManyRelationship(Field field, String colNameOrig,
+	private MetaField processToManyRelationship(DboTableMeta t, Field field, String colNameOrig,
 			Class entityType, String keyFieldForMap) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
+		
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			throw new IllegalArgumentException("Field="+field+" is ToMany annotation so it cannot have annotation="+NoSqlPartitionByThisField.class.getName());
 		
 		Field fieldForKey = null;
 
@@ -220,15 +251,15 @@ public class ScannerForField {
 			}
 		}
 		
-		return processToMany(field, colName, entityType, fieldForKey);
+		return processToMany(t, field, colName, entityType, fieldForKey);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private MetaField processToMany(Field field, String colName, Class entityType, Field fieldForKey) {
+	private MetaField processToMany(DboTableMeta t, Field field, String colName, Class entityType, Field fieldForKey) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+			throw new RuntimeException("type="+entityType.getName()+" needs the NoSqlEntity annotation" +
 					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 		
 		//field's type must be Map or List right now today
@@ -237,29 +268,91 @@ public class ScannerForField {
 			throw new RuntimeException("field="+field+" must be Set, Collection, List or Map since it is annotated with OneToMany");
 
 		MetaListField metaField = metaListProvider.get();
-		MetaClass<?> classMeta = metaInfo.findOrCreate(entityType);
-		metaField.setup(field, colName,  classMeta, fieldForKey);
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
+		metaField.setup(t, field, colName,  classMeta, fieldForKey);
 		
 		return metaField;
 	}
 
 	@SuppressWarnings("unchecked")
-	public MetaField processToOne(Field field, String colNameOrig) {
+	public MetaField processToOne(DboTableMeta t, Field field, String colNameOrig) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
+
+		boolean isIndexed = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class))
+			isIndexed = true;
 		
+		boolean isPartitionedBy = false;
+		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
+			isPartitionedBy = true;
+		
+		Class<?> theSuperclass = null;
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
-		if(!field.getType().isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation" +
+		if(!field.getType().isAnnotationPresent(NoSqlEntity.class) && 
+				field.getType() != ToOneProvider.class) {
+			if(!field.getType().isAnnotationPresent(NoSqlDiscriminatorColumn.class))
+				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
+			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
+			if(theSuperclass == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");
+			NoSqlInheritance anno = theSuperclass.getAnnotation(NoSqlInheritance.class);
+			if(anno == null)
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
+						"up the superclass tree, none of the classes are annotated with NoSqlInheritance");
+			else if(!classExistsInList(anno, field.getType()))
+				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn and has a super class with NoSqlEntity and NoSqlInheritance but is not listed" +
+						"in the NoSqlInheritance tag as one of the subclasses to scan.  Please add it");
+		} else if(field.getType().isAnnotationPresent(NoSqlInheritance.class)){
+			throw new IllegalArgumentException("Okay, so here is the deal.  You have a ToOne relationship defined with an " +
+					"Abstract class that has N number of subclasses.  I do not know which subclass to create a " +
+					"proxy for unless I read yet another row in, BUT you may not want the extra hit so instead, " +
+					"you MUST change this field to javax.inject.Provider instead so you can call provider.get() " +
+					"at which point I will go to the nosql database and read the row in and the type information " +
+					"and create the correct object for this type.  This is a special case, sorry about that.  In summary, all you " +
+					"need to do is change this Field="+field+" to='private ToOneProvider<YourType> provider = new ToOneProvider<YourType>() " +
+					"and then your getter should just be return provider.get() and the setter should be provider.set(yourInst) and all" +
+					"will be fine with the world");
+		} else if(field.getType() == ToOneProvider.class) {
+			throw new UnsupportedOperationException("I can quickly add this one if you need");
+		}
 		
 		MetaProxyField metaField = metaProxyProvider.get();
-		MetaClass<?> classMeta = metaInfo.findOrCreate(field.getType());
-		 
-		metaField.setup(field, colName, classMeta);
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		
+		if(theSuperclass != null) {
+			//we need to swap the classMeta to the more specific class meta which may have not been 
+			//created yet, oh joy...so we findOrCreate and the shell will be filled in when processing
+			//that @NoSqlEntity when it scans the subclasses.
+			MetaClassInheritance meta = (MetaClassInheritance) classMeta;
+			classMeta = meta.findOrCreate(field.getType(), theSuperclass);
+		}
+		
+		metaField.setup(t, field, colName, classMeta, isIndexed, isPartitionedBy);
 		return metaField;
 	}
 
+	@SuppressWarnings("unused")
+	private boolean classExistsInList(NoSqlInheritance anno, Class<?> class1) {
+		Class[] subclasses = anno.subclassesToScan();
+		Class c = null;
+		for(Class sub : subclasses) {
+			if(sub == class1)
+				return true;
+		}		
+		
+		return false;
+	}
+
+	private Class findSuperclassWithNoSqlEntity(Class<?> type) {
+		if(type.isAnnotationPresent(NoSqlEntity.class))
+			return type;
+		else if(type == Object.class)
+			return null;
+		return findSuperclassWithNoSqlEntity(type.getSuperclass());
+	}
 }

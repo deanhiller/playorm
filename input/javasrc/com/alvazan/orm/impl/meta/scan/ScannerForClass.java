@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javassist.util.proxy.MethodFilter;
@@ -15,18 +16,20 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.anno.Embeddable;
-import com.alvazan.orm.api.base.anno.Id;
-import com.alvazan.orm.api.base.anno.Indexed;
-import com.alvazan.orm.api.base.anno.ManyToMany;
-import com.alvazan.orm.api.base.anno.ManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
-import com.alvazan.orm.api.base.anno.OneToOne;
-import com.alvazan.orm.api.base.anno.Transient;
-import com.alvazan.orm.api.spi2.DboDatabaseMeta;
-import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlInheritance;
+import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -51,32 +54,80 @@ public class ScannerForClass {
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
 		//of MetaClass that will be filled in here when Account gets scanned(if it gets scanned
 		//after Activity that is).  You can open call heirarchy on findOrCreateMetaClass ;).
-		MetaClass classMeta = metaInfo.findOrCreate(clazz);
-		classMeta.setMetaClass(clazz);
-		createAndSetProxy(classMeta);
-		scanClass(classMeta);
+		MetaAbstractClass classMeta = metaInfo.findOrCreate(clazz);
+		
+		NoSqlInheritance annotation = clazz.getAnnotation(NoSqlInheritance.class);
+		if(classMeta instanceof MetaClassInheritance) {
+			MetaClassInheritance classMeta2 = (MetaClassInheritance) classMeta;
+			scanMultipleClasses(annotation, classMeta2);
+		} else {
+			MetaClassSingle classMeta2 = (MetaClassSingle)classMeta;
+			DboTableMeta metaDbo = classMeta2.getMetaDbo();
+			scanForAnnotations(classMeta2);
+			scanSingle(classMeta2, metaDbo);
+		}
+		
+		if(classMeta.getIdField() == null)
+			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @NoSqlId and that is required");
 		
 		metaInfo.addTableNameLookup(classMeta);
-		
 		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
+		Class<T> mainClass = metaClass.getMetaClass();
+		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
+		String colFamily = noSqlEntity.columnfamily();
+		if("".equals(colFamily))
+			colFamily = metaClass.getMetaClass().getSimpleName();
+		metaClass.setColumnFamily(colFamily);
+
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
+		List<Field> fields = findAllFields(mainClass);
+		for(Field field : fields) {
+			processIdFieldWorks(metaClass, metaDbo, field);
+		}
+		
+		String discColumn = annotation.discriminatorColumnName();
+		metaClass.setDiscriminatorColumnName(discColumn);
+		
+		for(Class clazz : annotation.subclassesToScan()) {
+			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
+			metaSingle.setColumnFamily(metaClass.getColumnFamily());
+			metaSingle.setMetaClass(clazz);
+			metaInfo.addSubclass(clazz, metaClass);
+			scanSingle(metaSingle, metaDbo);
+		}
+	}
+
+	private <T> void scanSingle(MetaClassSingle<T> classMeta, DboTableMeta metaDbo) {
+		Class<? extends T> proxyClass = createTheProxy(classMeta.getMetaClass());
+		classMeta.setProxyClass(proxyClass);
+		scanFields(classMeta, metaDbo);
+	}
+	
 	@SuppressWarnings("unchecked")
-	private <T> void createAndSetProxy(MetaClass<T> classMeta) {
-		Class<T> fieldType = classMeta.getMetaClass();
+	private <T> Class<T> createTheProxy(Class<?> mainClass) {
 		ProxyFactory f = new ProxyFactory();
-		f.setSuperclass(fieldType);
+		f.setSuperclass(mainClass);
 		f.setInterfaces(new Class[] {NoSqlProxy.class});
 		f.setFilter(new MethodFilter() {
 			public boolean isHandled(Method m) {
 				// ignore finalize()
-				return !m.getName().equals("finalize");
+				if(m.getName().equals("finalize"))
+					return false;
+				else if(m.getName().equals("equals"))
+					return false;
+				else if(m.getName().equals("hashCode"))
+					return false;
+				return true;
 			}
 		});
 		Class<T> clazz = f.createClass();
 		testInstanceCreation(clazz);
 		
-		classMeta.setProxyClass(clazz);
+		return clazz;
 	}
 	
 	/**
@@ -93,9 +144,9 @@ public class ScannerForClass {
 		}
 	}
 	
-	private void scanClass(MetaClass<?> meta) {
+	private void scanForAnnotations(MetaAbstractClass<?> meta) {
 		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
-		Embeddable embeddable = meta.getMetaClass().getAnnotation(Embeddable.class);
+		NoSqlEmbeddable embeddable = meta.getMetaClass().getAnnotation(NoSqlEmbeddable.class);
 		if(noSqlEntity != null) {
 			String colFamily = noSqlEntity.columnfamily();
 			if("".equals(colFamily))
@@ -105,54 +156,69 @@ public class ScannerForClass {
 			log.trace("nothing to do yet here until we implement");
 			//nothing to do at this point
 		} else {
-			throw new RuntimeException("bug, someone added an annotation but didn't add an else if here");
+			throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
 		}
-		
-		scanFields(meta);
 	}
-	private void scanFields(MetaClass<?> meta) {
+	
+	private void scanFields(MetaClassSingle<?> meta, DboTableMeta metaDbo) {
 		Class<?> metaClass = meta.getMetaClass();
-		List<Field[]> fields = new ArrayList<Field[]>();
-		findFields(metaClass, fields);
+		List<Field> fields = findAllFields(metaClass);
 		
-		for(Field[] fieldArray : fields) {
-			for(Field field : fieldArray) {
-				inspectField(meta, field);
-			}
+		for(Field field : fields) {
+			inspectField(meta, metaDbo, field);
 		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void inspectField(MetaClass<?> metaClass, Field field) {
+	private void inspectField(MetaClassSingle<?> metaClass, DboTableMeta metaDbo, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
-				field.isAnnotationPresent(Transient.class))
+				field.isAnnotationPresent(NoSqlTransient.class))
 			return;
 		
-		DboTableMeta metaDbo = metaClass.getMetaDbo();
-		if(field.isAnnotationPresent(Id.class)) {
-			MetaIdField idField = inspectorField.processId(field, metaClass);
-			metaClass.setIdField(idField);
+		if(processIdFieldWorks(metaClass, metaDbo, field))
 			return;
-		}
 		
 		MetaField metaField;
-		if(field.isAnnotationPresent(ManyToOne.class))
-			metaField = inspectorField.processManyToOne(field);
-		else if(field.isAnnotationPresent(OneToOne.class))
-			metaField = inspectorField.processOneToOne(field);
-		else if(field.isAnnotationPresent(ManyToMany.class))
-			metaField = inspectorField.processManyToMany(field);
-		else if(field.isAnnotationPresent(OneToMany.class))
-			metaField = inspectorField.processOneToMany(field);
-		else if(field.isAnnotationPresent(Embeddable.class))
+		if(field.isAnnotationPresent(NoSqlManyToOne.class))
+			metaField = inspectorField.processManyToOne(metaDbo, field);
+		else if(field.isAnnotationPresent(NoSqlOneToOne.class))
+			metaField = inspectorField.processOneToOne(metaDbo, field);
+		else if(field.isAnnotationPresent(NoSqlManyToMany.class))
+			metaField = inspectorField.processManyToMany(metaDbo, field);
+		else if(field.isAnnotationPresent(NoSqlOneToMany.class))
+			metaField = inspectorField.processOneToMany(metaDbo, field);
+		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
 		else
-			metaField = inspectorField.processColumn(field);
+			metaField = inspectorField.processColumn(metaDbo, field);
 		
-		boolean isIndexed = field.isAnnotationPresent(Indexed.class);
-		metaClass.addMetaField(metaField, isIndexed);
-		metaDbo.addColumnMeta(metaField.getMetaDbo());
+		metaClass.addMetaField(metaField);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private boolean processIdFieldWorks(MetaAbstractClass metaClass, DboTableMeta metaDbo, Field field) {
+		if(!field.isAnnotationPresent(NoSqlId.class))
+			return false;
+		
+		if(metaClass.getIdField() != null)
+			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass");
+		
+		MetaIdField idField = inspectorField.processId(metaDbo, field, metaClass);
+		metaClass.setIdField(idField);
+		return true;
+	}
+
+	private List<Field> findAllFields(Class<?> metaClass) {
+		List<Field[]> fields = new ArrayList<Field[]>();
+		findFields(metaClass, fields);
+		
+		List<Field> allFields = new ArrayList<Field>();
+		for(Field[] f : fields) {
+			List<Field> asList = Arrays.asList(f);
+			allFields.addAll(asList);
+		}
+		return allFields;
 	}
 	
 	@SuppressWarnings("rawtypes")

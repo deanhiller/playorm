@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class SetProxyFetchAll<T> extends OurAbstractCollection<T> implements CacheLoadCallback, Set<T> {
@@ -16,8 +16,8 @@ public class SetProxyFetchAll<T> extends OurAbstractCollection<T> implements Cac
 	private static final long serialVersionUID = 1L;
 	private Set<Holder<T>> holders = new HashSet<Holder<T>>();
 	
-	public SetProxyFetchAll(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
-		super(session, classMeta);
+	public SetProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
+		super(owner, session, classMeta);
 		this.keys = keys;
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);

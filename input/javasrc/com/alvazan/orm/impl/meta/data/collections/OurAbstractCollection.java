@@ -8,10 +8,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
+import com.alvazan.orm.impl.meta.data.Tuple;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLoadCallback {
@@ -19,7 +20,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 	
 	private NoSqlSession session;
-	private MetaClass<T> classMeta;
+	private MetaAbstractClass<T> classMeta;
 	
 	protected List<byte[]> keys;
 	protected List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
@@ -27,10 +28,13 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 
 	private boolean removeAll;
 	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
+
+	private Object owner;
 	
-    public OurAbstractCollection(NoSqlSession session2, MetaClass<T> classMeta2) {
+    public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2) {
 		this.session = session2;
 		this.classMeta = classMeta2;
+		this.owner = owner;
 	}
     
 	protected abstract Collection<Holder<T>> getHolders();
@@ -43,7 +47,14 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
 		for(int i = 0; i < this.size(); i++) {
+			byte[] key = keys.get(i);
 			Row row = rows.get(i);
+			Tuple<T> tuple = classMeta.convertIdToProxy(row, key, session, null);
+			if(row == null) {
+				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
+						" reference/FK to a row that does not exist in another table.  " +
+						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
+			}
 			Holder<T> h = (Holder) originalHolders.get(i);
 			T value = h.getValue();
 			if(value instanceof NoSqlProxy) {

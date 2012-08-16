@@ -1,18 +1,21 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javassist.util.proxy.MethodHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.api.spi3.db.conv.Converter;
+import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class NoSqlProxyImpl<T> implements MethodHandler {
@@ -21,11 +24,14 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	private NoSqlSession session;
 	private Object entityId;
 	private Method idMethod;
-	private MetaClass<T> classMeta;
+	private MetaAbstractClass<T> classMeta;
 	private boolean isInitialized = false;
 	private CacheLoadCallback cacheLoadCallback;
+	private Map<Field, Object> indexFieldToOriginalValue = new HashMap<Field, Object>();
 	
-	public NoSqlProxyImpl(NoSqlSession session, MetaClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
+	public NoSqlProxyImpl(NoSqlSession session, MetaAbstractClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
+		if(classMeta.getColumnFamily() == null)
+			throw new IllegalArgumentException("column family in the classMeta parameter cannot be null");
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;
@@ -52,12 +58,14 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		//Here we shortcut as we do not need to go to the database...
 		if(idMethod.equals(superClassMethod))
 			return entityId;
-		else if("__injectData".equals(subclassProxyMethod.getName())) {
-			//This is purely to initialize the proxies from a List/Map of proxies where we already
-			//retrieved the List<Row> from the database.
-			//TODO: REMOVE ME, no longer needed
+		else if("__markInitializedAndCacheIndexedValues".equals(superClassMethod.getName())) {
+			cacheIndexedValues(self);
+			isInitialized = true;
 			return null;
+		} else if("__getOriginalValues".equals(superClassMethod.getName())) {
+			return getOriginalValues();
 		}
+			
 		
 		//Any other method that is called, toString, getHashCode, getName, someMethod() all end up
 		//loading the objects fields from the database in case those methods use those fields
@@ -76,6 +84,19 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		
 		//Not sure if this should be subclassProxyMethod or superClassMethod
         return subclassProxyMethod.invoke(self, args);  // execute the original method.
+	}
+
+	private Map<Field, Object> getOriginalValues() {
+		return indexFieldToOriginalValue;
+	}
+
+	private void cacheIndexedValues(T self) {
+		List<MetaField<T>> cols = classMeta.getIndexedColumns();
+		for(MetaField<T> f : cols) {
+			Field field = f.getField();
+			Object value = f.getFieldRawValue(self);
+			indexFieldToOriginalValue.put(field, value);
+		}
 	}
 
 	private void fillInThisOneInstance(T self) {

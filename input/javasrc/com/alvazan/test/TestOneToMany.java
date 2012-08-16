@@ -9,9 +9,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.KeyValue;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.SomeEntity;
@@ -34,7 +34,7 @@ public class TestOneToMany {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		other.clearDatabase();
 	}
 
 	@Test
@@ -58,6 +58,17 @@ public class TestOneToMany {
 		
 		Assert.assertEquals("notexist", results.get(1).getKey());
 		Assert.assertNull(results.get(1).getValue());
+	}
+	
+	@Test
+	public void testEmptyMap() {
+		SomeEntity entity = new SomeEntity();
+		entity.setName("asdf");
+		mgr.put(entity);
+		mgr.flush();
+		
+		SomeEntity someEntity = mgr.find(SomeEntity.class, entity.getId());
+		Assert.assertEquals(0, someEntity.getActivities().size());
 	}
 	
 	@Test

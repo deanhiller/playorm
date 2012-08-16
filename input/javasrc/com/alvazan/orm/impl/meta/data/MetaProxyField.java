@@ -1,18 +1,32 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
-import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.spi2.DboTableMeta;
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Column;
-import com.alvazan.orm.api.spi3.db.Row;
+import com.alvazan.orm.api.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.InfoForIndex;
+import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
+import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Row;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	//ClassMeta Will eventually have the idField that has the converter!!!
 	//once it is scanned
-	private MetaClass<PROXY> classMeta;
+	private MetaAbstractClass<PROXY> classMeta;
+	private DboColumnToOneMeta metaDbo = new DboColumnToOneMeta();
+
+	public DboColumnMeta getMetaDbo() {
+		return metaDbo;
+	}
 	
 	@Override
 	public String toString() {
@@ -21,27 +35,31 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
 		String columnName = getColumnName();
-		Column column = row.getColumn(columnName.getBytes());
+		byte[] colBytes = StandardConverters.convertToBytes(columnName);
+		Column column = row.getColumn(colBytes);
 		
 		if(column == null) {
 			column = new Column();
 		}
 		
-		Object proxy = convertIdToProxy(column.getValue(), session);
+		Object proxy = convertIdToProxy(row, column.getValue(), session);
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void translateToColumn(OWNER entity, RowToPersist row) {
+	public void translateToColumn(InfoForIndex<OWNER> info) {
+		OWNER entity = info.getEntity();
+		RowToPersist row = info.getRow();
+		
 		Column col = new Column();
 		row.getColumns().add(col);
 		
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
-		byte[] byteVal = classMeta.convertProxyToId(value);
+		byte[] byteVal = classMeta.convertEntityToId(value);
 		if(byteVal == null && value != null) { 
-			//if value is not null byt we get back a byteVal of null, it means the entity has not been
+			//if value is not null but we get back a byteVal of null, it means the entity has not been
 			//initialized with a key yet, BUT this is required to be able to save this object
 			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
 			String child = "'"+field.getType().getSimpleName()+"'";
@@ -54,31 +72,67 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
 		}
 		
-		col.setName(columnName.getBytes());
+		byte[] colBytes = StandardConverters.convertToBytes(columnName);
+		col.setName(colBytes);
 		col.setValue(byteVal);
+		
+		StorageTypeEnum storageType = getStorageType();
+		Object primaryKey = classMeta.fetchId(value);
+		addIndexInfo(info, primaryKey, byteVal, storageType);
+		removeIndexInfo(info, primaryKey, byteVal, storageType);
 	}
 
-	public PROXY convertIdToProxy(byte[] id, NoSqlSession session) {
-		return classMeta.convertIdToProxy(id, session, null);
+	@SuppressWarnings("unchecked")
+	@Override
+	public Object fetchField(Object entity) {
+		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
+		return value;
 	}
 	
-	public void setup(Field field2, String colName, MetaClass<PROXY> classMeta) {
+	@Override
+	public String translateToString(Object fieldsValue) {
+		Object id = classMeta.fetchId((PROXY) fieldsValue);
+		return classMeta.getIdField().getConverter().convertTypeToString(id);
+	}
+	
+	private StorageTypeEnum getStorageType() {
+		StorageTypeEnum storageType = classMeta.getIdField().getMetaIdDbo().getStorageType();
+		return storageType;
+	}
+	
+	@Override
+	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
+		StorageTypeEnum storageType = getStorageType();
+		removingThisEntity(info, indexRemoves, pk, storageType);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public byte[] translateValue(Object value) {
+		byte[] pk = classMeta.convertEntityToId((PROXY) value);
+		if(pk == null && value != null) {
+			throw new ChildWithNoPkException("You can't give us an entity with no pk!!!!  We use the pk to search the database index.  Please fix your bug");
+		}
+		return pk;
+	}
+	
+	public PROXY convertIdToProxy(Row row, byte[] id, NoSqlSession session) {
+		Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, id, session, null);
+		return tuple.getProxy();
+	}
+	
+	public void setup(DboTableMeta tableMeta, Field field2, String colName, MetaAbstractClass<PROXY> classMeta, boolean isIndexed, boolean isPartitionedBy) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		super.setup(field2, colName, fkToTable, null, false);
+		metaDbo.setup(tableMeta, colName, fkToTable, isIndexed, isPartitionedBy);
+		super.setup(field2, colName);
 		this.classMeta = classMeta;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object translateToIndexFormat(OWNER entity) {
-		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		return value;
+	protected Object unwrapIfNeeded(Object value) {
+		PROXY proxy = (PROXY) value;
+		return classMeta.fetchId(proxy);
 	}
-
-	@Override
-	public Class<?> getFieldType() {
-		return this.field.getType();
-	}
-
-	
 
 }

@@ -3,19 +3,19 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity
 public class ForCollection {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	private String name;
 
-	@OneToMany(entityType=Activity.class)
+	@NoSqlOneToMany(entityType=Activity.class)
 	private Collection<Activity> activities = new ArrayList<Activity>();
 	
 	public String getId() {

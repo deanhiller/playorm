@@ -129,16 +129,16 @@ public abstract class Discoverer {
 	 * Finds resources to scan for
 	 * 
 	 * @return
-	 * @throws UnsupportedEncodingException 
 	 */
-	public abstract URL[] findResources();
+	public abstract URL[] findResources(ClassLoader cl);
 	
 	
     /**
      * that's my buddy! this is where all the discovery starts.
+     * @param cl 
      */
-    public final void discover() {
-        URL[] resources = findResources();
+    public final void discover(ClassLoader cl) {
+        URL[] resources = findResources(cl);
         for (URL resource : resources) {
             try {
                 ResourceIterator itr = getResourceIterator(resource, getFilter());

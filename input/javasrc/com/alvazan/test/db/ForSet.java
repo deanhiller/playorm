@@ -4,19 +4,19 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.alvazan.orm.api.base.anno.Id;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
-import com.alvazan.orm.api.base.anno.OneToMany;
+import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity
 public class ForSet {
 
-	@Id
+	@NoSqlId
 	private String id;
 	
 	private String name;
 
-	@OneToMany(entityType=Activity.class)
+	@NoSqlOneToMany(entityType=Activity.class)
 	private Set<Activity> activities = new HashSet<Activity>();
 	
 	public String getId() {

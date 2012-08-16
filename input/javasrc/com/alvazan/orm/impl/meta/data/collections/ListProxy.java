@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class ListProxy<T> extends ArrayList<T> {
 
 	private static final long serialVersionUID = 1L;
 
-	public ListProxy(NoSqlSession session, MetaClass<T> classMeta, List<byte[]> keys) {
+	public ListProxy(NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, null);
 			super.add((T) h);

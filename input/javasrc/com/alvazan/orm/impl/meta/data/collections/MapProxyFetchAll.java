@@ -9,53 +9,74 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi2.NoSqlSession;
-import com.alvazan.orm.api.spi3.db.Row;
-import com.alvazan.orm.impl.meta.data.MetaClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
+import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
+import com.alvazan.orm.impl.meta.data.Tuple;
 
+public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
+
+	private static final Logger log = LoggerFactory.getLogger(MapProxyFetchAll.class);
 	private static final long serialVersionUID = 1L;
-	private boolean cacheLoaded;
+	private boolean cacheLoaded = false;
 	private NoSqlSession session;
-	private MetaClass<V> classMeta;
+	private MetaAbstractClass<V> classMeta;
 	private Field fieldForKey;
 	private List<byte[]> keys;
 	private Set<V> originals = new HashSet<V>();
 	private boolean removeAll;
+	private Object owner;
 	
-	public MapProxyFetchAll(NoSqlSession session, MetaClass<V> classMeta,
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static MapProxyFetchAll create(Object owner, NoSqlSession session, MetaAbstractClass classMeta,
+			List<byte[]> keys, Field fieldForKey) {
+		return new MapProxyFetchAll(owner, session, classMeta, keys, fieldForKey);
+	}
+	private MapProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey) {
 		this.session = session;
 		this.classMeta = classMeta;
 		this.keys = keys;
 		this.fieldForKey = fieldForKey;
+		this.owner = owner;
 	}
 
 	//Callback from one of the proxies to load the entire cache based
 	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
+	@SuppressWarnings("unchecked")
 	public void loadCacheIfNeeded() {
 		if(cacheLoaded)
 			return;
 
 		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
+		log.info("loading key list="+keys+" results="+rows);
 		for(int i = 0; i < this.size(); i++) {
+			byte[] key = keys.get(i);
 			Row row = rows.get(i);
-			V proxy = classMeta.convertIdToProxy(row.getKey(), session, null);
+			Tuple<V> tuple = classMeta.convertIdToProxy(row, key, session, null);
+			if(row == null) {
+				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
+						" reference/FK to a row that does not exist in another table.  " +
+						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
+			}
+
+			V proxy = tuple.getProxy();
 			//inject the row into the proxy object here to load it's fields
 			classMeta.fillInInstance(row, session, proxy);
 			
-			K key = findFieldValue(proxy);
-			super.put(key,  proxy);
+			Object mapKey = getKeyField(proxy);
+			super.put((K) mapKey,  proxy);
 			originals.add(proxy);
 		}
 		cacheLoaded = true;
 	}
 
-	@SuppressWarnings("unchecked")
-	private K findFieldValue(V proxy) {
+	private Object getKeyField(V proxy) {
 		try {
-			return (K) fieldForKey.get(proxy);
+			return fieldForKey.get(proxy);
 		} catch (IllegalArgumentException e) {
 			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {

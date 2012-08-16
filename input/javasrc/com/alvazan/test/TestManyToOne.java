@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.exc.ChildWithNoPkException;
-import com.alvazan.orm.api.base.exc.RowNotFoundException;
+import com.alvazan.orm.api.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
@@ -35,7 +35,7 @@ public class TestManyToOne {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDbAndIndexesIfInMemoryType();
+		other.clearDatabase();
 	}
 	
 	@Test
