@@ -1,4 +1,4 @@
-package com.alvazan.test.needlater;
+package com.alvazan.test;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.test.FactorySingleton;
+import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
@@ -141,40 +141,7 @@ public class TestIndexes {
 		Assert.assertEquals(1, all3.size());
 	}
 	
-	//@Test
-	public void testBooleanWithAndClause() {
-		Account acc = new Account();
-		acc.setName("abc");
-		acc.setIsActive(true);
-		mgr.put(acc);
-		Account acc2 = new Account();
-		acc2.setName("dean");
-		acc2.setIsActive(false);
-		mgr.put(acc2);
-		Account acc3 = new Account();
-		acc3.setName("dean");
-		acc3.setIsActive(true);
-		mgr.put(acc3);
-		Account acc4 = new Account();
-		acc4.setName("dean");
-		acc4.setIsActive(true);
-		mgr.put(acc4);		
-		Account acc5 = new Account();
-		acc5.setName("dean");
-		acc5.setIsActive(null);
-		mgr.put(acc5);
-		
-		mgr.flush();
-		
-		List<Account> activeList = Account.findAnd(mgr, "dean", true);
-		Assert.assertEquals(2, activeList.size());
-		
-		List<Account> nullList = Account.findAnd(mgr, "dean", null);
-		Assert.assertEquals(1, nullList.size());
-		
-		List<Account> orList = Account.findOr(mgr, "dean", true);
-		Assert.assertEquals(5, orList.size());
-	}
+	
 	
 	//@Test
 	@SuppressWarnings("unchecked")
@@ -187,10 +154,11 @@ public class TestIndexes {
 		acc2.setName("dean");
 		acc2.setIsActive(false);
 		mgr.put(acc2);
-		Account acc3 = new Account();
-		acc3.setName("dean");
-		acc3.setIsActive(true);
-		mgr.fillInWithKey(acc3); //Fill in with key is required by the index
+		
+		//Here we have to go raw and update the index ourselves with another fake account that does
+		//not exist
+		NoSqlSession session = mgr.getSession();
+		//session.persistIndex(colFamily, indexColFamily, rowKey, column);
 		
 		mgr.flush();
 		

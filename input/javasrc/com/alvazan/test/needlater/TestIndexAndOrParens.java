@@ -12,6 +12,7 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.FactorySingleton;
+import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexAndOrParens {
@@ -47,6 +48,41 @@ public class TestIndexAndOrParens {
 		Assert.assertEquals(1, list.size());
 	}
 
+	//@Test
+	public void testBooleanWithAndClause() {
+		Account acc = new Account();
+		acc.setName("abc");
+		acc.setIsActive(true);
+		mgr.put(acc);
+		Account acc2 = new Account();
+		acc2.setName("dean");
+		acc2.setIsActive(false);
+		mgr.put(acc2);
+		Account acc3 = new Account();
+		acc3.setName("dean");
+		acc3.setIsActive(true);
+		mgr.put(acc3);
+		Account acc4 = new Account();
+		acc4.setName("dean");
+		acc4.setIsActive(true);
+		mgr.put(acc4);		
+		Account acc5 = new Account();
+		acc5.setName("dean");
+		acc5.setIsActive(null);
+		mgr.put(acc5);
+		
+		mgr.flush();
+		
+		List<Account> activeList = Account.findAnd(mgr, "dean", true);
+		Assert.assertEquals(2, activeList.size());
+		
+		List<Account> nullList = Account.findAnd(mgr, "dean", null);
+		Assert.assertEquals(1, nullList.size());
+		
+		List<Account> orList = Account.findOr(mgr, "dean", true);
+		Assert.assertEquals(5, orList.size());
+	}
+		
 	//@Test
 	public void testSimpleOr() {
 		List<Activity> findByName = Activity.findWithOr(mgr, "hello", 6);
