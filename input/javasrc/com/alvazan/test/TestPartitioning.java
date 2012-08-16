@@ -38,11 +38,11 @@ public class TestPartitioning {
 	@Test
 	public void testPartitioning() {
 		PartAccount acc = new PartAccount();
-		acc.setIsActive(true);
+		acc.setBusinessName("biz");
 		acc.setSomeNumber(5);
 		
 		PartAccount acc2 = new PartAccount();
-		acc.setIsActive(false);
+		acc.setBusinessName("biz2");
 		acc.setSomeNumber(6);
 		
 		PartitionedTrade trade = new PartitionedTrade();

@@ -45,6 +45,14 @@ public class PartAccount {
 		this.someNumber = someNumber;
 	}
 
+	public String getBusinessName() {
+		return businessName;
+	}
+
+	public void setBusinessName(String businessName) {
+		this.businessName = businessName;
+	}
+
 	public static List<PartAccount> findAll(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
 		return query.getResultList();

@@ -152,12 +152,10 @@ public class TestIndexes {
 	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
 		PartAccount acc = new PartAccount();
-		acc.setName("abc");
-		acc.setIsActive(true);
+		acc.setBusinessName("abc");
 		mgr.put(acc);
 		PartAccount acc2 = new PartAccount();
-		acc2.setName("dean");
-		acc2.setIsActive(false);
+		acc2.setBusinessName("dean");
 		mgr.put(acc2);
 		
 		//Here we have to go raw and update the index ourselves with another fake PartAccount that does
@@ -166,7 +164,7 @@ public class TestIndexes {
 		DboTableMeta table = mgr.find(DboTableMeta.class, "Account");
 		DboColumnMeta colMeta = table.getColumnMeta("businessName");
 		ScanInfo info = colMeta.createScanInfo(null, null);
-		session.persistIndex("Account", info.getIndexColFamily(), info.getRowKey(), column);
+		session.persistIndex("Account", info.getIndexColFamily(), info.getRowKey(), null);
 		
 		
 		
