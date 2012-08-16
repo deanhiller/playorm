@@ -75,7 +75,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		try {
 			logInformationImpl(actions);
 		} catch(Exception e) {
-			log.info("(exception logging save actions, turn on trace to see)");
+			log.info("[rawlogger] (exception logging save actions, turn on trace to see)");
 		}
 	}
 	private void logInformationImpl(List<Action> actions) {
@@ -167,12 +167,12 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String msg = logColScanImpl(info, from, to);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
-			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
 	private String logColScanImpl(ScanInfo info, Key from, Key to) {
-		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
@@ -226,7 +226,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String msg = logColScanImpl2(info);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
-			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			log.info("[rawlogger](Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
@@ -249,7 +249,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Override
 	public void clearDatabase() {
 		if(log.isInfoEnabled()) {
-			log.info("clearing database");
+			log.info("[rawlogger] clearing database");
 		}
 		session.clearDatabase();
 	}
@@ -257,7 +257,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Override
 	public void start(Map<String, Object> properties) {
 		if(log.isInfoEnabled()) {
-			log.info("starting NoSQL Service Provider and connecting");
+			log.info("[rawlogger] starting NoSQL Service Provider and connecting");
 		}
 		session.start(properties);
 	}
@@ -265,7 +265,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Override
 	public void close() {
 		if(log.isInfoEnabled()) {
-			log.info("closing NoSQL Service Provider");
+			log.info("[rawlogger] closing NoSQL Service Provider");
 		}
 		session.close();
 	}
