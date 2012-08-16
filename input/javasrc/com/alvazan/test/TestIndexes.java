@@ -18,9 +18,14 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
+import com.alvazan.test.db.PartAccount;
 
 public class TestIndexes {
 
@@ -143,31 +148,36 @@ public class TestIndexes {
 	
 	
 	
-	//@Test
+	@Test
 	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
-		Account acc = new Account();
+		PartAccount acc = new PartAccount();
 		acc.setName("abc");
 		acc.setIsActive(true);
 		mgr.put(acc);
-		Account acc2 = new Account();
+		PartAccount acc2 = new PartAccount();
 		acc2.setName("dean");
 		acc2.setIsActive(false);
 		mgr.put(acc2);
 		
-		//Here we have to go raw and update the index ourselves with another fake account that does
+		//Here we have to go raw and update the index ourselves with another fake PartAccount that does
 		//not exist
 		NoSqlSession session = mgr.getSession();
-		//session.persistIndex(colFamily, indexColFamily, rowKey, column);
+		DboTableMeta table = mgr.find(DboTableMeta.class, "Account");
+		DboColumnMeta colMeta = table.getColumnMeta("businessName");
+		ScanInfo info = colMeta.createScanInfo(null, null);
+		session.persistIndex("Account", info.getIndexColFamily(), info.getRowKey(), column);
+		
+		
 		
 		mgr.flush();
 		
 		//NOTE: Account3 was NOT PUT in the database(or you could say removed but index not updated yet)
 		try {
-			Account.findAll(mgr);
+			PartAccount.findAll(mgr);
 			Assert.fail("It should fail since account 3 is not in storage");
 		} catch(StorageMissingEntitesException e) {
-			List<Account> foundAccounts = e.getFoundElements();
+			List<PartAccount> foundAccounts = e.getFoundElements();
 			Assert.assertEquals(2, foundAccounts.size());
 		}
 	}

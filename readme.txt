@@ -1,3 +1,16 @@
+PlayOrm Feature List
+
+* Partitioning so you can query a one trillion row table in just ms with JQL(Java Query Language)
+* OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
+* support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
+* Inhertance class heirarchy in one table is supported like hibernate
+* flush() If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
+* first level read cache
+
+Flush - 
+A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations for the end of the transation so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work.  In typical nosql fashion of course, this is NOT a transaction, more like a unit of work.
+
+
 Note on Test Driven Development
 
 We believe TDD to be very important and believe in more component testing than Functional or QA testing(testing that includes testing more code than unit tests typically do, but less code then a full QA test so we can simulate errors that QA cannot).  For this reason, the first priority of this project is to always have an in-memory implementation of indexes, databases, etc. so that you can use a live database during your unit testing that is in-memory and easily wipe it by just creating another one.
