@@ -100,7 +100,7 @@ public class RowImpl implements Row {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll() {
-		throw new UnsupportedOperationException("not done yet");
+	public Collection<Column> columnRangeScanAll() {
+		return this.columns.values();
 	}
 }

@@ -215,7 +215,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo info, int batchSize) {
+	public Collection<Column> columnRangeScanAll(ScanInfo info, int batchSize) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);

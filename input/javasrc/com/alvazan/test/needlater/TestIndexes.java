@@ -113,7 +113,7 @@ public class TestIndexes {
 		Assert.assertNull(activityNull);
 	}
 	
-	//@Test
+	@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();

@@ -58,6 +58,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
 			Iterable<Column> scan = session.columnRangeScanAll(scanInfo, BATCH_SIZE);
+			processKeys(objectKeys, scan);
 		} else if(root.getType() == NoSqlLexer.EQ) {
 			log.info("root="+root.getExpressionAsString());
 			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();

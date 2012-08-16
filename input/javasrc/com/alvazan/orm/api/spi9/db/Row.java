@@ -21,6 +21,6 @@ public interface Row {
 
 	Collection<Column> columnByPrefix(byte[] prefix);
 
-	Iterable<Column> columnRangeScanAll();
+	Collection<Column> columnRangeScanAll();
 	
 }

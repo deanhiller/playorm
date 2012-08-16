@@ -254,19 +254,13 @@ public class DboTableMeta {
 
 	public DboColumnMeta getAnyIndex() {
 		initCaches();
-		Collection<DboColumnMeta> values = nameToField.values();
-		if(values.size() == 0)
+		if(indexedColumnsCache.size() == 0)
 			throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation");
 		
 		//spread load over the index rows .....
-		int index = r.nextInt(values.size());
-		int counter = 0;
-		for(DboColumnMeta meta : values) {
-			if(counter == index)
-				return meta;
-			counter++;
-		}
-		throw new RuntimeException("bug, should never get here.  index="+index+" counter="+counter+" size="+values.size());
+		int index = r.nextInt(indexedColumnsCache.size());
+		
+		return indexedColumnsCache.get(index);
 	}
 	
 }
