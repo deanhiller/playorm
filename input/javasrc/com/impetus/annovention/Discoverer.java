@@ -129,7 +129,6 @@ public abstract class Discoverer {
 	 * Finds resources to scan for
 	 * 
 	 * @return
-	 * @throws UnsupportedEncodingException 
 	 */
 	public abstract URL[] findResources(ClassLoader cl);
 	

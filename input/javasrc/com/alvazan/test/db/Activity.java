@@ -3,7 +3,6 @@ package com.alvazan.test.db;
 import java.util.List;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;

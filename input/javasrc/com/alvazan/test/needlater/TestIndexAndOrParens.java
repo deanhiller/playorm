@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Activity;
 
