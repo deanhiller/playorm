@@ -116,7 +116,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
 	@Override
 	public List<MetaField<T>> getIndexedColumns() {
-		throw new UnsupportedOperationException("not done yet");
+		throw new UnsupportedOperationException("not done yet.  ie. don't have index support for inheritance tables yet");
 	}
 
 	@Override
@@ -128,6 +128,11 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	public void setDiscriminatorColumnName(String discColumn) {
 		discriminatorColumnName = discColumn;
 		discColAsBytes = StandardConverters.convertToBytes(discColumn);
+	}
+
+	@Override
+	public boolean isPartitioned() {
+		throw new UnsupportedOperationException("not done yet.  ie. don't have partition support for inheritance tables yet");
 	}
 	
 }

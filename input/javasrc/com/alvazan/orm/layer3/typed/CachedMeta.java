@@ -5,8 +5,12 @@ import java.util.Map;
 
 import javax.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
@@ -15,6 +19,7 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 @Singleton
 public class CachedMeta {
 
+	private static final Logger log = LoggerFactory.getLogger(CachedMeta.class);
 	private Map<String, DboTableMeta> cachedMeta = new HashMap<String, DboTableMeta>();
 	private NoSqlEntityManager mgr;
 	
@@ -32,6 +37,7 @@ public class CachedMeta {
 	private DboTableMeta loadAllTableData(String colFamily) {
 		//only synchronize on the column family we need to create so we create it once
 		synchronized(colFamily.intern()) {
+			log.info("loading table="+colFamily);
 			DboTableMeta dboTableMeta = cachedMeta.get(colFamily);
 			if(dboTableMeta != null)
 				return dboTableMeta;
@@ -40,7 +46,8 @@ public class CachedMeta {
 			
 			//We don't want lots of threads writing data into this structure as it reads from the database so instead
 			//we will prefetch everything that is typically used here....
-			table.getIdColumnMeta().getColumnName(); //load this id stuff
+			DboColumnIdMeta idMeta = table.getIdColumnMeta();
+			idMeta.getColumnName(); //make sure the idmeta is loaded from datastore
 			//load all columns as well
 			for(DboColumnMeta col : table.getAllColumns()) {
 				if(col instanceof DboColumnToManyMeta) {

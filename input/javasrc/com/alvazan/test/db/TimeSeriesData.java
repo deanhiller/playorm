@@ -51,14 +51,14 @@ public class TimeSeriesData {
 
 	public static TimeSeriesData findById(NoSqlEntityManager mgr, Long id) {
 		Partition<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
-		Query<TimeSeriesData> query = index.getNamedQuery("findById");
+		Query<TimeSeriesData> query = index.createNamedQuery("findById");
 		query.setParameter("key", id);
 		return query.getSingleObject();
 	}
 
 	public static TimeSeriesData findByTemp(NoSqlEntityManager mgr, float f) {
 		Partition<TimeSeriesData> index = mgr.getIndex(TimeSeriesData.class, "");
-		Query<TimeSeriesData> query = index.getNamedQuery("findByTemp");
+		Query<TimeSeriesData> query = index.createNamedQuery("findByTemp");
 		query.setParameter("temp", f);
 		return query.getSingleObject();		
 	}

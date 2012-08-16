@@ -36,7 +36,7 @@ public interface MetaClass<T> {
 
 	MetaField<T> getMetaFieldByCol(String columnName);
 
-
+	boolean isPartitioned();
 
 
 }

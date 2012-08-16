@@ -9,6 +9,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -19,6 +22,8 @@ import com.alvazan.orm.api.spi3.TypedRow;
 
 public class TestNewRawLayer {
 
+	private static final Logger log = LoggerFactory.getLogger(TestNewRawLayer.class);
+	
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 	
@@ -39,6 +44,8 @@ public class TestNewRawLayer {
 	
 	@Test
 	public void testBasicChangeToIndex() {
+		log.info("testBasicChangeToIndex");
+		try {
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		String cf = "User";
@@ -52,10 +59,15 @@ public class TestNewRawLayer {
 		Assert.assertEquals(id, result.getRowKey());
 		Assert.assertEquals(row.getColumn("name").getValue(), result.getColumn("name").getValue());
 		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
+		} finally {
+		log.info("DONE test BasicChangeToIndex");
+		}
 	}
 	
 	@Test
 	public void testTimeSeries() {
+		log.info("testTimeSeries");
+		try {
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		String cf = "TimeSeriesData";
@@ -78,7 +90,9 @@ public class TestNewRawLayer {
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
-		
+		} finally {
+			log.info("DONE WITH TEST time series");
+		}
 	}
 	
 	private TypedRow<String> createUser(String key, String name, String lastname) {

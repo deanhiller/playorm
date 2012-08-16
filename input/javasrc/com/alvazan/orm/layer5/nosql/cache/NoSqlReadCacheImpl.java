@@ -184,4 +184,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		session.setOrmSessionForMeta(ormSession);
 	}
 
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		return session.columnRangeScanAll(scanInfo, batchSize);
+	}
+
 }

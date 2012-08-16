@@ -32,4 +32,6 @@ public interface NoSqlRawSession {
 	public Iterable<Column> columnRangeScan(ScanInfo scan,
 			byte[] from, byte[] to, int batchSize);
 
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize);
+
 }

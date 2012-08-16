@@ -107,4 +107,14 @@ public class QueryAdapter<T> implements Query<T> {
 		return entities;
 	}
 
+	@Override
+	public void setFirstResult(int firstResult) {
+		indexQuery.setFirstResult(firstResult);
+	}
+
+	@Override
+	public void setMaxResults(int batchSize) {
+		indexQuery.setMaxResults(batchSize);
+	}
+
 }

@@ -6,6 +6,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.PartitionInfo;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
@@ -13,7 +14,7 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 
-public class IndexImpl<T> implements Partition<T> {
+public class PartitionImpl<T> implements Partition<T> {
 
 	@SuppressWarnings("rawtypes")
 	@Inject
@@ -28,7 +29,7 @@ public class IndexImpl<T> implements Partition<T> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Query<T> getNamedQuery(String name) {
+	public Query<T> createNamedQuery(String name) {
 		MetaQuery<T> metaQuery = metaClass.getNamedQuery(name);
 		
 		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(partitionByColumn, partitionId, session);
@@ -41,7 +42,7 @@ public class IndexImpl<T> implements Partition<T> {
 	}
 
 	@Override
-	public Query<T> getNamedQueryJoin(String name, PartitionInfo... info) {
+	public Query<T> createNamedQueryJoin(String name, PartitionInfo... info) {
 		throw new UnsupportedOperationException("We do not support joins just yet");
 	}
 
@@ -52,6 +53,9 @@ public class IndexImpl<T> implements Partition<T> {
 		if(partitionObj != null) {
 			if(partitionByColumn == null) {
 				throw new IllegalArgumentException("partitionBy cannot be null if partitionObj is supplied");
+			} else if(!metaClass2.isPartitioned()) {
+				throw new IllegalArgumentException("This table="+metaClass2.getMetaClass().getName()+" is not partitioned(no "+NoSqlPartitionByThisField.class
+						+" annotation on any field was there, so you can't supply a partitionBy param(use null or call mgr.createNamedQuery instead!!!)");
 			}
 			MetaField<T> metaCol = metaClass2.getMetaFieldByCol(partitionByColumn);
 			if(metaCol == null)

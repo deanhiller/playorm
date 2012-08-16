@@ -17,8 +17,6 @@ import com.alvazan.test.db.Activity;
 
 public class TestIndexAndOrParens {
 
-	private static Partition<Activity> index;
-
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 
@@ -30,7 +28,7 @@ public class TestIndexAndOrParens {
 	@Before
 	public void createEntityManager() {
 		mgr = factory.createEntityManager();
-		index = setupRecords();
+		setupRecords();
 	}
 	@After
 	public void clearDatabase() {
@@ -43,19 +41,19 @@ public class TestIndexAndOrParens {
 	
 	//@Test
 	public void testSimpleAnd() {
-		List<Activity> findByName = Activity.findWithAnd(index, "hello", 5);
+		List<Activity> findByName = Activity.findWithAnd(mgr, "hello", 5);
 		Assert.assertEquals(1, findByName.size());
 		
-		List<Activity> list = Activity.findWithAnd(index, "hello", 6);
+		List<Activity> list = Activity.findWithAnd(mgr, "hello", 6);
 		Assert.assertEquals(1, list.size());
 	}
 
 	//@Test
 	public void testSimpleOr() {
-		List<Activity> findByName = Activity.findWithOr(index, "hello", 6);
+		List<Activity> findByName = Activity.findWithOr(mgr, "hello", 6);
 		Assert.assertEquals(3, findByName.size());
 		
-		List<Activity> list = Activity.findWithOr(index, "nothaveThe5OrHellohere", 20);
+		List<Activity> list = Activity.findWithOr(mgr, "nothaveThe5OrHellohere", 20);
 		Assert.assertEquals(1, list.size());
 	}
 	
@@ -77,15 +75,15 @@ public class TestIndexAndOrParens {
 		//8 T, T, T :
 		
 		//First query should not be found....(A)
-		List<Activity> withParens = Activity.findWithParens(index, "notfound", 99, 5.55f);
+		List<Activity> withParens = Activity.findWithParens(mgr, "notfound", 99, 5.55f);
 		Assert.assertEquals(0, withParens.size());
 		
 		//Second query should be found....(B)
-		List<Activity> list = Activity.findWithoutParens(index, "notfound", 99, 5.55f);
+		List<Activity> list = Activity.findWithoutParens(mgr, "notfound", 99, 5.55f);
 		Assert.assertEquals(1, list.size());		
 	}
 	
-	private Partition<Activity> setupRecords() {
+	private void setupRecords() {
 		
 		Activity act1 = new Activity();
 		act1.setName("hello");
@@ -127,9 +125,7 @@ public class TestIndexAndOrParens {
 		act6.setIsCool(true);
 		mgr.put(act6);
 		
-		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		mgr.flush();
-		return index;
 	}
 
 }

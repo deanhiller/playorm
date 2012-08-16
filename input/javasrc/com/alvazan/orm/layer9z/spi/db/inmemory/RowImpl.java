@@ -98,4 +98,9 @@ public class RowImpl implements Row {
 		}
 		return prefixed;
 	}
+
+	@Override
+	public Iterable<Column> columnRangeScanAll() {
+		throw new UnsupportedOperationException("not done yet");
+	}
 }

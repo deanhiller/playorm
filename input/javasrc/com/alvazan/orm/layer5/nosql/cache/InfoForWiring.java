@@ -14,6 +14,7 @@ public class InfoForWiring {
 	private String query;
 	private String targetTable;
 	private ExpressionNode astTree;
+	private DboTableMeta firstTable;
 	
 	public InfoForWiring(String query, String targetTable) {
 		this.query = query;
@@ -59,7 +60,13 @@ public class InfoForWiring {
 	public ExpressionNode getAstTree() {
 		return astTree;
 	}
-	
+
+	public DboTableMeta getFirstTable() {
+		return firstTable;
+	}
+	public void setFirstTable(DboTableMeta t) {
+		this.firstTable = t;
+	}
 	
 
 }

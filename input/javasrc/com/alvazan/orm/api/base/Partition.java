@@ -2,8 +2,8 @@ package com.alvazan.orm.api.base;
 
 public interface Partition<T> {
 
-	public Query<T> getNamedQuery(String name);
+	public Query<T> createNamedQuery(String name);
 	
-	public Query<T> getNamedQueryJoin(String name, PartitionInfo... info);
+	public Query<T> createNamedQueryJoin(String name, PartitionInfo... info);
 	
 }

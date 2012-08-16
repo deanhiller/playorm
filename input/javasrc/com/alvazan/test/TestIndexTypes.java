@@ -29,7 +29,7 @@ public class TestIndexTypes {
 	@Before
 	public void createEntityManager() {
 		mgr = factory.createEntityManager();
-		index = setupRecords();
+		setupRecords();
 	}
 	@After
 	public void clearDatabase() {
@@ -39,41 +39,41 @@ public class TestIndexTypes {
 	
 	@Test
 	public void testBasicString() {
-		List<Activity> findByName = Activity.findByName(index, "hello");
+		List<Activity> findByName = Activity.findByName(mgr, "hello");
 		Assert.assertEquals(1, findByName.size());
 		
-		List<Activity> zero = Activity.findByName(index, "asdf");
+		List<Activity> zero = Activity.findByName(mgr, "asdf");
 		Assert.assertEquals(0, zero.size());
 	}
 
 	@Test
 	public void testBasicBoolean() {
-		List<Activity> list = Activity.findByCool(index, true);
+		List<Activity> list = Activity.findByCool(mgr, true);
 		Assert.assertEquals(1, list.size());
 		
-		List<Activity> zero = Activity.findByCool(index, false);
+		List<Activity> zero = Activity.findByCool(mgr, false);
 		Assert.assertEquals(0, zero.size());
 	}
 	
 	@Test
 	public void testBasicLong() {
-		List<Activity> list = Activity.findNumTimes(index, 5L);
+		List<Activity> list = Activity.findNumTimes(mgr, 5L);
 		Assert.assertEquals(1, list.size());
 		
-		List<Activity> zero = Activity.findNumTimes(index, 0L);
+		List<Activity> zero = Activity.findNumTimes(mgr, 0L);
 		Assert.assertEquals(0, zero.size());		
 	}
 
 	@Test
 	public void testBasicFloat() {
-		List<Activity> list = Activity.findByFloat(index, 5.65f);
+		List<Activity> list = Activity.findByFloat(mgr, 5.65f);
 		Assert.assertEquals(1, list.size());
 		
-		List<Activity> zero = Activity.findByFloat(index, 5.66f);
+		List<Activity> zero = Activity.findByFloat(mgr, 5.66f);
 		Assert.assertEquals(0, zero.size());		
 	}
 	
-	private Partition<Activity> setupRecords() {
+	private void setupRecords() {
 		Activity act = new Activity();
 		act.setName("hello");
 		act.setMyFloat(5.65f);
@@ -82,10 +82,8 @@ public class TestIndexTypes {
 		act.setIsCool(true);
 		mgr.put(act);
 		
-		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
 		
 		mgr.flush();
-		return index;
 	}
 
 }

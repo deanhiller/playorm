@@ -7,9 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
@@ -24,7 +21,6 @@ import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(MetaClassSingle.class);
 	private Class<? extends T> proxyClass;
 
 	/**
@@ -173,6 +169,11 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		if(indexedColumns.size() > 0 || idField.getMetaDbo().isIndexed())
 			return true;
 		return false;
+	}
+
+	@Override
+	public boolean isPartitioned() {
+		return partitionColumns.size() > 0;
 	}
 	
 }

@@ -96,4 +96,9 @@ public class NoSqlDevLogger implements NoSqlSession {
 		session.setOrmSessionForMeta(orm);
 	}
 
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		return session.columnRangeScanAll(scanInfo, batchSize);
+	}
+
 }

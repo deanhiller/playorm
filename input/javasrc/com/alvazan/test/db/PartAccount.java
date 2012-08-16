@@ -49,17 +49,17 @@ public class PartAccount extends AccountSuper{
 	}
 
 	public static List<PartAccount> findBetween(Partition<PartAccount> index, float begin, float to) {
-		Query<PartAccount> query = index.getNamedQuery("findBetween");
+		Query<PartAccount> query = index.createNamedQuery("findBetween");
 		query.setParameter("begin", begin);
 		query.setParameter("end", to);
 		return query.getResultList();
 	}
 	public static List<PartAccount> findAll(Partition<PartAccount> index) {
-		Query<PartAccount> query = index.getNamedQuery("findAll");
+		Query<PartAccount> query = index.createNamedQuery("findAll");
 		return query.getResultList();
 	}
 	public static List<PartAccount> findAnd(Partition<PartAccount> index, String name, Boolean active) {
-		Query<PartAccount> query = index.getNamedQuery("findAnd");
+		Query<PartAccount> query = index.createNamedQuery("findAnd");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();
@@ -67,7 +67,7 @@ public class PartAccount extends AccountSuper{
 
 	public static List<PartAccount> findOr(Partition<PartAccount> index, String name,
 			boolean active) {
-		Query<PartAccount> query = index.getNamedQuery("findOr");
+		Query<PartAccount> query = index.createNamedQuery("findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList();

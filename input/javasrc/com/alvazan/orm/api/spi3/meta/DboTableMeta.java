@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
@@ -48,6 +49,7 @@ public class DboTableMeta {
 
 	private transient List<DboColumnMeta> indexedColumnsCache;
 	private transient List<DboColumnMeta> cacheOfPartitionedBy;
+	private transient Random r = new Random();
 	
 	private static Class typedRowProxyClass;
 	
@@ -247,6 +249,24 @@ public class DboTableMeta {
 			if(meta.isPartitionedByThisColumn())
 				cacheOfPartitionedBy.add(meta);
 		}
+	}
+
+
+	public DboColumnMeta getAnyIndex() {
+		initCaches();
+		Collection<DboColumnMeta> values = nameToField.values();
+		if(values.size() == 0)
+			throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation");
+		
+		//spread load over the index rows .....
+		int index = r.nextInt(values.size());
+		int counter = 0;
+		for(DboColumnMeta meta : values) {
+			if(counter == index)
+				return meta;
+			counter++;
+		}
+		throw new RuntimeException("bug, should never get here.  index="+index+" counter="+counter+" size="+values.size());
 	}
 	
 }

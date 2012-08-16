@@ -78,7 +78,7 @@ public class TestPartitioning {
 		mgr.flush();
 		
 		Partition<PartitionedTrade> index = mgr.getPartition(PartitionedTrade.class, "account", acc);
-		Query<PartitionedTrade> query = index.getNamedQuery("findByUnique");
+		Query<PartitionedTrade> query = index.createNamedQuery("findByUnique");
 		query.setParameter("unique", trade.getUniqueColumn());
 		List<PartitionedTrade> tradesInAcc1Partition = query.getResultList();
 		

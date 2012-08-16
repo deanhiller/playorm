@@ -20,5 +20,7 @@ public interface Row {
 	Collection<Column> columnSlice(byte[] from, byte[] to);
 
 	Collection<Column> columnByPrefix(byte[] prefix);
+
+	Iterable<Column> columnRangeScanAll();
 	
 }

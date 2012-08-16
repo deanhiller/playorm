@@ -42,4 +42,9 @@ public class HadoopSession implements NoSqlRawSession {
 		throw new UnsupportedOperationException("not done here yet");
 	}
 
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		throw new UnsupportedOperationException("not done here yet");
+	}
+
 }

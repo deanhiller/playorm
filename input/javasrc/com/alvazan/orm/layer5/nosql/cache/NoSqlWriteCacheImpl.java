@@ -125,7 +125,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public Iterable<Column> columnRangeScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
 		return rawSession.columnRangeScan(info, from, to, batchSize);
 	}
-
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		return rawSession.columnRangeScanAll(scanInfo, batchSize);
+	}
+	
 	@Override
 	public void setOrmSessionForMeta(Object session) {
 		this.ormSession = session;

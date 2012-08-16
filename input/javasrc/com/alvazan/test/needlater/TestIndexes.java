@@ -45,9 +45,6 @@ public class TestIndexes {
 	}
 	
 	@Test
-	public void empty() {}
-	
-	//@Test
 	public void testFailureOnTypeMismatch() {
 		Activity act = new Activity();
 		act.setName("hello");
@@ -60,10 +57,10 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
+		Partition<Activity> index = mgr.getPartition(Activity.class, "account", null);
 		
 		double from = 100;
-		Query<Activity> query = index.getNamedQuery("findBetween");
+		Query<Activity> query = index.createNamedQuery("findBetween");
 		try {
 			query.setParameter("begin", from);
 			Assert.fail("Should have throw TypeMismatchException and did not");
@@ -79,7 +76,7 @@ public class TestIndexes {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void testFailureOnGetSingleResultAndSuccess() {
 		//Activity has null reference to account
 		Activity act = new Activity();
@@ -93,23 +90,26 @@ public class TestIndexes {
 		act2.setName("hello");
 		act2.setNumTimes(4);
 		mgr.put(act2);
-		
-		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		Partition<Activity> index2 = mgr.getIndex(Activity.class, "/activity/bysecurity/security1");
+
+		Activity act3 = new Activity();
+		act3.setUniqueColumn("isunique");
+		act3.setName("hellossss");
+		act3.setNumTimes(8);
+		mgr.put(act3);
 		
 		mgr.flush();
 		
 		try {
-			Activity.findSingleResult(index, act.getUniqueColumn());
+			Activity.findSingleResult(mgr, act.getUniqueColumn());
 			Assert.fail("IT should throw exception and does not");
 		} catch(TooManyResultException e) {
 			log.info("yeah, we pass the test");
 		}
 		
-		Activity activity = Activity.findSingleResult(index2, act.getUniqueColumn());
-		Assert.assertEquals(act.getNumTimes(), activity.getNumTimes());
+		Activity activity = Activity.findSingleResult(mgr, act3.getUniqueColumn());
+		Assert.assertEquals(act3.getNumTimes(), activity.getNumTimes());
 		
-		Activity activityNull = Activity.findSingleResult(index, "notinThere");
+		Activity activityNull = Activity.findSingleResult(mgr, "notinThere");
 		Assert.assertNull(activityNull);
 	}
 	
@@ -129,20 +129,16 @@ public class TestIndexes {
 		acc3.setUsers(2.9f);
 		mgr.put(acc3);
 		
-		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
-		Partition<Account> index2 = mgr.getIndex(Account.class, "/otherindex");
+		Activity act = new Activity();
+		mgr.put(act);
 		
 		mgr.flush();
 		
-		List<Account> results = Account.findBetween(index, 2.555f, 3.444f);
-		Assert.assertEquals(2, results.size());
-		Assert.assertEquals(acc2.getName(), results.get(0).getName());
+		List<Account> all2 = Account.findAll(mgr);
+		Assert.assertEquals(3, all2.size());
 		
-		List<Account> all = Account.findAll(index);
-		Assert.assertEquals(3, all.size());
-		
-		List<Account> all2 = Account.findAll(index2);
-		Assert.assertEquals(1, all2.size());
+		List<Activity> all3 = Activity.findAll(mgr);
+		Assert.assertEquals(1, all3.size());
 	}
 	
 	//@Test
@@ -168,17 +164,15 @@ public class TestIndexes {
 		acc5.setIsActive(null);
 		mgr.put(acc5);
 		
-		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
-
 		mgr.flush();
 		
-		List<Account> activeList = Account.findAnd(index, "dean", true);
+		List<Account> activeList = Account.findAnd(mgr, "dean", true);
 		Assert.assertEquals(2, activeList.size());
 		
-		List<Account> nullList = Account.findAnd(index, "dean", null);
+		List<Account> nullList = Account.findAnd(mgr, "dean", null);
 		Assert.assertEquals(1, nullList.size());
 		
-		List<Account> orList = Account.findOr(index, "dean", true);
+		List<Account> orList = Account.findOr(mgr, "dean", true);
 		Assert.assertEquals(5, orList.size());
 	}
 	
@@ -198,13 +192,11 @@ public class TestIndexes {
 		acc3.setIsActive(true);
 		mgr.fillInWithKey(acc3); //Fill in with key is required by the index
 		
-		Partition<Account> index = mgr.getIndex(Account.class, "/someindex");
-
 		mgr.flush();
 		
 		//NOTE: Account3 was NOT PUT in the database(or you could say removed but index not updated yet)
 		try {
-			Account.findAll(index);
+			Account.findAll(mgr);
 			Assert.fail("It should fail since account 3 is not in storage");
 		} catch(StorageMissingEntitesException e) {
 			List<Account> foundAccounts = e.getFoundElements();
@@ -212,38 +204,5 @@ public class TestIndexes {
 		}
 	}
 
-	//@Test
-	public void testSeparateIndexes() {
-		//Activity has null reference to account
-		Activity act = new Activity();
-		act.setName("hello");
-		act.setNumTimes(5);
-		mgr.put(act);
-		Activity act2 = new Activity();
-		act2.setName("hello");
-		act2.setNumTimes(4);
-		mgr.put(act2);
-		
-		Partition<Activity> index = mgr.getIndex(Activity.class, "/activity/byaccount/account1");
-		
-		Activity act3 = new Activity();
-		act3.setName("hello");
-		act3.setNumTimes(6);
-		mgr.put(act3);
-		
-		Partition<Activity> index2 = mgr.getIndex(Activity.class, "/activity/byaccount/account2");
-		
-		//flush the persists and the index modifications to the database and index storage 
-		mgr.flush();
-		
-		//Use the first index on the table and should find the two entities we added to that index..
-		List<Activity> activities = Activity.findBetween(index, 3, 7);
-		Assert.assertEquals(2, activities.size());
-		
-		//Use the second index on the table and should find the one entity on that
-		//index yielding infinite scale if we partition indexes correctly
-		List<Activity> activities2 = Activity.findBetween(index2, 3, 7);
-		Assert.assertEquals(1, activities2.size());		
-	}
 
 }

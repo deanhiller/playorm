@@ -18,6 +18,8 @@ public interface Query<T> {
 	 */
 	public List<KeyValue<T>> getResultKeyValueList();
 	
+	
+	
 	public T getSingleObject();
 	
 	/**
@@ -27,4 +29,6 @@ public interface Query<T> {
 	 */
 	public List<T> getResultList();
 	
+	public void setFirstResult(int firstResult);
+	public void setMaxResults(int batchSize);
 }

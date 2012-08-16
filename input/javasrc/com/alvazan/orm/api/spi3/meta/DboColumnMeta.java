@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi3.TypedRow;
 import com.alvazan.orm.api.spi3.meta.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 @SuppressWarnings("rawtypes")
 @NoSqlEntity
@@ -328,6 +329,16 @@ public abstract class DboColumnMeta {
 
 	public DboTableMeta getOwner() {
 		return owner;
+	}
+
+	public ScanInfo createScanInfo(String partitionBy, String partitionId) {
+		String realColFamily = getOwner().getColumnFamily();
+		String colName = getColumnName();
+		String columnFamily = getIndexTableName();
+		String indexRowKey = getIndexRowKey(partitionBy, partitionId);
+		byte[] rowKey = StandardConverters.convertToBytes(indexRowKey);
+		ScanInfo scanInfo = new ScanInfo(realColFamily, colName, columnFamily, rowKey);
+		return scanInfo;
 	}
 	
 }

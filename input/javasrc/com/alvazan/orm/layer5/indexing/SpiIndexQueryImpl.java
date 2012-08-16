@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi5.NoSqlSession;
@@ -21,7 +22,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private static final Logger log = LoggerFactory.getLogger(SpiIndexQueryImpl.class);
 
-	private static final int BATCH_SIZE = 2000;
+	private static final int BATCH_SIZE = 500;
 	
 	private SpiMetaQueryImpl spiMeta;
 	private NoSqlSession session;
@@ -29,6 +30,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private String partitionBy;
 	private String partitionId;
+
+	private Integer maxResults;
+	private int firstResult;
 	
 	public void setup(String partitionBy, String partitionId, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.partitionBy = partitionBy;
@@ -49,36 +53,41 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	@Override
 	public List<byte[]> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
-		
 		List<byte[]> objectKeys = new ArrayList<byte[]>();
-		log.info("root="+root.getExpressionAsString());
-		if(root.getType() == NoSqlLexer.EQ) {
+		if(root == null) {
+			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
+			DboColumnMeta metaCol = tableMeta.getAnyIndex();
+			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
+			Iterable<Column> scan = session.columnRangeScanAll(scanInfo, BATCH_SIZE);
+		} else if(root.getType() == NoSqlLexer.EQ) {
+			log.info("root="+root.getExpressionAsString());
 			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
 			DboColumnMeta info = attr.getColumnInfo();
 			
 			byte[] data = retrieveValue(info, root.getRightChild());
 			
-			String realColFamily = info.getOwner().getColumnFamily();
-			String colName = info.getColumnName();
-			
-			String columnFamily = info.getIndexTableName();
-			String indexRowKey = info.getIndexRowKey(partitionBy, partitionId);
-			//if doing a partion, you can add to indexPrefix here
-			//The indexPrefix is of format /<ColumnFamilyName>/<ColumnNameToIndex>/<PartitionKey>/<PartitionId> where key is like ByAccount or BySecurity and id is the id of account or security
-			byte[] rowKey = StandardConverters.convertToBytes(indexRowKey);
-			ScanInfo scanInfo = new ScanInfo(realColFamily, colName, columnFamily, rowKey);
+			ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId);
 			Iterable<Column> scan = session.columnRangeScan(scanInfo, data, data, BATCH_SIZE);
 			
-			for(Column c : scan) {
-				byte[] primaryKey = c.getName();
-				objectKeys.add(primaryKey);
-			}
+			processKeys(objectKeys, scan);
 			
 		} else
 			throw new UnsupportedOperationException("not supported yet");
 		
 		//session.columnRangeScan(cf, indexKey, from, to, batchSize)
 		return objectKeys;
+	}
+
+	private void processKeys(List<byte[]> objectKeys, Iterable<Column> scan) {
+		int counter = 0;
+		for(Column c : scan) {
+			if(counter < firstResult)
+				continue; //keep skipping until counter == firstResult
+			byte[] primaryKey = c.getName();
+			objectKeys.add(primaryKey);
+			if(maxResults != null && objectKeys.size() >= maxResults.intValue())
+				break;
+		}
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
@@ -107,5 +116,18 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		return data;
 	}
 
+	@Override
+	public void setFirstResult(int firstResult) {
+		if(firstResult < 0)
+			throw new IllegalArgumentException("firstResult must be 0 or greater");
+		this.firstResult = firstResult;
+	}
+
+	@Override
+	public void setMaxResults(int batchSize) {
+		if(batchSize <= 0)
+			throw new IllegalArgumentException("batchSize must be greater than 0");
+		this.maxResults = batchSize;
+	}
 	
 }

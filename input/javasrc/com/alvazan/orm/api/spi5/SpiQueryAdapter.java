@@ -8,5 +8,9 @@ public interface SpiQueryAdapter {
 
 	@SuppressWarnings("rawtypes")
 	public List getResultList();
+
+	public void setFirstResult(int firstResult);
+
+	public void setMaxResults(int batchSize);
 	
 }

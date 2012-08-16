@@ -46,7 +46,7 @@ public class User {
 
 	public static User findByName(NoSqlEntityManager mgr, String name) {
 		Partition<User> index = mgr.getIndex(User.class, "");
-		Query<User> query = index.getNamedQuery("findByName");
+		Query<User> query = index.createNamedQuery("findByName");
 		query.setParameter("name", name);
 		return query.getSingleObject();
 	}

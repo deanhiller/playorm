@@ -279,61 +279,62 @@ public class CassandraSession implements NoSqlRawSession {
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo info,
 			byte[] from, byte[] to, int batchSize) {
-		try {
-			String colFamily = info.getIndexColFamily();
-			byte[] rowKey = info.getRowKey();
-			return columnSliceImpl(colFamily, rowKey, from, to, batchSize);
-		} catch (ConnectionException e) {
-			throw new RuntimeException(e);
+		String colFamily = info.getIndexColFamily();
+		byte[] rowKey = info.getRowKey();
+		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		if(info1 == null) {
+			//well, if column family doesn't exist, then no entities exist either
+			log.info("query was run on column family that does not yet exist="+colFamily);
+			return new ArrayList<Column>();
 		}
+		
+		ColumnType type = info1.getColumnType();
+		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
+			ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+			return findBasic(rowKey, range, info1);
+		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
+				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
+				type == ColumnType.COMPOSITE_STRINGPREFIX) {
+			AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
+			CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(from).lessThanEquals(to).limit(batchSize);
+			return findBasic(rowKey, range, info1);
+		} else
+			throw new UnsupportedOperationException("not done here yet");
 	}
 	
-	private Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) throws ConnectionException {
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		String colFamily = scanInfo.getIndexColFamily();
+		byte[] rowKey = scanInfo.getRowKey();
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
 			return new ArrayList<Column>();
 		}
-
+		
 		ColumnType type = info.getColumnType();
-		if(type == ColumnType.ANY_EXCEPT_COMPOSITE)
-			return findBasic(rowKey, from, to, batchSize, info);
-		else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
+		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
+			ByteBufferRange range = new RangeBuilder().setLimit(batchSize).build();
+			return findBasic(rowKey, range, info);
+		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
-				type == ColumnType.COMPOSITE_STRINGPREFIX)
-			return findString(rowKey, from, to, batchSize, info);
-		else
+				type == ColumnType.COMPOSITE_STRINGPREFIX) {
+			AnnotatedCompositeSerializer serializer = info.getCompositeSerializer();
+			CompositeRangeBuilder range = serializer.buildRange().limit(batchSize);
+			return findBasic(rowKey, range, info);
+		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
-
-	private Iterable<Column> findString(byte[] rowKey, byte[] from, byte[] to,
-			int batchSize, Info info) {
+	
+	private Iterable<Column> findBasic(byte[] rowKey, ByteBufferRange range, Info info) {
 		ColumnFamily cf = info.getColumnFamilyObj();
-		AnnotatedCompositeSerializer serializer = info.getCompositeSerializer();
-		
-		CompositeRangeBuilder range = serializer.buildRange().greaterThanEquals(from).lessThanEquals(to).limit(batchSize);
-		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
-
-		RowQuery rowQuery = query.getKey(rowKey)
-							.withColumnRange(range)
-							.autoPaginate(true);
-
-		return new OurIter(cf, rowQuery, info);
-	}
-
-	private Iterable<Column> findBasic(byte[] rowKey, byte[] from, byte[] to,
-			int batchSize, Info info) {
-		ColumnFamily cf = info.getColumnFamilyObj();
-		ByteBufferRange build = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
 		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
-							.withColumnRange(build);
+							.withColumnRange(range);
 		
 		return new OurIter(cf, rowQuery, info);
 	}

@@ -68,7 +68,7 @@ public class ScannerForQuery {
 		// knowledge this way
 		walkTheTree(theTree, visitor1, wiring);
 
-		spiMetaQuery.setASTTree(wiring.getAstTree());
+		spiMetaQuery.setASTTree(wiring.getAstTree(), wiring.getFirstTable());
 		
 		return visitor1;
 	}
@@ -214,6 +214,9 @@ public class ScannerForQuery {
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 			
+		if(wiring.getFirstTable() == null)
+			wiring.setFirstTable(metaClass);
+		
 		if(tableNode.getChildCount() == 0) {
 			if(wiring.getNoAliasTable() != null)
 				throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");

@@ -78,7 +78,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		}
 	}
 	private void logInformationImpl(List<Action> actions) {
-		String msg = "Data being flushed to database in one go=";
+		String msg = "[rawlogger] Data being flushed to database in one go=";
 		for(Action act : actions) {
 			String cf = act.getColFamily();
 			if(act instanceof Persist) {
@@ -165,7 +165,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	private void logColScan(ScanInfo info, byte[] from, byte[] to, int batchSize) {
 		try {
 			String msg = logColScanImpl(info, from, to, batchSize);
-			log.info(msg);
+			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
 			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
@@ -191,6 +191,39 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		return msg+" scanning index rowkey="+rowKey+" from="+fromStr+" to="+toStr+" with batchSize="+batchSize;
 	}
 
+	@Override
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo, int batchSize) {
+		if(log.isInfoEnabled()) {
+			logColScan2(scanInfo, batchSize);
+		}
+		return session.columnRangeScanAll(scanInfo, batchSize);
+	}
+	
+	private void logColScan2(ScanInfo info, int batchSize) {
+		try {
+			String msg = logColScanImpl2(info, batchSize);
+			log.info("[rawlogger]"+msg);
+		} catch(Exception e) {
+			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+		}
+	}
+
+	private String logColScanImpl2(ScanInfo info, int batchSize) {
+		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		if(info.getEntityColFamily() == null)
+			return msg + " (meta for main CF can't be looked up)";
+
+		DboTableMeta meta = databaseInfo.getMeta(info.getEntityColFamily());
+		if(meta == null)
+			return msg + " (meta for main CF was not found)";
+		DboColumnMeta colMeta = meta.getColumnMeta(info.getColumnName());
+		if(colMeta == null)
+			return msg + " (CF meta found but columnMeta not found)";
+		
+		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
+		return msg+" full index scan on rowkey="+rowKey+" with batchSize="+batchSize;
+	}
+	
 	@Override
 	public void clearDatabase() {
 		if(log.isInfoEnabled()) {
