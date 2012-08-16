@@ -30,23 +30,35 @@ public class TestIndexGtLtRanges {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase(true);
 	}
-
-	@Test
-	public void empty() {}
 	
-	//@Test
+	@Test
 	public void testBasicString() {
-		//TODO: test some ranges out here
+		
+		//List<Activity> list = Activity.findBetween(mgr, 4, 7);
+		//Assert.assertEquals(2, list.size());
+		
 	}
 
 	private void setupRecords() {
-		Activity act = new Activity();
-		act.setName("hello");
-		act.setMyFloat(5.65f);
-		act.setUniqueColumn("notunique");
-		act.setNumTimes(5);
-		act.setIsCool(true);
-		mgr.put(act);
+		Activity act1 = new Activity();
+		act1.setNumTimes(3);
+		mgr.put(act1);
+		
+		Activity act2 = new Activity();
+		act2.setNumTimes(4);
+		mgr.put(act2);
+
+		Activity act3 = new Activity();
+		act3.setNumTimes(5);
+		mgr.put(act3);
+		
+		Activity act4 = new Activity();
+		act4.setNumTimes(7);
+		mgr.put(act4);
+		
+		Activity act5 = new Activity();
+		act5.setNumTimes(8);
+		mgr.put(act5);
 		
 		mgr.flush();
 	}

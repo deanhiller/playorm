@@ -60,7 +60,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			Iterable<Column> scan = session.columnRangeScanAll(scanInfo, BATCH_SIZE);
 			processKeys(objectKeys, scan);
 		} else if(root.getType() == NoSqlLexer.EQ) {
-			log.info("root="+root.getExpressionAsString());
+			log.info("root="+root);
 			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
 			DboColumnMeta info = attr.getColumnInfo();
 			

@@ -3,6 +3,8 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -68,11 +70,29 @@ public class ScannerForQuery {
 		// knowledge this way
 		walkTheTree(theTree, visitor1, wiring);
 
-		spiMetaQuery.setASTTree(wiring.getAstTree(), wiring.getFirstTable());
+		ExpressionNode node = wiring.getAstTree();
+		ExpressionNode newTree = rewireTreeIfNeededForBetween(node, wiring.getAttributeUsedCount(), query);
+		
+		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
 		
 		return visitor1;
 	}
 	
+	private ExpressionNode rewireTreeIfNeededForBetween(ExpressionNode node,
+			Map<String, Integer> attributeUsedCount, String query) {
+		ExpressionNode root = node;
+		for(Entry<String, Integer> m : attributeUsedCount.entrySet()) {
+			if(m.getValue().intValue() <= 1)
+				continue;
+			
+			log.info("reorganizing query tree for varname="+m.getKey());
+			BetweenVisitor visitor = new BetweenVisitor(m.getKey());
+			root = visitor.walkAndFixTree(root, query);
+		}
+		
+		return root;
+	}
+
 	public static CommonTree parseTree(String query) {
         ANTLRStringStream stream = new ANTLRStringStream(query);
         NoSqlLexer lexer = new NoSqlLexer(stream);
@@ -284,7 +304,7 @@ public class ScannerForQuery {
 				rightSide = leftSide;
 				leftSide = temp;				
 			} else if(!isAttribute(leftSide)) {
-				throw new IllegalArgumentException("Currently, each param in the where clause must be compared to an attribute.  bad query="+wiring.getQuery()+" bad piece="+node.getExpressionAsString());
+				throw new IllegalArgumentException("Currently, each param in the where clause must be compared to an attribute.  bad query="+wiring.getQuery()+" bad piece="+node);
 			}
 			
 			ExpressionNode left  = new ExpressionNode(leftSide);
@@ -409,6 +429,7 @@ public class ScannerForQuery {
 		
 		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), attributeField); 
 		attributeNode2.setState(attr);
+		wiring.incrementAttributesCount(metaClass.getColumnFamily()+"-"+attributeField.getColumnName());
 		
 		TypeInfo typeInfo = new TypeInfo(attributeField);
 		
