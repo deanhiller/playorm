@@ -15,13 +15,17 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
+import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
@@ -46,7 +50,7 @@ public class TestIndexes {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDatabase();
+		other.clearDatabase(true);
 	}
 	
 	@Test
@@ -158,17 +162,40 @@ public class TestIndexes {
 		acc2.setBusinessName("dean");
 		mgr.put(acc2);
 		
+		mgr.flush();
+		
 		//Here we have to go raw and update the index ourselves with another fake PartAccount that does
 		//not exist
 		NoSqlSession session = mgr.getSession();
-		DboTableMeta table = mgr.find(DboTableMeta.class, "Account");
+		DboTableMeta table = mgr.find(DboTableMeta.class, "PartAccount");
 		DboColumnMeta colMeta = table.getColumnMeta("businessName");
 		ScanInfo info = colMeta.createScanInfo(null, null);
-		session.persistIndex("Account", info.getIndexColFamily(), info.getRowKey(), null);
-		
-		
+		IndexColumn col = new IndexColumn();
+		col.setColumnName("businessName");
+		String key = "nonexistpk";
+		byte[] pk = StandardConverters.convertToBytes(key);
+		byte[] value = StandardConverters.convertToBytes("DeansCoolBusiness");
+		col.setIndexedValue(value);
+		col.setPrimaryKey(pk);
+		session.persistIndex("PartAccount", info.getIndexColFamily(), info.getRowKey(), col);
 		
 		mgr.flush();
+		
+		List<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		
+		KeyValue<PartAccount> kVal = null;
+		for(KeyValue<PartAccount> k : all) {
+			if(k.getKey().equals(key))
+				kVal = k;
+		}
+		
+		try {
+			kVal.getValue();
+			Assert.fail("This keyValue has no real value so should throw exception");
+		} catch(RowNotFoundException e) {
+			log.info("this should occur");
+		}
+		
 		
 		//NOTE: Account3 was NOT PUT in the database(or you could say removed but index not updated yet)
 		try {

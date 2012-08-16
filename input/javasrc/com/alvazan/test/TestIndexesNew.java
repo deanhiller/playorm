@@ -33,7 +33,7 @@ public class TestIndexesNew {
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
 		try {
-			other.clearDatabase();
+			other.clearDatabase(true);
 		} catch(Exception e) {
 			log.warn("Could not clean up properly", e);
 		}

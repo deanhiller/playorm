@@ -11,6 +11,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.spi3.KeyValue;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -53,6 +54,10 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
+	public static List<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
+		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
+		return query.getResultKeyValueList();		
+	}
 	public static List<PartAccount> findAll(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
 		return query.getResultList();
@@ -65,5 +70,5 @@ public class PartAccount {
 	public void addActivity(PartitionedTrade act1) {
 		activities.add(act1);
 	}
-	
+
 }

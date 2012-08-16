@@ -52,8 +52,6 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
-	private DboDatabaseMeta databaseInfo;
-	@Inject
 	private CachedMeta cache;
 	
 	private Object injector;
@@ -105,11 +103,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         log.info("Finished scanning classes, saving meta data");
         isScanned = true;
         
-        NoSqlEntityManager tempMgr = createEntityManager();
-
-        saveMetaData(tempMgr);
-        
-        tempMgr.flush();
+        BaseEntityManagerImpl tempMgr = (BaseEntityManagerImpl) createEntityManager();
+        tempMgr.saveMetaData();
         
         cache.init(this);
         log.info("Finished saving meta data, complelety done initializing");
@@ -139,48 +134,6 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	throw new UnsupportedOperationException("not implemented yet");
         
 		rescan(classToScan, cl);
-	}
-
-	private void saveMetaData(NoSqlEntityManager tempMgr) {
-        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-//        if(existing != null)
-//        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
-		
-        for(DboTableMeta table : databaseInfo.getAllTables()) {
-        	
-        	for(DboColumnMeta col : table.getAllColumns()) {
-        		tempMgr.put(col);
-        	}
-        	
-        	tempMgr.put(table.getIdColumnMeta());
-        	
-        	tempMgr.put(table);
-        }
-        
-        databaseInfo.setId(DboDatabaseMeta.META_DB_ROWKEY);
-        
-        //NOW, on top of the ORM entites, we have 3 special index column families of String, BigInteger and BigDecimal
-        //which are one of the types in the composite column name.(the row keys are all strings).  The column names
-        //are <value being indexed of String or BigInteger or BigDecimal><primarykey><length of first value> so we can
-        //sort it BUT we can determine the length of first value so we can get to primary key.
-        
-        for(StorageTypeEnum type : StorageTypeEnum.values()) {
-        	if(type == StorageTypeEnum.BYTES)
-        		continue;
-        	DboTableMeta cf = new DboTableMeta();
-        	cf.setColumnFamily(type.getIndexTableName());
-        	cf.setColNamePrefixType(type);
-        	
-        	DboColumnIdMeta idMeta = new DboColumnIdMeta();
-        	idMeta.setup(cf, "id", String.class, false);
-        	
-        	tempMgr.put(idMeta);
-        	tempMgr.put(cf);
-        	
-        	databaseInfo.addMetaClassDbo(cf);
-        }
-        
-        tempMgr.put(databaseInfo);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

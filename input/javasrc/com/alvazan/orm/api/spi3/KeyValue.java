@@ -10,8 +10,6 @@ public class KeyValue<T> {
 	private RowNotFoundException e;
 	
 	public Object getKey() {
-		if(e != null)
-			throw new RowNotFoundException("Row was referenced in index, but not found in nosql store.  key="+key, e);
 		return key;
 	}
 	public void setKey(Object key) {

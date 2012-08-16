@@ -166,6 +166,10 @@ public interface NoSqlEntityManager {
 	 * so that you can run unit tests against in-memory (and run the same unit tests
 	 * against cassandra live as well).
 	 * 
+	 * @param recreateMeta - It is usually a good idea to recreate the meta objects in
+	 * the database after clearing it as the more raw layers depend on the meta.  The ORM
+	 * itself created the original meta so it really doesn't care about the meta in the
+	 * database
 	 */
-	public void clearDatabase();
+	public void clearDatabase(boolean recreateMeta);
 }

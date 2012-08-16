@@ -6,7 +6,12 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi3.KeyValue;
@@ -20,6 +25,7 @@ import com.alvazan.orm.impl.meta.data.MetaInfo;
 
 public class QueryAdapter<T> implements Query<T> {
 
+	private static final Logger log = LoggerFactory.getLogger(QueryAdapter.class);
 	@Inject
 	private MetaInfo metaInfo;
 	
@@ -94,9 +100,24 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public List<T> getResultList() {
 		List<KeyValue<T>> all = getResultKeyValueList();
-		return getEntities(all);
+		try {
+			return getEntities(all);
+		} catch(RowNotFoundException e) {
+			log.trace("converting row not found into stored entities missing", e);
+			List<T> foundElements = formEntitiesList(all);
+			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store", e);
+		}
 	}
 	
+	private List<T> formEntitiesList(List<KeyValue<T>> all) {
+		List<T> entities = new ArrayList<T>();
+		for(KeyValue<T> k : all) {
+			if(k.getException() == null)
+				entities.add(k.getValue());
+		}
+		return entities;
+	}
+
 	private List<T> getEntities(List<KeyValue<T>> keyValues){
 		List<T> entities = new ArrayList<T>();
 		for(KeyValue<T> keyVal : keyValues) {

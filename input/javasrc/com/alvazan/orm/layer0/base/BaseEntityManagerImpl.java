@@ -13,8 +13,13 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
+import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
@@ -36,6 +41,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	private Provider<PartitionImpl> indexProvider; 
 	@Inject
 	private NoSqlTypedSessionImpl typedSession;
+	@Inject
+	private DboDatabaseMeta databaseInfo;
+	
 	private boolean isTypedSessionInitialized = false;
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -222,10 +230,56 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	}
 
 	@Override
-	public void clearDatabase() {
+	public void clearDatabase(boolean recreateMeta) {
 		session.clearDb();
+		
+		saveMetaData();
 	}
 
+	void saveMetaData() {
+		BaseEntityManagerImpl tempMgr = this;
+        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+//        if(existing != null)
+//        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
+		
+        for(DboTableMeta table : databaseInfo.getAllTables()) {
+        	
+        	for(DboColumnMeta col : table.getAllColumns()) {
+        		tempMgr.put(col);
+        	}
+        	
+        	tempMgr.put(table.getIdColumnMeta());
+        	
+        	tempMgr.put(table);
+        }
+        
+        databaseInfo.setId(DboDatabaseMeta.META_DB_ROWKEY);
+        
+        //NOW, on top of the ORM entites, we have 3 special index column families of String, BigInteger and BigDecimal
+        //which are one of the types in the composite column name.(the row keys are all strings).  The column names
+        //are <value being indexed of String or BigInteger or BigDecimal><primarykey><length of first value> so we can
+        //sort it BUT we can determine the length of first value so we can get to primary key.
+        
+        for(StorageTypeEnum type : StorageTypeEnum.values()) {
+        	if(type == StorageTypeEnum.BYTES)
+        		continue;
+        	DboTableMeta cf = new DboTableMeta();
+        	cf.setColumnFamily(type.getIndexTableName());
+        	cf.setColNamePrefixType(type);
+        	
+        	DboColumnIdMeta idMeta = new DboColumnIdMeta();
+        	idMeta.setup(cf, "id", String.class, false);
+        	
+        	tempMgr.put(idMeta);
+        	tempMgr.put(cf);
+        	
+        	databaseInfo.addMetaClassDbo(cf);
+        }
+        
+        tempMgr.put(databaseInfo);
+        tempMgr.flush();
+	}
+	
 	public void setup() {
 		session.setOrmSessionForMeta(this);		
 	}

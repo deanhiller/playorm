@@ -32,7 +32,7 @@ public class TestPartitioning {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDatabase();
+		other.clearDatabase(true);
 	}
 
 	@Test

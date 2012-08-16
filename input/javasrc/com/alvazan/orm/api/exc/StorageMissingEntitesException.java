@@ -13,7 +13,7 @@ public class StorageMissingEntitesException extends NoSqlOrmException {
 		super();
 		foundElements = null;
 	}
-	public StorageMissingEntitesException(List foundElements, String message) {
+	public StorageMissingEntitesException(List foundElements, String message, RowNotFoundException e) {
 		super(message);
 		this.foundElements = foundElements;
 	}

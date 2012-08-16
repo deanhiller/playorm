@@ -31,7 +31,7 @@ public class TestInheritanceSingleTable {
 	@After
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
-		other.clearDatabase();
+		other.clearDatabase(true);
 	}
 
 	@Test

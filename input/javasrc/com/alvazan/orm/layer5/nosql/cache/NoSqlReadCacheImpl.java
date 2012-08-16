@@ -35,6 +35,12 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 
 	@Override
 	public void persistIndex(String colFamily, String indexColFamily, byte[] rowKey, IndexColumn columns) {
+		if(indexColFamily == null)
+			throw new IllegalArgumentException("indexcolFamily cannot be null");
+		else if(rowKey == null)
+			throw new IllegalArgumentException("rowKey cannot be null");
+		else if(columns == null)
+			throw new IllegalArgumentException("column cannot be null");
 		session.persistIndex(colFamily, indexColFamily, rowKey, columns);
 	}
 	
