@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -154,24 +155,23 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info,
-			byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to) {
 		if(log.isInfoEnabled()) {
-			logColScan(info, from, fromInclusive, to, toInclusive);
+			logColScan(info, from, to);
 		}
-		return session.columnRangeScan(info, from, fromInclusive, to, toInclusive);
+		return session.columnRangeScan(info, from, to);
 	}
 	
-	private void logColScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	private void logColScan(ScanInfo info, Key from, Key to) {
 		try {
-			String msg = logColScanImpl(info, from, fromInclusive, to, toInclusive);
+			String msg = logColScanImpl(info, from, to);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
 			log.info("(Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
-	private String logColScanImpl(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	private String logColScanImpl(ScanInfo info, Key from, Key to) {
 		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -183,20 +183,34 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		if(colMeta == null)
 			return msg + " (CF meta found but columnMeta not found)";
 		
-		Object fromObj = colMeta.convertFromStorage2(from);
-		String fromStr = colMeta.convertTypeToString(fromObj);
-		Object toObj = colMeta.convertFromStorage2(to);
-		String toStr = colMeta.convertTypeToString(toObj);
-		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-
-		String firstSign = " < ";
-		if(fromInclusive)
-			firstSign = " <= ";
-		String secondSign = " < ";
-		if(toInclusive)
-			secondSign = " <= ";
+		String range = "";
+		if(from != null) {
+			Object fromObj = colMeta.convertFromStorage2(from.getKey());
+			range += colMeta.convertTypeToString(fromObj);
+			String firstSign = " < ";
+			if(from.isInclusive())
+				firstSign = " <= ";
+			range += firstSign;
+		}
+		if(from != null || to != null) 
+			range += "VALUE";
+		else
+			range += "ALL DATA";
 		
-		return msg+" scanning index rowkey="+rowKey+" for value in range:"+fromStr+firstSign+"VALUE"+secondSign+toStr+" with batchSize="+info.getBatchSize();
+		if(to != null) {
+			String secondSign = " < ";
+			if(to.isInclusive())
+				secondSign = " <= ";
+			range += secondSign;
+			
+			Object toObj = colMeta.convertFromStorage2(to.getKey());
+			String toStr = colMeta.convertTypeToString(toObj);
+			range += toStr;
+		}
+		
+		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
+		
+		return msg+" scanning index rowkey="+rowKey+" for value in range:"+range+" with batchSize="+info.getBatchSize();
 	}
 
 	@Override

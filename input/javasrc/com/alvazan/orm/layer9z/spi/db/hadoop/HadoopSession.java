@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -38,13 +39,14 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public List<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
 		throw new UnsupportedOperationException("not done here yet");
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		throw new UnsupportedOperationException("not done here yet");
+	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

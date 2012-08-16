@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 
 public class IndexedRow extends RowImpl {
 	
@@ -30,10 +31,17 @@ public class IndexedRow extends RowImpl {
 	
 	
 	@Override
-	public Collection<Column> columnSlice(byte[] from, byte[] to) {
-		OurKey fromKey = new OurKey(from, new byte[0]);
-		OurKey toKey = new OurKey(to, null);
-		NavigableMap<OurKey, IndexColumn> resultMap = columns.subMap(fromKey, true, toKey, true);
+	public Collection<Column> columnSlice(Key from, Key to) {
+		NavigableMap<OurKey, IndexColumn> resultMap = columns;
+		if(from != null) {
+			OurKey fromKey = new OurKey(from.getKey(), new byte[0]);
+			resultMap = columns.tailMap(fromKey, from.isInclusive());
+		}
+		
+		if(to != null) {
+			OurKey toKey = new OurKey(to.getKey(), null);
+			resultMap = columns.headMap(toKey, to.isInclusive());
+		}
 		
 		List<Column> results = new ArrayList<Column>();
 		for(IndexColumn c : resultMap.values()) {

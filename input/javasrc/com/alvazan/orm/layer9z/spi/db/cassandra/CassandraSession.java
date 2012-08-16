@@ -15,6 +15,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.ColumnType;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -277,8 +278,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info,
-			byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to) {
 		if(info.getBatchSize() == 0)
 			throw new IllegalArgumentException("batch size must be supplied");
 		String colFamily = info.getIndexColFamily();
@@ -293,33 +293,34 @@ public class CassandraSession implements NoSqlRawSession {
 		int batchSize = info.getBatchSize();
 		ColumnType type = info1.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
-			ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
-			
+			ByteBufferRange range = new RangeBuilder().setStart(from.getKey()).setEnd(to.getKey()).setLimit(batchSize).build();
 			return findBasic(rowKey, range, info1);
 			
 		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			CompositeRangeBuilder range = setupRangeBuilder(from,
-					fromInclusive, to, toInclusive, info1);
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
 			range = range.limit(batchSize);
 			return findBasic(rowKey, range, info1);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
 
-	private CompositeRangeBuilder setupRangeBuilder(byte[] from,
-			boolean fromInclusive, byte[] to, boolean toInclusive, Info info1) {
+	private CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
 		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
 		CompositeRangeBuilder range = serializer.buildRange();
-		if(fromInclusive)
-			range = range.greaterThanEquals(from);
-		else
-			range = range.greaterThan(from);
-		if(toInclusive)
-			range = range.lessThanEquals(to);
-		else
-			range = range.lessThan(to);
+		if(from != null) {
+			if(from.isInclusive())
+				range = range.greaterThanEquals(from.getKey());
+			else
+				range = range.greaterThan(from.getKey());
+		}
+		if(to != null) {
+			if(to.isInclusive())
+				range = range.lessThanEquals(to.getKey());
+			else
+				range = range.lessThan(to.getKey());
+		}
 		return range;
 	}
 	

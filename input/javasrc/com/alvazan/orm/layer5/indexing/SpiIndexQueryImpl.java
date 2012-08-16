@@ -59,27 +59,38 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
 			Iterable<Column> scan = session.columnRangeScanAll(scanInfo);
 			processKeys(objectKeys, scan);
-		} else if(root.getType() == NoSqlLexer.EQ) {
-			log.info("root="+root);
-			StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
-			DboColumnMeta info = attr.getColumnInfo();
-			
-			byte[] data = retrieveValue(info, root.getRightChild());
-			
-			ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
-			Iterable<Column> scan = session.columnRangeScan(scanInfo, data, true, data, true);
-			
-			processKeys(objectKeys, scan);
-			
+			return objectKeys;
+		}
+	
+		log.info("root="+root);
+		StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
+		DboColumnMeta info = attr.getColumnInfo();
+		byte[] data = retrieveValue(info, root.getRightChild());
+		ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
+		
+		Iterable<Column> scan;
+		if(root.getType() == NoSqlLexer.EQ) {
+			scan = session.columnRangeScan(scanInfo, data, true, data, true);
 		} else if(root.getType() == NoSqlLexer.GT
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT
 				|| root.getType() == NoSqlLexer.LE) {
-			processKeys(null, null);
+			if(root.isInBetweenExpression()) {
+				ExpressionNode node = root.getGreaterThan();
+				ExpressionNode node2 = root.getLessThan();
+				
+				
+				
+			} else
+				throw new UnsupportedOperationException("not done yet here");
+			
+			
+			scan = null;
 			
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
-		
+
+		processKeys(objectKeys, scan);
 		return objectKeys;
 	}
 

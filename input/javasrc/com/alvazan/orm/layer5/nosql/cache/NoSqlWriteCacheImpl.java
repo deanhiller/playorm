@@ -12,6 +12,7 @@ import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -123,7 +124,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
-		return rawSession.columnRangeScan(info, from, fromInclusive, to, toInclusive);
+		
+		Key fromKey = new Key(from, fromInclusive);
+		Key toKey = new Key(to, toInclusive);
+		
+		return rawSession.columnRangeScan(info, fromKey, toKey);
 	}
 	@Override
 	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {

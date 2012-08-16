@@ -18,6 +18,7 @@ import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -200,7 +201,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Collection<Column> columnRangeScan(ScanInfo info, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
+	public Collection<Column> columnRangeScan(ScanInfo info, Key from, Key to) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);

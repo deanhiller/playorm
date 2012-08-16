@@ -148,4 +148,12 @@ public class ExpressionNode {
 		return leftChild;
 	}
 
+	public ExpressionNode getGreaterThan() {
+		return greaterThanExpression;
+	}
+
+	public ExpressionNode getLessThan() {
+		return lessThanExpression;
+	}
+
 }
