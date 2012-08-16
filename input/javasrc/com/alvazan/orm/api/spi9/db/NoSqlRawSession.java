@@ -30,7 +30,6 @@ public interface NoSqlRawSession {
 	public void close();
 
 	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to);
-//			byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive);
 
 	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo);
 

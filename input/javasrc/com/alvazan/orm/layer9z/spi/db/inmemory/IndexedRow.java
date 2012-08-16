@@ -40,7 +40,7 @@ public class IndexedRow extends RowImpl {
 		
 		if(to != null) {
 			OurKey toKey = new OurKey(to.getKey(), null);
-			resultMap = columns.headMap(toKey, to.isInclusive());
+			resultMap = resultMap.headMap(toKey, to.isInclusive());
 		}
 		
 		List<Column> results = new ArrayList<Column>();
