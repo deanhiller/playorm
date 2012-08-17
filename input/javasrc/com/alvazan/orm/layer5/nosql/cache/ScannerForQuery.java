@@ -263,6 +263,7 @@ public class ScannerForQuery {
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
+			node.setState("ANDORnode");
 			List<CommonTree> children = expression.getChildren();
 			for(int i = 0; i < 2; i++) {
 				CommonTree child = children.get(i);
@@ -284,6 +285,7 @@ public class ScannerForQuery {
 		case NoSqlLexer.LT:
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
+			node.setState("comparatorNode");
 			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
 			CommonTree leftSide = (CommonTree) expression.getChild(0);
 			CommonTree rightSide = (CommonTree) expression.getChild(1);

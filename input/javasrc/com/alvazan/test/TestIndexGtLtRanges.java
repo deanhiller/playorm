@@ -38,6 +38,14 @@ public class TestIndexGtLtRanges {
 		
 		List<Activity> list = Activity.findBetween(mgr, 4, 7);
 		Assert.assertEquals(2, list.size());
+		Assert.assertEquals(4, list.get(0).getNumTimes());
+		Assert.assertEquals(5, list.get(1).getNumTimes());
+		
+		List<Activity> list2 = Activity.findBetween2(mgr, 4, 7);
+		Assert.assertEquals(2, list2.size());
+		Assert.assertEquals(5, list2.get(0).getNumTimes());
+		Assert.assertEquals(7, list2.get(1).getNumTimes());
+	
 		
 	}
 

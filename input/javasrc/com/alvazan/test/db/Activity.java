@@ -15,6 +15,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlEntity
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
+	@NoSqlQuery(name="findBetween2", query="select * FROM TABLE e WHERE e.numTimes > :begin and e.numTimes <= :to"),
 	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
 	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
 			" e.name=:name and (e.numTimes = :numTimes or e.myFloat = :myFloat)"),	
@@ -121,6 +122,13 @@ public class Activity {
 
 	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
+		query.setParameter("begin", from);
+		query.setParameter("to", to);
+		return query.getResultList();
+	}
+	
+	public static List<Activity> findBetween2(NoSqlEntityManager mgr, long from, long to) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween2");
 		query.setParameter("begin", from);
 		query.setParameter("to", to);
 		return query.getResultList();

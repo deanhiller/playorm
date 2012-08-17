@@ -125,14 +125,15 @@ public class ExpressionNode {
 
 	public void addExpression(ExpressionNode attrExpNode) {
 		String msg = "this type="+this.getType()+" node type="+attrExpNode.getType();
-		StateAttribute state2 = (StateAttribute) attrExpNode.getState();
+		ExpressionNode attributeSideNode = attrExpNode.getLeftChild();
+		StateAttribute state2 = (StateAttribute) attributeSideNode.getState();
 		if(attrExpNode.getType() == NoSqlLexer.EQ || this.getType() == NoSqlLexer.EQ) {
 			throw new IllegalArgumentException("uhhhmmmm, you are using column="+state2.getColumnInfo().getColumnName()
 					+" twice with 'AND' statement yet one has an = so change to 'OR' or get rid of one. "+ msg);
-		} else if(attrExpNode.getType() == NoSqlLexer.GE || attrExpNode.getType() == NoSqlLexer.GE) {
+		} else if(attrExpNode.getType() == NoSqlLexer.GE || attrExpNode.getType() == NoSqlLexer.GT) {
 			greaterThanExpression = attrExpNode;
 			lessThanExpression = this;
-		} else if(this.getType() == NoSqlLexer.GE || this.getType() == NoSqlLexer.GE) {
+		} else if(this.getType() == NoSqlLexer.GE || this.getType() == NoSqlLexer.GT) {
 			greaterThanExpression = this;
 			lessThanExpression = attrExpNode;
 		} else if(this.getType() == NoSqlLexer.LE || this.getType() == NoSqlLexer.LT) {
