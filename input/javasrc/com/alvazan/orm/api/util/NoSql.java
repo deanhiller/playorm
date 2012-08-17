@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base.util;
+package com.alvazan.orm.api.util;
 
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +11,7 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.netflix.astyanax.AstyanaxContext.Builder;
 
 public class NoSql {
 
@@ -23,12 +24,12 @@ public class NoSql {
 	private static PlayCallback playCallback;
 	
 	@SuppressWarnings("rawtypes")
-	public static void initialize(PlayCallback callback) {
+	public static void initialize(PlayCallback callback, DbTypeEnum serverType, Builder builder) {
 		if(factory != null)
 			return;
 		
 		log.info("Factory is null so we are intializing it");
-			
+
 		playCallback = callback;
 		List<Class> list = callback.getClassesToScan();
 		ClassLoader cl = callback.getClassLoader();
@@ -37,7 +38,8 @@ public class NoSql {
 		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
 		props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, list);
-		NoSqlEntityManagerFactory f = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, cl);
+		props.put(Bootstrap.CASSANDRA_BUILDER, builder);
+		NoSqlEntityManagerFactory f = Bootstrap.create(serverType, props, null, cl);
 		factory = f;
 	} // initialize
 	

@@ -4,9 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -14,8 +12,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.Bootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
@@ -34,9 +30,7 @@ public class TestColumnSlice {
 
 	@Before
 	public void createEntityManager() {
-		Map<String, Object> props = new HashMap<String, Object>();
-		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
-		factory = Bootstrap.create(DbTypeEnum.IN_MEMORY, props, null, null);
+		factory = FactorySingleton.createFactoryOnce();
 		mgr = factory.createEntityManager();
 	}
 	@After

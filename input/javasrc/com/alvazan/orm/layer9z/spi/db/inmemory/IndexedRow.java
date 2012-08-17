@@ -45,11 +45,31 @@ public class IndexedRow extends RowImpl {
 		
 		List<Column> results = new ArrayList<Column>();
 		for(IndexColumn c : resultMap.values()) {
+			//HACK since I am not sure how to make this work and it is not too important...strip off
+			//the ones that have the prefix passed in
+			if(from != null && !from.isInclusive()) {
+				if(isMatch(from, c))
+					continue; //skip this value
+			}
+			if(to != null && !to.isInclusive()) {
+				if(isMatch(to, c))
+					continue; //skip this value since we are exclusive
+			}
+			
 			Column col = new Column();
 			col.setName(c.getPrimaryKey());
 			results.add(col);
 		}
 		return results;
+	}
+
+	private boolean isMatch(Key from, IndexColumn c) {
+		boolean isMatch = false;
+		ByteArray b = new ByteArray(from.getKey());
+		ByteArray val = new ByteArray(c.getIndexedValue());
+		if(b.equals(val))
+			isMatch = true;
+		return isMatch;
 	}
 
 	@Override

@@ -25,13 +25,9 @@ import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.Keyspace;
-import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
-import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.ddl.ColumnFamilyDefinition;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
-import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
@@ -75,33 +71,25 @@ public class ColumnFamilyHelper {
 	}
 
 	public void start(Map<String, Object> properties) throws ConnectionException {
-		Object seedsObj = properties.get(Bootstrap.SEEDS);
-		Object keyspaceNameObj = properties.get(Bootstrap.KEYSPACE);
-		Object clusterNameObj = properties.get(Bootstrap.CLUSTER_NAME);
-		if(seedsObj == null || !(seedsObj instanceof String))
-			throw new IllegalArgumentException("The property Bootstrap.HOST was not in the Map or was in the Map but not as a String");
-		else if(keyspaceNameObj == null || !(keyspaceNameObj instanceof String))
-			throw new IllegalArgumentException("The property Bootstrap.KEYSPACE was not in the Map or was in the Map but not as a String");
-		else if(clusterNameObj == null || !(clusterNameObj instanceof String))
-			throw new IllegalArgumentException("The property Bootstrap.CLUSTER_NAME was not in the Map or was in the Map but not as a String");
-		
-		String clusterName = (String) clusterNameObj; //"SDICluster";
-		keyspaceName = (String) keyspaceNameObj; // "SDIKeyspace";
-		String seeds = (String) seedsObj;
-		Builder builder = new AstyanaxContext.Builder()
-	    .forCluster(clusterName)
-	    .forKeyspace(keyspaceName)
-	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
-	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
-	    )
-	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setMaxConnsPerHost(2)
-	        .setInitConnsPerHost(2)
-	        .setSeeds(seeds)
-	    )
-	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
-		
+//		Object seedsObj = properties.get(Bootstrap.SEEDS);
+//		Object keyspaceNameObj = properties.get(Bootstrap.KEYSPACE);
+//		Object clusterNameObj = properties.get(Bootstrap.CLUSTER_NAME);
+		Object builderObj = properties.get(Bootstrap.CASSANDRA_BUILDER);
+//		if(seedsObj == null || !(seedsObj instanceof String))
+//			throw new IllegalArgumentException("The property Bootstrap.HOST was not in the Map or was in the Map but not as a String");
+//		else if(keyspaceNameObj == null || !(keyspaceNameObj instanceof String))
+//			throw new IllegalArgumentException("The property Bootstrap.KEYSPACE was not in the Map or was in the Map but not as a String");
+//		else if(clusterNameObj == null || !(clusterNameObj instanceof String))
+//			throw new IllegalArgumentException("The property Bootstrap.CLUSTER_NAME was not in the Map or was in the Map but not as a String");
+		if(builderObj == null || !(builderObj instanceof Builder))
+			throw new IllegalArgumentException("The property Bootstrap.CASSANDRA_BUILDER was not in the Map or was in Map but was not of type Builder and must be supplied when using Cassandra plugin");
+
+		Builder builder = (Builder) builderObj;
 		AstyanaxContext<Cluster> clusterContext = builder.buildCluster(ThriftFamilyFactory.getInstance());
+		keyspaceName = clusterContext.getKeyspaceName();
+		if(keyspaceName == null)
+			throw new IllegalArgumentException("You did not call Builder.forKeyspace on the astyanax Builder api.  We need to know the keyspace to continue");
+		
 		clusterContext.start();
 		
 		cluster = clusterContext.getEntity();

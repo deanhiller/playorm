@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base.util;
+package com.alvazan.orm.api.util;
 
 import java.util.List;
 

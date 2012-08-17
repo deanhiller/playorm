@@ -1,13 +1,15 @@
-package com.alvazan.test.needlater;
+package com.alvazan.test;
+
+import java.util.List;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexGtLtRanges {
@@ -34,8 +36,8 @@ public class TestIndexGtLtRanges {
 	@Test
 	public void testBasicString() {
 		
-		//List<Activity> list = Activity.findBetween(mgr, 4, 7);
-		//Assert.assertEquals(2, list.size());
+		List<Activity> list = Activity.findBetween(mgr, 4, 7);
+		Assert.assertEquals(2, list.size());
 		
 	}
 

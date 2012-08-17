@@ -2,7 +2,10 @@ package com.alvazan.orm.api.spi9.db;
 
 import java.util.Collection;
 
+import com.alvazan.orm.layer9z.spi.db.inmemory.RowImpl;
+import com.google.inject.ImplementedBy;
 
+@ImplementedBy(RowImpl.class)
 public interface Row {
 
 	byte[] getKey();

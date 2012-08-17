@@ -12,6 +12,7 @@ public abstract class Bootstrap {
 	public static final String SEEDS = "nosql.host";
 	public static final String KEYSPACE = "nosql.keyspace";
 	public static final String CLUSTER_NAME = "nosql.clustername";
+	public static final String CASSANDRA_BUILDER = "nosql.cassandra.builder";
 
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		return create(type, "com.alvazan.orm.impl.bindings.BootstrapImpl", properties, converters, cl);
