@@ -103,9 +103,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private Key createRightKey(ExpressionNode node, DboColumnMeta info) {
 		byte[] data = retrieveValue(info, node.getRightChild());
-		if(node.getType() == NoSqlLexer.GT)
+		if(node.getType() == NoSqlLexer.LT)
 			return new Key(data, false);
-		else if(node.getType() == NoSqlLexer.GE)
+		else if(node.getType() == NoSqlLexer.LE)
 			return new Key(data, true);
 		else
 			throw new RuntimeException("bug, should never happen, but should be easy to fix this one");
@@ -113,12 +113,12 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private Key createLeftKey(ExpressionNode node, DboColumnMeta info) {
 		byte[] data = retrieveValue(info, node.getRightChild());
-		if(node.getType() == NoSqlLexer.LT)
+		if(node.getType() == NoSqlLexer.GT)
 			return new Key(data, false);
-		else if(node.getType() == NoSqlLexer.LE)
+		else if(node.getType() == NoSqlLexer.GE)
 			return new Key(data, true);
 		else
-			throw new RuntimeException("bug, should never happen, but should be easy to fix this one");	
+			throw new RuntimeException("bug, should never happen, but should be easy to fix this one. type="+node.getType());	
 	}
 
 	private void processKeys(List<byte[]> objectKeys, Iterable<Column> scan) {
