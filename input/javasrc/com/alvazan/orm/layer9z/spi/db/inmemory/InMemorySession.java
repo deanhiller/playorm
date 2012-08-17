@@ -19,6 +19,7 @@ import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -195,12 +196,6 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public Collection<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
@@ -213,6 +208,17 @@ public class InMemorySession implements NoSqlRawSession {
 			return new HashSet<Column>();
 		
 		return row.columnSlice(from, to);
+	}
+
+	@Override
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+		throw new UnsupportedOperationException("not done yet");
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

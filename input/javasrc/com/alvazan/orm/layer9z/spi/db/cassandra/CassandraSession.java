@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.ColumnType;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -63,6 +64,40 @@ public class CassandraSession implements NoSqlRawSession {
 	@Override
 	public void close() {
 		throw new UnsupportedOperationException("not done here yet");
+	}
+	
+	@Override
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+		try {
+			return findImpl2(colFamily, rowKeys);
+		} catch (ConnectionException e) {
+			throw new RuntimeException(e);
+		}		
+	}
+	
+	public Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
+		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		if(info == null) {
+			//well, if column family doesn't exist, then no entities exist either
+			log.info("query was run on column family that does not yet exist="+colFamily);
+			return new IterEmptyProxy(keys);
+		}
+
+		ColumnFamily cf = info.getColumnFamilyObj();
+		ColumnType type = info.getColumnType();
+		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
+			throw new UnsupportedOperationException("Finding on composite type not allowed here, you should be using column slice as these rows are HUGE!!!!");
+		}
+		
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
+		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
+		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
+		Rows rows = result.getResult();
+		
+		ResultIterable r = new ResultIterable(rowProvider, rows);
+		
+		return r;
 	}
 	
 	@Override	
@@ -121,7 +156,7 @@ public class CassandraSession implements NoSqlRawSession {
 		return rows;
 	}
 
-	private void processColumns(
+	static void processColumns(
 			com.netflix.astyanax.model.Row<byte[], byte[]> row, Row r) {
 		for(com.netflix.astyanax.model.Column<byte[]> col : row.getColumns()) {
 			byte[] name = col.getName();

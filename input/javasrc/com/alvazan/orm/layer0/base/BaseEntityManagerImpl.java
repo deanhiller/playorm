@@ -11,7 +11,6 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
@@ -23,6 +22,7 @@ import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
@@ -92,6 +92,27 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return entities.get(0).getValue();
 	}
 	
+	@Override
+	public <T> Iterable<KeyValue<T>> findAll2(Class<T> entityType, Iterable<? extends Object> keys) {
+		if(keys == null)
+			throw new IllegalArgumentException("keys list cannot be null");
+		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
+		if(meta == null)
+			throw new IllegalArgumentException("Class type="+entityType.getName()+" was not found, please check that you scanned the right package and look at the logs to see if this class was scanned");
+
+		Iterable<byte[]> iter = new IterProxy<T>(meta, keys);
+		
+		return findAllImpl2(meta, iter);
+	}
+	
+	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys) {
+		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
+		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
+		String cf = meta.getColumnFamily();
+		Iterable<KeyValue<Row>> rows = session.find(cf, noSqlKeys);
+		return new IterRowProxy<T>(meta, rows, session);
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys) {

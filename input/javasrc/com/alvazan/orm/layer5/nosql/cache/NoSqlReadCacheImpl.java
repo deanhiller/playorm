@@ -17,6 +17,7 @@ import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -65,6 +66,13 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		Row row = session.find(colFamily, rowKey);
 		cacheRow(colFamily, rowKey, row);
 		return row;
+	}
+	
+	@Override
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+		//DAMN, this might be complex as we need to hit the cahce properly
+		throw new UnsupportedOperationException("hmmmm, this is tricky");
+		//return session.find(colFamily, rowKeys);
 	}
 	
 	@Override

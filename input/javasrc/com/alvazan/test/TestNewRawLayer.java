@@ -14,10 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedColumn;
 import com.alvazan.orm.api.spi3.TypedRow;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 
 @SuppressWarnings("rawtypes")
 public class TestNewRawLayer {

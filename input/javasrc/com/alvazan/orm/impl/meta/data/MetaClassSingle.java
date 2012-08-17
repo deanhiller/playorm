@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.InfoForIndex;
@@ -16,6 +15,7 @@ import com.alvazan.orm.api.spi3.meta.PartitionTypeInfo;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 

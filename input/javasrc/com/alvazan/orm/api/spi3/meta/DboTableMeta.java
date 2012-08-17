@@ -16,8 +16,8 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.TypedRow;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
 @SuppressWarnings("rawtypes")

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 
+
 public interface NoSqlRawSession {
 	
 	/**
@@ -15,6 +16,8 @@ public interface NoSqlRawSession {
 	 * @return
 	 */
 	public List<Row> find(String colFamily, List<byte[]> key);
+	
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys);
 	
 	/**
 	 * Action is subclassed by Remove and Persist and will be executed

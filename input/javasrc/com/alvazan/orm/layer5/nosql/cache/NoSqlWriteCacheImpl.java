@@ -7,12 +7,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -80,12 +80,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+		return rawSession.find2(colFamily, rowKeys);
+	}
+	
+	@Override
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		List<ByteArray> theKeys = new ArrayList<ByteArray>();
-		for(byte[] k : keys) {
-			theKeys.add(new ByteArray(k));
-		}
-		//log.debug("cf="+colFamily+" finding all keys="+theKeys);
 		return rawSession.find(colFamily, keys);
 	}
 	

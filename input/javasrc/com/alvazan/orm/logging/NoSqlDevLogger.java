@@ -7,11 +7,15 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -24,6 +28,8 @@ import com.alvazan.orm.api.spi9.db.ScanInfo;
  */
 public class NoSqlDevLogger implements NoSqlSession {
 
+	private static final Logger log = LoggerFactory.getLogger(NoSqlDevLogger.class);
+	
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
 	@Inject
@@ -68,6 +74,13 @@ public class NoSqlDevLogger implements NoSqlSession {
 		return session.find(colFamily, rowKeys);
 	}
 
+	@Override
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+		log.warn("CAN't use this method as it would cause the iterable to loop and we only want to loop ONCE so need a proxy iterable to pass down!!!!");
+		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
+		return session.find(colFamily, rowKeys);
+	}
+	
 	@Override
 	public Row find(String colFamily, byte[] rowKey) {
 		List<byte[]> keys = new ArrayList<byte[]>();

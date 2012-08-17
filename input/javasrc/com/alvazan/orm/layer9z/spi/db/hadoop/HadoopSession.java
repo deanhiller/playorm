@@ -6,6 +6,7 @@ import java.util.Map;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -40,6 +41,13 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to, int batchSize) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Iterable<KeyValue<Row>> find2(String colFamily,
+			Iterable<byte[]> rowKeys) {
 		// TODO Auto-generated method stub
 		return null;
 	}

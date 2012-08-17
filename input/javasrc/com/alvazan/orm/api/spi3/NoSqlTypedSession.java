@@ -3,6 +3,7 @@ package com.alvazan.orm.api.spi3;
 import java.util.List;
 
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 import com.google.inject.ImplementedBy;
 

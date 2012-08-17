@@ -6,7 +6,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedRow;
 import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
@@ -20,6 +19,7 @@ import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
 @SuppressWarnings("rawtypes")

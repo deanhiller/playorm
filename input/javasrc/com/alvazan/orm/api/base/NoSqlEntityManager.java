@@ -2,9 +2,9 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
 import com.google.inject.ImplementedBy;
 
@@ -72,6 +72,14 @@ public interface NoSqlEntityManager {
 	 * @return
 	 */
 	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys);
+	
+	/** 
+	 * A MUCH Faster implementation of findAll that when the underlying layers loop
+	 * @param entityType
+	 * @param keys
+	 * @return
+	 */
+	public <T> Iterable<KeyValue<T>> findAll2(Class<T> entityType, Iterable<? extends Object> keys);
 	
 	/**
 	 * Just like hibernate getReference call.  Use this when you have an id of an object and

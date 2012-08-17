@@ -17,6 +17,7 @@ import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -40,7 +41,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		return session.find(colFamily, keys);
 	}
 
-	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
+	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, Iterable<byte[]> keys) {
 		if(!log.isInfoEnabled())
 			return;
 		
@@ -50,7 +51,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			log.info(prefix+"(Exception logging a find operation, turn on trace to see)");
 		}
 	}
-	private static void logKeysImpl(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
+	private static void logKeysImpl(String prefix, DboDatabaseMeta databaseInfo, String colFamily, Iterable<byte[]> keys) {
 		DboTableMeta meta = databaseInfo.getMeta(colFamily);
 		if(meta == null)
 			return;
@@ -235,6 +236,13 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			log.info("[rawlogger] closing NoSQL Service Provider");
 		}
 		session.close();
+	}
+
+	@Override
+	public Iterable<KeyValue<Row>> find2(String colFamily,
+			Iterable<byte[]> rowKeys) {
+		log.info("[rawlogger] NOT LOGGING iterating finds just yet");
+		return session.find2(colFamily, rowKeys);
 	}
 
 }
