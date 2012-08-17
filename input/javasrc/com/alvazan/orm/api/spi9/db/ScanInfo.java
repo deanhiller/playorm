@@ -7,21 +7,18 @@ public class ScanInfo {
 	private String entityColFamily;
 	//optional but logging won't work without it
 	private String columnName;
-	private int batchSize;
 
-	public ScanInfo(String indexColFamily, byte[] rowKey2, int batchSize) {
+	public ScanInfo(String indexColFamily, byte[] rowKey2) {
 		this.indexColFamily = indexColFamily;
 		this.rowKey = rowKey2;
-		this.batchSize = batchSize;
 	}
 	
 	public ScanInfo(String realColFamily, String colName, String indexColFamily,
-			byte[] rowKey2, int batchSize) {
+			byte[] rowKey2) {
 		this.entityColFamily = realColFamily;
 		this.columnName = colName;
 		this.indexColFamily = indexColFamily;
 		this.rowKey = rowKey2;
-		this.batchSize = batchSize;
 	}
 	
 	public String getIndexColFamily() {
@@ -37,7 +34,4 @@ public class ScanInfo {
 		return columnName;
 	}
 
-	public int getBatchSize() {
-		return batchSize;
-	}
 }

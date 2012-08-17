@@ -14,6 +14,7 @@ import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
@@ -56,8 +57,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		if(root == null) {
 			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
-			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
-			Iterable<Column> scan = session.columnRangeScanAll(scanInfo);
+			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
+			Iterable<Column> scan = session.columnRangeScan(scanInfo, null, null, BATCH_SIZE);
 			processKeys(objectKeys, scan);
 			return objectKeys;
 		}
@@ -66,11 +67,12 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
 		DboColumnMeta info = attr.getColumnInfo();
 		byte[] data = retrieveValue(info, root.getRightChild());
-		ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId, BATCH_SIZE);
+		ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId);
 		
 		Iterable<Column> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
-			scan = session.columnRangeScan(scanInfo, data, true, data, true);
+			Key key = new Key(data, true);
+			scan = session.columnRangeScan(scanInfo, key, key, BATCH_SIZE);
 		} else if(root.getType() == NoSqlLexer.GT
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT

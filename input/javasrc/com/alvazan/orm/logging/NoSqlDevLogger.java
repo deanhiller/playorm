@@ -11,6 +11,7 @@ import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -86,8 +87,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
-		return session.columnRangeScan(scanInfo, from, fromInclusive, to, toInclusive);
+	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, Key from, Key to, int batchSize) {
+		return session.columnRangeScan(scanInfo, from, to, batchSize);
 	}
 
 	@Override
@@ -95,9 +96,5 @@ public class NoSqlDevLogger implements NoSqlSession {
 		session.setOrmSessionForMeta(orm);
 	}
 
-	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		return session.columnRangeScanAll(scanInfo);
-	}
 
 }

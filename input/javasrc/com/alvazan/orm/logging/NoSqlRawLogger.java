@@ -155,23 +155,23 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to) {
+	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
 		if(log.isInfoEnabled()) {
-			logColScan(info, from, to);
+			logColScan(info, from, to, batchSize);
 		}
-		return session.columnRangeScan(info, from, to);
+		return session.columnRangeScan(info, from, to, batchSize);
 	}
 	
-	private void logColScan(ScanInfo info, Key from, Key to) {
+	private void logColScan(ScanInfo info, Key from, Key to, int batchSize) {
 		try {
-			String msg = logColScanImpl(info, from, to);
+			String msg = logColScanImpl(info, from, to, batchSize);
 			log.info("[rawlogger]"+msg);
 		} catch(Exception e) {
 			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 		}
 	}
 
-	private String logColScanImpl(ScanInfo info, Key from, Key to) {
+	private String logColScanImpl(ScanInfo info, Key from, Key to, int batchSize) {
 		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -210,7 +210,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
 		
-		return msg+" scanning index rowkey="+rowKey+" for value in range:"+range+" with batchSize="+info.getBatchSize();
+		return msg+" scanning index rowkey="+rowKey+" for value in range:"+range+" with batchSize="+batchSize;
 	}
 	
 	@Override

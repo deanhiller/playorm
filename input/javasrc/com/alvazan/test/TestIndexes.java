@@ -168,7 +168,7 @@ public class TestIndexes {
 		NoSqlSession session = mgr.getSession();
 		DboTableMeta table = mgr.find(DboTableMeta.class, "PartAccount");
 		DboColumnMeta colMeta = table.getColumnMeta("businessName");
-		ScanInfo info = colMeta.createScanInfo(null, null, 2);
+		ScanInfo info = colMeta.createScanInfo(null, null);
 		IndexColumn col = new IndexColumn();
 		col.setColumnName("businessName");
 		String key = "nonexistpk";

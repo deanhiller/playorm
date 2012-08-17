@@ -39,7 +39,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to) {
+	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to, int batchSize) {
 		// TODO Auto-generated method stub
 		return null;
 	}

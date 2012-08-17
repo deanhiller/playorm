@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -58,24 +59,15 @@ public interface NoSqlSession {
 	 * Returns a special Iterable loads itself first with "batchSize" records and then after you
 	 * iterator over those and request "batchSize+1" record, it hits the database again such that
 	 * your memory does not explode if you have a huge amount of records.
-	 * 
-	 * @param colFamily
-	 * @param rowKey
 	 * @param from
 	 * @param to
+	 * @param batchSize TODO
+	 * @param colFamily
+	 * @param rowKey
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive);
+	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, Key from, Key to, int batchSize);
 
-	/**
-	 * Scans the entire row while batchSize columns at a time are fetched.
-	 * 
-	 * @param scanInfo
-	 * @param batchSize
-	 * @return
-	 */
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo);
-	
 	public void setOrmSessionForMeta(Object entityMgr);
 
 }

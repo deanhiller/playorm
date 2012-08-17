@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -181,18 +182,13 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info,byte[] from, boolean fromInclusive, byte[] to, boolean toInclusive) {
-		return session.columnRangeScan(info, from, fromInclusive, to, toInclusive);
+	public Iterable<Column> columnRangeScan(ScanInfo info,Key from, Key to, int batchSize) {
+		return session.columnRangeScan(info, from, to, batchSize);
 	}
 
 	@Override
 	public void setOrmSessionForMeta(Object ormSession) {
 		session.setOrmSessionForMeta(ormSession);
-	}
-
-	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		return session.columnRangeScanAll(scanInfo);
 	}
 
 }

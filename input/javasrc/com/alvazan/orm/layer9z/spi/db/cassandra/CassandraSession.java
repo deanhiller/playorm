@@ -278,9 +278,9 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to) {
-		if(info.getBatchSize() == 0)
-			throw new IllegalArgumentException("batch size must be supplied");
+	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
+		if(batchSize <= 0)
+			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
@@ -290,7 +290,6 @@ public class CassandraSession implements NoSqlRawSession {
 			return new ArrayList<Column>();
 		}
 		
-		int batchSize = info.getBatchSize();
 		ColumnType type = info1.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
 			ByteBufferRange range = new RangeBuilder().setStart(from.getKey()).setEnd(to.getKey()).setLimit(batchSize).build();

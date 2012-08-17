@@ -34,8 +34,9 @@ public interface NoSqlRawSession {
 	 * @param scan
 	 * @param from If null, it means open ended otherwise we scan from this key inclusive or exclusively depending on the field inside the Key
 	 * @param to If null, it means open ended otherwise we scan to this key inclusive or exclusively depending on the field inside the Key
+	 * @param batchSize TODO
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to);
+	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to, int batchSize);
 
 }
