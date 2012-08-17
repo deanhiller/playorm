@@ -66,34 +66,59 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		log.info("root="+root);
 		StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
 		DboColumnMeta info = attr.getColumnInfo();
-		byte[] data = retrieveValue(info, root.getRightChild());
 		ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId);
 		
 		Iterable<Column> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
+			byte[] data = retrieveValue(info, root.getRightChild());
 			Key key = new Key(data, true);
 			scan = session.columnRangeScan(scanInfo, key, key, BATCH_SIZE);
 		} else if(root.getType() == NoSqlLexer.GT
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT
 				|| root.getType() == NoSqlLexer.LE) {
+			Key from = null;
+			Key to = null;
 			if(root.isInBetweenExpression()) {
 				ExpressionNode node = root.getGreaterThan();
 				ExpressionNode node2 = root.getLessThan();
-				
-				
-				
+				from = createLeftKey(node, info);
+				to = createRightKey(node2, info);
+			} else if(root.getType() == NoSqlLexer.GT
+					|| root.getType() == NoSqlLexer.GE) {
+				from = createLeftKey(root, info);
+			} else if(root.getType() == NoSqlLexer.LT) {
+				to = createRightKey(root, info);
 			} else
 				throw new UnsupportedOperationException("not done yet here");
 			
-			
-			scan = null;
+			scan = session.columnRangeScan(scanInfo, from, to, BATCH_SIZE);
 			
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 
 		processKeys(objectKeys, scan);
 		return objectKeys;
+	}
+
+	private Key createRightKey(ExpressionNode node, DboColumnMeta info) {
+		byte[] data = retrieveValue(info, node.getRightChild());
+		if(node.getType() == NoSqlLexer.GT)
+			return new Key(data, false);
+		else if(node.getType() == NoSqlLexer.GE)
+			return new Key(data, true);
+		else
+			throw new RuntimeException("bug, should never happen, but should be easy to fix this one");
+	}
+
+	private Key createLeftKey(ExpressionNode node, DboColumnMeta info) {
+		byte[] data = retrieveValue(info, node.getRightChild());
+		if(node.getType() == NoSqlLexer.LT)
+			return new Key(data, false);
+		else if(node.getType() == NoSqlLexer.LE)
+			return new Key(data, true);
+		else
+			throw new RuntimeException("bug, should never happen, but should be easy to fix this one");	
 	}
 
 	private void processKeys(List<byte[]> objectKeys, Iterable<Column> scan) {
