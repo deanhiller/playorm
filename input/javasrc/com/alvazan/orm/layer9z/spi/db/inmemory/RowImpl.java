@@ -85,7 +85,7 @@ public class RowImpl implements Row {
 		
 		if(to != null) {
 			ByteArray toArray = new ByteArray(to.getKey());
-			map = columns.headMap(toArray, to.isInclusive());
+			map = map.headMap(toArray, to.isInclusive());
 		}
 
 		return map.values();
