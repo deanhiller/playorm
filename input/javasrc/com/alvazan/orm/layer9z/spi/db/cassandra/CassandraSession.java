@@ -324,32 +324,6 @@ public class CassandraSession implements NoSqlRawSession {
 		return range;
 	}
 	
-	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		String colFamily = scanInfo.getIndexColFamily();
-		byte[] rowKey = scanInfo.getRowKey();
-		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
-		if(info == null) {
-			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<Column>();
-		}
-		
-		int batchSize = scanInfo.getBatchSize();
-		ColumnType type = info.getColumnType();
-		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
-			ByteBufferRange range = new RangeBuilder().setLimit(batchSize).build();
-			return findBasic(rowKey, range, info);
-		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
-				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
-				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			AnnotatedCompositeSerializer serializer = info.getCompositeSerializer();
-			CompositeRangeBuilder range = serializer.buildRange().limit(batchSize);
-			return findBasic(rowKey, range, info);
-		} else
-			throw new UnsupportedOperationException("not done here yet");
-	}
-	
 	private Iterable<Column> findBasic(byte[] rowKey, ByteBufferRange range, Info info) {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		

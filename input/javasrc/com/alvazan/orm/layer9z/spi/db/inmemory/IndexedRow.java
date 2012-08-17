@@ -123,14 +123,4 @@ public class IndexedRow extends RowImpl {
 		}
 	}
 
-	@Override
-	public Collection<Column> columnRangeScanAll() {
-		List<Column> results = new ArrayList<Column>();
-		for(IndexColumn c : columns.values()) {
-			Column col = new Column();
-			col.setName(c.getPrimaryKey());
-			results.add(col);
-		}
-		return results;
-	}
 }

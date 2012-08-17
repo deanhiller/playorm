@@ -132,7 +132,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	@Override
 	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		return rawSession.columnRangeScanAll(scanInfo);
+		return rawSession.columnRangeScan(scanInfo, null, null);
 	}
 	
 	@Override

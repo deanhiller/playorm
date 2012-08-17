@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
-import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
@@ -108,8 +107,4 @@ public class RowImpl implements Row {
 		return prefixed;
 	}
 
-	@Override
-	public Collection<Column> columnRangeScanAll() {
-		return this.columns.values();
-	}
 }

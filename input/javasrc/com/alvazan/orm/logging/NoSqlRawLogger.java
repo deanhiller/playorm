@@ -212,39 +212,6 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		return msg+" scanning index rowkey="+rowKey+" for value in range:"+range+" with batchSize="+info.getBatchSize();
 	}
-
-	@Override
-	public Iterable<Column> columnRangeScanAll(ScanInfo scanInfo) {
-		if(log.isInfoEnabled()) {
-			logColScan2(scanInfo);
-		}
-		return session.columnRangeScanAll(scanInfo);
-	}
-	
-	private void logColScan2(ScanInfo info) {
-		try {
-			String msg = logColScanImpl2(info);
-			log.info("[rawlogger]"+msg);
-		} catch(Exception e) {
-			log.info("[rawlogger](Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
-		}
-	}
-
-	private String logColScanImpl2(ScanInfo info) {
-		String msg = "CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
-		if(info.getEntityColFamily() == null)
-			return msg + " (meta for main CF can't be looked up)";
-
-		DboTableMeta meta = databaseInfo.getMeta(info.getEntityColFamily());
-		if(meta == null)
-			return msg + " (meta for main CF was not found)";
-		DboColumnMeta colMeta = meta.getColumnMeta(info.getColumnName());
-		if(colMeta == null)
-			return msg + " (CF meta found but columnMeta not found)";
-		
-		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		return msg+" full index scan on rowkey="+rowKey+" with batchSize="+info.getBatchSize();
-	}
 	
 	@Override
 	public void clearDatabase() {

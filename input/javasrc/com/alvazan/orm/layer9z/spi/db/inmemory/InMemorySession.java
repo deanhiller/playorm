@@ -215,19 +215,4 @@ public class InMemorySession implements NoSqlRawSession {
 		return row.columnSlice(from, to);
 	}
 
-	@Override
-	public Collection<Column> columnRangeScanAll(ScanInfo info) {
-		String colFamily = info.getIndexColFamily();
-		byte[] rowKey = info.getRowKey();
-		Table table = database.findTable(colFamily);
-		if(table == null) {
-			return new HashSet<Column>();
-		}
-		Row row = table.findOrCreateRow(rowKey);
-		if(row == null)
-			return new HashSet<Column>();
-		
-		return row.columnRangeScanAll();
-	}
-
 }
