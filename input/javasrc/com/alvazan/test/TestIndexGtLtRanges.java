@@ -46,6 +46,11 @@ public class TestIndexGtLtRanges {
 		Assert.assertEquals(5, list2.get(0).getNumTimes());
 		Assert.assertEquals(7, list2.get(1).getNumTimes());
 	
+		List<Activity> list3 = Activity.findAbove(mgr, 7);
+		Assert.assertEquals(1, list3.size());
+		
+		List<Activity> list4 = Activity.findBelow(mgr, 4);
+		Assert.assertEquals(1, list4.size());
 		
 	}
 

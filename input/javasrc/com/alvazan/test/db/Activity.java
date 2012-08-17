@@ -16,6 +16,8 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
 	@NoSqlQuery(name="findBetween2", query="select * FROM TABLE e WHERE e.numTimes > :begin and e.numTimes <= :to"),
+	@NoSqlQuery(name="findAbove", query="select * FROM TABLE e WHERE e.numTimes > :begin"),
+	@NoSqlQuery(name="findBelow", query="select * FROM TABLE e WHERE e.numTimes < :to"),
 	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
 	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
 			" e.name=:name and (e.numTimes = :numTimes or e.myFloat = :myFloat)"),	
@@ -134,6 +136,18 @@ public class Activity {
 		return query.getResultList();
 	}
 	
+	public static List<Activity> findAbove(NoSqlEntityManager mgr, long from) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAbove");
+		query.setParameter("begin", from);
+		return query.getResultList();
+	}
+
+	public static List<Activity> findBelow(NoSqlEntityManager mgr, long to) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBelow");
+		query.setParameter("to", to);
+		return query.getResultList();
+	}
+	
 	public static Activity findSingleResult(NoSqlEntityManager mgr, String key) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findUnique");
 		query.setParameter("unique", key);
@@ -199,4 +213,5 @@ public class Activity {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAll");
 		return query.getResultList();		
 	}
+
 }
