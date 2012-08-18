@@ -88,12 +88,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public <T> T find(Class<T> entityType, Object key) {
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
-		List<KeyValue<T>> entities = findAll(entityType, keys);
-		return entities.get(0).getValue();
+		Iterable<KeyValue<T>> entities = findAll(entityType, keys);
+		return entities.iterator().next().getValue();
 	}
 	
 	@Override
-	public <T> Iterable<KeyValue<T>> findAll2(Class<T> entityType, Iterable<? extends Object> keys) {
+	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
@@ -109,13 +109,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		Iterable<KeyValue<Row>> rows = session.find(cf, noSqlKeys);
+		Iterable<KeyValue<Row>> rows = session.find2(cf, noSqlKeys);
 		return new IterRowProxy<T>(meta, rows, session);
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
-	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys) {
+	public <T> List<KeyValue<T>> findAllList(Class<T> entityType, List<? extends Object> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);

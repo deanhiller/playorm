@@ -69,10 +69,41 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
-		//DAMN, this might be complex as we need to hit the cahce properly
-		throw new UnsupportedOperationException("hmmmm, this is tricky");
-		//return session.find(colFamily, rowKeys);
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+		List<byte[]> rowKeysToFetch = new ArrayList<byte[]>();
+		List<Integer> indexForRow = new ArrayList<Integer>();
+		List<RowHolder<Row>> rows = new ArrayList<RowHolder<Row>>();
+		int counter = 0;
+		for(byte[] key : rowKeys) {
+			RowHolder<Row> result = fromCache(colFamily, key);
+			rows.add(result);
+			if(result == null) {
+				indexForRow.add(counter);
+				rowKeysToFetch.add(key);
+				//we still add the null result that will be replaced after we
+				//hit the database with rows that are still needed..
+			} else {
+				log.info("cache hit(need to profile/optimize)");
+			}			
+			counter++;
+		}
+		
+		Iterable<KeyValue<Row>> rowsFromDb = session.find2(colFamily, rowKeysToFetch);
+
+		List<KeyValue<Row>> allRows = new ArrayList<KeyValue<Row>>();
+		for(RowHolder<Row> rh : rows) {
+			if(rh != null) { //if it is not null, we found it in the cache
+				KeyValue<Row> kv = new KeyValue<Row>();
+				kv.setKey(rh.getKey());
+				kv.setValue(rh.getValue());
+				allRows.add(kv);
+			} else { //if null, we use the database value that was looked up...
+				KeyValue<Row> kv = rowsFromDb.iterator().next();
+				allRows.add(kv);
+			}
+		}
+		
+		return allRows;
 	}
 	
 	@Override
@@ -121,7 +152,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	private void cacheRow(String colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
 		TheKey k = new TheKey(colFamily, key);
-		RowHolder<Row> holder = new RowHolder<Row>(r); //r may be null so we are caching null here
+		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);
 	}
 

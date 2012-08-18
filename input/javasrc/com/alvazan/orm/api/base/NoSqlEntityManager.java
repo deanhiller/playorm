@@ -62,24 +62,23 @@ public interface NoSqlEntityManager {
 	public <T> T find(Class<T> entityType, Object key);
 	
 	/**
-	 * Very efficient operation in nosql for retrieving many entities at once.  This is the operation
+	 * An efficient operation in nosql for retrieving many entities at once.  This is the operation
 	 * we use very frequently in the ORM for OneToMany operations so we can fetch all your relations 
 	 * extremely fast(as they are fetched in parallel not series so 5ms network latency for 1000 objects
-	 * is not 5 seconds but just 5ms as it is done in parallel).
+	 * is not 5 seconds but just 5ms as it is done in parallel).  
 	 * 
 	 * @param entityType
 	 * @param keys
 	 * @return
 	 */
-	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys);
+	public <T> List<KeyValue<T>> findAllList(Class<T> entityType, List<? extends Object> keys);
 	
 	/** 
-	 * A MUCH Faster implementation of findAll that when the underlying layers loop
 	 * @param entityType
 	 * @param keys
 	 * @return
 	 */
-	public <T> Iterable<KeyValue<T>> findAll2(Class<T> entityType, Iterable<? extends Object> keys);
+	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys);
 	
 	/**
 	 * Just like hibernate getReference call.  Use this when you have an id of an object and

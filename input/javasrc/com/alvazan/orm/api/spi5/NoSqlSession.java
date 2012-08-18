@@ -50,7 +50,7 @@ public interface NoSqlSession {
 	
 	public List<Row> find(String colFamily, List<byte[]> rowKeys);
 	
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys);
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys);
 	
 	public Row find(String colFamily, byte[] rowKey);
 	

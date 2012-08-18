@@ -38,6 +38,21 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
+	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
+		for(byte[] key : rowKeys) {
+			Row row = findRow(colFamily, key);
+			KeyValue<Row> kv = new KeyValue<Row>();
+			kv.setKey(key);
+			kv.setValue(row);
+			//This add null if there is no row to the list on purpose
+			rows.add(kv);
+		}
+		
+		return rows;
+	}
+	
+	@Override
 	public List<Row> find(String colFamily, List<byte[]> keys) {
 		List<Row> rows = new ArrayList<Row>();
 		for(byte[] key : keys) {
@@ -208,11 +223,6 @@ public class InMemorySession implements NoSqlRawSession {
 			return new HashSet<Column>();
 		
 		return row.columnSlice(from, to);
-	}
-
-	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
-		throw new UnsupportedOperationException("not done yet");
 	}
 
 	@Override
