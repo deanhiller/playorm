@@ -3,6 +3,7 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +91,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		
 		Iterable<KeyValue<Row>> rowsFromDb = session.find2(colFamily, rowKeysToFetch);
 
+		Iterator<KeyValue<Row>> rowsIter = rowsFromDb.iterator();
 		List<KeyValue<Row>> allRows = new ArrayList<KeyValue<Row>>();
 		for(RowHolder<Row> rh : rows) {
 			if(rh != null) { //if it is not null, we found it in the cache
@@ -98,8 +100,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 				kv.setValue(rh.getValue());
 				allRows.add(kv);
 			} else { //if null, we use the database value that was looked up...
-				KeyValue<Row> kv = rowsFromDb.iterator().next();
+				KeyValue<Row> kv = rowsIter.next();
 				allRows.add(kv);
+				cacheRow(colFamily, (byte[]) kv.getKey(), kv.getValue());
 			}
 		}
 		

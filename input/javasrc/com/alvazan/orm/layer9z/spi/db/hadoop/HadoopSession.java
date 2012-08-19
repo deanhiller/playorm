@@ -14,11 +14,6 @@ import com.alvazan.orm.api.spi9.db.ScanInfo;
 public class HadoopSession implements NoSqlRawSession {
 
 	@Override
-	public List<Row> find(String colFamily, List<byte[]> key) {
-		return null;
-	}
-
-	@Override
 	public void sendChanges(List<Action> actions, Object ormSession) {
 	}
 

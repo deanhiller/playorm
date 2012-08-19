@@ -102,15 +102,15 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 		Iterable<byte[]> iter = new IterProxy<T>(meta, keys);
 		
-		return findAllImpl2(meta, iter);
+		return findAllImpl2(meta, iter, null);
 	}
 	
-	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys) {
+	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
 		Iterable<KeyValue<Row>> rows = session.find2(cf, noSqlKeys);
-		return new IterRowProxy<T>(meta, rows, session);
+		return new IterRowProxy<T>(meta, rows, session, query);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -15,8 +15,6 @@ public interface NoSqlRawSession {
 	 * @param key
 	 * @return
 	 */
-	public List<Row> find(String colFamily, List<byte[]> key);
-	
 	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys);
 	
 	/**

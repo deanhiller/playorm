@@ -88,12 +88,17 @@ public class QueryAdapter<T> implements Query<T> {
 		return results.get(0).getValue();
 	}
 
-	@SuppressWarnings({"unchecked" })
 	@Override
 	public List<KeyValue<T>> getResultKeyValueList() {
-		List<byte[]> primaryKeys = indexQuery.getResultList();
-		//HERE we need to query the nosql database with the primary keys from the index
-		List<KeyValue<T>> all = mgr.findAllImpl(metaClass, null, primaryKeys, meta.getQuery());
+		Iterable<byte[]> keys = indexQuery.getResultList();
+		
+		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery());
+		
+		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
+		for(KeyValue<T> k : results) {
+			all.add(k);
+		}
+			
 		return all;
 	}
 

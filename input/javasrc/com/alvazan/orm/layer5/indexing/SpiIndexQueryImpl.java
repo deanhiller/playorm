@@ -1,8 +1,6 @@
 package com.alvazan.orm.layer5.indexing;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -47,20 +45,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		parameters.put(parameterName, val);
 	}
 
-	/**
-	 * Returns the primary keys as a byte[]
-	 */
 	@Override
-	public List<byte[]> getResultList() {
-		Iterable<byte[]> iter = getResultList2();
-		List<byte[]> keys = new ArrayList<byte[]>();
-		for(byte[] k : iter) {
-			keys.add(k);
-		}
-		return keys;
-	}
-	
-	public Iterable<byte[]> getResultList2() {
+	public Iterable<byte[]> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			DboTableMeta tableMeta = spiMeta.getMainTableMeta();

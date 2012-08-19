@@ -35,12 +35,6 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Inject
 	private DboDatabaseMeta databaseInfo;
 	
-	@Override
-	public List<Row> find(String colFamily, List<byte[]> keys) {
-		logKeys("[rawlogger]", databaseInfo, colFamily, keys);
-		return session.find(colFamily, keys);
-	}
-
 	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, Iterable<byte[]> keys) {
 		if(!log.isInfoEnabled())
 			return;
@@ -241,7 +235,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Override
 	public Iterable<KeyValue<Row>> find2(String colFamily,
 			Iterable<byte[]> rowKeys) {
-		log.info("[rawlogger] NOT LOGGING iterating finds just yet");
+		logKeys("[rawlogger]", databaseInfo, colFamily, rowKeys);
 		return session.find2(colFamily, rowKeys);
 	}
 

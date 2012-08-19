@@ -99,62 +99,6 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		return r;
 	}
-	
-	@Override	
-	public List<Row> find(String colFamily, List<byte[]> keys) {
-		try {
-			return findImpl(colFamily, keys);
-		} catch (ConnectionException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public List<Row> findImpl(String colFamily, List<byte[]> keys) throws ConnectionException {
-		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
-		if(info == null) {
-			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
-			return createEmptyList(keys);
-		}
-
-		ColumnFamily cf = info.getColumnFamilyObj();
-		ColumnType type = info.getColumnType();
-		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
-			throw new UnsupportedOperationException("Finding on composite type not allowed here, you should be using column slice as these rows are HUGE!!!!");
-		}
-		
-		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
-		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
-		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
-		Rows rows = result.getResult();
-		
-		List<Row> retVal = new ArrayList<Row>();
-		for(byte[] key : keys) {
-			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.getRow(key);
-			if(row.getColumns().isEmpty()) {
-				//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
-				//then
-				retVal.add(null);
-			} else {
-				Row r = rowProvider.get();
-				r.setKey(key);
-				processColumns(row, r);
-				retVal.add(r);
-			}
-		}
-		
-		return retVal;
-	}
-
-	@SuppressWarnings("unused")
-	private List<Row> createEmptyList(List<byte[]> keys) {
-		List<Row> rows = new ArrayList<Row>();
-		for(byte[] key : keys) {
-			rows.add(null);
-		}
-		return rows;
-	}
 
 	static void processColumns(
 			com.netflix.astyanax.model.Row<byte[], byte[]> row, Row r) {
