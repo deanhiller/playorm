@@ -39,10 +39,11 @@ public interface NoSqlTypedSession {
 	
 	public <T> TypedRow<T> find(String cf, T id);
 	
-	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> rowKeys);
+	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> rowKeys);
 	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
 	
-	public List<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
+	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
+	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr);
 	
 	public void flush();
 

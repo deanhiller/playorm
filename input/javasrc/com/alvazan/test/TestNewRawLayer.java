@@ -91,8 +91,8 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		List<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25", mgr);
-		KeyValue<TypedRow> keyValue = rows.get(0);
+		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25", mgr);
+		KeyValue<TypedRow> keyValue = rows.iterator().next();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
@@ -144,7 +144,7 @@ public class TestNewRawLayer {
 		
 		session.flush();
 		
-		List<KeyValue<TypedRow>> rows = session.runQuery(sql, mgr);
+		List<KeyValue<TypedRow>> rows = session.runQueryList(sql, mgr);
 		Assert.assertEquals(1, rows.size());
 	}
 

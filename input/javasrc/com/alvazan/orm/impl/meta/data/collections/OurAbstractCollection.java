@@ -46,7 +46,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		Iterable<KeyValue<Row>> rows = session.find2(classMeta.getColumnFamily(), keys);
+		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys);
 		int counter = 0;
 		for(KeyValue<Row> kv : rows) {
 			byte[] key = (byte[]) kv.getKey();

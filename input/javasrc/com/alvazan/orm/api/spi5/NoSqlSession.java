@@ -48,7 +48,7 @@ public interface NoSqlSession {
 	 */
 	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 	
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys);
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys);
 	
 	public Row find(String colFamily, byte[] rowKey);
 	

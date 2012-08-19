@@ -52,7 +52,7 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		if(cacheLoaded)
 			return;
 
-		Iterable<KeyValue<Row>> rows = session.find2(classMeta.getColumnFamily(), keys);
+		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys);
 		log.info("loading key list="+keys+" results="+rows);
 		for(KeyValue<Row> kv : rows) {
 			byte[] key = (byte[]) kv.getKey();

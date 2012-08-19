@@ -68,9 +68,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys) {
 		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
-		Iterable<KeyValue<Row>> rowsFromDb = session.find2(colFamily, proxy);
+		Iterable<KeyValue<Row>> rowsFromDb = session.findAll(colFamily, proxy);
 		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
 		//existing rows
 		List<RowHolder<Row>> inCache = proxy.getFoundInCache();

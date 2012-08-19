@@ -69,10 +69,10 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys) {
 		log.warn("CAN't use this method as it would cause the iterable to loop and we only want to loop ONCE so need a proxy iterable to pass down!!!!");
 		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
-		return session.find2(colFamily, rowKeys);
+		return session.findAll(colFamily, rowKeys);
 	}
 	
 	@Override
