@@ -90,6 +90,29 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
+	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
+		if(keys == null)
+			throw new IllegalArgumentException("keys list cannot be null");
+		DboTableMeta meta = cachedMeta.getMeta(colFamily);
+		if(meta == null)
+			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
+		DboColumnMeta idMeta = meta.getIdColumnMeta();
+		Iterable<byte[]> noSqlKeys = new TypedIterProxy<T>(idMeta, keys);
+		return findAllImpl2(meta, keys, noSqlKeys, null);
+	}
+
+	<T> Iterable<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
+		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
+		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
+		String cf = meta.getColumnFamily();
+		Iterable<KeyValue<Row>> rows2 = session.find2(cf, noSqlKeys);
+		if(keys != null)
+			return new TypedResponseIter<T>(meta, keys, rows2);
+		else
+			return new TypedResponseIter<T>(meta, rows2, indexName);
+	}
+	
+	@Override
 	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
@@ -193,4 +216,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		List rows = this.findAllImpl(meta, null, keys, null);
 		return rows;
 	}
+
+
 }
