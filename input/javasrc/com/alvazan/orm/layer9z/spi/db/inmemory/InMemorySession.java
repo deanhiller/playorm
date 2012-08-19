@@ -117,8 +117,10 @@ public class InMemorySession implements NoSqlRawSession {
 		if(cf == null) {
 			//check the database now for the meta since it was not found in the ORM meta data.  This is for
 			//those that are modifying meta data themselves
-			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-			cf = db.getMeta(colFamily);
+			//DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+			cf = mgr.find(DboTableMeta.class, colFamily);
+			log.info("cf from db="+cf);
+			//cf = db.getMeta(colFamily);
 		}
 		
 		if(cf == null) {

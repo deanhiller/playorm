@@ -90,6 +90,7 @@
 </package>
 
 <package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
+	<depends>api</depends>
 	<depends>api5</depends>
 	<depends>api9</depends>
 	<depends>dbmeta</depends>

@@ -41,7 +41,7 @@ public interface NoSqlTypedSession {
 	
 	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> rowKeys);
 
-	public List<KeyValue<TypedRow>> runQuery(String query);
+	public List<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
 	
 	public void flush();
 

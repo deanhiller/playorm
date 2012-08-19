@@ -60,7 +60,9 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		row.getColumns().add(col);
 
 		TypedColumn typedCol = typedRow.getColumn(columnName);
-		Object value = typedCol.getValue();
+		Object value = null;
+		if(typedCol != null)
+			value = typedCol.getValue();
 		byte[] byteVal = convertToStorage2(value);
 		col.setName(getColumnNameAsBytes());
 		col.setValue(byteVal);

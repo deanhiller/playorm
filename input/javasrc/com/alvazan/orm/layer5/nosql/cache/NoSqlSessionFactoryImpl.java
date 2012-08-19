@@ -1,8 +1,5 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -10,11 +7,8 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.spi3.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Row;
 
 public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 
@@ -31,32 +25,10 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 	public NoSqlSession createSession() {
 		return provider.get();
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<Row> runQuery(String query) {
-		NoSqlSession session = createSession();
-		
-		MetaAndIndexTuple tuple = parseQueryForAdHoc(query);
-		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
-		
-		List<String> primaryKeys = spiQueryAdapter.getResultList();
-		String colFamily = metaQuery.getTargetTable().getColumnFamily();
-		
-		List<byte[]> keys = new ArrayList<byte[]>();
-		for(String key : primaryKeys) {
-			byte[] keyBytes = StandardConverters.convertToBytes(key);
-			keys.add(keyBytes);
-		}
-		
-		List<Row> rows = session.find(colFamily, keys);
-		
-		return rows;
-	}
 	
 	@SuppressWarnings("rawtypes")
-	public MetaAndIndexTuple parseQueryForAdHoc(String query) {		
-		MetaQuery metaQuery = scanner.parseQuery(query);
+	public MetaAndIndexTuple parseQueryForAdHoc(String query, Object mgr) {		
+		MetaQuery metaQuery = scanner.parseQuery(query, mgr);
 		
 		MetaAndIndexTuple tuple = new MetaAndIndexTuple();
 		tuple.setMetaQuery(metaQuery);
@@ -67,7 +39,7 @@ public class NoSqlSessionFactoryImpl implements NoSqlSessionFactory {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public MetaQuery parseQueryForOrm(String query, String targetTable) {
-		return scanner.newsetupByVisitingTree(query, targetTable);
+		return scanner.newsetupByVisitingTree(query, targetTable, null);
 	}
 
 	@Override

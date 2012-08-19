@@ -3,6 +3,7 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
 
@@ -16,11 +17,18 @@ public class InfoForWiring {
 	private ExpressionNode astTree;
 	private DboTableMeta firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
+	private NoSqlEntityManager mgr;
 	
-	public InfoForWiring(String query, String targetTable) {
+	public InfoForWiring(String query, String targetTable, NoSqlEntityManager mgr) {
 		this.query = query;
 		this.targetTable= targetTable;
+		this.mgr = mgr;
 	}
+	
+	public NoSqlEntityManager getMgr() {
+		return mgr;
+	}
+
 
 	public void setNoAliasTable(DboTableMeta metaClass) {
 		this.noAliasTable = metaClass;

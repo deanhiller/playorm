@@ -16,6 +16,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
@@ -47,19 +48,19 @@ public class ScannerForQuery {
 	 * @param query
 	 * @return
 	 */
-	public MetaQuery parseQuery(String query) {
-		return newsetupByVisitingTree(query, null);
+	public MetaQuery parseQuery(String query, Object mgr) {
+		return newsetupByVisitingTree(query, null, mgr);
 	}
 	
 	@SuppressWarnings({ "unchecked" })
-	public MetaQuery newsetupByVisitingTree(String query, String targetTable) {
+	public MetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery visitor1 = metaQueryFactory.get();
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
 		
 		visitor1.initialize(query, spiMetaQuery);
 
-		InfoForWiring wiring = new InfoForWiring(query, targetTable);
+		InfoForWiring wiring = new InfoForWiring(query, targetTable, (NoSqlEntityManager) mgr);
 		
 		// VISITOR PATTERN(if you don't know that pattern, google it!!!)
 		// Normally, the visitor is injected INTO theTree variable itself but I
@@ -227,10 +228,11 @@ public class ScannerForQuery {
 		// here as well
 		String tableName = tableNode.getText();
 		String targetTable = wiring.getTargetTable();
-		DboTableMeta metaClass = metaInfo.getMeta(tableName);
+		DboTableMeta metaClass = findTable(wiring, tableName);
+		
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
 		if(tableName.equals("TABLE") && targetTable != null) {
-			metaClass = metaInfo.getMeta(targetTable);
+			metaClass = findTable(wiring, targetTable);
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 			
@@ -252,6 +254,13 @@ public class ScannerForQuery {
 			throw new RuntimeException("Two tables are not supported at this time.  query="+metaQuery);
 		
 		metaQuery.setTargetTable(metaClass);
+	}
+
+	private DboTableMeta findTable(InfoForWiring wiring, String tableName) {
+		DboTableMeta metaClass = metaInfo.getMeta(tableName);
+		if(metaClass == null && wiring.getMgr() != null)
+			metaClass = wiring.getMgr().find(DboTableMeta.class, tableName);
+		return metaClass;
 	}
 
 	@SuppressWarnings("unchecked")

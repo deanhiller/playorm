@@ -33,6 +33,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	private NoSqlSession session;
 	
 	/**
+	 * NOTE: This must be here so that if you get TypedSession from the NoSqlEntitManager, he will
+	 * have the same session object and flush flushes both typed and ORM data at the same time!!!
 	 * To be removed eventually
 	 * @param s
 	 */
@@ -172,8 +174,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<KeyValue<TypedRow>> runQuery(String query) {
-		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query);
+	public List<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
+		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
 		
