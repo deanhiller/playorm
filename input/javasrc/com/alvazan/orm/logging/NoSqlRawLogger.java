@@ -36,10 +36,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public void sendChanges(List<Action> actions, Object ormFromAbove) {
+		long time = 0;
 		if(log.isInfoEnabled()) {
 			logInformation(actions);
+			time = System.currentTimeMillis();
 		}
 		session.sendChanges(actions, ormFromAbove);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawlogger] Sending Changes to server took(including spi plugin)="+total+" ms");
+		}
 	}
 
 	private void logInformation(List<Action> actions) {
@@ -49,6 +55,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			log.info("[rawlogger] (exception logging save actions, turn on trace to see)");
 		}
 	}
+	
 	private void logInformationImpl(List<Action> actions) {
 		String msg = "[rawlogger] Data being flushed to database in one go=";
 		for(Action act : actions) {
@@ -127,10 +134,17 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
+		long time = 0;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
+			time = System.currentTimeMillis();
 		}
-		return session.columnRangeScan(info, from, to, batchSize);
+		Iterable<Column> ret = session.columnRangeScan(info, from, to, batchSize);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawsession] column range scan took="+total+" ms");
+		}
+		return ret;
 	}
 	
 	private void logColScan(ScanInfo info, Key from, Key to, int batchSize) {
@@ -186,10 +200,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public void clearDatabase() {
+		long time = 0;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] clearing database");
+			time = System.currentTimeMillis();
 		}
 		session.clearDatabase();
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawsession] clearDatabase took(including spi plugin)="+total+" ms");
+		}
 	}
 
 	@Override
@@ -211,12 +231,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Override
 	public Iterable<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys) {
-		//This iterable allows us to log inline so we don't for loop until the bottom with everyone
-		//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
-		Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, rowKeys);
-		if(log.isInfoEnabled())
-			return session.find(colFamily, iterProxy);
-		else
+		if(log.isInfoEnabled()) {
+			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
+			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
+			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, rowKeys);
+			long time = System.currentTimeMillis();
+			Iterable<KeyValue<Row>> ret = session.find(colFamily, iterProxy);
+			long total = System.currentTimeMillis() - time;
+			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
+			return ret;
+		} else
 			return session.find(colFamily, rowKeys);
 	}
 

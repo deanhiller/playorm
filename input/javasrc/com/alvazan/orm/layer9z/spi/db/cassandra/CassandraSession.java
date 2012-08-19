@@ -92,7 +92,14 @@ public class CassandraSession implements NoSqlRawSession {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
 		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
+		
+		long time = System.currentTimeMillis();
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("astyanx find took="+total+" ms");
+		}
+		
 		Rows rows = result.getResult();
 		
 		ResultIterable r = new ResultIterable(rowProvider, rows);
@@ -139,7 +146,13 @@ public class CassandraSession implements NoSqlRawSession {
 			}
 		}
 		
+		long time = System.currentTimeMillis();
 		m.execute();
+		
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("astyanx save took="+total+" ms");
+		}
 	}
 
 	
@@ -272,14 +285,14 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnType type = info1.getColumnType();
 		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
 			ByteBufferRange range = new RangeBuilder().setStart(from.getKey()).setEnd(to.getKey()).setLimit(batchSize).build();
-			return findBasic(rowKey, range, info1);
+			return findBasic(rowKey, range, info1, batchSize);
 			
 		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
 			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
 			range = range.limit(batchSize);
-			return findBasic(rowKey, range, info1);
+			return findBasic(rowKey, range, info1, batchSize);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
@@ -302,7 +315,7 @@ public class CassandraSession implements NoSqlRawSession {
 		return range;
 	}
 	
-	private Iterable<Column> findBasic(byte[] rowKey, ByteBufferRange range, Info info) {
+	private Iterable<Column> findBasic(byte[] rowKey, ByteBufferRange range, Info info, int batchSize) {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
@@ -311,7 +324,7 @@ public class CassandraSession implements NoSqlRawSession {
 							.autoPaginate(true)
 							.withColumnRange(range);
 		
-		return new OurIter(cf, rowQuery, info);
+		return new OurIter(cf, rowQuery, info, batchSize);
 	}
 	
 	private class OurIter implements Iterable<Column> {
@@ -319,26 +332,30 @@ public class CassandraSession implements NoSqlRawSession {
 		private ColumnFamily cf;
 		private RowQuery query;
 		private Info info;
+		private int batchSize;
 
-		public OurIter(ColumnFamily cf, RowQuery query2, Info info) {
+		public OurIter(ColumnFamily cf, RowQuery query2, Info info, int batchSize2) {
 			this.cf = cf;
 			this.query = query2;
 			this.info = info;
+			this.batchSize = batchSize2;
 		}
 
 		@Override
 		public Iterator<Column> iterator() {
-			return new OurIterator(cf, query, info);
+			return new OurIterator(cf, query, info, batchSize);
 		}
 	}
 	private class OurIterator implements Iterator<Column> {
 		private RowQuery<byte[], byte[]> query;
 		private Iterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
 		private Info info;
+		private int batchSize;
 		
-		public OurIterator(ColumnFamily cf, RowQuery query, Info info) {
+		public OurIterator(ColumnFamily cf, RowQuery query, Info info, int batchSize) {
 			this.query = query;
 			this.info = info;
+			this.batchSize = batchSize;
 		}
 
 		@Override
@@ -400,7 +417,13 @@ public class CassandraSession implements NoSqlRawSession {
 			if(subIterator != null && subIterator.hasNext())
 				return; //no need to fetch more since subIterator has more
 			
+			long time = System.currentTimeMillis();
 			ColumnList<byte[]> columns = query.execute().getResult();
+			if(log.isInfoEnabled()) {
+				long total = System.currentTimeMillis()-time;
+				log.info("astyanx column slice took="+total+" ms batchSize="+batchSize);
+			}
+			
 			if(columns.isEmpty())
 				subIterator = null; 
 			else 
