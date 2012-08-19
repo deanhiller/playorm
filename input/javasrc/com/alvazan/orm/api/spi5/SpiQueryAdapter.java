@@ -6,8 +6,7 @@ public interface SpiQueryAdapter {
 
 	public void setParameter(String parameterName, byte[] value);
 
-	@SuppressWarnings("rawtypes")
-	public List getResultList();
+	public List<byte[]> getResultList();
 
 	public void setFirstResult(int firstResult);
 

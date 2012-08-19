@@ -52,15 +52,22 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	 */
 	@Override
 	public List<byte[]> getResultList() {
+		Iterable<byte[]> iter = getResultList2();
+		List<byte[]> keys = new ArrayList<byte[]>();
+		for(byte[] k : iter) {
+			keys.add(k);
+		}
+		return keys;
+	}
+	
+	public Iterable<byte[]> getResultList2() {
 		ExpressionNode root = spiMeta.getASTTree();
-		List<byte[]> objectKeys = new ArrayList<byte[]>();
 		if(root == null) {
 			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
 			Iterable<Column> scan = session.columnRangeScan(scanInfo, null, null, BATCH_SIZE);
-			processKeys(objectKeys, scan);
-			return objectKeys;
+			return processKeys(scan);
 		}
 	
 		log.info("root="+root);
@@ -97,8 +104,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 
-		processKeys(objectKeys, scan);
-		return objectKeys;
+		return processKeys(scan);
 	}
 
 	private Key createRightKey(ExpressionNode node, DboColumnMeta info) {
@@ -121,16 +127,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new RuntimeException("bug, should never happen, but should be easy to fix this one. type="+node.getType());	
 	}
 
-	private void processKeys(List<byte[]> objectKeys, Iterable<Column> scan) {
-		int counter = 0;
-		for(Column c : scan) {
-			if(counter < firstResult)
-				continue; //keep skipping until counter == firstResult
-			byte[] primaryKey = c.getName();
-			objectKeys.add(primaryKey);
-			if(maxResults != null && objectKeys.size() >= maxResults.intValue())
-				break;
-		}
+	private Iterable<byte[]> processKeys(Iterable<Column> scan) {
+		return new SpiIterProxy(scan, firstResult, maxResults);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
