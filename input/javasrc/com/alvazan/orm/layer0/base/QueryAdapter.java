@@ -2,6 +2,7 @@ package com.alvazan.orm.layer0.base;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -80,56 +81,52 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public T getSingleObject() {
-		List<KeyValue<T>> results = getResultKeyValueList();
-		if(results.size() > 1)
-			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
-		else if(results.size() == 0)
+		Iterable<KeyValue<T>> results = getResults();
+		Iterator<KeyValue<T>> iterator = results.iterator();
+		if(!iterator.hasNext())
 			return null;
-		return results.get(0).getValue();
+		KeyValue<T> kv = iterator.next();
+		if(iterator.hasNext())
+			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
+		return kv.getValue();
 	}
 
 	@Override
-	public List<KeyValue<T>> getResultKeyValueList() {
+	public Iterable<KeyValue<T>> getResults() {
 		Iterable<byte[]> keys = indexQuery.getResultList();
-		
 		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery());
-		
-		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
-		for(KeyValue<T> k : results) {
-			all.add(k);
-		}
-			
-		return all;
+		return results;
 	}
 
 	@Override
 	public List<T> getResultList() {
-		List<KeyValue<T>> all = getResultKeyValueList();
+		Iterable<KeyValue<T>> all = getResults();
+		List<T> foundElements = new ArrayList<T>();
 		try {
-			return getEntities(all);
+			return getEntities(all, foundElements);
 		} catch(RowNotFoundException e) {
 			log.trace("converting row not found into stored entities missing", e);
-			List<T> foundElements = formEntitiesList(all);
 			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store", e);
 		}
 	}
 	
-	private List<T> formEntitiesList(List<KeyValue<T>> all) {
+	private List<T> getEntities(Iterable<KeyValue<T>> keyValues, List<T> foundElements){
 		List<T> entities = new ArrayList<T>();
-		for(KeyValue<T> k : all) {
-			if(k.getException() == null)
-				entities.add(k.getValue());
-		}
-		return entities;
-	}
-
-	private List<T> getEntities(List<KeyValue<T>> keyValues){
-		List<T> entities = new ArrayList<T>();
+		RowNotFoundException exc = null;
 		for(KeyValue<T> keyVal : keyValues) {
-			if(keyVal.getValue() != null)
+			try {
 				entities.add(keyVal.getValue());
+				foundElements.add(keyVal.getValue());
+			} catch(RowNotFoundException e) {
+				if(exc == null)
+					exc = e;//set the first one only
+			}
 		}
 
+		if(exc != null) {
+			log.trace("converting row not found into stored entities missing", exc);
+			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store", exc);
+		}
 		return entities;
 	}
 

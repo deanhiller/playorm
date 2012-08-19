@@ -54,9 +54,9 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
-	public static List<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
+	public static Iterable<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
-		return query.getResultKeyValueList();		
+		return query.getResults();		
 	}
 	public static List<PartAccount> findAll(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");

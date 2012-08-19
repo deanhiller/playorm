@@ -1,23 +1,22 @@
 package com.alvazan.orm.api.exc;
 
-import java.util.List;
 
 
 @SuppressWarnings("rawtypes")
 public class StorageMissingEntitesException extends NoSqlOrmException {
 
 	private static final long serialVersionUID = 1L;
-	private final List foundElements;
+	private final Iterable foundElements;
 
 	public StorageMissingEntitesException() {
 		super();
 		foundElements = null;
 	}
-	public StorageMissingEntitesException(List foundElements, String message, RowNotFoundException e) {
+	public StorageMissingEntitesException(Iterable foundElements2, String message, RowNotFoundException e) {
 		super(message);
-		this.foundElements = foundElements;
+		this.foundElements = foundElements2;
 	}
-	public List getFoundElements() {
+	public Iterable getFoundElements() {
 		return foundElements;
 	}
 	

@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -180,7 +181,7 @@ public class TestIndexes {
 		
 		mgr.flush();
 		
-		List<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
 		
 		KeyValue<PartAccount> kVal = null;
 		for(KeyValue<PartAccount> k : all) {
@@ -201,9 +202,17 @@ public class TestIndexes {
 			PartAccount.findAll(mgr);
 			Assert.fail("It should fail since account 3 is not in storage");
 		} catch(StorageMissingEntitesException e) {
-			List<PartAccount> foundAccounts = e.getFoundElements();
+			List<PartAccount> foundAccounts = formList(e.getFoundElements());
 			Assert.assertEquals(2, foundAccounts.size());
 		}
+	}
+
+	private List<PartAccount> formList(Iterable<PartAccount> foundElements) {
+		List<PartAccount> all = new ArrayList<PartAccount>();
+		for(PartAccount p : foundElements) {
+			all.add(p);
+		}
+		return all;
 	}
 
 

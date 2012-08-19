@@ -14,17 +14,17 @@ public interface Query<T> {
 	 * the exception until code accesses that missing value.  In this method, if you only
 	 * iterate through the first 4 elements and the missing element was #5, you will not see
 	 * any exception at all and code will keep working.
+	 * 
+	 * Also, you can call getException instead of getValue to avoid the Exception
 	 * @return
 	 */
-	public List<KeyValue<T>> getResultKeyValueList();
-	
-	
+	public Iterable<KeyValue<T>> getResults();
 	
 	public T getSingleObject();
 	
 	/**
-	 * You may want to use getResultKeyValueList instead since that will delay exceptions caused by info being in the
-	 * index but the entity not existing.
+	 * You probably should use getResultKeyValueList instead since that will delay exceptions caused by entities
+	 * do not exist but are in the index (this is nosql after all)
 	 * @return
 	 */
 	public List<T> getResultList();
