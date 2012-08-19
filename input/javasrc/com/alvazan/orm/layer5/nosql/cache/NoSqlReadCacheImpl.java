@@ -1,6 +1,5 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -77,44 +76,6 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
 		Iterable<KeyValue<Row>> theRows = new IterCacheProxy(this, colFamily, inCache, rowsFromDb);
 		return theRows;
-	}
-	
-	@Override
-	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
-		//READ FROM CACHE HERE to skip reading from database.
-		//All Proxies read from this find method too so they can get cache hits when you have a large 
-		//object graph and fill themselves in properly
-		List<Row> rows = new ArrayList<Row>();
-		List<byte[]> rowKeysToFetch = new ArrayList<byte[]>();
-		List<Integer> indexForRow = new ArrayList<Integer>();
-		for(int i = 0; i < rowKeys.size();i++) {
-			byte[] key = rowKeys.get(i);
-			RowHolder<Row> result = fromCache(colFamily, key);
-			if(result == null) {
-				indexForRow.add(i);
-				rowKeysToFetch.add(key);
-				//we still add the null result that will be replaced after we
-				//hit the database with rows that are still needed..
-				rows.add(null);
-			} else {
-				log.info("cache hit(need to profile/optimize)");
-				rows.add(result.getValue());
-			}
-		}
-		
-		List<Row> rowsFromDb = new ArrayList<Row>();
-		if(rowKeysToFetch.size() > 0)
-			rowsFromDb = session.find(colFamily, rowKeysToFetch);
-		
-		for(int i = 0; i < rowKeysToFetch.size(); i++) {
-			Integer index = indexForRow.get(i);
-			Row r = rowsFromDb.get(i);
-			byte[] key = rowKeysToFetch.get(i);
-			rows.set(index, r);
-			cacheRow(colFamily, key, r);
-		}
-		
-		return rows;
 	}
 	
 	RowHolder<Row> fromCache(String colFamily, byte[] key) {

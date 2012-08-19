@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
@@ -45,23 +46,25 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
-		for(int i = 0; i < this.size(); i++) {
-			byte[] key = keys.get(i);
-			Row row = rows.get(i);
+		Iterable<KeyValue<Row>> rows = session.find2(classMeta.getColumnFamily(), keys);
+		int counter = 0;
+		for(KeyValue<Row> kv : rows) {
+			byte[] key = (byte[]) kv.getKey();
+			Row row = kv.getValue();
 			Tuple<T> tuple = classMeta.convertIdToProxy(row, key, session, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +
 						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
 			}
-			Holder<T> h = (Holder) originalHolders.get(i);
+			Holder<T> h = (Holder) originalHolders.get(counter);
 			T value = h.getValue();
 			if(value instanceof NoSqlProxy) {
 				//inject the row into the proxy object here to load it's fields
 				classMeta.fillInInstance(row, session, value);
 				//((NoSqlProxy)value).__injectData(row);
 			}
+			counter++;
 		}
 		cacheLoaded = true;
 	}

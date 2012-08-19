@@ -133,7 +133,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		List<Row> rows = session.find(cf, noSqlKeys);
+		Iterable<KeyValue<Row>> rows2 = session.find2(cf, noSqlKeys);
+		List<Row> rows = new ArrayList<Row>();
+		for(KeyValue<Row> kv : rows2) {
+			rows.add(kv.getValue());
+		}
+		
 		return getKeyValues(meta, keys, noSqlKeys, rows, indexName);
 	}
 	
