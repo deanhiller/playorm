@@ -70,7 +70,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 
 	@Override
 	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
-		NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
+		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
 		return session.find(colFamily, rowKeys);
 	}
 
@@ -85,7 +85,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 	public Row find(String colFamily, byte[] rowKey) {
 		List<byte[]> keys = new ArrayList<byte[]>();
 		keys.add(rowKey);
-		NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, keys);
+		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, keys);
 		return session.find(colFamily, rowKey);
 	}
 

@@ -81,11 +81,11 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	
 	@Override
 	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
-		return rawSession.find2(colFamily, rowKeys);
+		return rawSession.find(colFamily, rowKeys);
 	}
 	
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		Iterable<KeyValue<Row>> results = rawSession.find2(colFamily, keys);
+		Iterable<KeyValue<Row>> results = rawSession.find(colFamily, keys);
 		List<Row> rows = new ArrayList<Row>();
 		for(KeyValue<Row> kv : results) {
 			rows.add(kv.getValue());

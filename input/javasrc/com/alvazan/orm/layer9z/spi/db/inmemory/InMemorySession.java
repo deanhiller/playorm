@@ -38,7 +38,7 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);

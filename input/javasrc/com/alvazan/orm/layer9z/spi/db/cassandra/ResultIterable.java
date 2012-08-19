@@ -40,6 +40,8 @@ public class ResultIterable implements Iterable<KeyValue<Row>> {
 
 		@Override
 		public KeyValue<Row> next() {
+			if(!rows.hasNext())
+				throw new IllegalStateException("There are no more values in this iterator");
 			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.next();
 			KeyValue<Row> kv = new KeyValue<Row>();
 			kv.setKey(row.getKey());
@@ -52,7 +54,7 @@ public class ResultIterable implements Iterable<KeyValue<Row>> {
 				kv.setValue(r);
 			}
 			
-			return null;
+			return kv;
 		}
 
 		@Override

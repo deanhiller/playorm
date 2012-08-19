@@ -67,7 +67,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		try {
 			return findImpl2(colFamily, rowKeys);
 		} catch (ConnectionException e) {

@@ -41,7 +41,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily,
+	public Iterable<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys) {
 		// TODO Auto-generated method stub
 		return null;

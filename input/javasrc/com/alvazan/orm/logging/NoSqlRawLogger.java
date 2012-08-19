@@ -1,6 +1,5 @@
 package com.alvazan.orm.logging;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,29 +34,6 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Inject
 	private DboDatabaseMeta databaseInfo;
 	
-	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, Iterable<byte[]> keys) {
-		if(!log.isInfoEnabled())
-			return;
-		
-		try {
-			logKeysImpl(prefix, databaseInfo, colFamily, keys);
-		} catch(Exception e) {
-			log.info(prefix+"(Exception logging a find operation, turn on trace to see)");
-		}
-	}
-	private static void logKeysImpl(String prefix, DboDatabaseMeta databaseInfo, String colFamily, Iterable<byte[]> keys) {
-		DboTableMeta meta = databaseInfo.getMeta(colFamily);
-		if(meta == null)
-			return;
-		List<String> realKeys = new ArrayList<String>();
-		for(byte[] k : keys) {
-			Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
-			String str = meta.getIdColumnMeta().convertTypeToString(obj);
-			realKeys.add(str);
-		}
-		log.info(prefix+"CF="+colFamily+" finding keys="+realKeys);
-	}
-
 	@Override
 	public void sendChanges(List<Action> actions, Object ormFromAbove) {
 		if(log.isInfoEnabled()) {
@@ -233,10 +209,15 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find2(String colFamily,
+	public Iterable<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys) {
-		logKeys("[rawlogger]", databaseInfo, colFamily, rowKeys);
-		return session.find2(colFamily, rowKeys);
+		//This iterable allows us to log inline so we don't for loop until the bottom with everyone
+		//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
+		Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, rowKeys);
+		if(log.isInfoEnabled())
+			return session.find(colFamily, iterProxy);
+		else
+			return session.find(colFamily, rowKeys);
 	}
 
 }
