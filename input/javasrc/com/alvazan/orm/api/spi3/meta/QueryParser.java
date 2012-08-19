@@ -1,14 +1,11 @@
 package com.alvazan.orm.api.spi3.meta;
 
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.layer5.nosql.cache.NoSqlSessionFactoryImpl;
+import com.alvazan.orm.layer5.nosql.cache.QueryParserImpl;
 import com.google.inject.ImplementedBy;
 
-@ImplementedBy(NoSqlSessionFactoryImpl.class)
-public interface NoSqlSessionFactory {
+@ImplementedBy(QueryParserImpl.class)
+public interface QueryParser {
 
-	public NoSqlSession createSession();
-	
 	public MetaAndIndexTuple parseQueryForAdHoc(String query, Object mgr);
 		
 	/**

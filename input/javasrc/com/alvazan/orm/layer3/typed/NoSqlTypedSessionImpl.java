@@ -14,7 +14,7 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.meta.QueryParser;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
@@ -26,7 +26,7 @@ import com.alvazan.orm.api.spi9.db.Row;
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@Inject
-	private NoSqlSessionFactory noSqlSessionFactory;
+	private QueryParser noSqlSessionFactory;
 	@Inject
 	private CachedMeta cachedMeta;
 	

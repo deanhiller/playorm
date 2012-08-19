@@ -19,7 +19,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.meta.QueryParser;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -40,7 +40,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@Inject
 	private ScannerForField inspectorField;
 	@Inject
-	private NoSqlSessionFactory noSqlSessionFactory;
+	private QueryParser noSqlSessionFactory;
 	@Inject
 	private ClasspathDiscoverer discoverer; 
 	private boolean isScanned;
