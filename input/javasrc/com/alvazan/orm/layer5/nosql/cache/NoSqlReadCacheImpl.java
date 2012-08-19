@@ -3,7 +3,6 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -71,42 +70,13 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	
 	@Override
 	public Iterable<KeyValue<Row>> find2(String colFamily, Iterable<byte[]> rowKeys) {
-		List<byte[]> rowKeysToFetch = new ArrayList<byte[]>();
-		List<Integer> indexForRow = new ArrayList<Integer>();
-		List<RowHolder<Row>> rows = new ArrayList<RowHolder<Row>>();
-		int counter = 0;
-		for(byte[] key : rowKeys) {
-			RowHolder<Row> result = fromCache(colFamily, key);
-			rows.add(result);
-			if(result == null) {
-				indexForRow.add(counter);
-				rowKeysToFetch.add(key);
-				//we still add the null result that will be replaced after we
-				//hit the database with rows that are still needed..
-			} else {
-				log.info("cache hit(need to profile/optimize)");
-			}			
-			counter++;
-		}
-		
-		Iterable<KeyValue<Row>> rowsFromDb = session.find2(colFamily, rowKeysToFetch);
-
-		Iterator<KeyValue<Row>> rowsIter = rowsFromDb.iterator();
-		List<KeyValue<Row>> allRows = new ArrayList<KeyValue<Row>>();
-		for(RowHolder<Row> rh : rows) {
-			if(rh != null) { //if it is not null, we found it in the cache
-				KeyValue<Row> kv = new KeyValue<Row>();
-				kv.setKey(rh.getKey());
-				kv.setValue(rh.getValue());
-				allRows.add(kv);
-			} else { //if null, we use the database value that was looked up...
-				KeyValue<Row> kv = rowsIter.next();
-				allRows.add(kv);
-				cacheRow(colFamily, (byte[]) kv.getKey(), kv.getValue());
-			}
-		}
-		
-		return allRows;
+		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
+		Iterable<KeyValue<Row>> rowsFromDb = session.find2(colFamily, proxy);
+		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
+		//existing rows
+		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
+		Iterable<KeyValue<Row>> theRows = new IterCacheProxy(this, colFamily, inCache, rowsFromDb);
+		return theRows;
 	}
 	
 	@Override
@@ -147,19 +117,19 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		return rows;
 	}
 	
-	private RowHolder<Row> fromCache(String colFamily, byte[] key) {
+	RowHolder<Row> fromCache(String colFamily, byte[] key) {
 		TheKey k = new TheKey(colFamily, key);
 		return cache.get(k);
 	}
 
-	private void cacheRow(String colFamily, byte[] key, Row r) {
+	void cacheRow(String colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
 		TheKey k = new TheKey(colFamily, key);
 		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);
 	}
 
-	private static class TheKey {
+	static class TheKey {
 		private String colFamily;
 		private ByteArray key;
 		

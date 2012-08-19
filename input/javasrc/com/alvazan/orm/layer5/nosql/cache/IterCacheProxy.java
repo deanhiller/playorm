@@ -10,26 +10,33 @@ public class IterCacheProxy implements Iterable<KeyValue<Row>> {
 
 	private List<RowHolder<Row>> rowsFromCache;
 	private Iterable<KeyValue<Row>> rowsFromDb;
+	private NoSqlReadCacheImpl cache;
+	private String colFamily;
 
-	public IterCacheProxy(List<RowHolder<Row>> rows, List<Integer> indexForRow,
-			Iterable<KeyValue<Row>> rowsFromDb) {
+	public IterCacheProxy(NoSqlReadCacheImpl cache, String colFamily, List<RowHolder<Row>> rows, Iterable<KeyValue<Row>> rowsFromDb) {
+		this.cache = cache;
+		this.colFamily = colFamily;
 		rowsFromCache = rows;
 		this.rowsFromDb = rowsFromDb;
 	}
 
 	@Override
 	public Iterator<KeyValue<Row>> iterator() {
-		return new IterableCacheProxy(rowsFromCache.iterator(), rowsFromDb.iterator());
+		return new IterableCacheProxy(cache, colFamily, rowsFromCache.iterator(), rowsFromDb.iterator());
 	}
 
 	private static class IterableCacheProxy implements Iterator<KeyValue<Row>> {
 
 		private Iterator<RowHolder<Row>> rowsFromCache;
 		private Iterator<KeyValue<Row>> rowsFromDb;
+		private NoSqlReadCacheImpl cache;
+		private String colFamily;
 
-		public IterableCacheProxy(Iterator<RowHolder<Row>> fromCache,
+		public IterableCacheProxy(NoSqlReadCacheImpl cache, String colFamily, Iterator<RowHolder<Row>> rowsFromCache,
 				Iterator<KeyValue<Row>> fromDb) {
-			this.rowsFromCache = fromCache;
+			this.cache = cache;
+			this.colFamily = colFamily;
+			this.rowsFromCache = rowsFromCache;
 			this.rowsFromDb = fromDb;
 		}
 
@@ -48,7 +55,9 @@ public class IterCacheProxy implements Iterable<KeyValue<Row>> {
 				return kv;
 			}
 			
-			return rowsFromDb.next();
+			KeyValue<Row> kv = rowsFromDb.next();
+			cache.cacheRow(colFamily, (byte[]) kv.getKey(), kv.getValue());
+			return kv;
 		}
 
 		@Override
