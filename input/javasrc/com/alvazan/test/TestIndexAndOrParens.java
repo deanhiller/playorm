@@ -44,7 +44,7 @@ public class TestIndexAndOrParens {
 		Assert.assertEquals(2, list.size());
 	}
 
-	//@Test
+	@Test
 	public void testBooleanWithAndClause() {
 		Account acc = new Account();
 		acc.setName("abc");
