@@ -60,7 +60,7 @@ public class PartAccount {
 	}
 	public static List<PartAccount> findAll(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public List<PartitionedTrade> getActivities() {

@@ -1,5 +1,10 @@
 package com.alvazan.test.db;
 
+import java.util.List;
+
+import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.Partition;
+import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -31,6 +36,12 @@ public class PartitionedTrade {
 	
 	@NoSqlIndexed
 	private String uniqueColumn;
+
+	@NoSqlIndexed
+	private int numShares;
+	
+	@NoSqlManyToOne
+	private PartSecurity security;
 	
 	public String getId() {
 		return id;
@@ -64,5 +75,28 @@ public class PartitionedTrade {
 		this.uniqueColumn = uniqueColumn;
 	}
 
+	public PartSecurity getSecurity() {
+		return security;
+	}
+
+	public void setSecurity(PartSecurity security) {
+		this.security = security;
+	}
+
+	public int getNumShares() {
+		return numShares;
+	}
+
+	public void setNumShares(int numShares) {
+		this.numShares = numShares;
+	}
+
+	public static List<PartitionedTrade> findInNullPartition(NoSqlEntityManager mgr, int start, int end) {
+		Partition<PartitionedTrade> partition = mgr.getPartition(PartitionedTrade.class, "account", null);
+		Query<PartitionedTrade> query = partition.createNamedQuery("findInNullPartition");
+		query.setParameter("start", start);
+		query.setParameter("end", end);
+		return query.getResultList(0, null);
+	}
 
 }

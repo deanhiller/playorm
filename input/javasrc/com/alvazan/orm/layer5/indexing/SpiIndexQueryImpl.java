@@ -21,17 +21,13 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private static final Logger log = LoggerFactory.getLogger(SpiIndexQueryImpl.class);
 
-	private static final int BATCH_SIZE = 500;
-	
 	private SpiMetaQueryImpl spiMeta;
 	private NoSqlSession session;
 	private Map<String, ByteArray> parameters = new HashMap<String, ByteArray>();
 
 	private String partitionBy;
 	private String partitionId;
-
-	private Integer maxResults;
-	private int firstResult;
+	private int batchSize = 500;
 	
 	public void setup(String partitionBy, String partitionId, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.partitionBy = partitionBy;
@@ -53,7 +49,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
-			Iterable<IndexColumn> scan = session.scanIndex(scanInfo, null, null, BATCH_SIZE);
+			Iterable<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
 			return processKeys(null, scan);
 		}
 	
@@ -103,7 +99,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		if(root.getType() == NoSqlLexer.EQ) {
 			byte[] data = retrieveValue(info, root.getRightChild());
 			Key key = new Key(data, true);
-			scan = session.scanIndex(scanInfo, key, key, BATCH_SIZE);
+			scan = session.scanIndex(scanInfo, key, key, batchSize);
 		} else if(root.getType() == NoSqlLexer.GT
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT
@@ -123,7 +119,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			} else
 				throw new UnsupportedOperationException("not done yet here");
 			
-			scan = session.scanIndex(scanInfo, from, to, BATCH_SIZE);
+			scan = session.scanIndex(scanInfo, from, to, batchSize);
 			
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
@@ -153,7 +149,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private Iterable<IndexColumnInfo> processKeys(DboColumnMeta info, Iterable<IndexColumn> scan) {
-		return new SpiIterProxy(info, scan, firstResult, maxResults);
+		return new SpiIterProxy(info, scan);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
@@ -183,17 +179,10 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	@Override
-	public void setFirstResult(int firstResult) {
-		if(firstResult < 0)
-			throw new IllegalArgumentException("firstResult must be 0 or greater");
-		this.firstResult = firstResult;
-	}
-
-	@Override
-	public void setMaxResults(int batchSize) {
+	public void setBatchSize(int batchSize) {
 		if(batchSize <= 0)
-			throw new IllegalArgumentException("batchSize must be greater than 0");
-		this.maxResults = batchSize;
+			throw new IllegalArgumentException("batchSize must be 1 or greater, but really, please don't use 1, use something like 500(the default anyways)");
+		this.batchSize = batchSize;
 	}
 	
 }

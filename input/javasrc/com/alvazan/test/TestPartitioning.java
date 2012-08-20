@@ -80,7 +80,7 @@ public class TestPartitioning {
 		Partition<PartitionedTrade> index = mgr.getPartition(PartitionedTrade.class, "account", acc);
 		Query<PartitionedTrade> query = index.createNamedQuery("findByUnique");
 		query.setParameter("unique", trade.getUniqueColumn());
-		List<PartitionedTrade> tradesInAcc1Partition = query.getResultList();
+		List<PartitionedTrade> tradesInAcc1Partition = query.getResultList(0, null);
 		
 		Assert.assertEquals(2, tradesInAcc1Partition.size());
 		

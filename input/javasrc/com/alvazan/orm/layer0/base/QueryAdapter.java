@@ -102,21 +102,28 @@ public class QueryAdapter<T> implements Query<T> {
 	}
 
 	@Override
-	public List<T> getResultList() {
+	public List<T> getResultList(int firstResult, Integer maxResults) {
 		Iterable<KeyValue<T>> all = getResults();
 		List<T> foundElements = new ArrayList<T>();
 		try {
-			return getEntities(all, foundElements);
+			return getEntities(all, foundElements, firstResult, maxResults);
 		} catch(RowNotFoundException e) {
 			log.trace("converting row not found into stored entities missing", e);
 			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store", e);
 		}
 	}
 	
-	private List<T> getEntities(Iterable<KeyValue<T>> keyValues, List<T> foundElements){
+	private List<T> getEntities(Iterable<KeyValue<T>> keyValues, List<T> foundElements, int firstResult, Integer maxResults){
 		List<T> entities = new ArrayList<T>();
 		RowNotFoundException exc = null;
+		
+		int counter = 0;
 		for(KeyValue<T> keyVal : keyValues) {
+			if(counter < firstResult)
+				continue; //skip it
+			else if(maxResults != null && counter >= firstResult+maxResults)
+				break; //we are done with filling in our list
+			
 			try {
 				entities.add(keyVal.getValue());
 				foundElements.add(keyVal.getValue());
@@ -124,23 +131,19 @@ public class QueryAdapter<T> implements Query<T> {
 				if(exc == null)
 					exc = e;//set the first one only
 			}
+			counter++;
 		}
 
 		if(exc != null) {
 			log.trace("converting row not found into stored entities missing", exc);
-			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store", exc);
+			throw new StorageMissingEntitesException(foundElements, "Your index refers to rows that no longer exist in the nosql store(use getResults method instead to avoid this exception until you call getValue on actual element)", exc);
 		}
 		return entities;
 	}
 
 	@Override
-	public void setFirstResult(int firstResult) {
-		indexQuery.setFirstResult(firstResult);
-	}
-
-	@Override
-	public void setMaxResults(int batchSize) {
-		indexQuery.setMaxResults(batchSize);
+	public void setBatchSize(int batchSize) {
+		this.indexQuery.setBatchSize(batchSize);
 	}
 
 }

@@ -62,17 +62,17 @@ public class Account extends AccountSuper{
 		Query<Account> query = mgr.createNamedQuery(Account.class, "findBetween");
 		query.setParameter("begin", begin);
 		query.setParameter("end", to);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 	public static List<Account> findAll(NoSqlEntityManager mgr) {
 		Query<Account> query = mgr.createNamedQuery(Account.class, "findAll");
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 	public static List<Account> findAnd(NoSqlEntityManager mgr, String name, Boolean active) {
 		Query<Account> query = mgr.createNamedQuery(Account.class, "findAnd");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Account> findOr(NoSqlEntityManager mgr, String name,
@@ -80,7 +80,7 @@ public class Account extends AccountSuper{
 		Query<Account> query = mgr.createNamedQuery(Account.class, "findOr");
 		query.setParameter("name", name);
 		query.setParameter("active", active);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public List<Activity> getActivities() {
