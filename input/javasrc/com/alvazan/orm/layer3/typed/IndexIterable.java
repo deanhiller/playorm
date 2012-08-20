@@ -2,13 +2,13 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 
 public class IndexIterable implements Iterable<byte[]> {
 
-	private Iterable<IndexColumn> iterable;
+	private Iterable<IndexColumnInfo> iterable;
 
-	public IndexIterable(Iterable<IndexColumn> iter) {
+	public IndexIterable(Iterable<IndexColumnInfo> iter) {
 		this.iterable = iter;
 	}
 
@@ -19,9 +19,9 @@ public class IndexIterable implements Iterable<byte[]> {
 	
 	private static class IndexIterator implements Iterator<byte[]> {
 
-		private Iterator<IndexColumn> iterator;
+		private Iterator<IndexColumnInfo> iterator;
 
-		public IndexIterator(Iterator<IndexColumn> iterator) {
+		public IndexIterator(Iterator<IndexColumnInfo> iterator) {
 			this.iterator = iterator;
 		}
 
@@ -32,7 +32,7 @@ public class IndexIterable implements Iterable<byte[]> {
 
 		@Override
 		public byte[] next() {
-			return iterator.next().getPrimaryKey();
+			return iterator.next().getPrimary().getPrimaryKey();
 		}
 
 		@Override

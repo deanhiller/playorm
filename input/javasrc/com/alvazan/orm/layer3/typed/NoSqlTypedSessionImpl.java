@@ -9,6 +9,7 @@ import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedRow;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
@@ -17,7 +18,6 @@ import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
@@ -134,7 +134,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
 		
-		Iterable<IndexColumn> iter = spiQueryAdapter.getResultList();
+		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		Iterable<byte[]> indexIterable = new IndexIterable(iter);
 
 		DboTableMeta meta = metaQuery.getTargetTable();

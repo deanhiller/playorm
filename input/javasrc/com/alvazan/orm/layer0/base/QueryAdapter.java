@@ -16,10 +16,10 @@ import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.TypeInfo;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
@@ -95,7 +95,7 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Iterable<KeyValue<T>> getResults() {
-		Iterable<IndexColumn> indice = indexQuery.getResultList();
+		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IndexIterable(indice);
 		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery());
 		return results;
