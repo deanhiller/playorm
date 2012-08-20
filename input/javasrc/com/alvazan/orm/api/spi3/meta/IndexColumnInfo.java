@@ -7,6 +7,7 @@ public class IndexColumnInfo {
 
 	private IndexColumn primary;
 	private IndexColumnInfo nextAndedColumn;
+	private IndexColumnInfo nextOrColumn;
 	private DboColumnMeta columnMeta;
 	private transient ByteArray cachedPrimaryKey;
 	
@@ -34,6 +35,12 @@ public class IndexColumnInfo {
 	}
 	public void setNextAndedColumn(IndexColumnInfo nextAndedColumn) {
 		this.nextAndedColumn = nextAndedColumn;
+	}
+	public IndexColumnInfo getNextOrColumn() {
+		return nextOrColumn;
+	}
+	public void setNextOrColumn(IndexColumnInfo nextOrColumn) {
+		this.nextOrColumn = nextOrColumn;
 	}
 	
 }

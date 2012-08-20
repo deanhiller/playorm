@@ -80,16 +80,16 @@ public class TestIndexAndOrParens {
 		Assert.assertEquals(5, orList.size());
 	}
 		
-	//@Test
+	@Test
 	public void testSimpleOr() {
 		List<Activity> findByName = Activity.findWithOr(mgr, "hello", 6);
-		Assert.assertEquals(3, findByName.size());
+		Assert.assertEquals(4, findByName.size());
 		
 		List<Activity> list = Activity.findWithOr(mgr, "nothaveThe5OrHellohere", 20);
 		Assert.assertEquals(1, list.size());
 	}
 	
-	//@Test
+	@Test
 	public void testParensVsNoParens() {
 		//@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
 		//		" e.name=:name and (e.numTimes = :numTimes or e.isCool = :isCool)"),	
