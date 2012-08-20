@@ -4,12 +4,12 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 
-public class OrIterable implements Iterable<IndexColumnInfo> {
+public class IterableForOr implements Iterable<IndexColumnInfo> {
 
 	private Iterable<IndexColumnInfo> leftResults;
 	private Iterable<IndexColumnInfo> rightResults;
 
-	public OrIterable(Iterable<IndexColumnInfo> leftResults,
+	public IterableForOr(Iterable<IndexColumnInfo> leftResults,
 			Iterable<IndexColumnInfo> rightResults) {
 		this.leftResults = leftResults;
 		this.rightResults = rightResults;
@@ -40,9 +40,8 @@ public class OrIterable implements Iterable<IndexColumnInfo> {
 
 		@Override
 		public IndexColumnInfo next() {
-			if(leftResults.hasNext())
-				return leftResults.next();
-			return rightResults.next();
+			//left and right sides may contain duplicates
+			throw new UnsupportedOperationException("not supported yet");
 		}
 
 		@Override

@@ -37,15 +37,12 @@ public class TestIndexAndOrParens {
 	}
 	
 	@Test
-	public void empty() {}
-	
-	//@Test
 	public void testSimpleAnd() {
 		List<Activity> findByName = Activity.findWithAnd(mgr, "hello", 5);
 		Assert.assertEquals(1, findByName.size());
 		
 		List<Activity> list = Activity.findWithAnd(mgr, "hello", 6);
-		Assert.assertEquals(1, list.size());
+		Assert.assertEquals(2, list.size());
 	}
 
 	//@Test
@@ -159,6 +156,11 @@ public class TestIndexAndOrParens {
 		act6.setNumTimes(9);
 		act6.setIsCool(true);
 		mgr.put(act6);
+		
+		Activity act7 = new Activity();
+		act7.setName("hello");
+		act7.setNumTimes(6);
+		mgr.put(act7);
 		
 		mgr.flush();
 	}

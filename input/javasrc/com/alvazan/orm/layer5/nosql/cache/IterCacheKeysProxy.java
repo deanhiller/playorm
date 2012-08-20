@@ -76,9 +76,11 @@ public class IterCacheKeysProxy implements Iterable<byte[]> {
 
 		@Override
 		public byte[] next() {
-			if(lastCachedKey != null)
-				return lastCachedKey;
-			else if(!hasNext()) {
+			if(lastCachedKey != null) {
+				byte[] last = lastCachedKey;
+				lastCachedKey = null;
+				return last;
+			} else if(!hasNext()) {
 				throw new IllegalStateException("There are no more entries in this iterator");
 			}
 			

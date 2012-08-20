@@ -88,10 +88,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		Iterable<IndexColumnInfo> rightResults = processExpressionTree(right);
 		
 		if(root.getType() == NoSqlLexer.AND) {
-			throw new UnsupportedOperationException("not suported");
-			//return new AndIterable(leftResults, rightResults);
+			return new IterableForAnd(leftResults, rightResults);
 		} else {
-			return new OrIterable(leftResults, rightResults);
+			return new IterableForOr(leftResults, rightResults);
 		}
 	}
 	

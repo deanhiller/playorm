@@ -1,12 +1,14 @@
 package com.alvazan.orm.api.spi3.meta;
 
+import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 
 public class IndexColumnInfo {
 
 	private IndexColumn primary;
-	private IndexColumnInfo andedColumns;
+	private IndexColumnInfo nextAndedColumn;
 	private DboColumnMeta columnMeta;
+	private transient ByteArray cachedPrimaryKey;
 	
 	public IndexColumn getPrimary() {
 		return primary;
@@ -20,6 +22,18 @@ public class IndexColumnInfo {
 	}
 	public void setColumnMeta(DboColumnMeta columnMeta) {
 		this.columnMeta = columnMeta;
+	}
+	public ByteArray getPrimaryKey() {
+		if(cachedPrimaryKey == null) {
+			cachedPrimaryKey = new ByteArray(primary.getPrimaryKey());
+		}
+		return cachedPrimaryKey;
+	}
+	public IndexColumnInfo getNextAndedColumn() {
+		return nextAndedColumn;
+	}
+	public void setNextAndedColumn(IndexColumnInfo nextAndedColumn) {
+		this.nextAndedColumn = nextAndedColumn;
 	}
 	
 }
