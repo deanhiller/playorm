@@ -1,4 +1,4 @@
-package com.alvazan.test.needlater;
+package com.alvazan.test;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.test.FactorySingleton;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 
@@ -96,15 +95,15 @@ public class TestIndexAndOrParens {
 		//@NoSqlQuery(name="findWithoutParens", query="select * FROM TABLE e WHERE" +
 		//		" e.name=:name and e.numTimes = :numTimes or e.isCool = :isCool"),
 		//We have a truth table of this where the result of A named query and B named query are on right side
-		//We need to test #2 (A=F, B=T) and the opposite (A=T, B=F)
+		//We need to test #2 (A=F, B=T) to make sure results differ
 		//1 F, F, F : A=F, B=F
 		//2 F, F, T : A=F, B=T
 		//3 F, T, F : A=F, B=F
 		//4 F, T, T : A=F, B=T
 		//5 T, F, F : A=F, B=F
-		//6 T, F, T : 
-		//7 T, T, F : 
-		//8 T, T, T :
+		//6 T, F, T : A=T, B=T
+		//7 T, T, F : A=T, B=T
+		//8 T, T, T : A=T, B=T
 		
 		//First query should not be found....(A)
 		List<Activity> withParens = Activity.findWithParens(mgr, "notfound", 99, 5.55f);
