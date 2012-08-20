@@ -20,8 +20,6 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 public class TestColumnSlice {
 
@@ -86,10 +84,9 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
-		Key from = new Key(toDecBytes(-250), true);
-		Key to = new Key(toDecBytes(12), true);
-		Iterable<Column> results = session.columnRangeScan(scanInfo, from, to, 2);
+		byte[] from = toDecBytes(-250);
+		byte[] to = toDecBytes(12);
+		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
 		for(Column col : results) {
@@ -148,10 +145,9 @@ public class TestColumnSlice {
 		session.put(colFamily, rowKey, columns);
 		session.flush();
 
-		ScanInfo scanInfo = new ScanInfo(colFamily, rowKey);
-		Key from = new Key(toIntBytes(-250), true);
-		Key to = new Key(toIntBytes(50), true);
-		Iterable<Column> results = session.columnRangeScan(scanInfo, from, to, 2);
+		byte[] from = toIntBytes(-250);
+		byte[] to = toIntBytes(50);
+		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
 		
 		int counter = 0;
 		for(Column col : results) {

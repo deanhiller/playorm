@@ -201,9 +201,8 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Collection<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
-		String colFamily = info.getIndexColFamily();
-		byte[] rowKey = info.getRowKey();
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
 		Table table = database.findTable(colFamily);
 		if(table == null) {
 			return new HashSet<Column>();
@@ -214,10 +213,24 @@ public class InMemorySession implements NoSqlRawSession {
 		
 		return row.columnSlice(from, to);
 	}
+	
+	@Override
+	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		String colFamily = info.getIndexColFamily();
+		byte[] rowKey = info.getRowKey();
+		Table table = database.findTable(colFamily);
+		if(table == null) {
+			return new HashSet<IndexColumn>();
+		}
+		Row row = table.findOrCreateRow(rowKey);
+		if(row == null)
+			return new HashSet<IndexColumn>();
+		
+		return row.columnSlice(from, to);
+	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
 		
 	}
 

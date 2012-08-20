@@ -20,7 +20,9 @@ public interface Row {
 
 	void remove(byte[] name);
 
-	Collection<Column> columnSlice(Key from, Key to);
+	Collection<Column> columnSlice(byte[] from, byte[] to);
+	
+	Collection<IndexColumn> columnSlice(Key from, Key to);
 
 	Collection<Column> columnByPrefix(byte[] prefix);
 

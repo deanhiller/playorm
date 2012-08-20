@@ -17,6 +17,7 @@ import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
@@ -133,14 +134,17 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		MetaQuery metaQuery = tuple.getMetaQuery();
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
 		
-		Iterable<byte[]> iter = spiQueryAdapter.getResultList();
-		List<byte[]> keys = new ArrayList<byte[]>();
-		for(byte[] k : iter) {
-			keys.add(k);
-		}
-			
+		Iterable<IndexColumn> iter = spiQueryAdapter.getResultList();
+		Iterable<byte[]> indexIterable = new IndexIterable(iter);
+
 		DboTableMeta meta = metaQuery.getTargetTable();
-		Iterable results = this.findAllImpl2(meta, null, iter, metaQuery.getQuery());
+		Iterable results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+		
+		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
+		//skips false positives so as the client loops, we skip some of the results based on that they are false
+		//AND we could then trigger index rebuilds as we see there are false columns
+		
+		
 		return results;
 	}
 

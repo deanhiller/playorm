@@ -15,6 +15,7 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
@@ -133,13 +134,29 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
+		long time = 0;
+		if(log.isInfoEnabled()) {
+			log.info("[rawsession] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
+			time = System.currentTimeMillis();
+		}
+		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawsession] column range scan took="+total+" ms");
+		}
+		return ret;
+	}
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
 		long time = 0;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
 			time = System.currentTimeMillis();
 		}
-		Iterable<Column> ret = session.columnRangeScan(info, from, to, batchSize);
+		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize);
 		if(log.isInfoEnabled()) {
 			long total = System.currentTimeMillis()-time;
 			log.info("[rawsession] column range scan took="+total+" ms");

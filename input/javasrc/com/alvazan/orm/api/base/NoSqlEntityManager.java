@@ -47,8 +47,8 @@ public interface NoSqlEntityManager {
 	 * @param entities
 	 * @deprecated Use put(Object entity) in a loop and flush will send all puts down at one time.
 	 */
-	@Deprecated
-	public void putAll(List<Object> entities);
+	//@Deprecated
+	//public void putAll(List<Object> entities);
 	
 	/**
 	 * This is NOSql so do NOT use find in a loop!!!!  Use findAll instead and then loop over the items.

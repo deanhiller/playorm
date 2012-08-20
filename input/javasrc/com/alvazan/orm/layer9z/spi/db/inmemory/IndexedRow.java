@@ -31,7 +31,7 @@ public class IndexedRow extends RowImpl {
 	
 	
 	@Override
-	public Collection<Column> columnSlice(Key from, Key to) {
+	public Collection<IndexColumn> columnSlice(Key from, Key to) {
 		NavigableMap<OurKey, IndexColumn> resultMap = columns;
 		if(from != null) {
 			OurKey fromKey = new OurKey(from.getKey(), new byte[0]);
@@ -43,7 +43,7 @@ public class IndexedRow extends RowImpl {
 			resultMap = resultMap.headMap(toKey, to.isInclusive());
 		}
 		
-		List<Column> results = new ArrayList<Column>();
+		List<IndexColumn> results = new ArrayList<IndexColumn>();
 		for(IndexColumn c : resultMap.values()) {
 			//HACK since I am not sure how to make this work and it is not too important...strip off
 			//the ones that have the prefix passed in
@@ -56,9 +56,7 @@ public class IndexedRow extends RowImpl {
 					continue; //skip this value since we are exclusive
 			}
 			
-			Column col = new Column();
-			col.setName(c.getPrimaryKey());
-			results.add(col);
+			results.add(c);
 		}
 		return results;
 	}

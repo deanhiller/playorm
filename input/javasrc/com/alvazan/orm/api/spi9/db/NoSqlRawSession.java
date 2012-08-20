@@ -30,6 +30,8 @@ public interface NoSqlRawSession {
 	
 	public void close();
 
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize);
+	
 	/**
 	 * 
 	 * @param scan
@@ -38,6 +40,6 @@ public interface NoSqlRawSession {
 	 * @param batchSize TODO
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to, int batchSize);
+	public Iterable<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, int batchSize);
 
 }

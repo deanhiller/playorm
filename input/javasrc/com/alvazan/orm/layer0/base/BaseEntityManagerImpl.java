@@ -77,12 +77,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		session.put(cf, key, cols);
 	}
 
-	@Override
-	public void putAll(List<Object> entities) {
-		for(Object entity : entities) {
-			put(entity);
-		}
-	}
+//	@Override
+//	public void putAll(List<Object> entities) {
+//		for(Object entity : entities) {
+//			put(entity);
+//		}
+//	}
 
 	@Override
 	public <T> T find(Class<T> entityType, Object key) {

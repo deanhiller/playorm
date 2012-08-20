@@ -94,10 +94,15 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, Key from, Key to, int batchSize) {
-		return session.columnRangeScan(scanInfo, from, to, batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
-
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		return session.scanIndex(info, from, to, batchSize);
+	}
+	
 	@Override
 	public void setOrmSessionForMeta(Object orm) {
 		session.setOrmSessionForMeta(orm);
