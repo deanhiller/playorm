@@ -70,11 +70,22 @@ public class TestJoins {
 		trade2.setSecurity(sec);
 		trade2.setNumShares(6);
 		mgr.put(trade2);
-		
+
 		AAPartitionedTrade trade3 = new AAPartitionedTrade();
 		trade3.setSecurity(sec3);
 		trade3.setNumShares(5);
 		mgr.put(trade3);
+
+		//has null security
+		AAPartitionedTrade trade4 = new AAPartitionedTrade();
+		trade4.setNumShares(5);
+		mgr.put(trade4);
+		
+		//has security 2 not one
+		AAPartitionedTrade trade5 = new AAPartitionedTrade();
+		trade5.setSecurity(sec2);
+		trade5.setNumShares(5);
+		mgr.put(trade5);
 		
 		mgr.flush();
 		

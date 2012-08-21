@@ -5,6 +5,7 @@ import java.util.List;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -15,7 +16,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findJoinOnNullPartition", query="select p FROM TABLE as p inner join p.security as s where p.numShares = :shares and s.securityType = :type"),
+	//@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS p('account', :partId) select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type"),
 	@NoSqlQuery(name="findSecurity", query="select *  FROM TABLE as e WHERE e.securityName = :security"),
 	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE as e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
@@ -32,6 +33,7 @@ public class AAPartitionedTrade {
 
 	@NoSqlPartitionByThisField
 	@NoSqlIndexed
+	@NoSqlColumn(columnName="securityName")
 	private String securityName;
 	
 	@NoSqlIndexed
@@ -96,6 +98,7 @@ public class AAPartitionedTrade {
 		Query<AAPartitionedTrade> query = partition.createNamedQuery("findJoinOnNullPartition");
 		query.setParameter("shares", shares);
 		query.setParameter("type", type);
+		//query.setPartition(":partId", null);
 		return query.getResultList(0, null);
 	}
 

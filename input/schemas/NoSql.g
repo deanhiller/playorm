@@ -97,7 +97,7 @@ columnList:	simpleColumn (COMMA! simpleColumn)* | aliasedColumn (COMMA! aliasedC
 
 //PARTITONS CLAUSE SPECIFIC STUFF (for adhoc queries ONLY!!!!)
 partitionClause: PARTITIONS partitionList -> ^(PARTITIONS_CLAUSE partitionList);
-partitionList: partition (partition)*;
+partitionList: partition (COMMA! partition)*;
 partition: simplePartition | partitionBy;
 simplePartition: alias LPAREN! value RPAREN!;
 partitionBy: alias LPAREN strVal COMMA value RPAREN -> ^(alias value strVal);
@@ -144,7 +144,7 @@ newAlias: ID;
 parameter: COLON parameterName -> PARAMETER_NAME[$parameterName.text];
 
 valueList: LPAREN value (COMMA value)* RPAREN -> ^(VALUE_LIST value (value)*);
-value: intVal | doubleVal | strVal;
+value: intVal | doubleVal | strVal | NULL;
 
 intVal	:	INTEGER -> INT_VAL[$INTEGER.text];
 doubleVal   :   DECIMAL -> DEC_VAL[$DECIMAL.text];
@@ -159,6 +159,8 @@ JOIN    :   ('J'|'j')('O'|'o')('I'|'i')('N'|'n');
 SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
 FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
 WHERE	:	('W'|'w')('H'|'h')('E'|'e')('R'|'r')('E'|'e');
+NULL    :   ('N'|'n')('U'|'u')('L'|'l')('L'|'l');
+
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')*;
 
