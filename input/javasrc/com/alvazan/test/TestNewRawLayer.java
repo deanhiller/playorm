@@ -91,7 +91,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25", mgr);
+		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
 		KeyValue<TypedRow> keyValue = rows.iterator().next();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
@@ -131,7 +131,7 @@ public class TestNewRawLayer {
 
 		NoSqlTypedSession session = mgr.getTypedSession();
 		
-		String sql = "select * FROM MyEntity e WHERE e.cat = \"deano\"";
+		String sql = "select * FROM MyEntity as e WHERE e.cat = \"deano\"";
 
 		TypedColumn col1 = new TypedColumn();
 		col1.setName("cat");

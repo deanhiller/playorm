@@ -15,10 +15,10 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	//@NoSqlQuery(name="findJoinOnNullPartition", query="select p FROM TABLE p left join p.security s where p.numShares = :shares and s.securityType = :type"),
-	@NoSqlQuery(name="findSecurity", query="select *  FROM TABLE e WHERE e.securityName = :security"),
-	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE e WHERE e.account = :account"),
-	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE e WHERE e.uniqueColumn = :unique")
+	@NoSqlQuery(name="findJoinOnNullPartition", query="select p FROM TABLE as p inner join p.security as s where p.numShares = :shares and s.securityType = :type"),
+	@NoSqlQuery(name="findSecurity", query="select *  FROM TABLE as e WHERE e.securityName = :security"),
+	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE as e WHERE e.account = :account"),
+	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
 })
 public class AAPartitionedTrade {
 

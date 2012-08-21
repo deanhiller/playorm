@@ -15,7 +15,7 @@ import com.alvazan.orm.api.spi9.db.KeyValue;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findAll", query="select *  from TABLE d")
+	@NoSqlQuery(name="findAll", query="select *  from TABLE as d")
 })
 public class PartAccount {
 

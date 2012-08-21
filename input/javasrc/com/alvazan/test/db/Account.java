@@ -14,10 +14,10 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findBetween", query="select b from Account b where b.users >= :begin and (b.name = :name or b.name = :name) and b.users < :end"),
-	@NoSqlQuery(name="findAll", query="select *  from Account d"),
-	@NoSqlQuery(name="findAnd", query="select *  FROM Account a WHERE a.name=:name and a.isActive=:active"),
-	@NoSqlQuery(name="findOr", query="select *  FROM Account a WHERE a.name=:name or a.isActive=:active")
+	@NoSqlQuery(name="findBetween", query="select b from Account as b where b.users >= :begin and (b.name = :name or b.name = :name) and b.users < :end"),
+	@NoSqlQuery(name="findAll", query="select *  from Account as d"),
+	@NoSqlQuery(name="findAnd", query="select *  FROM Account as a WHERE a.name=:name and a.isActive=:active"),
+	@NoSqlQuery(name="findOr", query="select *  FROM Account as a WHERE a.name=:name or a.isActive=:active")
 })
 public class Account extends AccountSuper{
 

@@ -8,7 +8,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
-@NoSqlQuery(name="findByName", query="select u from TABLE u where :name = u.name")
+@NoSqlQuery(name="findByName", query="select u from TABLE as u where :name = u.name")
 public class User {
 
 	@NoSqlId

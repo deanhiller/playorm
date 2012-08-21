@@ -20,14 +20,17 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.meta.TypeInfo;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
+import com.alvazan.orm.layer5.indexing.JoinType;
 import com.alvazan.orm.layer5.indexing.SpiMetaQueryImpl;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
+import com.alvazan.orm.layer5.indexing.TableInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 import com.alvazan.orm.parser.antlr.ParseQueryException;
@@ -87,7 +90,7 @@ public class ScannerForQuery {
 		ExpressionNode node = wiring.getAstTree();
 		ExpressionNode newTree = rewireTreeIfNeededForBetween(node, wiring.getAttributeUsedCount(), query);
 		
-		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
+		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable(), wiring.getTables());
 		
 		return visitor1;
 	}
@@ -116,7 +119,8 @@ public class ScannerForQuery {
         try {
         	return (CommonTree) parser.statement().getTree();
         } catch (RecognitionException re) {
-            throw new RuntimeException(query, re);
+        	ParseQueryException e = new ParseQueryException(" (Check the token after the one the parse complained about.  Are you missing the 'as' keyword", re);
+        	throw e;
         }
     }
 	
@@ -124,18 +128,26 @@ public class ScannerForQuery {
 	private <T> void walkTheTree(CommonTree tree, MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		int type = tree.getType();
 		switch (type) {
+		//The tree should come in with this order OR we are in BIG TROUBLE as we need the information
+		//in the from clause first to get alias and what table the alias maps too
 		case NoSqlLexer.FROM_CLAUSE:
-			parseFromClause(tree, metaQuery, wiring);
+			compileFromClause(tree, metaQuery, wiring);
+			break;
+		case NoSqlLexer.JOIN_CLAUSE:
+			compileJoinClause(tree, metaQuery, wiring);
+			break;
+		case NoSqlLexer.PARTITIONS_CLAUSE:
+			compilePartitionsClause(tree, metaQuery, wiring);
 			break;
 		case NoSqlLexer.SELECT_CLAUSE:
-			parseSelectClause(tree, metaQuery, wiring);
+			compileSelectClause(tree, metaQuery, wiring);
 			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
 			ExpressionNode node = new ExpressionNode(expression);
-			parseExpression(node, metaQuery, wiring);
+			compileExpression(node, metaQuery, wiring);
 			wiring.setAstTree(node);
 			break;
 
@@ -150,76 +162,51 @@ public class ScannerForQuery {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private static <T> void parseSelectClause(CommonTree tree,
+	private <T> void compileJoinClause(CommonTree tree,
 			MetaQuery<T> metaQuery, InfoForWiring wiring) {
-
-		List<CommonTree> childrenList = tree.getChildren();
-		if (childrenList != null && childrenList.size() > 0) {
-			for (CommonTree child : childrenList) {
-				switch (child.getType()) {
-				case NoSqlLexer.RESULT:
-					parseResult(child, metaQuery, wiring);
-					break;
-				default:
-					break;
-				}
-			}
+		List children = tree.getChildren();
+		
+		for(Object child : children) {
+			CommonTree node = (CommonTree) child;
+			int type = node.getType();
+			if(type == NoSqlLexer.LEFT_OUTER_JOIN) {
+				throw new UnsupportedOperationException("do not yet support left out join, please let me know and I can implement quickly");
+			} else if(type == NoSqlLexer.INNER_JOIN) {
+				compileJoin(node, metaQuery, wiring, JoinType.INNER);
+			} else
+				throw new UnsupportedOperationException("bug?, type="+type+" and we don't process that type for joins");
 		}
 	}
+	
+	private <T> void compileJoin(CommonTree tree, MetaQuery<T> metaQuery, InfoForWiring wiring, JoinType type) {
+		List children = tree.getChildren();
+		CommonTree aliasedColumn = (CommonTree) children.get(0);
+		CommonTree aliasNode = (CommonTree) aliasedColumn.getChild(0);
+		CommonTree newAliasNode = (CommonTree) children.get(1);
+		String column = aliasedColumn.getText();
+		String alias = aliasNode.getText();
+		String newAlias = newAliasNode.getText();
+		
+		TableInfo tableInfo = wiring.getInfoFromAlias(alias);
+		DboTableMeta tableMeta = tableInfo.getTableMeta();
+		DboColumnMeta columnMeta = tableMeta.getColumnMeta(column);
+		if(!(columnMeta instanceof DboColumnToOneMeta))
+			throw new IllegalArgumentException("Column="+column+" on table="+tableMeta.getColumnFamily()+" is NOT a OneToOne NOR ManyToOne relationship according to our meta data");
+		
+		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
+		DboTableMeta fkTableMeta = toOne.getFkToColumnFamily();
 
-	// the alias part is silly due to not organize right in .g file
-	@SuppressWarnings({ "unchecked" })
-	private static <T> void parseResult(CommonTree tree,
-			MetaQuery<T> metaQuery, InfoForWiring wiring) {
-		List<CommonTree> childrenList = tree.getChildren();
-		if (childrenList == null)
-			return;
-			
-		for (CommonTree child : childrenList) {
-			switch (child.getType()) {
-			case NoSqlLexer.STAR:
-				wiring.setSelectStarDefined(true);
-				break;
-			case NoSqlLexer.ATTR_NAME:
-				
-				String attributeName = child.getText();
-				DboTableMeta meta = wiring.getInfoFromAlias(attributeName);
-				if(meta != null) {
-					wiring.setSelectStarDefined(true);
-					continue;
-				}
-					
-				String alias = null;
-				List children = child.getChildren();
-				if(children == null)
-					throw new IllegalArgumentException("You have an alias of="+attributeName+" that does not exist in the FROM part of the select statement.  query="+wiring.getQuery());
-				if(children.size() > 0) { //we have an alias too!!!
-					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
-					alias = aliasNode.getText();
-					
-					String fullName = alias+"."+attributeName;
-					if(wiring.getInfoFromAlias(alias) == null)
-						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+fullName+" with an alias that was not defined in the from section");					
-				} else {
-					//later made need to add attributeName information to metaQuery here
-					
-					if(wiring.getNoAliasTable() == null)
-						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+attributeName+" with no alias but there is no table with no alias in from section");					
-				}
-				
-				break;
-			case NoSqlLexer.ALIAS:
-				break;
-
-			default:
-				break;
-			}
-		}
+		TableInfo fkInfo = new TableInfo(fkTableMeta, JoinType.INNER);
+		tableInfo.putJoinTable(column, fkInfo);
+		wiring.putAliasTable(newAlias, fkInfo);
 	}
-
+	
+	private <T> void compilePartitionsClause(CommonTree tree,
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
+		throw new UnsupportedOperationException("partitions in ad-hoc not supported yet");
+	}
 	@SuppressWarnings({ "unchecked" })
-	private <T> void parseFromClause(CommonTree tree,
+	private <T> void compileFromClause(CommonTree tree,
 			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
@@ -252,17 +239,18 @@ public class ScannerForQuery {
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 			
+		TableInfo info = new TableInfo(metaClass, JoinType.NONE);
 		if(wiring.getFirstTable() == null)
-			wiring.setFirstTable(metaClass);
+			wiring.setFirstTable(info);
 		
 		if(tableNode.getChildCount() == 0) {
 			if(wiring.getNoAliasTable() != null)
 				throw new IllegalArgumentException("Query="+metaQuery+" has two tables with no alias.  This is not allowed");
-			wiring.setNoAliasTable(metaClass);
+			wiring.setNoAliasTable(info);
 		} else {
 			CommonTree aliasNode = (CommonTree) tableNode.getChildren().get(0);
 			String alias = aliasNode.getText();
-			wiring.put(alias, metaClass);
+			wiring.putAliasTable(alias, info);
 		}
 		
 		//set the very first table as the target table
@@ -278,9 +266,77 @@ public class ScannerForQuery {
 			metaClass = wiring.getMgr().find(DboTableMeta.class, tableName);
 		return metaClass;
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T> void compileSelectClause(CommonTree tree,
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
+
+		List<CommonTree> childrenList = tree.getChildren();
+		if (childrenList != null && childrenList.size() > 0) {
+			for (CommonTree child : childrenList) {
+				switch (child.getType()) {
+				case NoSqlLexer.SELECT_RESULTS:
+					parseSelectResults(child, metaQuery, wiring);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+	}
+
+	// the alias part is silly due to not organize right in .g file
+	@SuppressWarnings({ "unchecked" })
+	private static <T> void parseSelectResults(CommonTree tree,
+			MetaQuery<T> metaQuery, InfoForWiring wiring) {
+		List<CommonTree> childrenList = tree.getChildren();
+		if (childrenList == null)
+			return;
+			
+		for (CommonTree child : childrenList) {
+			switch (child.getType()) {
+			case NoSqlLexer.STAR:
+				wiring.setSelectStarDefined(true);
+				break;
+			case NoSqlLexer.ATTR_NAME:
+				
+				String columnNameOrAlias = child.getText();
+				TableInfo info = wiring.getInfoFromAlias(columnNameOrAlias);
+				if(info != null) {
+					wiring.setSelectStarDefined(true);
+					continue;
+				}
+				
+				String alias = null;
+				List children = child.getChildren();
+				if(children == null) //It must be an alias if there are no children!!!
+					throw new IllegalArgumentException("You have an alias of="+columnNameOrAlias+" that does not exist in the FROM part of the select statement.  query="+wiring.getQuery());
+				if(children.size() > 0) { //we have an alias too!!!
+					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
+					alias = aliasNode.getText();
+					
+					String fullName = alias+"."+columnNameOrAlias;
+					if(wiring.getInfoFromAlias(alias) == null)
+						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+fullName+" with an alias that was not defined in the from section");					
+				} else {
+					//later made need to add attributeName information to metaQuery here
+					
+					if(wiring.getNoAliasTable() == null)
+						throw new RuntimeException("query="+metaQuery+" in the select portion has an attribute="+columnNameOrAlias+" with no alias but there is no table with no alias in from section");					
+				}
+				
+				break;
+			case NoSqlLexer.ALIAS:
+				break;
+
+			default:
+				break;
+			}
+		}
+	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> void parseExpression(ExpressionNode node,
+	private static <T> void compileExpression(ExpressionNode node,
 			MetaQuery<T> metaQuery, InfoForWiring wiring) {
 		CommonTree expression = node.getASTNode();
 		int type = expression.getType();
@@ -300,7 +356,7 @@ public class ScannerForQuery {
 				else
 					throw new RuntimeException("We have a big problem, we don't have a binary tree anymore");
 				
-				parseExpression(childNode, metaQuery, wiring);
+				compileExpression(childNode, metaQuery, wiring);
 				
 			}
 			break;
@@ -364,7 +420,7 @@ public class ScannerForQuery {
 
 	private static TypeInfo processSide(MetaQuery metaQuery, ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME) {
-			return processAttribute(metaQuery, node, wiring, typeInfo);
+			return processColumnName(metaQuery, node, wiring, typeInfo);
 		} else if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
 			return processParam(metaQuery, node, wiring, typeInfo);
 		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
@@ -420,45 +476,46 @@ public class ScannerForQuery {
 	}
 	
 
-	private static TypeInfo processAttribute(MetaQuery metaQuery, 
+	private static TypeInfo processColumnName(MetaQuery metaQuery, 
 			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType) {
-		DboTableMeta metaClass;
+		TableInfo tableInfo;
 		
-		CommonTree attributeNode = attributeNode2.getASTNode();
-		String attributeName = attributeNode.getText();
-		String textInSql = attributeName;
-		if (attributeNode.getChildCount() > 0) {
-			String aliasEntity = attributeNode.getChild(0).getText();
+		CommonTree colNameNode = attributeNode2.getASTNode();
+		String columnName = colNameNode.getText();
+		String textInSql = columnName;
+		if (colNameNode.getChildCount() > 0) {
+			String aliasEntity = colNameNode.getChild(0).getText();
 			
-			metaClass = wiring.getInfoFromAlias(aliasEntity);
-			textInSql = aliasEntity+"."+attributeName;
-			if(metaClass == null)
+			tableInfo = wiring.getInfoFromAlias(aliasEntity);
+			textInSql = aliasEntity+"."+columnName;
+			if(tableInfo == null)
 				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
 						+textInSql+" has an alias that does not exist in from clause");
 		} else {
-			metaClass = wiring.getNoAliasTable();
-			if(metaClass == null)
+			tableInfo = wiring.getNoAliasTable();
+			if(tableInfo == null)
 				throw new RuntimeException("query="+metaQuery+" failed to parse because in where clause attribute="
 						+textInSql+" has no alias and from clause only has tables with alias");
 		}
 		
+		DboTableMeta metaClass = tableInfo.getTableMeta();
 		//At this point, we have looked up the metaClass associated with the alias
-		DboColumnMeta attributeField = metaClass.getColumnMeta(attributeName);
-		if (attributeField == null) {
+		DboColumnMeta colMeta = metaClass.getColumnMeta(columnName);
+		if (colMeta == null) {
 			//okay, there is no column found, but maybe the column name for the id matches(id is a special case)
-			attributeField = metaClass.getIdColumnMeta();
-			if(!attributeField.getColumnName().equals(attributeName))
-				throw new IllegalArgumentException("There is no " + attributeName + " exists for class " + metaClass);
+			colMeta = metaClass.getIdColumnMeta();
+			if(!colMeta.getColumnName().equals(columnName))
+				throw new IllegalArgumentException("There is no " + columnName + " exists for class " + metaClass);
 		}
 		
-		if(!attributeField.isIndexed())
-			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+attributeName+" has no @Index annotation on the field in the entity");
+		if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @Index annotation on the field in the entity");
 		
-		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), attributeField); 
+		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colMeta); 
 		attributeNode2.setState(attr);
-		wiring.incrementAttributesCount(metaClass.getColumnFamily()+"-"+attributeField.getColumnName());
+		wiring.incrementAttributesCount(metaClass.getColumnFamily()+"-"+colMeta.getColumnName());
 		
-		TypeInfo typeInfo = new TypeInfo(attributeField);
+		TypeInfo typeInfo = new TypeInfo(colMeta);
 		
 		if(otherSideType == null)
 			return typeInfo;
@@ -467,8 +524,8 @@ public class ScannerForQuery {
 			validateTypes(wiring, otherSideType.getConstantType(), typeInfo);
 		} else {
 			Class classType = otherSideType.getColumnInfo().getClassType();
-			if(!classType.equals(attributeField.getClassType()))
-				throw new IllegalArgumentException("Types are not the same for query="+wiring.getQuery()+" types="+classType+" and "+attributeField.getClassType());
+			if(!classType.equals(colMeta.getClassType()))
+				throw new IllegalArgumentException("Types are not the same for query="+wiring.getQuery()+" types="+classType+" and "+colMeta.getClassType());
 		}
 
 		return null;
