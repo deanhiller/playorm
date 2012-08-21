@@ -27,8 +27,8 @@ public class PartAccount {
 	
 	private int someNumber;
 
-	@NoSqlOneToMany(entityType=PartitionedTrade.class)
-	private List<PartitionedTrade> activities = new ArrayList<PartitionedTrade>();
+	@NoSqlOneToMany(entityType=AAPartitionedTrade.class)
+	private List<AAPartitionedTrade> activities = new ArrayList<AAPartitionedTrade>();
 
 	public String getId() {
 		return id;
@@ -63,11 +63,11 @@ public class PartAccount {
 		return query.getResultList(0, null);
 	}
 
-	public List<PartitionedTrade> getActivities() {
+	public List<AAPartitionedTrade> getActivities() {
 		return activities;
 	}
 
-	public void addActivity(PartitionedTrade act1) {
+	public void addActivity(AAPartitionedTrade act1) {
 		activities.add(act1);
 	}
 

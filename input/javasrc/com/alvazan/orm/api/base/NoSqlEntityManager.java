@@ -41,13 +41,6 @@ public interface NoSqlEntityManager {
 	 */
 	public void put(Object entity);
 	
-	/**
-	 * Use put(Object entity) in a for loop instead BECAUSE changes are not sent to nosql store until the flush anyways.
-	 * putAll will go away in future release
-	 * @param entities
-	 * @deprecated Use put(Object entity) in a loop and flush will send all puts down at one time.
-	 */
-	//@Deprecated
 	//public void putAll(List<Object> entities);
 	
 	/**

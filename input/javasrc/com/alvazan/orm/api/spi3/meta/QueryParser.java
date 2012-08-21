@@ -17,7 +17,7 @@ public interface QueryParser {
 	 * @return
 	 */
 	@SuppressWarnings("rawtypes")
-	public MetaQuery parseQueryForOrm(String query, String targetTable);
+	public MetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg);
 	
 	public void close();
 	

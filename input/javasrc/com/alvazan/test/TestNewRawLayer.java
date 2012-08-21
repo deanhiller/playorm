@@ -124,7 +124,7 @@ public class TestNewRawLayer {
 	public void testBasic() {
 		DboDatabaseMeta metaDb = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 		
-		DboTableMeta tableMeta = addMetaClassDbo(metaDb, "MyEntity", "theid", "cat", "mouse", "dog");
+		addMetaClassDbo(metaDb, "MyEntity", "theid", "cat", "mouse", "dog");
 		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
 
 		mgr.flush();

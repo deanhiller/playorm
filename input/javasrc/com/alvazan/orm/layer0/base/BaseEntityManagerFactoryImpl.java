@@ -145,9 +145,9 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		if(annotation != null)
 			theQueries.add(annotation);
 
-		log.info("Parsing queries for entity="+classMeta.getMetaClass());
+		//log.info("Parsing queries for entity="+classMeta.getMetaClass());
 		for(NoSqlQuery query : theQueries) {
-			log.info("parsing query="+query.name()+" query="+query.query());
+			log.info("["+classMeta.getMetaClass().getSimpleName()+"]parsing query="+query.name()+" query="+query.query());
 			MetaQuery metaQuery = createQueryAndAdd(classMeta, query);
 			classMeta.addQuery(query.name(), metaQuery);
 		}
@@ -155,24 +155,19 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 	@SuppressWarnings("rawtypes")
 	private MetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
-		try {
-			// parse and setup this query once here to be used by ALL of the
-			// SpiIndexQuery objects.
-			// NOTE: This is meta data to be re-used by all threads and all
-			// instances of query objects only!!!!
+		// parse and setup this query once here to be used by ALL of the
+		// SpiIndexQuery objects.
+		// NOTE: This is meta data to be re-used by all threads and all
+		// instances of query objects only!!!!
 
-			// We must walk the tree allowing 2 visitors to see it.
-			// The first visitor would be ourselves maybe? to get all parameter info
-			// The second visitor is the SPI Index so it can create it's "prototype"
-			// query (prototype pattern)
-			MetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily());
+		// We must walk the tree allowing 2 visitors to see it.
+		// The first visitor would be ourselves maybe? to get all parameter info
+		// The second visitor is the SPI Index so it can create it's "prototype"
+		// query (prototype pattern)
+		String errorMsg = "Named Query on class "+classMeta.getMetaClass().getName()+" (name=\""+query.name()+"\",query=\""+query.query()+"\") failed to parse.";
+		MetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily(), errorMsg);
 
-			return metaQuery;
-		} catch(RuntimeException e) {
-			throw new RuntimeException("Named query="+query.name()+" on class="
-					+classMeta.getMetaClass()+" failed to parse.  query=\""+query.query()
-					+"\"  See chained exception for cause", e);
-		}
+		return metaQuery;
 	}
 	
 	private static class OurFilter implements Filter {

@@ -8,9 +8,6 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
@@ -23,8 +20,6 @@ import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 
-	private static final Logger log = LoggerFactory.getLogger(NoSqlReadCacheImpl.class);
-	
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
 	private Map<TheKey, RowHolder<Row>> cache = new HashMap<TheKey, RowHolder<Row>>();

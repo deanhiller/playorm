@@ -13,7 +13,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.test.db.PartAccount;
-import com.alvazan.test.db.PartitionedTrade;
+import com.alvazan.test.db.AAPartitionedTrade;
 
 public class TestPartitioning {
 
@@ -45,22 +45,22 @@ public class TestPartitioning {
 		acc.setBusinessName("biz2");
 		acc.setSomeNumber(6);
 		
-		PartitionedTrade trade = new PartitionedTrade();
+		AAPartitionedTrade trade = new AAPartitionedTrade();
 		trade.setAccount(acc);
 		trade.setSecurityName("qwer");
 		trade.setUniqueColumn("first");
 		
-		PartitionedTrade trade2 = new PartitionedTrade();
+		AAPartitionedTrade trade2 = new AAPartitionedTrade();
 		trade2.setAccount(acc);
 		trade2.setSecurityName("asdf");
 		trade2.setUniqueColumn("first");
 		
-		PartitionedTrade trade3 = new PartitionedTrade();
+		AAPartitionedTrade trade3 = new AAPartitionedTrade();
 		trade3.setAccount(acc);
 		trade3.setSecurityName("asdf");
 		trade3.setUniqueColumn("asdfdsf");
 		
-		PartitionedTrade trade4 = new PartitionedTrade();
+		AAPartitionedTrade trade4 = new AAPartitionedTrade();
 		trade4.setAccount(acc2);
 		trade4.setSecurityName("asdf");
 		trade4.setUniqueColumn("asdfdsf");
@@ -77,10 +77,10 @@ public class TestPartitioning {
 
 		mgr.flush();
 		
-		Partition<PartitionedTrade> index = mgr.getPartition(PartitionedTrade.class, "account", acc);
-		Query<PartitionedTrade> query = index.createNamedQuery("findByUnique");
+		Partition<AAPartitionedTrade> index = mgr.getPartition(AAPartitionedTrade.class, "account", acc);
+		Query<AAPartitionedTrade> query = index.createNamedQuery("findByUnique");
 		query.setParameter("unique", trade.getUniqueColumn());
-		List<PartitionedTrade> tradesInAcc1Partition = query.getResultList(0, null);
+		List<AAPartitionedTrade> tradesInAcc1Partition = query.getResultList(0, null);
 		
 		Assert.assertEquals(2, tradesInAcc1Partition.size());
 		

@@ -1,14 +1,11 @@
 package com.alvazan.orm.layer5.indexing;
 
 import org.antlr.runtime.tree.CommonTree;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class ExpressionNode {
 
-	private static final Logger log = LoggerFactory.getLogger(ExpressionNode.class);
 	private ExpressionNode leftChild;
 	private ExpressionNode rightChild;
 	private CommonTree commonNode;

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.exc.ParseException;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
@@ -29,6 +30,7 @@ import com.alvazan.orm.layer5.indexing.SpiMetaQueryImpl;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
+import com.alvazan.orm.parser.antlr.ParseQueryException;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForQuery {
@@ -49,11 +51,22 @@ public class ScannerForQuery {
 	 * @return
 	 */
 	public MetaQuery parseQuery(String query, Object mgr) {
-		return newsetupByVisitingTree(query, null, mgr);
+		return newsetupByVisitingTree(query, null, mgr, "Query failed to parse="+query+". ");
+	}
+	
+	public MetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr, String errorMsg) {
+		try {
+			return newsetupByVisitingTreeImpl(query, targetTable, mgr, errorMsg);
+		} catch(ParseQueryException e) {
+			String msg = errorMsg+"  Specific reason="+e.getMessage();
+			throw new ParseException(msg, e);
+		} catch(RuntimeException e) {
+			throw new ParseException(errorMsg+" See chained exception for cause", e);
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked" })
-	public MetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr) {
+	private MetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, Object mgr, String errorMsg) {
 		CommonTree theTree = parseTree(query);
 		MetaQuery visitor1 = metaQueryFactory.get();
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
@@ -86,7 +99,7 @@ public class ScannerForQuery {
 			if(m.getValue().intValue() <= 1)
 				continue;
 			
-			log.info("reorganizing query tree for varname="+m.getKey());
+			log.info("optimizing query tree for varname="+m.getKey());
 			BetweenVisitor visitor = new BetweenVisitor(m.getKey());
 			root = visitor.walkAndFixTree(root, query);
 		}
@@ -101,7 +114,7 @@ public class ScannerForQuery {
         NoSqlParser parser = new NoSqlParser(tokenStream);
 
         try {
-            return (CommonTree) parser.selectStatement().getTree();
+        	return (CommonTree) parser.statement().getTree();
         } catch (RecognitionException re) {
             throw new RuntimeException(query, re);
         }
@@ -178,7 +191,10 @@ public class ScannerForQuery {
 				}
 					
 				String alias = null;
-				if(child.getChildren().size() > 0) { //we have an alias too!!!
+				List children = child.getChildren();
+				if(children == null)
+					throw new IllegalArgumentException("You have an alias of="+attributeName+" that does not exist in the FROM part of the select statement.  query="+wiring.getQuery());
+				if(children.size() > 0) { //we have an alias too!!!
 					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
 					alias = aliasNode.getText();
 					

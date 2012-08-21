@@ -57,6 +57,19 @@ package com.alvazan.orm.parser.antlr;
 package com.alvazan.orm.parser.antlr;
 }
 
+@parser::members {
+  @Override
+  public void reportError(RecognitionException e) {
+    throw new ParseQueryException(e); 
+  }
+}
+
+@lexer::members {
+  @Override
+  public void reportError(RecognitionException e) {
+    throw new ParseQueryException(e); 
+  }
+}
 
 @rulecatch {
     catch (RecognitionException e)
@@ -65,7 +78,7 @@ package com.alvazan.orm.parser.antlr;
     }
 }
 
-statement: (  selectStatement  );
+statement: (  selectStatement EOF! );
 
 //SELECT PORTION SPECIFIC STUFF
 selectStatement: selectClause fromClause (whereClause)? -> fromClause selectClause (whereClause)?;

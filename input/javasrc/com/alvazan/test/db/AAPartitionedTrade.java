@@ -13,14 +13,14 @@ import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
-
 @NoSqlEntity
 @NoSqlQueries({
+	//@NoSqlQuery(name="findJoinOnNullPartition", query="select p FROM TABLE p left join p.security s where p.numShares = :shares and s.securityType = :type"),
 	@NoSqlQuery(name="findSecurity", query="select *  FROM TABLE e WHERE e.securityName = :security"),
 	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE e WHERE e.uniqueColumn = :unique")
 })
-public class PartitionedTrade {
+public class AAPartitionedTrade {
 
 	@NoSqlId
 	private String id;
@@ -91,11 +91,11 @@ public class PartitionedTrade {
 		this.numShares = numShares;
 	}
 
-	public static List<PartitionedTrade> findInNullPartition(NoSqlEntityManager mgr, int start, int end) {
-		Partition<PartitionedTrade> partition = mgr.getPartition(PartitionedTrade.class, "account", null);
-		Query<PartitionedTrade> query = partition.createNamedQuery("findInNullPartition");
-		query.setParameter("start", start);
-		query.setParameter("end", end);
+	public static List<AAPartitionedTrade> findInNullPartition(NoSqlEntityManager mgr, int shares, String type) {
+		Partition<AAPartitionedTrade> partition = mgr.getPartition(AAPartitionedTrade.class, "account", null);
+		Query<AAPartitionedTrade> query = partition.createNamedQuery("findJoinOnNullPartition");
+		query.setParameter("shares", shares);
+		query.setParameter("type", type);
 		return query.getResultList(0, null);
 	}
 

@@ -2,23 +2,20 @@ package com.alvazan.test;
 
 import java.util.List;
 
+import junit.framework.Assert;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.db.AAPartitionedTrade;
 import com.alvazan.test.db.PartSecurity;
-import com.alvazan.test.db.PartitionedTrade;
 
 public class TestJoins {
 
-	private static final Logger log = LoggerFactory.getLogger(TestJoins.class);
-	
-	private static final String ACCOUNT_NAME = "dean";
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 
@@ -44,8 +41,8 @@ public class TestJoins {
 	public void testJoin() {
 		putEntities();
 		
-		List<PartitionedTrade> trades = PartitionedTrade.findInNullPartition(mgr, 4, 6);
-		
+		List<AAPartitionedTrade> trades = AAPartitionedTrade.findInNullPartition(mgr, 5, "one");
+		Assert.assertEquals(2, trades.size());
 	}
 	
 	private void putEntities() {
@@ -64,18 +61,22 @@ public class TestJoins {
 		mgr.flush();
 
 		//This trade has no account so is in the null partition of accounts
-		PartitionedTrade trade = new PartitionedTrade();
-		trade.setSecurity(sec);
-		trade.setNumShares(5);
+		AAPartitionedTrade trade1 = new AAPartitionedTrade();
+		trade1.setSecurity(sec);
+		trade1.setNumShares(5);
+		mgr.put(trade1);
 		
-		PartitionedTrade trade2 = new PartitionedTrade();
-		trade.setSecurity(sec);
-		trade.setNumShares(6);
+		AAPartitionedTrade trade2 = new AAPartitionedTrade();
+		trade2.setSecurity(sec);
+		trade2.setNumShares(6);
+		mgr.put(trade2);
 		
-		PartitionedTrade trade3 = new PartitionedTrade();
-		trade.setSecurity(sec3);
-		trade.setNumShares(5);
+		AAPartitionedTrade trade3 = new AAPartitionedTrade();
+		trade3.setSecurity(sec3);
+		trade3.setNumShares(5);
+		mgr.put(trade3);
 		
+		mgr.flush();
 		
 	}
 }

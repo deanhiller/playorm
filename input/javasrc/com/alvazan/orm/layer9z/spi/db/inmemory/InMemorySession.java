@@ -99,7 +99,7 @@ public class InMemorySession implements NoSqlRawSession {
 		if(table != null)
 			return table;
 		
-		log.info("CREATING column family="+colFamily+" in cassandra");
+		log.info("CREATING column family="+colFamily+" in the in memory nosql store");
 			
 		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
 		if(cf == null) {

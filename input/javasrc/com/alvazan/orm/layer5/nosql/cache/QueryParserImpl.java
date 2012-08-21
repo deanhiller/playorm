@@ -28,8 +28,8 @@ public class QueryParserImpl implements QueryParser {
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public MetaQuery parseQueryForOrm(String query, String targetTable) {
-		return scanner.newsetupByVisitingTree(query, targetTable, null);
+	public MetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg) {
+		return scanner.newsetupByVisitingTree(query, targetTable, null, errorMsg);
 	}
 
 	@Override
