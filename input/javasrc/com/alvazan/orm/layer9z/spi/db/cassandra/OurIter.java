@@ -7,47 +7,30 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.netflix.astyanax.Keyspace;
+import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.model.ByteBufferRange;
-import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
-import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
 
 class OurIter<T> implements Iterable<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(OurIter.class);
 	
+	private CreateColumnSliceCallback callback;
 	private int batchSize;
-	private Class<T> clazz;
-	private byte[] rowKey;
-	private ByteBufferRange range;
-	private Info info;
+	private boolean isComposite;
 
-	private ColumnFamilyHelper columnFamilies;
-
-	public OurIter(Class<T> clazz, byte[] rowKey, ByteBufferRange range,
-			Info info, int batchSize2, ColumnFamilyHelper columnFamilies) {
-		this.clazz = clazz;
-		this.rowKey = rowKey;
-		this.range = range;
-		this.info = info;
+	public OurIter(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
+		this.callback = l;
 		this.batchSize = batchSize2;
-		this.columnFamilies = columnFamilies;
+		this.isComposite = isComposite;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		ColumnFamily cf = info.getColumnFamilyObj();
-		
-		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
-		RowQuery rowQuery = query.getKey(rowKey)
-							.autoPaginate(true)
-							.withColumnRange(range);
-		
-		boolean isComposite = IndexColumn.class == clazz;
+		//For some dang reason with current version of astyanax have to recreate this or nested join loop not working as when
+		//we iterate a second time, we get 5 results when first time we got the correct 3 results...weird
+		RowQuery<byte[], byte[]> rowQuery = callback.createRowQuery();
 		
 		return new OurIterator<T>(rowQuery, batchSize, isComposite);
 	}

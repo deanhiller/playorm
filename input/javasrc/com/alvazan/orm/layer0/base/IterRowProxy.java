@@ -1,8 +1,6 @@
 package com.alvazan.orm.layer0.base;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi5.NoSqlSession;

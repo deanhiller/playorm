@@ -274,18 +274,27 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final int batchSize) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
-		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
 			return new ArrayList<Column>();
 		}
-		
-		ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
-		return findBasic(Column.class, rowKey, range, info1, batchSize);
+
+		CreateColumnSliceCallback l = new CreateColumnSliceCallback() {
+			
+			@Override
+			public RowQuery<byte[], byte[]> createRowQuery() {
+				ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+				return createBasicRowQuery(rowKey, info1, range);
+			}
+		};
+			
+
+		return findBasic(Column.class, rowKey, l, batchSize);
 	}
 
 	@Override
@@ -306,14 +315,13 @@ public class CassandraSession implements NoSqlRawSession {
 		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
-			range = range.limit(batchSize);
-			return findBasic(IndexColumn.class, rowKey, range, info1, batchSize);
+			Listener l = new Listener(rowKey, info1, from, to, batchSize);
+			return findBasic(IndexColumn.class, rowKey, l, batchSize);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
 	
-	private CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
+	private static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
 		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
 		CompositeRangeBuilder range = serializer.buildRange();
 		if(from != null) {
@@ -331,10 +339,52 @@ public class CassandraSession implements NoSqlRawSession {
 		return range;
 	}
 	
-	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, ByteBufferRange range, Info info, int batchSize) {
-		return new OurIter<T>(clazz, rowKey, range, info, batchSize, columnFamilies);
+	private RowQuery createBasicRowQuery(byte[] rowKey, Info info1, ByteBufferRange range) {
+		ColumnFamily cf = info1.getColumnFamilyObj();
+		
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
+		RowQuery rowQuery = query.getKey(rowKey)
+							.autoPaginate(true)
+							.withColumnRange(range);
+		return rowQuery;
 	}
 	
+	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
+		boolean isComposite = IndexColumn.class == clazz;
+		return new OurIter<T>(l, batchSize, isComposite);
+	}
+
+	public interface CreateColumnSliceCallback {
+		RowQuery<byte[], byte[]> createRowQuery();
+	}
 	
+	private class Listener implements CreateColumnSliceCallback {
+		private byte[] rowKey;
+		private Info info1;
+		private Key from;
+		private Key to;
+		private int batchSize;
+
+		public Listener(byte[] rowKey, Info info1, Key from, Key to, int batchSize) {
+			this.rowKey = rowKey;
+			this.info1 = info1;
+			this.from = from;
+			this.to = to;
+			this.batchSize = batchSize;
+		}
+
+		/**
+		 * For some dang reason with astyanax, we have to recreate the row query from scratch before we re-use it for 
+		 * a NEsted join.
+		 * @return
+		 */
+		@SuppressWarnings("unused")
+		public RowQuery<byte[], byte[]> createRowQuery() {
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
+			range = range.limit(batchSize);			
+			return createBasicRowQuery(rowKey, info1, range);
+		}
+	}
 
 }

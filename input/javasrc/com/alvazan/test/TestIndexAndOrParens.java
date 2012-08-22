@@ -37,8 +37,8 @@ public class TestIndexAndOrParens {
 	
 	@Test
 	public void testSimpleAnd() {
-		//List<Activity> findByName = Activity.findWithAnd(mgr, "hello", 5);
-		//Assert.assertEquals(1, findByName.size());
+		List<Activity> findByName = Activity.findWithAnd(mgr, "hello", 5);
+		Assert.assertEquals(1, findByName.size());
 		
 		List<Activity> list = Activity.findWithAnd(mgr, "hello", 6);
 		Assert.assertEquals(2, list.size());
