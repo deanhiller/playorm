@@ -10,8 +10,10 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.Query;
 import com.alvazan.test.db.AAPartitionedTrade;
 import com.alvazan.test.db.PartAccount;
+import com.alvazan.test.db.PartitionedSingleTrade;
 
 public class TestPartitioning {
 
@@ -33,6 +35,47 @@ public class TestPartitioning {
 		other.clearDatabase(true);
 	}
 
+	@Test
+	public void testSinglePartitionedByAnnotationJQL() {
+		PartitionedSingleTrade t = new PartitionedSingleTrade();
+		t.setSecurityName("xyz");
+		t.setNumber(5);
+		t.setUnique(1);
+		mgr.put(t);
+		
+		PartitionedSingleTrade t2 = new PartitionedSingleTrade();
+		t2.setSecurityName("abc");
+		t2.setNumber(5);
+		t2.setUnique(2);
+		mgr.put(t2);
+		
+		PartitionedSingleTrade t3 = new PartitionedSingleTrade();
+		t3.setSecurityName(null);
+		t3.setNumber(5);
+		t3.setUnique(3);
+		mgr.put(t3);
+		
+		mgr.flush();
+		
+		//The Query is 
+		//  "PARTITIONS e(:partitionId) select * FROM TABLE as e WHERE e.number = :number"
+		
+		Query<PartitionedSingleTrade> query1 = mgr.createNamedQuery(PartitionedSingleTrade.class, "findByNumber");
+		query1.setParameter("partitionId", t.getSecurityName());
+		query1.setParameter("number", 5);
+		PartitionedSingleTrade trade1 = query1.getSingleObject();
+		Assert.assertEquals(t.getUnique(), trade1.getUnique());
+		
+		//The Query is 
+		//  "PARTITIONS e(:partitionId) select * FROM TABLE as e WHERE e.number = :number"
+		
+		Query<PartitionedSingleTrade> query2 = mgr.createNamedQuery(PartitionedSingleTrade.class, "findByNumber");
+		query2.setParameter("partitionId", null);
+		query2.setParameter("number", 5);
+		PartitionedSingleTrade trade3FromNullPartition = query2.getSingleObject();
+		Assert.assertEquals(t3.getUnique(), trade3FromNullPartition.getUnique());
+	}
+	
 	@Test
 	public void testPartitioning() {
 		PartAccount acc = new PartAccount();
