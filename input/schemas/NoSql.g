@@ -120,14 +120,16 @@ whereClause: WHERE^ expression;  //NOTE: This should be (expression | orExpr) BU
 expression: orExpr; //The ^ makes LPAREN a root while the ! makes RPAREN get dropped from example I saw
 orExpr: andExpr (OR^ andExpr)*;
 andExpr: primaryExpr (AND^ primaryExpr)*;
-primaryExpr: colParamExpr | paramColExpr | colValExpr | valColExpr | inExpr | LPAREN! expression RPAREN!;
+primaryExpr: colParamExpr | paramColExpr | inExpr | LPAREN! expression RPAREN!;
 
 //An column now is either a simpleColumn OR a aliasedColumn
-colParamExpr:	column (EQ | NE | GT | LT | GE | LE)^ parameter;
-paramColExpr:	parameter (EQ | NE | GT | LT | GE | LE)^ column;
+//NOTE: We need to fix this later so we create a parameterOrValueOrColumn: value | parameter | column
+//so that in a join, we could compare two values
+colParamExpr:	column (EQ | NE | GT | LT | GE | LE)^ parameterOrValue;
+paramColExpr:	parameterOrValue (EQ | NE | GT | LT | GE | LE)^ column;
 inExpr:         column IN^ valueList;
-colValExpr:    column (EQ | NE | GT | LT | GE | LE)^ value;
-valColExpr:    value (EQ | NE | GT | LT | GE | LE)^ column;
+
+parameterOrValue: value | parameter;
 
 column: simpleColumn | aliasedColumn;
 //This collapses the child node and renames the token ATTR_NAME while keeping the text of the token
