@@ -1,6 +1,7 @@
 package com.alvazan.orm.logging;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
@@ -252,17 +254,36 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			allKeys.add(k);
 		}
 		
+		Iterable<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
 			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
 			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
 			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, allKeys);
 			long time = System.currentTimeMillis();
-			Iterable<KeyValue<Row>> ret = session.find(colFamily, iterProxy);
+			ret = session.find(colFamily, iterProxy);
 			long total = System.currentTimeMillis() - time;
 			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
-			return ret;
+
 		} else
-			return session.find(colFamily, allKeys);
+			ret = session.find(colFamily, allKeys);
+
+		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here
+		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
+		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
+		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
+		for (KeyValue<Row> kv : ret) {
+			byte[] k = (byte[]) kv.getKey();
+			ByteArray b = new ByteArray(k);
+			map.put(b, kv);
+		}
+		
+		for(byte[] k : allKeys) {
+			ByteArray b = new ByteArray(k);
+			KeyValue<Row> kv = map.get(b);
+			results.add(kv);
+		}
+		
+		return results;
 	}
 
 }

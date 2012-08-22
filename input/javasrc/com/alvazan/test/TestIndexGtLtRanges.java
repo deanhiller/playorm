@@ -54,6 +54,12 @@ public class TestIndexGtLtRanges {
 		
 		List<Activity> list2 = Activity.findBetween2(mgr, 4, 7);
 		Assert.assertEquals(2, list2.size());
+		if(list2.get(0).getNumTimes() != 5) {
+			Activity item1 = list2.get(0);
+			Activity item2 = list2.get(1);
+			log.info("shutdown now.  failure item1="+item1.getNumTimes()+"/"+item1.getName()+"  item2="+item2.getNumTimes()+"/"+item2.getName());
+			Thread.sleep(600000);
+		}
 		Assert.assertEquals(5, list2.get(0).getNumTimes());
 		Assert.assertEquals(7, list2.get(1).getNumTimes());
 	

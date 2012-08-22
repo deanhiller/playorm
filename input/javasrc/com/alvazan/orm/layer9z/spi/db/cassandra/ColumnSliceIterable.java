@@ -2,9 +2,11 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
+import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
@@ -12,15 +14,15 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
 
-class OurIter<T> implements Iterable<T> {
+class ColumnSliceIterable<T> implements Iterable<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(OurIter.class);
+	private static final Logger log = LoggerFactory.getLogger(ColumnSliceIterable.class);
 	
 	private CreateColumnSliceCallback callback;
 	private int batchSize;
 	private boolean isComposite;
 
-	public OurIter(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
+	public ColumnSliceIterable(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
 		this.callback = l;
 		this.batchSize = batchSize2;
 		this.isComposite = isComposite;
@@ -82,6 +84,14 @@ class OurIter<T> implements Iterable<T> {
 				c.setTimestamp(col.getTimestamp());
 				return (T) c;
 			}
+		}
+
+		private String getValAsStr(byte[] data) {
+			if(data == null)
+				return null;
+			char[] chars = Hex.encodeHex(data);
+			String s = new String(chars);
+			return s;
 		}
 
 		@Override

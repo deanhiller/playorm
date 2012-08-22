@@ -352,7 +352,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new OurIter<T>(l, batchSize, isComposite);
+		return new ColumnSliceIterable<T>(l, batchSize, isComposite);
 	}
 
 	public interface CreateColumnSliceCallback {
