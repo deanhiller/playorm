@@ -55,7 +55,8 @@ public class TypedResponseIter<T> implements Iterable<KeyValue<TypedRow<T>>> {
 
 		@Override
 		public boolean hasNext() {
-			return rows.hasNext();
+			boolean has = rows.hasNext();
+			return has;
 		}
 
 		@Override

@@ -1,5 +1,6 @@
 package com.alvazan.orm.logging;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -242,18 +243,26 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public Iterable<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys) {
+			Iterable<byte[]> rKeys) {
+		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
+		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
+		
+		List<byte[]> allKeys = new ArrayList<byte[]>();
+		for(byte[] k : rKeys) {
+			allKeys.add(k);
+		}
+		
 		if(log.isInfoEnabled()) {
 			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
 			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
-			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, rowKeys);
+			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, allKeys);
 			long time = System.currentTimeMillis();
 			Iterable<KeyValue<Row>> ret = session.find(colFamily, iterProxy);
 			long total = System.currentTimeMillis() - time;
 			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
 			return ret;
 		} else
-			return session.find(colFamily, rowKeys);
+			return session.find(colFamily, allKeys);
 	}
 
 }

@@ -74,7 +74,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}		
 	}
 	
-	public Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
+	private Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either

@@ -42,7 +42,8 @@ public class IterCacheProxy implements Iterable<KeyValue<Row>> {
 
 		@Override
 		public boolean hasNext() {
-			return rowsFromCache.hasNext();
+			boolean has = rowsFromCache.hasNext();
+			return has;
 		}
 
 		@Override

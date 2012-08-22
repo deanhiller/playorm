@@ -35,21 +35,23 @@ public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
 					"data from the database which we definitely don't want either.  Also, the iterable could be a proxy into " +
 					"millions of rows so do you really want to iterate twice?");
 		alreadyRan = true;
-		return new IteratorRowProxy<T>(meta, noSqlKeys.iterator(), session, query, batchSize);
+		return new IteratorRowProxy<T>(meta, noSqlKeys, session, query, batchSize);
 	}
 	
 	private static class IteratorRowProxy<T> implements Iterator<KeyValue<T>> {
 
 		private MetaClass<T> meta;
-		private Iterator<byte[]> keys;
+		private Iterator<byte[]> keysIterator;
+		private Iterable<byte[]> keysIterable;
 		private NoSqlSession session;
 		private String query;
 		private Integer batchSize;
 		private Iterator<KeyValue<Row>> lastCachedRows;
 
-		public IteratorRowProxy(MetaClass<T> meta, Iterator<byte[]> keys, NoSqlSession s, String query, Integer batchSize) {
+		public IteratorRowProxy(MetaClass<T> meta, Iterable<byte[]> keys, NoSqlSession s, String query, Integer batchSize) {
 			this.meta = meta;
-			this.keys = keys;
+			this.keysIterable = keys;
+			this.keysIterator = keys.iterator();
 			this.session = s;
 			this.query = query;
 			this.batchSize = batchSize;
@@ -68,36 +70,24 @@ public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
 		private void fetchMoreResults() {
 			if(lastCachedRows != null && lastCachedRows.hasNext())
 				return; //We have rows left so do NOT fetch results
-			else if(!keys.hasNext()) {
+			else if(!keysIterator.hasNext()) {
 				//we know we have NO rows left in cache at this point but there are als NO 
 				//keys left!!! so return and set the lastCachedRows to null
 				lastCachedRows = null;
 				return;
 			}
 			
-			List<byte[]> allKeys = new ArrayList<byte[]>();
-			String cf = meta.getColumnFamily();
-			if(batchSize == null) {
-				//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
-				//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
-				while(keys.hasNext()) {
-					byte[] k = keys.next();
-					allKeys.add(k);
-				}
-				Iterable<KeyValue<Row>> rows = session.findAll(cf, allKeys);
-				lastCachedRows = rows.iterator();
-				return;
-			}
 			
-			//let's find the next batch of keys...
-			int counter = 0;
-			int batch = batchSize;
-			while(keys.hasNext() && counter < batch) {
-				byte[] k = keys.next();
-				allKeys.add(k);
+			String cf = meta.getColumnFamily();		
+			//If batchSize is null, we MUST use the keysIterator not iterable(just trust me or the keyIterator.hasNext up above no longer works)
+			Iterable<byte[]> proxyCounting = new EmptyIterable(this.keysIterator);
+			if(batchSize != null) {
+				//let's give a window of batchSize view into the iterator ;)  so it will stop at 
+				//batchSize when looping over our iterator
+				proxyCounting = new CountingIterable(this.keysIterator, batchSize);
 			}
-			Iterable<KeyValue<Row>> rows = session.findAll(cf, allKeys);
-			lastCachedRows = rows.iterator();			
+			Iterable<KeyValue<Row>> rows = session.findAll(cf, proxyCounting);
+			lastCachedRows = rows.iterator();
 		}
 
 		@Override
