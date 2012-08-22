@@ -100,35 +100,6 @@ public interface NoSqlEntityManager {
 	 */
 	public void flush();
 	
-	/**
-	 * Not ready for use as of yet.  
-	 * 
-	 * Best explained with an example.  Let's say you have a table with 1 billion rows
-	 * and let's say you have 1 million customers each with on avera 1000 rows in that
-	 * table(ie. total 1 billion).  In that case, it would be good to create 1 million
-	 * indexes with 1000 nodes in them each rather than one 1 billion node index as it
-	 * would be 1000's of times faster to fetch the small index and query it.  Pretend
-	 * the entity representing this 1 billion row table was ActionsTaken.class, then to
-	 * get the index for all rows relating to a user that you can then query you would
-	 * call entityMgr.getIndex(ActionsTaken.class, <ActionsTaken field>, user);
-	 * 
-	 * Going on, let's say that same 1 billion activity table is also related to 500k
-	 * commentors.  You may have another 500k indexes for querying when you have the 
-	 * one commentor and want to search on other stuff so you would get the index to
-	 * query like so entityMgr.getIndex(ActionsTaken.class, "/byCommentor/"+commentor.getId());
-	 * 
-	 * In this methodology you are just breaking up HUGE tables into small subtables that
-	 * can be queried.
-	 * 
-	 * @param forEntity
-	 * @param tableColumnName NOT the field name IF you named the column.  It is the column name which may or may
-	 * @param partitionObj The object that identifies the partition.  Entities all with the same partitionObj end up
-	 * in the same partition.
-	 * not be field name.
-	 * @return
-	 */
-	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj);
-
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery);
 	
 	/**

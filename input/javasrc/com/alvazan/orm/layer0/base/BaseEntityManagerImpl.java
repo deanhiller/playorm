@@ -8,7 +8,6 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
@@ -17,10 +16,12 @@ import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.IndexData;
+import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
@@ -38,7 +39,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	private MetaInfo metaInfo;
 	@SuppressWarnings("rawtypes")
 	@Inject
-	private Provider<PartitionImpl> indexProvider; 
+	private Provider<QueryAdapter> adapterFactory;
 	@Inject
 	private NoSqlTypedSessionImpl typedSession;
 	@Inject
@@ -77,13 +78,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		session.put(cf, key, cols);
 	}
 
-//	@Override
-//	public void putAll(List<Object> entities) {
-//		for(Object entity : entities) {
-//			put(entity);
-//		}
-//	}
-
 	@Override
 	public <T> T find(Class<T> entityType, Object key) {
 		List<Object> keys = new ArrayList<Object>();
@@ -92,6 +86,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return entities.iterator().next().getValue();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
 		if(keys == null)
@@ -201,17 +196,17 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj) {
-		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
-		PartitionImpl<T> indexImpl = indexProvider.get();
-		indexImpl.setup(metaClass, tableColumnName, partitionObj, this, session);
-		return indexImpl;
-	}
-	
-	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
-		Partition<T> indexImpl = getPartition(forEntity, null, null);
-		return indexImpl.createNamedQuery(namedQuery);		
+		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
+		MetaQuery<T> metaQuery = metaClass.getNamedQuery(namedQuery);
+		
+		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(session);
+		
+		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
+		//runs in a different thread potentially while MetaQuery is one used by all threads
+		QueryAdapter<T> adapter = adapterFactory.get();
+		adapter.setup(metaQuery, spiAdapter, this, metaClass);
+		return adapter;
 	}
 	
 	@SuppressWarnings("unchecked")

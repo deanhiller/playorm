@@ -10,8 +10,6 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.Partition;
-import com.alvazan.orm.api.base.Query;
 import com.alvazan.test.db.AAPartitionedTrade;
 import com.alvazan.test.db.PartAccount;
 
@@ -77,10 +75,7 @@ public class TestPartitioning {
 
 		mgr.flush();
 		
-		Partition<AAPartitionedTrade> index = mgr.getPartition(AAPartitionedTrade.class, "account", acc);
-		Query<AAPartitionedTrade> query = index.createNamedQuery("findByUnique");
-		query.setParameter("unique", trade.getUniqueColumn());
-		List<AAPartitionedTrade> tradesInAcc1Partition = query.getResultList(0, null);
+		List<AAPartitionedTrade> tradesInAcc1Partition = AAPartitionedTrade.findByUnique(mgr, trade.getUniqueColumn(), acc);
 		
 		Assert.assertEquals(2, tradesInAcc1Partition.size());
 		

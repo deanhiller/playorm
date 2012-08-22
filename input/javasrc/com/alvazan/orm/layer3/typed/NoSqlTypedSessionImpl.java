@@ -132,7 +132,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
 		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
 		
 		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		Iterable<byte[]> indexIterable = new IndexIterable(iter);

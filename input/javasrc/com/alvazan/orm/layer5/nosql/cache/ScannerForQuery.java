@@ -559,7 +559,7 @@ public class ScannerForQuery {
 		if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @Index annotation on the field in the entity");
 		
-		StateAttribute attr = new StateAttribute(metaClass.getColumnFamily(), colMeta); 
+		StateAttribute attr = new StateAttribute(tableInfo, colMeta); 
 		attributeNode2.setState(attr);
 		wiring.incrementAttributesCount(metaClass.getColumnFamily()+"-"+colMeta.getColumnName());
 		

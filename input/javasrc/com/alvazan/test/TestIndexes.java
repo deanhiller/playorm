@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
@@ -66,10 +65,9 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Partition<Activity> index = mgr.getPartition(Activity.class, "account", null);
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		
 		double from = 100;
-		Query<Activity> query = index.createNamedQuery("findBetween");
 		try {
 			query.setParameter("begin", from);
 			Assert.fail("Should have throw TypeMismatchException and did not");

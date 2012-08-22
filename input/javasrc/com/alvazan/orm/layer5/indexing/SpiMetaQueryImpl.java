@@ -5,17 +5,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiMetaQuery;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 
 public class SpiMetaQueryImpl implements SpiMetaQuery {
 
-	private static final Logger log = LoggerFactory.getLogger(SpiMetaQueryImpl.class);
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
@@ -23,16 +18,9 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private List<TableInfo> tables;
 	
 	@Override
-	public SpiQueryAdapter createQueryInstanceFromQuery(String partitionBy, String partitionId, NoSqlSession session) {
-		String partition = "/";
-		if(partitionBy != null) {
-			partition += partitionBy;
-			if(partitionId != null)
-				partition += "/"+partitionId;
-		}
-		log.info("creating query for partition="+partition);
+	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session) {
 		SpiIndexQueryImpl indexQuery = factory.get();
-		indexQuery.setup(partitionBy, partitionId, this, session);
+		indexQuery.setup(this, session);
 		return indexQuery;
 	}
 
@@ -46,8 +34,8 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return astTreeRoot;
 	}
 
-	public DboTableMeta getMainTableMeta() {
-		return mainTable.getTableMeta();
+	public TableInfo getMainTableMeta() {
+		return mainTable;
 	}
 	
 }

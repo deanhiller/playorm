@@ -15,6 +15,7 @@ import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.layer5.nosql.cache.PartitionMeta;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
@@ -25,13 +26,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private NoSqlSession session;
 	private Map<String, ByteArray> parameters = new HashMap<String, ByteArray>();
 
-	private String partitionBy;
-	private String partitionId;
 	private int batchSize = 500;
 	
-	public void setup(String partitionBy, String partitionId, SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
-		this.partitionBy = partitionBy;
-		this.partitionId = partitionId;
+	public void setup(SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.spiMeta = spiMetaQueryImpl;
 		this.session = session;
 	}
@@ -42,13 +39,22 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		parameters.put(parameterName, val);
 	}
 
+	private ByteArray getParameter(String parameterName) {
+		ByteArray result = parameters.get(parameterName);
+		if(result == null)
+			throw new IllegalStateException("You did not call query.setParameter(\""+parameterName+"\", <yourvalue>) and that parameter is required");
+		return result;
+	}
+	
 	@Override
 	public Iterable<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
-			DboTableMeta tableMeta = spiMeta.getMainTableMeta();
+			TableInfo tableInfo = spiMeta.getMainTableMeta();
+			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
-			ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
+			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
+			
 			Iterable<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
 			return processKeys(null, scan);
 		}
@@ -56,6 +62,23 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		log.info("root(type="+root.getType()+")="+root);
 		
 		return processExpressionTree(root);
+	}
+
+	private ScanInfo createScanInfo(TableInfo tableInfo, DboColumnMeta metaCol) {
+		PartitionMeta partitionMeta = tableInfo.getPartition();
+		String partitionBy = null;
+		String partitionId = null;
+		if(partitionMeta != null) {
+			DboColumnMeta colMeta = partitionMeta.getPartitionColumn();
+			partitionBy = colMeta.getColumnName();
+			byte[] partId = retrieveValue(colMeta, partitionMeta.getNode());
+			Object partIdObj = colMeta.convertFromStorage2(partId);
+			partitionId = colMeta.convertTypeToString(partIdObj);
+		}
+		
+
+		ScanInfo scanInfo = metaCol.createScanInfo(partitionBy, partitionId);
+		return scanInfo;
 	}
 
 	private Iterable<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
@@ -93,7 +116,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private Iterable<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
 		StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
 		DboColumnMeta info = attr.getColumnInfo();
-		ScanInfo scanInfo = info.createScanInfo(partitionBy, partitionId);
+		ScanInfo scanInfo = createScanInfo(attr.getTableInfo(), info);
 		
 		Iterable<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
@@ -170,12 +193,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private byte[] processParam(DboColumnMeta info, ExpressionNode node) {
 		String paramName = (String) node.getState();
-		ByteArray val = parameters.get(paramName);
-		if(val == null)
-			throw new IllegalStateException("You did not call setParameter for parameter= ':"+paramName+"'");
-
-		byte[] data = val.getKey();
-		return data;
+		ByteArray val = getParameter(paramName);
+		return val.getKey();
 	}
 
 	@Override

@@ -5,28 +5,19 @@ import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 public class StateAttribute {
 
 	private DboColumnMeta columnInfo; 
-	private String tableName;
+	private TableInfo tableInfo;
 	
-	public StateAttribute(String tableName2, DboColumnMeta columnName2) {
-		this.tableName = tableName2;
+	public StateAttribute(TableInfo tableInfo, DboColumnMeta columnName2) {
+		this.tableInfo = tableInfo;
 		this.columnInfo = columnName2;
 	}
 
-	public String getTableName() {
-		return tableName;
-	}
-
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
+	public TableInfo getTableInfo() {
+		return tableInfo;
 	}
 
 	public DboColumnMeta getColumnInfo() {
 		return columnInfo;
 	}
-
-	public void setColumnInfo(DboColumnMeta columnName) {
-		this.columnInfo = columnName;
-	}	
-	
 	
 }

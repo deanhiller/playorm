@@ -41,7 +41,7 @@ public class TestJoins {
 	public void testJoin() {
 		putEntities();
 		
-		List<AAPartitionedTrade> trades = AAPartitionedTrade.findInNullPartition(mgr, 5, "one");
+		List<AAPartitionedTrade> trades = AAPartitionedTrade.findInPartition(mgr, 5, "one", null);
 		Assert.assertEquals(2, trades.size());
 	}
 	

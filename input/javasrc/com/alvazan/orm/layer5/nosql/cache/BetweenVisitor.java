@@ -75,7 +75,8 @@ public class BetweenVisitor {
 		//The parent must be an AND so we can try to find another reference to same variable that is ANDED with this guy
 		if(attributeNode.getType() == NoSqlLexer.ATTR_NAME) {
 			StateAttribute state = (StateAttribute) attributeNode.getState();
-			String key = state.getTableName()+"-"+state.getColumnInfo().getColumnName();
+			String tableName = state.getTableInfo().getTableMeta().getColumnFamily();
+			String key = tableName+"-"+state.getColumnInfo().getColumnName();
 			if(key.equals(tableAndColumnName))
 				return childNode;
 		}

@@ -42,8 +42,8 @@ public class MetaQuery<T> {
 		return parameterFieldMap;
 	}
 
-	public SpiQueryAdapter createSpiMetaQuery(String partitionBy, String partitionId, NoSqlSession session) {
-		return spiMetaQuery.createQueryInstanceFromQuery(partitionBy, partitionId, session);
+	public SpiQueryAdapter createSpiMetaQuery(NoSqlSession session) {
+		return spiMetaQuery.createQueryInstanceFromQuery(session);
 	}
 
 	public String getIndexName() {

@@ -3,7 +3,6 @@ package com.alvazan.test.db;
 import java.util.List;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -17,9 +16,9 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlEntity
 @NoSqlQueries({
 	//@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS p('account', :partId) select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type"),
-	@NoSqlQuery(name="findSecurity", query="select *  FROM TABLE as e WHERE e.securityName = :security"),
+	@NoSqlQuery(name="findSecurity", query="PARTITIONS e('account', :acc) select *  FROM TABLE as e WHERE e.securityName = :security"),
 	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE as e WHERE e.account = :account"),
-	@NoSqlQuery(name="findByUnique", query="select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
+	@NoSqlQuery(name="findByUnique", query="PARTITIONS e('account', :acc) select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
 })
 public class AAPartitionedTrade {
 
@@ -93,12 +92,19 @@ public class AAPartitionedTrade {
 		this.numShares = numShares;
 	}
 
-	public static List<AAPartitionedTrade> findInNullPartition(NoSqlEntityManager mgr, int shares, String type) {
-		Partition<AAPartitionedTrade> partition = mgr.getPartition(AAPartitionedTrade.class, "account", null);
-		Query<AAPartitionedTrade> query = partition.createNamedQuery("findJoinOnNullPartition");
+	public static List<AAPartitionedTrade> findInPartition(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
+		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findJoinOnNullPartition");
 		query.setParameter("shares", shares);
 		query.setParameter("type", type);
-		//query.setPartition(":partId", null);
+		query.setParameter("partId", partitionId);
+		return query.getResultList(0, null);
+	}
+
+	public static List<AAPartitionedTrade> findByUnique(NoSqlEntityManager mgr,
+			String uniqueColumn2, PartAccount acc) {
+		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findByUnique");
+		query.setParameter("unique", uniqueColumn2);
+		query.setParameter("acc", acc);
 		return query.getResultList(0, null);
 	}
 
