@@ -17,7 +17,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlQueries({
 	//@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS p('account', :partId) select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type"),
 	@NoSqlQuery(name="findSecurity", query="PARTITIONS e('account', :acc) select *  FROM TABLE as e WHERE e.securityName = :security"),
-	@NoSqlQuery(name="findAccount", query="select *  FROM TABLE as e WHERE e.account = :account"),
+	@NoSqlQuery(name="findAccount", query="PARTITIONS e('securityName', :secName) select *  FROM TABLE as e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="PARTITIONS e('account', :acc) select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
 })
 public class AAPartitionedTrade {

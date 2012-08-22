@@ -1,7 +1,7 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
@@ -19,7 +19,6 @@ public class InfoForWiring {
 	private TableInfo firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private NoSqlEntityManager mgr;
-	private List<TableInfo> tables;
 	
 	public InfoForWiring(String query, String targetTable, NoSqlEntityManager mgr) {
 		this.query = query;
@@ -42,9 +41,6 @@ public class InfoForWiring {
 
 	public void putAliasTable(String alias, TableInfo metaClass) {
 		aliasToMeta.put(alias, metaClass);
-	}
-	public void addFirstLevelTable(TableInfo table) {
-		tables.add(table);
 	}
 
 	public TableInfo getInfoFromAlias(String alias) {
@@ -96,8 +92,8 @@ public class InfoForWiring {
 		return attributeUsedCount;
 	}
 
-	public List<TableInfo> getTables() {
-		return tables;
+	public Collection<String> getAllAliases() {
+		return this.aliasToMeta.keySet();
 	}
-	
+
 }

@@ -2,6 +2,7 @@ package com.alvazan.orm.layer5.nosql.cache;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,7 +45,6 @@ public class ScannerForQuery {
 	private Provider<SpiMetaQueryImpl> factory;
 	@Inject
 	private DboDatabaseMeta metaInfo;
-	
 	@Inject
 	private Provider<MetaQuery> metaQueryFactory;
 
@@ -87,14 +87,35 @@ public class ScannerForQuery {
 		// knowledge this way
 		walkTheTree(theTree, visitor1, wiring);
 
+		validateNoPartitionsMissed(theTree, visitor1, wiring);
+		
 		ExpressionNode node = wiring.getAstTree();
 		ExpressionNode newTree = rewireTreeIfNeededForBetween(node, wiring.getAttributeUsedCount(), query);
 		
-		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable(), wiring.getTables());
+		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
 		
 		return visitor1;
 	}
 	
+	private void validateNoPartitionsMissed(CommonTree theTree,
+			MetaQuery visitor1, InfoForWiring wiring) {
+		TableInfo noAliasTable = wiring.getNoAliasTable();
+		if(noAliasTable != null) {
+			if(noAliasTable.getTableMeta().getPartitionedColumns().size() > 0)
+				throw new IllegalArgumentException("In your from you have a table defined with no alias" +
+						"(ie. no 'as p' part) and your table is partitioned so you " +
+						"need to alias and then define PARTITIONS p(:partitionid) SELECT etc. etc.");
+		}		
+		Collection<String> aliases = wiring.getAllAliases();
+		for(String alias : aliases) {
+			TableInfo t = wiring.getInfoFromAlias(alias);
+			DboTableMeta meta = t.getTableMeta();
+			if(meta.getPartitionedColumns().size() > 0 && t.getPartition() == null)
+				throw new IllegalArgumentException("You are missing a definition of a partition for alias='"+alias+"' since table="
+			+meta.getColumnFamily()+" IS a partitioned table.  For example, you should have PARTITIONS e(:partitionId) SELECT e FROM TABLE as e....");
+		}
+	}
+
 	private ExpressionNode rewireTreeIfNeededForBetween(ExpressionNode node,
 			Map<String, Integer> attributeUsedCount, String query) {
 		ExpressionNode root = node;
@@ -211,11 +232,13 @@ public class ScannerForQuery {
 	}
 
 	private void compileSinglePartition(MetaQuery metaQuery, InfoForWiring wiring, CommonTree child) {
-		int type = child.getType();
 		String alias = child.getText();
 		TableInfo info = wiring.getInfoFromAlias(alias);
 		if(info == null)
 			throw new IllegalArgumentException("In your PARTITIONS clause, you have an alias='"+alias+"' that is not found in your FROM clause");
+		else if(info.getPartition() != null)
+			throw new IllegalArgumentException("In your PARTITIONS clause, you define a partition for alias='"+alias+"' twice.  you can only define it once");
+		
 		DboColumnMeta partitionColumn;
 		DboTableMeta tableMeta = info.getTableMeta();
 		List<DboColumnMeta> partitionedColumns = tableMeta.getPartitionedColumns();
@@ -231,7 +254,7 @@ public class ScannerForQuery {
 						"@NoSqlPartitionByThisField but that is not true(at least metadata in database does " +
 						"not have that so pick a different column)");
 		} else if(partitionedColumns.size() > 1)
-			throw new IllegalArgumentException("The meta data contains MORE than one partition, so you have to specify something like "+alias+"('<columnThatWePartitionedBy>', :partId)");
+			throw new IllegalArgumentException("The meta data/Annotations contains MORE than one partition, so you have to specify something like "+alias+"('<columnThatWePartitionedBy>', :partId)");
 		else {
 			partitionColumn = partitionedColumns.get(0);
 		}
