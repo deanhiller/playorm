@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
+import com.alvazan.orm.util.CachingIterator;
 
 public class IterableForOr implements Iterable<IndexColumnInfo> {
 
@@ -23,7 +24,7 @@ public class IterableForOr implements Iterable<IndexColumnInfo> {
 		return new OrIterator(leftResults.iterator(), rightResults.iterator());
 	}
 	
-	private static class OrIterator implements Iterator<IndexColumnInfo> {
+	private static class OrIterator extends CachingIterator<IndexColumnInfo> {
 
 		private Iterator<IndexColumnInfo> leftResults;
 		private Iterator<IndexColumnInfo> rightResults;
@@ -37,7 +38,7 @@ public class IterableForOr implements Iterable<IndexColumnInfo> {
 		}
 
 		@Override
-		public boolean hasNext() {
+		public boolean hasNextImpl() {
 			while(leftResults.hasNext()) {
 				lastCachedResult = leftResults.next();
 				pksToAlreadyFound.put(lastCachedResult.getPrimaryKey(), lastCachedResult);
@@ -60,17 +61,7 @@ public class IterableForOr implements Iterable<IndexColumnInfo> {
 		}
 
 		@Override
-		public IndexColumnInfo next() {
-			if(lastCachedResult != null) {
-				IndexColumnInfo last = lastCachedResult;
-				lastCachedResult = null;
-				return last;
-			} else if(!hasNext()) {
-				throw new IllegalStateException("There are no more entries in this iterator");
-			}
-			
-			if(lastCachedResult == null)
-				throw new RuntimeException("bug, if hasNext worked, we should have lastCachedKey");
+		public IndexColumnInfo nextImpl() {
 			return lastCachedResult;
 		}
 

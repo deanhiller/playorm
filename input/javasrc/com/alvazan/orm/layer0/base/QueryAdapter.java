@@ -36,6 +36,7 @@ public class QueryAdapter<T> implements Query<T> {
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
 	private MetaClass<T> metaClass;
+	private Integer batchSize;
 
 	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr, MetaClass<T> metaClass) {
 		this.meta = meta;
@@ -97,7 +98,7 @@ public class QueryAdapter<T> implements Query<T> {
 	public Iterable<KeyValue<T>> getResults() {
 		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IndexIterable(indice);
-		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery());
+		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery(), batchSize);
 		return results;
 	}
 
@@ -143,6 +144,7 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public void setBatchSize(int batchSize) {
+		this.batchSize = batchSize;
 		this.indexQuery.setBatchSize(batchSize);
 	}
 

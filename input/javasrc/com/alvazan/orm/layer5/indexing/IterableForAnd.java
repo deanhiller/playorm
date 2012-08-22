@@ -3,6 +3,7 @@ package com.alvazan.orm.layer5.indexing;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
+import com.alvazan.orm.util.CachingIterator;
 
 public class IterableForAnd implements Iterable<IndexColumnInfo> {
 
@@ -20,7 +21,7 @@ public class IterableForAnd implements Iterable<IndexColumnInfo> {
 		return new AndIterator(leftResults.iterator(), rightResults);
 	}
 	
-	private static class AndIterator implements Iterator<IndexColumnInfo> {
+	private static class AndIterator extends CachingIterator<IndexColumnInfo> {
 
 		private Iterator<IndexColumnInfo> leftResults;
 		private Iterable<IndexColumnInfo> rightResults;
@@ -33,7 +34,7 @@ public class IterableForAnd implements Iterable<IndexColumnInfo> {
 		}
 
 		@Override
-		public boolean hasNext() {
+		public boolean hasNextImpl() {
 			while(leftResults.hasNext()) {
 				IndexColumnInfo next = leftResults.next();
 				//This stinks as we have to re-read from the database every 1000 rows!!!! We should find out if
@@ -52,17 +53,7 @@ public class IterableForAnd implements Iterable<IndexColumnInfo> {
 		}
 
 		@Override
-		public IndexColumnInfo next() {
-			if(lastCachedResult != null) {
-				IndexColumnInfo last = lastCachedResult;
-				lastCachedResult = null;
-				return last;
-			} else if(!hasNext()) {
-				throw new IllegalStateException("There are no more entries in this iterator");
-			}
-			
-			if(lastCachedResult == null)
-				throw new RuntimeException("bug, if hasNext worked, we should have lastCachedKey");
+		public IndexColumnInfo nextImpl() {
 			return lastCachedResult;
 		}
 

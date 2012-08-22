@@ -48,7 +48,8 @@ class OurIter<T> implements Iterable<T> {
 			if(subIterator == null)
 				return false;
 			
-			return subIterator.hasNext();
+			boolean has = subIterator.hasNext();
+			return has;
 		}
 
 		@SuppressWarnings("unchecked")

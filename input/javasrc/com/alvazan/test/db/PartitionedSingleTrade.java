@@ -1,7 +1,5 @@
 package com.alvazan.test.db;
 
-import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;

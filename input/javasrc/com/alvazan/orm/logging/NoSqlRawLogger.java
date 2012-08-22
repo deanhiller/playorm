@@ -151,16 +151,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
-		long time = 0;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
-			time = System.currentTimeMillis();
+			log.info("small WARNING: We need to figure out how to time each call to get batch size better...doing it here does not work as it is done only in the iterable");
 		}
 		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize);
-		if(log.isInfoEnabled()) {
-			long total = System.currentTimeMillis()-time;
-			log.info("[rawsession] column range scan took="+total+" ms");
-		}
 		return ret;
 	}
 	

@@ -79,6 +79,11 @@ public class CassandraSession implements NoSqlRawSession {
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
+			//WE MUST force a call up the iterator stream or the cache layer breaks here...
+			for(byte[] k : keys) {
+				log.trace("iterating over keys to find for empty list");
+				//do nothing
+			}
 			return new IterEmptyProxy(keys);
 		}
 

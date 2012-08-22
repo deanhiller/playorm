@@ -9,7 +9,6 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
@@ -19,12 +18,10 @@ import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi3.meta.conv.Converter;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -97,15 +94,16 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 
 		Iterable<byte[]> iter = new IterProxy<T>(meta, keys);
 		
-		return findAllImpl2(meta, iter, null);
+		//we pass in null for batch size such that we do infinite size or basically all keys passed into this method in one
+		//shot
+		return findAllImpl2(meta, iter, null, null);
 	}
 	
-	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query) {
-		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
-		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		String cf = meta.getColumnFamily();
-		Iterable<KeyValue<Row>> rows = session.findAll(cf, noSqlKeys);
-		return new IterRowProxy<T>(meta, rows, session, query);
+	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query, Integer batchSize) {
+		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
+		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
+		//batches as well
+		return new IterRowProxy<T>(meta, noSqlKeys, session, query, batchSize);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -121,72 +119,13 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 			noSqlKeys.add(key);
 		}
 		
-		return findAllImpl(meta, keys, noSqlKeys, null);
-	}
-
-	<T> List<KeyValue<T>> findAllImpl(MetaClass<T> meta, List<? extends Object> keys, List<byte[]> noSqlKeys, String indexName) {
-		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
-		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		String cf = meta.getColumnFamily();
-		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys);
-		List<Row> rows = new ArrayList<Row>();
-		for(KeyValue<Row> kv : rows2) {
-			rows.add(kv.getValue());
+		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
+		Iterable<KeyValue<T>> results = findAll(entityType, keys);
+		for(KeyValue<T> r : results) {
+			all.add(r);
 		}
 		
-		return getKeyValues(meta, keys, noSqlKeys, rows, indexName);
-	}
-	
-	private <T> List<KeyValue<T>> getKeyValues(MetaClass<T> meta,List<? extends Object> keys,List<byte[]> noSqlKeys,List<Row> rows, String indexName){
-		List<KeyValue<T>> keyValues = new ArrayList<KeyValue<T>>();
-
-		if(keys != null)
-			translateRows(meta, keys, rows, keyValues);
-		else
-			translateRowsForQuery(meta, noSqlKeys, rows, keyValues, indexName);
-		
-		return keyValues;
-	}
-
-	private <T> void translateRowsForQuery(MetaClass<T> meta, List<byte[]> noSqlKeys, List<Row> rows, List<KeyValue<T>> keyValues, String indexName) {
-		for(int i = 0; i < rows.size(); i++) {
-			Row row = rows.get(i);
-			byte[] rowKey = noSqlKeys.get(i);
-			MetaIdField<T> idField = meta.getIdField();
-			Converter converter = idField.getConverter();
-			Object key = converter.convertFromNoSql(rowKey);
-			
-			KeyValue<T> keyVal;
-			if(row == null) {
-				keyVal = new KeyValue<T>();
-				keyVal.setKey(key);
-				RowNotFoundException exc = new RowNotFoundException("Your query="+indexName+" contained a value with a pk where that entity no longer exists in the nosql store");
-				keyVal.setException(exc);
-			} else {
-				keyVal = meta.translateFromRow(row, session);
-			}
-			
-			keyValues.add(keyVal);
-		}		
-	}
-	
-	private <T> void translateRows(MetaClass<T> meta,
-			List<? extends Object> keys, List<Row> rows,
-			List<KeyValue<T>> keyValues) {
-		for(int i = 0; i < rows.size(); i++) {
-			Row row = rows.get(i);
-			Object key = keys.get(i);
-			
-			KeyValue<T> keyVal;
-			if(row == null) {
-				keyVal = new KeyValue<T>();
-				keyVal.setKey(key);
-			} else {
-				keyVal = meta.translateFromRow(row, session);
-			}
-			
-			keyValues.add(keyVal);
-		}
+		return all;
 	}
 	
 	@Override

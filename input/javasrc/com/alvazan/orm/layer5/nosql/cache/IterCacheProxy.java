@@ -47,6 +47,8 @@ public class IterCacheProxy implements Iterable<KeyValue<Row>> {
 
 		@Override
 		public KeyValue<Row> next() {
+			//BASICALLY, we previously created a rowsFromCache that has all cached rows AND
+			//null values in the spots where rows were not found.
 			RowHolder<Row> cachedRow = rowsFromCache.next();
 			if(cachedRow != null) {
 				KeyValue<Row> kv = new KeyValue<Row>();

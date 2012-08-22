@@ -59,6 +59,8 @@
 	<depends>allapis</depends>
 </package>
 
+<package name="util" package="com.alvazan.orm.util"></package>
+
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
 </package>
@@ -93,6 +95,7 @@
 	<depends>api</depends>
 	<depends>api5</depends>
 	<depends>api9</depends>
+	<depends>util</depends>
 	<depends>dbmeta</depends>
 	<depends>antlr</depends>
 	<depends>ourParser</depends>
