@@ -7,27 +7,49 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
+import com.netflix.astyanax.model.ByteBufferRange;
+import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.model.ColumnList;
+import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
 
 class OurIter<T> implements Iterable<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(OurIter.class);
 	
-	private RowQuery<byte[], byte[]> query;
 	private int batchSize;
-	private boolean isComposite;
+	private Class<T> clazz;
+	private byte[] rowKey;
+	private ByteBufferRange range;
+	private Info info;
 
-	public OurIter(RowQuery<byte[], byte[]> query2, int batchSize2, boolean isComposite) {
-		this.query = query2;
+	private ColumnFamilyHelper columnFamilies;
+
+	public OurIter(Class<T> clazz, byte[] rowKey, ByteBufferRange range,
+			Info info, int batchSize2, ColumnFamilyHelper columnFamilies) {
+		this.clazz = clazz;
+		this.rowKey = rowKey;
+		this.range = range;
+		this.info = info;
 		this.batchSize = batchSize2;
-		this.isComposite = isComposite;
+		this.columnFamilies = columnFamilies;
 	}
 
 	@Override
 	public Iterator<T> iterator() {
-		return new OurIterator<T>(query, batchSize, isComposite);
+		ColumnFamily cf = info.getColumnFamilyObj();
+		
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
+		RowQuery rowQuery = query.getKey(rowKey)
+							.autoPaginate(true)
+							.withColumnRange(range);
+		
+		boolean isComposite = IndexColumn.class == clazz;
+		
+		return new OurIterator<T>(rowQuery, batchSize, isComposite);
 	}
 	
 	private static class OurIterator<T> implements Iterator<T> {

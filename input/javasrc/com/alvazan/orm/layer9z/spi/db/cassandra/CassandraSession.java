@@ -332,16 +332,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, ByteBufferRange range, Info info, int batchSize) {
-		ColumnFamily cf = info.getColumnFamilyObj();
-		
-		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
-		RowQuery rowQuery = query.getKey(rowKey)
-							.autoPaginate(true)
-							.withColumnRange(range);
-		
-		boolean isComposite = IndexColumn.class == clazz;
-		return new OurIter<T>(rowQuery, batchSize, isComposite);
+		return new OurIter<T>(clazz, rowKey, range, info, batchSize, columnFamilies);
 	}
 	
 	

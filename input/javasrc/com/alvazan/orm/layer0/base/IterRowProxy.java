@@ -86,7 +86,8 @@ public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
 				//batchSize when looping over our iterator
 				proxyCounting = new CountingIterable(this.keysIterator, batchSize);
 			}
-			Iterable<KeyValue<Row>> rows = session.findAll(cf, proxyCounting);
+			boolean skipCache = query != null; //if someone is querying into, we need to skip the cache!!!
+			Iterable<KeyValue<Row>> rows = session.findAll(cf, proxyCounting, skipCache);
 			lastCachedRows = rows.iterator();
 		}
 

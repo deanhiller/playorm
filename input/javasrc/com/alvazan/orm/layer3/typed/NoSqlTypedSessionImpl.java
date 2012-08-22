@@ -104,7 +104,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys);
+		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
 		if(keys != null)
 			return new TypedResponseIter<T>(meta, keys, rows2);
 		else

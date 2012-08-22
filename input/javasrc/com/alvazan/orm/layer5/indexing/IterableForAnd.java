@@ -3,6 +3,7 @@ package com.alvazan.orm.layer5.indexing;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
+import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.util.CachingIterator;
 
 public class IterableForAnd implements Iterable<IndexColumnInfo> {
@@ -42,7 +43,9 @@ public class IterableForAnd implements Iterable<IndexColumnInfo> {
 				Iterator<IndexColumnInfo> rightIterator = rightResults.iterator();
 				while(rightIterator.hasNext()) {
 					IndexColumnInfo andedInfo = rightIterator.next();
-					if(next.getPrimaryKey().equals(andedInfo.getPrimaryKey())) {
+					ByteArray key1 = next.getPrimaryKey();
+					ByteArray key2 = andedInfo.getPrimaryKey();
+					if(key1.equals(key2)) {
 						next.setNextAndedColumn(andedInfo);
 						lastCachedResult = next;
 						return true;

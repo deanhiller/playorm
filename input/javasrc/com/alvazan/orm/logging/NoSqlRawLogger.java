@@ -215,7 +215,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	public void clearDatabase() {
 		long time = 0;
 		if(log.isInfoEnabled()) {
-			log.info("[rawlogger] clearing database");
+			log.info("[rawlogger] CLEARING THE DATABASE!!!!(only use this method with tests or you will be screwed ;) )");
 			time = System.currentTimeMillis();
 		}
 		session.clearDatabase();

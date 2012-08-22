@@ -108,7 +108,7 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
 		
-		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), rowKeys);
+		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), rowKeys, false);
 		Iterator<KeyValue<Row>> iter = rows.iterator();
 		if(!iter.hasNext())
 			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
