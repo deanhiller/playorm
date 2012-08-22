@@ -12,8 +12,8 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.test.db.PartAccount;
 import com.alvazan.test.db.AAPartitionedTrade;
+import com.alvazan.test.db.PartAccount;
 
 public class TestPartitioning {
 

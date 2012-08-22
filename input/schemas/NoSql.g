@@ -99,8 +99,8 @@ columnList:	simpleColumn (COMMA! simpleColumn)* | aliasedColumn (COMMA! aliasedC
 partitionClause: PARTITIONS partitionList -> ^(PARTITIONS_CLAUSE partitionList);
 partitionList: partition (COMMA! partition)*;
 partition: simplePartition | partitionBy;
-simplePartition: alias LPAREN! value RPAREN!;
-partitionBy: alias LPAREN strVal COMMA value RPAREN -> ^(alias value strVal);
+simplePartition: alias LPAREN parameterOrValue RPAREN -> ^(ALIAS[$alias.text] parameterOrValue);
+partitionBy: alias LPAREN strVal COMMA parameterOrValue RPAREN -> ^(ALIAS[$alias.text] parameterOrValue strVal);
 
 //FROM CLAUSE SPECIFIC STUFF
 fromClause: FROM tableList -> ^(FROM_CLAUSE tableList);

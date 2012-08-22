@@ -164,7 +164,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		// The first visitor would be ourselves maybe? to get all parameter info
 		// The second visitor is the SPI Index so it can create it's "prototype"
 		// query (prototype pattern)
-		String errorMsg = "Named Query on class "+classMeta.getMetaClass().getName()+" (name=\""+query.name()+"\",query=\""+query.query()+"\") failed to parse.";
+		String errorMsg = "Named Query on class "+classMeta.getMetaClass().getName()+" (name=\""+query.name()+"\",query=\""+query.query()+"\")";
 		MetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily(), errorMsg);
 
 		return metaQuery;

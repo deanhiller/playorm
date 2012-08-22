@@ -233,6 +233,10 @@ public class DboTableMeta {
 		return indexedColumnsCache;
 	}
 
+	public List<DboColumnMeta> getPartitionedColumns() {
+		initCaches();
+		return cacheOfPartitionedBy;
+	}
 
 	private void initCaches() {
 		if(indexedColumnsCache != null)

@@ -54,17 +54,17 @@ public class ScannerForQuery {
 	 * @return
 	 */
 	public MetaQuery parseQuery(String query, Object mgr) {
-		return newsetupByVisitingTree(query, null, mgr, "Query failed to parse="+query+". ");
+		return newsetupByVisitingTree(query, null, mgr, "Query="+query+". ");
 	}
 	
 	public MetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr, String errorMsg) {
 		try {
 			return newsetupByVisitingTreeImpl(query, targetTable, mgr, errorMsg);
 		} catch(ParseQueryException e) {
-			String msg = errorMsg+"  Specific reason="+e.getMessage();
+			String msg = errorMsg+"  failed to parse.  Specific reason="+e.getMessage();
 			throw new ParseException(msg, e);
 		} catch(RuntimeException e) {
-			throw new ParseException(errorMsg+" See chained exception for cause", e);
+			throw new ParseException(errorMsg+" failed to compile.  See chained exception for cause", e);
 		}
 	}
 	
@@ -201,10 +201,58 @@ public class ScannerForQuery {
 		wiring.putAliasTable(newAlias, fkInfo);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T> void compilePartitionsClause(CommonTree tree,
 			MetaQuery<T> metaQuery, InfoForWiring wiring) {
-		throw new UnsupportedOperationException("partitions in ad-hoc not supported yet");
+		List<CommonTree> childrenList = tree.getChildren();
+		for(CommonTree child : childrenList) {
+			compileSinglePartition(metaQuery, wiring, child);
+		}
 	}
+
+	private void compileSinglePartition(MetaQuery metaQuery, InfoForWiring wiring, CommonTree child) {
+		int type = child.getType();
+		String alias = child.getText();
+		TableInfo info = wiring.getInfoFromAlias(alias);
+		if(info == null)
+			throw new IllegalArgumentException("In your PARTITIONS clause, you have an alias='"+alias+"' that is not found in your FROM clause");
+		DboColumnMeta partitionColumn;
+		DboTableMeta tableMeta = info.getTableMeta();
+		List<DboColumnMeta> partitionedColumns = tableMeta.getPartitionedColumns();
+		if(partitionedColumns.size() == 0)
+			throw new IllegalArgumentException("The meta data contains no partitions for table="+tableMeta.getColumnFamily()+" so your alias="+alias+" in your query should not be in the PARTITIONS clause.  Delete it!!!!");
+		else if(child.getChildCount() > 1) {
+			CommonTree columnNode = (CommonTree) child.getChild(1);
+			String nameOfColumn = columnNode.getText();
+			String withoutQuotes = nameOfColumn.substring(1, nameOfColumn.length()-1);	
+			partitionColumn = findColumn(partitionedColumns, withoutQuotes);
+			if(partitionColumn == null)
+				throw new IllegalArgumentException("The meta data specified column="+nameOfColumn+" of having the " +
+						"@NoSqlPartitionByThisField but that is not true(at least metadata in database does " +
+						"not have that so pick a different column)");
+		} else if(partitionedColumns.size() > 1)
+			throw new IllegalArgumentException("The meta data contains MORE than one partition, so you have to specify something like "+alias+"('<columnThatWePartitionedBy>', :partId)");
+		else {
+			partitionColumn = partitionedColumns.get(0);
+		}
+		
+		CommonTree partitionIdNode = (CommonTree) child.getChild(0);
+		TypeInfo typeInfo = new TypeInfo(partitionColumn);
+		ExpressionNode node = new ExpressionNode(partitionIdNode);
+		processSide(metaQuery, node, wiring, typeInfo);
+
+		PartitionMeta p = new PartitionMeta(partitionColumn, node);
+		info.setPartition(p);
+	}
+	
+	private DboColumnMeta findColumn(List<DboColumnMeta> partitionedColumns, String nameOfColumn) {
+		for(DboColumnMeta colMeta : partitionedColumns) {
+			if(nameOfColumn.equals(colMeta.getColumnName()))
+				return colMeta;
+		}
+		return null;
+	}
+
 	@SuppressWarnings({ "unchecked" })
 	private <T> void compileFromClause(CommonTree tree,
 			MetaQuery<T> metaQuery, InfoForWiring wiring) {
