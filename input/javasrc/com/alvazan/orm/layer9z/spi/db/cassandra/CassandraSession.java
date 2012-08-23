@@ -84,7 +84,7 @@ public class CassandraSession implements NoSqlRawSession {
 				log.trace("iterating over keys to find for empty list");
 				//do nothing
 			}
-			return new IterEmptyProxy(keys);
+			return new IterableReturnsEmptyRows(keys);
 		}
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -106,7 +106,7 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		Rows rows = result.getResult();
 		
-		ResultIterable r = new ResultIterable(rowProvider, rows);
+		IterableResult r = new IterableResult(rowProvider, rows);
 		
 		return r;
 	}
@@ -352,7 +352,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new ColumnSliceIterable<T>(l, batchSize, isComposite);
+		return new IterableColumnSlice<T>(l, batchSize, isComposite);
 	}
 
 	public interface CreateColumnSliceCallback {

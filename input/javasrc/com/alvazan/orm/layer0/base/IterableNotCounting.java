@@ -2,12 +2,12 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
-public class EmptyIterable implements Iterable<byte[]> {
+public class IterableNotCounting implements Iterable<byte[]> {
 
 	private Iterator<byte[]> keysIterator;
 	private boolean alreadyRun = false;
 	
-	public EmptyIterable(Iterator<byte[]> keysIterator) {
+	public IterableNotCounting(Iterator<byte[]> keysIterator) {
 		this.keysIterator = keysIterator;
 	}
 

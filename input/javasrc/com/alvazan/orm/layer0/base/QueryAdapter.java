@@ -24,7 +24,7 @@ import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.layer3.typed.IndexIterable;
+import com.alvazan.orm.layer3.typed.IterableIndex;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -97,7 +97,7 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public Iterable<KeyValue<T>> getResults() {
 		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
-		Iterable<byte[]> keys = new IndexIterable(indice);
+		Iterable<byte[]> keys = new IterableIndex(indice);
 		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery(), batchSize);
 		return results;
 	}

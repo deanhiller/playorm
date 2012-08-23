@@ -6,7 +6,6 @@ import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
@@ -14,15 +13,15 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
 
-class ColumnSliceIterable<T> implements Iterable<T> {
+class IterableColumnSlice<T> implements Iterable<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(ColumnSliceIterable.class);
+	private static final Logger log = LoggerFactory.getLogger(IterableColumnSlice.class);
 	
 	private CreateColumnSliceCallback callback;
 	private int batchSize;
 	private boolean isComposite;
 
-	public ColumnSliceIterable(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
+	public IterableColumnSlice(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
 		this.callback = l;
 		this.batchSize = batchSize2;
 		this.isComposite = isComposite;

@@ -8,7 +8,7 @@ import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
-public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
+public class IterableRow<T> implements Iterable<KeyValue<T>>{
 
 	private MetaClass<T> meta;
 	private Iterable<byte[]> noSqlKeys;
@@ -17,7 +17,7 @@ public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
 	private String query;
 	private Integer batchSize;
 	
-	public IterRowProxy(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
+	public IterableRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
 		this.noSqlKeys = noSqlKeys;
 		this.session = s;
@@ -78,11 +78,11 @@ public class IterRowProxy<T> implements Iterable<KeyValue<T>>{
 			
 			String cf = meta.getColumnFamily();		
 			//If batchSize is null, we MUST use the keysIterator not iterable(just trust me or the keyIterator.hasNext up above no longer works)
-			Iterable<byte[]> proxyCounting = new EmptyIterable(this.keysIterator);
+			Iterable<byte[]> proxyCounting = new IterableNotCounting(this.keysIterator);
 			if(batchSize != null) {
 				//let's give a window of batchSize view into the iterator ;)  so it will stop at 
 				//batchSize when looping over our iterator
-				proxyCounting = new CountingIterable(this.keysIterator, batchSize);
+				proxyCounting = new IterableCounting(this.keysIterator, batchSize);
 			}
 			boolean skipCache = query != null; //if someone is querying into, we need to skip the cache!!!
 			Iterable<KeyValue<Row>> rows = session.findAll(cf, proxyCounting, skipCache);

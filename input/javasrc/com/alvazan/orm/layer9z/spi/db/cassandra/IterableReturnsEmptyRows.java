@@ -5,11 +5,11 @@ import java.util.Iterator;
 import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
-public class IterEmptyProxy implements Iterable<KeyValue<Row>> {
+public class IterableReturnsEmptyRows implements Iterable<KeyValue<Row>> {
 
 	private Iterable<byte[]> keys;
 
-	public IterEmptyProxy(Iterable<byte[]> keys) {
+	public IterableReturnsEmptyRows(Iterable<byte[]> keys) {
 		this.keys = keys;
 	}
 

@@ -8,12 +8,12 @@ import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.netflix.astyanax.model.Rows;
 
-public class ResultIterable implements Iterable<KeyValue<Row>> {
+public class IterableResult implements Iterable<KeyValue<Row>> {
 
 	private Rows<byte[], byte[]> rows;
 	private Provider<Row> rowProvider;
 
-	public ResultIterable(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
+	public IterableResult(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
 		this.rowProvider = rowProvider;
 		this.rows = rows;
 	}

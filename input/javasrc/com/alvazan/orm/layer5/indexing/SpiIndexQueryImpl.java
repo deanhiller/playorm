@@ -172,7 +172,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private Iterable<IndexColumnInfo> processKeys(DboColumnMeta info, Iterable<IndexColumn> scan) {
-		return new SpiIterProxy(info, scan);
+		return new IterableSimpleTranslator(info, scan);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {

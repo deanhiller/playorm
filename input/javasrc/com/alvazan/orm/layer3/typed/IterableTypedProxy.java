@@ -4,12 +4,12 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 
-public class TypedIterProxy<T> implements Iterable<byte[]> {
+public class IterableTypedProxy<T> implements Iterable<byte[]> {
 
 	private DboColumnMeta idMeta;
 	private Iterable<T> keys;
 	
-	public TypedIterProxy(DboColumnMeta idMeta, Iterable<T> keys2) {
+	public IterableTypedProxy(DboColumnMeta idMeta, Iterable<T> keys2) {
 		this.idMeta = idMeta;
 		this.keys = keys2;
 	}
