@@ -91,7 +91,17 @@ public class RowImpl implements Row {
 			map = map.headMap(toArray, true);
 		}
 
-		return map.values();
+		List<Column> list = deepCopy(map.values());
+		
+		return list;
+	}
+
+	private List<Column> deepCopy(Collection<Column> map) {
+		List<Column> list = new ArrayList<Column>();
+		for(Column c : map) {
+			list.add(c.copy());
+		}
+		return list;
 	}
 
 	/* (non-Javadoc)
@@ -108,7 +118,7 @@ public class RowImpl implements Row {
 			} else if(started)
 				break; //since we hit the prefix and we are sorted, we can break.
 		}
-		return prefixed;
+		return deepCopy(prefixed);
 	}
 
 	@Override
@@ -117,6 +127,16 @@ public class RowImpl implements Row {
 			ByteArray b = new ByteArray(c.getName());
 			columns.put(b, c);
 		}
+	}
+
+	@Override
+	public Row deepCopy() {
+		RowImpl impl = new RowImpl();
+		impl.key = key;
+		for(Entry<ByteArray, Column> s : columns.entrySet()) {
+			impl.columns.put(s.getKey(), s.getValue().copy());
+		}
+		return impl;
 	}
 
 }

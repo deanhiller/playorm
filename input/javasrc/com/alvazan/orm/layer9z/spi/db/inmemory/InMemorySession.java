@@ -42,9 +42,10 @@ public class InMemorySession implements NoSqlRawSession {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);
+			Row newRow = row.deepCopy();
 			KeyValue<Row> kv = new KeyValue<Row>();
 			kv.setKey(key);
-			kv.setValue(row);
+			kv.setValue(newRow);
 			//This add null if there is no row to the list on purpose
 			rows.add(kv);
 		}
@@ -83,14 +84,16 @@ public class InMemorySession implements NoSqlRawSession {
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
-		row.addIndexedColumn(column);
+		row.addIndexedColumn(column.copy());
 	}
+
+
 
 	private void removeIndex(RemoveIndex action, Table table) {
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
-		row.removeIndexedColumn(column);		
+		row.removeIndexedColumn(column.copy());		
 	}
 	
 	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
@@ -186,7 +189,7 @@ public class InMemorySession implements NoSqlRawSession {
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			row.put(col.getName(), col);
+			row.put(col.getName(), col.copy());
 		}
 	}
 

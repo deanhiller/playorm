@@ -29,4 +29,6 @@ public interface Row {
 
 	void setColumns(List<Column> columns);
 
+	Row deepCopy();
+
 }
