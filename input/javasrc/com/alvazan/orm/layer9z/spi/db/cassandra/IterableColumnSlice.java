@@ -2,7 +2,6 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
-import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,14 +82,6 @@ class IterableColumnSlice<T> implements Iterable<T> {
 				c.setTimestamp(col.getTimestamp());
 				return (T) c;
 			}
-		}
-
-		private String getValAsStr(byte[] data) {
-			if(data == null)
-				return null;
-			char[] chars = Hex.encodeHex(data);
-			String s = new String(chars);
-			return s;
 		}
 
 		@Override

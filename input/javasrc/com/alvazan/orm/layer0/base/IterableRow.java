@@ -33,23 +33,21 @@ public class IterableRow<T> implements Iterable<KeyValue<T>>{
 					"data from the database which we definitely don't want either.  Also, the iterable could be a proxy into " +
 					"millions of rows so do you really want to iterate twice?");
 		alreadyRan = true;
-		return new IteratorRowProxy<T>(meta, noSqlKeys, session, query, batchSize);
+		return new IteratorRowProxy<T>(meta, noSqlKeys.iterator(), session, query, batchSize);
 	}
 	
 	private static class IteratorRowProxy<T> implements Iterator<KeyValue<T>> {
 
 		private MetaClass<T> meta;
 		private Iterator<byte[]> keysIterator;
-		private Iterable<byte[]> keysIterable;
 		private NoSqlSession session;
 		private String query;
 		private Integer batchSize;
 		private Iterator<KeyValue<Row>> lastCachedRows;
 
-		public IteratorRowProxy(MetaClass<T> meta, Iterable<byte[]> keys, NoSqlSession s, String query, Integer batchSize) {
+		public IteratorRowProxy(MetaClass<T> meta, Iterator<byte[]> keys, NoSqlSession s, String query, Integer batchSize) {
 			this.meta = meta;
-			this.keysIterable = keys;
-			this.keysIterator = keys.iterator();
+			this.keysIterator = keys;
 			this.session = s;
 			this.query = query;
 			this.batchSize = batchSize;
