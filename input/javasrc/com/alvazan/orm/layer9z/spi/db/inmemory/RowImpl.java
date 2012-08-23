@@ -111,4 +111,12 @@ public class RowImpl implements Row {
 		return prefixed;
 	}
 
+	@Override
+	public void setColumns(List<Column> cols) {
+		for(Column c : cols) {
+			ByteArray b = new ByteArray(c.getName());
+			columns.put(b, c);
+		}
+	}
+
 }

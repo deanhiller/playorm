@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
@@ -23,10 +24,16 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
 	private Map<TheKey, RowHolder<Row>> cache = new HashMap<TheKey, RowHolder<Row>>();
-			
+	@Inject
+	private Provider<Row> rowProvider;
+	
 	@Override
 	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
+		Row r = rowProvider.get();
+		r.setKey(rowKey);
+		r.setColumns(columns);
+		cacheRow(colFamily, rowKey, r);
 	}
 
 	@Override
