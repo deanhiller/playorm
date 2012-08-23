@@ -122,7 +122,7 @@ public class RowImpl implements Row {
 	}
 
 	@Override
-	public void setColumns(List<Column> cols) {
+	public void addColumns(List<Column> cols) {
 		for(Column c : cols) {
 			ByteArray b = new ByteArray(c.getName());
 			columns.put(b, c);
@@ -137,6 +137,14 @@ public class RowImpl implements Row {
 			impl.columns.put(s.getKey(), s.getValue().copy());
 		}
 		return impl;
+	}
+
+	@Override
+	public void removeColumns(Collection<byte[]> columnNames) {
+		for(byte[] k : columnNames) {
+			ByteArray b = new ByteArray(k);
+			columns.remove(b);
+		}
 	}
 
 }

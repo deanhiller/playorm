@@ -27,8 +27,10 @@ public interface Row {
 
 	Collection<Column> columnByPrefix(byte[] prefix);
 
-	void setColumns(List<Column> columns);
-
 	Row deepCopy();
+
+	void addColumns(List<Column> columns);
+
+	void removeColumns(Collection<byte[]> columnNames);
 
 }

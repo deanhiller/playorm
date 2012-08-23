@@ -42,7 +42,9 @@ public class InMemorySession implements NoSqlRawSession {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);
-			Row newRow = row.deepCopy();
+			Row newRow = null;
+			if(row != null)
+				newRow = row.deepCopy();
 			KeyValue<Row> kv = new KeyValue<Row>();
 			kv.setKey(key);
 			kv.setValue(newRow);
