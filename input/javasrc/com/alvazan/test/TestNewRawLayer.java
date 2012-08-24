@@ -14,10 +14,16 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedColumn;
 import com.alvazan.orm.api.spi3.TypedRow;
+import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 
 @SuppressWarnings("rawtypes")
 public class TestNewRawLayer {
@@ -67,7 +73,7 @@ public class TestNewRawLayer {
 	@Test
 	public void testTimeSeries() {
 		log.info("testTimeSeries");
-		try {
+
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		String cf = "TimeSeriesData";
@@ -85,14 +91,12 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		List<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData s where s.key = 25");
-		KeyValue<TypedRow> keyValue = rows.get(0);
+		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
+		KeyValue<TypedRow> keyValue = rows.iterator().next();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
-		} finally {
-			log.info("DONE WITH TEST time series");
-		}
+
 	}
 	
 	private TypedRow<String> createUser(String key, String name, String lastname) {
@@ -101,6 +105,65 @@ public class TestNewRawLayer {
 		row.addColumn(new TypedColumn("name", name));
 		row.addColumn(new TypedColumn("lastName", lastname));
 		return row;
+	}
+
+	@Test
+	public void testOrmLayerMetaSaved() {
+		NoSqlEntityManagerFactory factory = FactorySingleton.createFactoryOnce();
+		NoSqlEntityManager mgr = factory.createEntityManager();
+
+		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+		DboTableMeta table = database.getMeta("Activity");
+		DboColumnMeta columnMeta = table.getColumnMeta("account");
+		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
+		Assert.assertEquals("id", toOne.getFkToColumnFamily().getIdColumnMeta().getColumnName());
+		
+	}
+	
+	@Test
+	public void testBasic() {
+		DboDatabaseMeta metaDb = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+		
+		addMetaClassDbo(metaDb, "MyEntity", "theid", "cat", "mouse", "dog");
+		addMetaClassDbo(metaDb, "OtherEntity", "id", "dean", "declan", "pet", "house");
+
+		mgr.flush();
+
+		NoSqlTypedSession session = mgr.getTypedSession();
+		
+		String sql = "select * FROM MyEntity as e WHERE e.cat = \"deano\"";
+
+		TypedColumn col1 = new TypedColumn();
+		col1.setName("cat");
+		col1.setValue("deano");
+		TypedRow<String> typedRow = new TypedRow<String>();
+		typedRow.addColumn(col1);
+		typedRow.setRowKey("dean1");
+		
+		session.put("MyEntity", typedRow);
+		
+		session.flush();
+		
+		List<KeyValue<TypedRow>> rows = session.runQueryList(sql, mgr);
+		Assert.assertEquals(1, rows.size());
+	}
+
+	private DboTableMeta addMetaClassDbo(DboDatabaseMeta map, String entityName, String idField, String ... fields) {
+		DboTableMeta meta = new DboTableMeta();
+		meta.setColumnFamily(entityName);
+		map.addMetaClassDbo(meta);
+		
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(meta, idField, String.class, true);
+		mgr.put(idMeta);
+		
+		for(String field : fields) {
+			DboColumnCommonMeta fieldDbo = new DboColumnCommonMeta();
+			fieldDbo.setup(meta, field, String.class, true, false);
+			mgr.put(fieldDbo);
+		}
+		mgr.put(meta);
+		return meta;
 	}
 	
 }

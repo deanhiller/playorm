@@ -31,7 +31,7 @@ public class IndexedRow extends RowImpl {
 	
 	
 	@Override
-	public Collection<Column> columnSlice(Key from, Key to) {
+	public Collection<IndexColumn> columnSlice(Key from, Key to) {
 		NavigableMap<OurKey, IndexColumn> resultMap = columns;
 		if(from != null) {
 			OurKey fromKey = new OurKey(from.getKey(), new byte[0]);
@@ -43,13 +43,37 @@ public class IndexedRow extends RowImpl {
 			resultMap = resultMap.headMap(toKey, to.isInclusive());
 		}
 		
-		List<Column> results = new ArrayList<Column>();
+		List<IndexColumn> results = new ArrayList<IndexColumn>();
 		for(IndexColumn c : resultMap.values()) {
-			Column col = new Column();
-			col.setName(c.getPrimaryKey());
-			results.add(col);
+			//HACK since I am not sure how to make this work and it is not too important...strip off
+			//the ones that have the prefix passed in
+			if(from != null && !from.isInclusive()) {
+				if(isMatch(from, c))
+					continue; //skip this value
+			}
+			if(to != null && !to.isInclusive()) {
+				if(isMatch(to, c))
+					continue; //skip this value since we are exclusive
+			}
+			
+			results.add(c);
 		}
-		return results;
+		
+		List<IndexColumn> cols = new ArrayList<IndexColumn>();
+		for(IndexColumn c2 : results) {
+			cols.add(c2.copy());
+		}
+		
+		return cols;
+	}
+
+	private boolean isMatch(Key from, IndexColumn c) {
+		boolean isMatch = false;
+		ByteArray b = new ByteArray(from.getKey());
+		ByteArray val = new ByteArray(c.getIndexedValue());
+		if(b.equals(val))
+			isMatch = true;
+		return isMatch;
 	}
 
 	@Override

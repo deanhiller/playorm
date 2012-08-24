@@ -1,40 +1,49 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
+import com.alvazan.orm.layer5.indexing.TableInfo;
 
 public class InfoForWiring {
 
-	private DboTableMeta noAliasTable;
-	private Map<String, DboTableMeta> aliasToMeta = new HashMap<String, DboTableMeta>();
+	private TableInfo noAliasTable;
+	private Map<String, TableInfo> aliasToMeta = new HashMap<String, TableInfo>();
 	private boolean selectStarDefined;
 	private String query;
 	private String targetTable;
 	private ExpressionNode astTree;
-	private DboTableMeta firstTable;
+	private TableInfo firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
+	private NoSqlEntityManager mgr;
 	
-	public InfoForWiring(String query, String targetTable) {
+	public InfoForWiring(String query, String targetTable, NoSqlEntityManager mgr) {
 		this.query = query;
 		this.targetTable= targetTable;
+		this.mgr = mgr;
+	}
+	
+	public NoSqlEntityManager getMgr() {
+		return mgr;
 	}
 
-	public void setNoAliasTable(DboTableMeta metaClass) {
+
+	public void setNoAliasTable(TableInfo metaClass) {
 		this.noAliasTable = metaClass;
 	}
 
-	public DboTableMeta getNoAliasTable() {
+	public TableInfo getNoAliasTable() {
 		return noAliasTable;
 	}
 
-	public void put(String alias, DboTableMeta metaClass) {
+	public void putAliasTable(String alias, TableInfo metaClass) {
 		aliasToMeta.put(alias, metaClass);
 	}
 
-	public DboTableMeta getInfoFromAlias(String alias) {
+	public TableInfo getInfoFromAlias(String alias) {
 		return aliasToMeta.get(alias);
 	}
 
@@ -62,10 +71,10 @@ public class InfoForWiring {
 		return astTree;
 	}
 
-	public DboTableMeta getFirstTable() {
+	public TableInfo getFirstTable() {
 		return firstTable;
 	}
-	public void setFirstTable(DboTableMeta t) {
+	public void setFirstTable(TableInfo t) {
 		this.firstTable = t;
 	}
 
@@ -82,5 +91,9 @@ public class InfoForWiring {
 	public Map<String, Integer> getAttributeUsedCount() {
 		return attributeUsedCount;
 	}
-	
+
+	public Collection<String> getAllAliases() {
+		return this.aliasToMeta.keySet();
+	}
+
 }

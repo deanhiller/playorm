@@ -1,7 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,7 +14,9 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.ColumnType;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -32,7 +33,6 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
-import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
@@ -65,21 +65,26 @@ public class CassandraSession implements NoSqlRawSession {
 		throw new UnsupportedOperationException("not done here yet");
 	}
 	
-	@Override	
-	public List<Row> find(String colFamily, List<byte[]> keys) {
+	@Override
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		try {
-			return findImpl(colFamily, keys);
+			return findImpl2(colFamily, rowKeys);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
-		}
+		}		
 	}
 	
-	public List<Row> findImpl(String colFamily, List<byte[]> keys) throws ConnectionException {
+	private Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return createEmptyList(keys);
+			//WE MUST force a call up the iterator stream or the cache layer breaks here...
+			for(byte[] k : keys) {
+				log.trace("iterating over keys to find for empty list");
+				//do nothing
+			}
+			return new IterableReturnsEmptyRows(keys);
 		}
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -91,37 +96,22 @@ public class CassandraSession implements NoSqlRawSession {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
 		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
+		
+		long time = System.currentTimeMillis();
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("astyanx find took="+total+" ms");
+		}
+		
 		Rows rows = result.getResult();
 		
-		List<Row> retVal = new ArrayList<Row>();
-		for(byte[] key : keys) {
-			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.getRow(key);
-			if(row.getColumns().isEmpty()) {
-				//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
-				//then
-				retVal.add(null);
-			} else {
-				Row r = rowProvider.get();
-				r.setKey(key);
-				processColumns(row, r);
-				retVal.add(r);
-			}
-		}
+		IterableResult r = new IterableResult(rowProvider, rows);
 		
-		return retVal;
+		return r;
 	}
 
-	@SuppressWarnings("unused")
-	private List<Row> createEmptyList(List<byte[]> keys) {
-		List<Row> rows = new ArrayList<Row>();
-		for(byte[] key : keys) {
-			rows.add(null);
-		}
-		return rows;
-	}
-
-	private void processColumns(
+	static void processColumns(
 			com.netflix.astyanax.model.Row<byte[], byte[]> row, Row r) {
 		for(com.netflix.astyanax.model.Column<byte[]> col : row.getColumns()) {
 			byte[] name = col.getName();
@@ -160,7 +150,13 @@ public class CassandraSession implements NoSqlRawSession {
 			}
 		}
 		
+		long time = System.currentTimeMillis();
 		m.execute();
+		
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("astyanx save took="+total+" ms");
+		}
 	}
 
 	
@@ -223,7 +219,7 @@ public class CassandraSession implements NoSqlRawSession {
 		case COMPOSITE_INTEGERPREFIX:
 		case COMPOSITE_DECIMALPREFIX:
 			GenericComposite bigInt = new GenericComposite();
-			bigInt.setValue(indexedValue);
+			bigInt.setIndexedValue(indexedValue);
 			bigInt.setPk(pk);
 			toPersist = bigInt;
 			break;
@@ -278,7 +274,32 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
+	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final int batchSize) {
+		if(batchSize <= 0)
+			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
+		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		if(info1 == null) {
+			//well, if column family doesn't exist, then no entities exist either
+			log.info("query was run on column family that does not yet exist="+colFamily);
+			return new ArrayList<Column>();
+		}
+
+		CreateColumnSliceCallback l = new CreateColumnSliceCallback() {
+			
+			@Override
+			public RowQuery<byte[], byte[]> createRowQuery() {
+				ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+				return createBasicRowQuery(rowKey, info1, range);
+			}
+		};
+			
+
+		return findBasic(Column.class, rowKey, l, batchSize);
+	}
+
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
+			int batchSize) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
@@ -287,25 +308,20 @@ public class CassandraSession implements NoSqlRawSession {
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<Column>();
+			return new ArrayList<IndexColumn>();
 		}
 		
 		ColumnType type = info1.getColumnType();
-		if(type == ColumnType.ANY_EXCEPT_COMPOSITE) {
-			ByteBufferRange range = new RangeBuilder().setStart(from.getKey()).setEnd(to.getKey()).setLimit(batchSize).build();
-			return findBasic(rowKey, range, info1);
-			
-		} else if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
+		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
-			range = range.limit(batchSize);
-			return findBasic(rowKey, range, info1);
+			Listener l = new Listener(rowKey, info1, from, to, batchSize);
+			return findBasic(IndexColumn.class, rowKey, l, batchSize);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
-
-	private CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
+	
+	private static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
 		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
 		CompositeRangeBuilder range = serializer.buildRange();
 		if(from != null) {
@@ -323,109 +339,51 @@ public class CassandraSession implements NoSqlRawSession {
 		return range;
 	}
 	
-	private Iterable<Column> findBasic(byte[] rowKey, ByteBufferRange range, Info info) {
-		ColumnFamily cf = info.getColumnFamilyObj();
+	private RowQuery createBasicRowQuery(byte[] rowKey, Info info1, ByteBufferRange range) {
+		ColumnFamily cf = info1.getColumnFamilyObj();
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
 		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
 							.withColumnRange(range);
-		
-		return new OurIter(cf, rowQuery, info);
+		return rowQuery;
 	}
 	
-	private class OurIter implements Iterable<Column> {
-
-		private ColumnFamily cf;
-		private RowQuery query;
-		private Info info;
-
-		public OurIter(ColumnFamily cf, RowQuery query2, Info info) {
-			this.cf = cf;
-			this.query = query2;
-			this.info = info;
-		}
-
-		@Override
-		public Iterator<Column> iterator() {
-			return new OurIterator(cf, query, info);
-		}
+	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
+		boolean isComposite = IndexColumn.class == clazz;
+		return new IterableColumnSlice<T>(l, batchSize, isComposite);
 	}
-	private class OurIterator implements Iterator<Column> {
-		private RowQuery<byte[], byte[]> query;
-		private Iterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
-		private Info info;
-		
-		public OurIterator(ColumnFamily cf, RowQuery query, Info info) {
-			this.query = query;
-			this.info = info;
+
+	public interface CreateColumnSliceCallback {
+		RowQuery<byte[], byte[]> createRowQuery();
+	}
+	
+	private class Listener implements CreateColumnSliceCallback {
+		private byte[] rowKey;
+		private Info info1;
+		private Key from;
+		private Key to;
+		private int batchSize;
+
+		public Listener(byte[] rowKey, Info info1, Key from, Key to, int batchSize) {
+			this.rowKey = rowKey;
+			this.info1 = info1;
+			this.from = from;
+			this.to = to;
+			this.batchSize = batchSize;
 		}
 
-		@Override
-		public boolean hasNext() {
-			fetchMoreResults();
-			if(subIterator == null)
-				return false;
-			
-			return subIterator.hasNext();
-		}
-
-		@Override
-		public Column next() {
-			fetchMoreResults();
-			if(subIterator == null)
-				throw new ArrayIndexOutOfBoundsException("no more elements");
-
-			com.netflix.astyanax.model.Column col = subIterator.next();
-
-			Object obj = col.getName();
-			byte[] name;
-			switch (info.getColumnType()) {
-			case ANY_EXCEPT_COMPOSITE:
-				name = (byte[])obj;
-				break;
-			case COMPOSITE_STRINGPREFIX:
-			case COMPOSITE_DECIMALPREFIX:
-			case COMPOSITE_INTEGERPREFIX:
-				GenericComposite bigDec = (GenericComposite)obj;
-				name = bigDec.getPk();
-				break;
-			default:
-				throw new UnsupportedOperationException("type not supported yet="+info.getColumnType());
-			}
-			
-			Column c = new Column();
-			c.setName(name);
-			c.setValue(col.getByteArrayValue());
-			c.setTimestamp(col.getTimestamp());
-			
-			return c;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("not supported");
-		}
-		
-		
-		private void fetchMoreResults() {
-			try {
-				fetchMoreResultsImpl();
-			} catch (ConnectionException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
-		private void fetchMoreResultsImpl() throws ConnectionException {
-			if(subIterator != null && subIterator.hasNext())
-				return; //no need to fetch more since subIterator has more
-			
-			ColumnList<byte[]> columns = query.execute().getResult();
-			if(columns.isEmpty())
-				subIterator = null; 
-			else 
-				subIterator = columns.iterator();
+		/**
+		 * For some dang reason with astyanax, we have to recreate the row query from scratch before we re-use it for 
+		 * a NEsted join.
+		 * @return
+		 */
+		@SuppressWarnings("unused")
+		public RowQuery<byte[], byte[]> createRowQuery() {
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
+			range = range.limit(batchSize);			
+			return createBasicRowQuery(rowKey, info1, range);
 		}
 	}
 

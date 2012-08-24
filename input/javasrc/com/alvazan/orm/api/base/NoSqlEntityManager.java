@@ -2,9 +2,9 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
 import com.google.inject.ImplementedBy;
 
@@ -41,14 +41,7 @@ public interface NoSqlEntityManager {
 	 */
 	public void put(Object entity);
 	
-	/**
-	 * Use put(Object entity) in a for loop instead BECAUSE changes are not sent to nosql store until the flush anyways.
-	 * putAll will go away in future release
-	 * @param entities
-	 * @deprecated Use put(Object entity) in a loop and flush will send all puts down at one time.
-	 */
-	@Deprecated
-	public void putAll(List<Object> entities);
+	//public void putAll(List<Object> entities);
 	
 	/**
 	 * This is NOSql so do NOT use find in a loop!!!!  Use findAll instead and then loop over the items.
@@ -62,16 +55,23 @@ public interface NoSqlEntityManager {
 	public <T> T find(Class<T> entityType, Object key);
 	
 	/**
-	 * Very efficient operation in nosql for retrieving many entities at once.  This is the operation
+	 * An efficient operation in nosql for retrieving many entities at once.  This is the operation
 	 * we use very frequently in the ORM for OneToMany operations so we can fetch all your relations 
 	 * extremely fast(as they are fetched in parallel not series so 5ms network latency for 1000 objects
-	 * is not 5 seconds but just 5ms as it is done in parallel).
+	 * is not 5 seconds but just 5ms as it is done in parallel).  
 	 * 
 	 * @param entityType
 	 * @param keys
 	 * @return
 	 */
-	public <T> List<KeyValue<T>> findAll(Class<T> entityType, List<? extends Object> keys);
+	public <T> List<KeyValue<T>> findAllList(Class<T> entityType, List<? extends Object> keys);
+	
+	/** 
+	 * @param entityType
+	 * @param keys
+	 * @return
+	 */
+	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys);
 	
 	/**
 	 * Just like hibernate getReference call.  Use this when you have an id of an object and
@@ -100,35 +100,6 @@ public interface NoSqlEntityManager {
 	 */
 	public void flush();
 	
-	/**
-	 * Not ready for use as of yet.  
-	 * 
-	 * Best explained with an example.  Let's say you have a table with 1 billion rows
-	 * and let's say you have 1 million customers each with on avera 1000 rows in that
-	 * table(ie. total 1 billion).  In that case, it would be good to create 1 million
-	 * indexes with 1000 nodes in them each rather than one 1 billion node index as it
-	 * would be 1000's of times faster to fetch the small index and query it.  Pretend
-	 * the entity representing this 1 billion row table was ActionsTaken.class, then to
-	 * get the index for all rows relating to a user that you can then query you would
-	 * call entityMgr.getIndex(ActionsTaken.class, <ActionsTaken field>, user);
-	 * 
-	 * Going on, let's say that same 1 billion activity table is also related to 500k
-	 * commentors.  You may have another 500k indexes for querying when you have the 
-	 * one commentor and want to search on other stuff so you would get the index to
-	 * query like so entityMgr.getIndex(ActionsTaken.class, "/byCommentor/"+commentor.getId());
-	 * 
-	 * In this methodology you are just breaking up HUGE tables into small subtables that
-	 * can be queried.
-	 * 
-	 * @param forEntity
-	 * @param tableColumnName NOT the field name IF you named the column.  It is the column name which may or may
-	 * @param partitionObj The object that identifies the partition.  Entities all with the same partitionObj end up
-	 * in the same partition.
-	 * not be field name.
-	 * @return
-	 */
-	public <T> Partition<T> getPartition(Class<T> forEntity, String tableColumnName, Object partitionObj);
-
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery);
 	
 	/**

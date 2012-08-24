@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
@@ -51,11 +52,11 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		if(cacheLoaded)
 			return;
 
-		List<Row> rows = session.find(classMeta.getColumnFamily(), keys);
+		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
 		log.info("loading key list="+keys+" results="+rows);
-		for(int i = 0; i < this.size(); i++) {
-			byte[] key = keys.get(i);
-			Row row = rows.get(i);
+		for(KeyValue<Row> kv : rows) {
+			byte[] key = (byte[]) kv.getKey();
+			Row row = kv.getValue();
 			Tuple<V> tuple = classMeta.convertIdToProxy(row, key, session, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +

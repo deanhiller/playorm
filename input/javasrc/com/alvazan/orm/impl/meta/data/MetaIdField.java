@@ -147,4 +147,8 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		return metaDbo;
 	}
 
+	public Object translateFromBytes(byte[] val) {
+		return converter.convertFromNoSql(val);
+	}
+
 }

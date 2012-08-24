@@ -7,12 +7,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -80,20 +80,24 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+		return rawSession.find(colFamily, rowKeys);
+	}
+	
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		List<ByteArray> theKeys = new ArrayList<ByteArray>();
-		for(byte[] k : keys) {
-			theKeys.add(new ByteArray(k));
+		Iterable<KeyValue<Row>> results = rawSession.find(colFamily, keys);
+		List<Row> rows = new ArrayList<Row>();
+		for(KeyValue<Row> kv : results) {
+			rows.add(kv.getValue());
 		}
-		//log.debug("cf="+colFamily+" finding all keys="+theKeys);
-		return rawSession.find(colFamily, keys);
+		return rows;
 	}
 	
 	public Row find(String colFamily, byte[] rowKey) {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
 		//log.debug("cf="+colFamily+" finding the key="+new ByteArray(rowKey));
-		List<Row> rows = rawSession.find(colFamily, rowKeys);
+		List<Row> rows = find(colFamily, rowKeys);
 		return rows.get(0);
 	}
 
@@ -121,10 +125,14 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public void clearDb() {
 		rawSession.clearDatabase();
 	}
-
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
-		return rawSession.columnRangeScan(info, from, to, batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize);
+	}
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		return rawSession.scanIndex(info, from, to, batchSize);
 	}
 	
 	@Override

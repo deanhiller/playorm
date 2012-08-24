@@ -1,8 +1,5 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.layer5.indexing.ChildSide;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
@@ -10,7 +7,6 @@ import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class BetweenVisitor {
 
-	private static final Logger log = LoggerFactory.getLogger(BetweenVisitor.class);
 	private String tableAndColumnName;
 	private ExpressionNode firstMatch;
 	private ExpressionNode secondMatch;
@@ -39,8 +35,6 @@ public class BetweenVisitor {
 	public ExpressionNode walkAndFixTree(ExpressionNode node, String query) {
 		this.rootNode = node;
 		walkTree(rootNode, query);
-		String msg = rootNode+"";
-		log.info("msg ="+msg);
 		return rootNode;
 	}
 	
@@ -81,7 +75,8 @@ public class BetweenVisitor {
 		//The parent must be an AND so we can try to find another reference to same variable that is ANDED with this guy
 		if(attributeNode.getType() == NoSqlLexer.ATTR_NAME) {
 			StateAttribute state = (StateAttribute) attributeNode.getState();
-			String key = state.getTableName()+"-"+state.getColumnInfo().getColumnName();
+			String tableName = state.getTableInfo().getTableMeta().getColumnFamily();
+			String key = tableName+"-"+state.getColumnInfo().getColumnName();
 			if(key.equals(tableAndColumnName))
 				return childNode;
 		}

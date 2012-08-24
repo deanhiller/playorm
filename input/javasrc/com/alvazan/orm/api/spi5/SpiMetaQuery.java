@@ -20,7 +20,7 @@ public interface SpiMetaQuery {
 	 * @param session 
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
-	public SpiQueryAdapter createQueryInstanceFromQuery(String indexName, String partitionId, NoSqlSession session);
+	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session);
 	
 	
 	//public void setASTTree(ExpressionNode node);

@@ -1,6 +1,7 @@
 package com.alvazan.orm.logging;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,10 +14,13 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -35,40 +39,17 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	private DboDatabaseMeta databaseInfo;
 	
 	@Override
-	public List<Row> find(String colFamily, List<byte[]> keys) {
-		logKeys("[rawlogger]", databaseInfo, colFamily, keys);
-		return session.find(colFamily, keys);
-	}
-
-	public static void logKeys(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
-		if(!log.isInfoEnabled())
-			return;
-		
-		try {
-			logKeysImpl(prefix, databaseInfo, colFamily, keys);
-		} catch(Exception e) {
-			log.info(prefix+"(Exception logging a find operation, turn on trace to see)");
-		}
-	}
-	private static void logKeysImpl(String prefix, DboDatabaseMeta databaseInfo, String colFamily, List<byte[]> keys) {
-		DboTableMeta meta = databaseInfo.getMeta(colFamily);
-		if(meta == null)
-			return;
-		List<String> realKeys = new ArrayList<String>();
-		for(byte[] k : keys) {
-			Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
-			String str = meta.getIdColumnMeta().convertTypeToString(obj);
-			realKeys.add(str);
-		}
-		log.info(prefix+"CF="+colFamily+" finding keys="+realKeys);
-	}
-
-	@Override
 	public void sendChanges(List<Action> actions, Object ormFromAbove) {
+		long time = 0;
 		if(log.isInfoEnabled()) {
 			logInformation(actions);
+			time = System.currentTimeMillis();
 		}
 		session.sendChanges(actions, ormFromAbove);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawlogger] Sending Changes to server took(including spi plugin)="+total+" ms");
+		}
 	}
 
 	private void logInformation(List<Action> actions) {
@@ -78,6 +59,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			log.info("[rawlogger] (exception logging save actions, turn on trace to see)");
 		}
 	}
+	
 	private void logInformationImpl(List<Action> actions) {
 		String msg = "[rawlogger] Data being flushed to database in one go=";
 		for(Action act : actions) {
@@ -155,11 +137,29 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
+		long time = 0;
+		if(log.isInfoEnabled()) {
+			log.info("[rawsession] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
+			time = System.currentTimeMillis();
+		}
+		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawsession] column range scan took="+total+" ms");
+		}
+		return ret;
+	}
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
+			log.info("small WARNING: We need to figure out how to time each call to get batch size better...doing it here does not work as it is done only in the iterable");
 		}
-		return session.columnRangeScan(info, from, to, batchSize);
+		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize);
+		return ret;
 	}
 	
 	private void logColScan(ScanInfo info, Key from, Key to, int batchSize) {
@@ -215,10 +215,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public void clearDatabase() {
+		long time = 0;
 		if(log.isInfoEnabled()) {
-			log.info("[rawlogger] clearing database");
+			log.info("[rawlogger] CLEARING THE DATABASE!!!!(only use this method with tests or you will be screwed ;) )");
+			time = System.currentTimeMillis();
 		}
 		session.clearDatabase();
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-time;
+			log.info("[rawsession] clearDatabase took(including spi plugin)="+total+" ms");
+		}
 	}
 
 	@Override
@@ -235,6 +241,49 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			log.info("[rawlogger] closing NoSQL Service Provider");
 		}
 		session.close();
+	}
+
+	@Override
+	public Iterable<KeyValue<Row>> find(String colFamily,
+			Iterable<byte[]> rKeys) {
+		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
+		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
+		
+		List<byte[]> allKeys = new ArrayList<byte[]>();
+		for(byte[] k : rKeys) {
+			allKeys.add(k);
+		}
+		
+		Iterable<KeyValue<Row>> ret;
+		if(log.isInfoEnabled()) {
+			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
+			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
+			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, allKeys);
+			long time = System.currentTimeMillis();
+			ret = session.find(colFamily, iterProxy);
+			long total = System.currentTimeMillis() - time;
+			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
+
+		} else
+			ret = session.find(colFamily, allKeys);
+
+		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here
+		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
+		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
+		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
+		for (KeyValue<Row> kv : ret) {
+			byte[] k = (byte[]) kv.getKey();
+			ByteArray b = new ByteArray(k);
+			map.put(b, kv);
+		}
+		
+		for(byte[] k : allKeys) {
+			ByteArray b = new ByteArray(k);
+			KeyValue<Row> kv = map.get(b);
+			results.add(kv);
+		}
+		
+		return results;
 	}
 
 }

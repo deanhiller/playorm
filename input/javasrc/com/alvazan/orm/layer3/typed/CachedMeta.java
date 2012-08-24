@@ -43,7 +43,8 @@ public class CachedMeta {
 				return dboTableMeta;
 			
 			DboTableMeta table = mgr.find(DboTableMeta.class, colFamily);
-			
+			if(table == null)
+				throw new RuntimeException("table="+colFamily+" was not found");
 			//We don't want lots of threads writing data into this structure as it reads from the database so instead
 			//we will prefetch everything that is typically used here....
 			DboColumnIdMeta idMeta = table.getIdColumnMeta();

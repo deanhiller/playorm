@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -13,18 +14,17 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.base.Partition;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
@@ -65,10 +65,9 @@ public class TestIndexes {
 		act2.setNumTimes(4);
 		mgr.put(act2);
 		
-		Partition<Activity> index = mgr.getPartition(Activity.class, "account", null);
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		
 		double from = 100;
-		Query<Activity> query = index.createNamedQuery("findBetween");
 		try {
 			query.setParameter("begin", from);
 			Assert.fail("Should have throw TypeMismatchException and did not");
@@ -180,7 +179,7 @@ public class TestIndexes {
 		
 		mgr.flush();
 		
-		List<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
 		
 		KeyValue<PartAccount> kVal = null;
 		for(KeyValue<PartAccount> k : all) {
@@ -201,9 +200,17 @@ public class TestIndexes {
 			PartAccount.findAll(mgr);
 			Assert.fail("It should fail since account 3 is not in storage");
 		} catch(StorageMissingEntitesException e) {
-			List<PartAccount> foundAccounts = e.getFoundElements();
+			List<PartAccount> foundAccounts = formList(e.getFoundElements());
 			Assert.assertEquals(2, foundAccounts.size());
 		}
+	}
+
+	private List<PartAccount> formList(Iterable<PartAccount> foundElements) {
+		List<PartAccount> all = new ArrayList<PartAccount>();
+		for(PartAccount p : foundElements) {
+			all.add(p);
+		}
+		return all;
 	}
 
 

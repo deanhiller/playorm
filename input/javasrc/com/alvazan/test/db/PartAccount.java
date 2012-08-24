@@ -11,11 +11,11 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.spi3.KeyValue;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findAll", query="select *  from TABLE d")
+	@NoSqlQuery(name="findAll", query="select *  from TABLE as d")
 })
 public class PartAccount {
 
@@ -27,8 +27,8 @@ public class PartAccount {
 	
 	private int someNumber;
 
-	@NoSqlOneToMany(entityType=PartitionedTrade.class)
-	private List<PartitionedTrade> activities = new ArrayList<PartitionedTrade>();
+	@NoSqlOneToMany(entityType=AAPartitionedTrade.class)
+	private List<AAPartitionedTrade> activities = new ArrayList<AAPartitionedTrade>();
 
 	public String getId() {
 		return id;
@@ -54,20 +54,20 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
-	public static List<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
+	public static Iterable<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
-		return query.getResultKeyValueList();		
+		return query.getResults();		
 	}
 	public static List<PartAccount> findAll(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
-	public List<PartitionedTrade> getActivities() {
+	public List<AAPartitionedTrade> getActivities() {
 		return activities;
 	}
 
-	public void addActivity(PartitionedTrade act1) {
+	public void addActivity(AAPartitionedTrade act1) {
 		activities.add(act1);
 	}
 

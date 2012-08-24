@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 
+
 public interface NoSqlRawSession {
 	
 	/**
@@ -14,7 +15,7 @@ public interface NoSqlRawSession {
 	 * @param key
 	 * @return
 	 */
-	public List<Row> find(String colFamily, List<byte[]> key);
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys);
 	
 	/**
 	 * Action is subclassed by Remove and Persist and will be executed
@@ -29,6 +30,8 @@ public interface NoSqlRawSession {
 	
 	public void close();
 
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize);
+	
 	/**
 	 * 
 	 * @param scan
@@ -37,6 +40,6 @@ public interface NoSqlRawSession {
 	 * @param batchSize TODO
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scan, Key from, Key to, int batchSize);
+	public Iterable<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, int batchSize);
 
 }

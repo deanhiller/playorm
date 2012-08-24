@@ -17,14 +17,9 @@ import com.google.inject.name.Names;
 public class ProductionBindings implements Module {
 
 	private DbTypeEnum type;
-	private DboDatabaseMeta metaDb;
 
 	public ProductionBindings(DbTypeEnum type) {
 		this.type = type;
-	}
-	public ProductionBindings(DbTypeEnum type, DboDatabaseMeta metaDb) {
-		this.type = type;
-		this.metaDb = metaDb;
 	}
 
 	/**
@@ -44,10 +39,7 @@ public class ProductionBindings implements Module {
 			throw new RuntimeException("bug, unsupported database type="+type);
 		}
 		
-		if(metaDb != null) //for adhoc query tool bind the meta database(which typically came from the database read)
-			binder.bind(DboDatabaseMeta.class).toInstance(metaDb);
-		else
-			binder.bind(DboDatabaseMeta.class).asEagerSingleton();
+		binder.bind(DboDatabaseMeta.class).asEagerSingleton();
 		
 		binder.bind(NoSqlRawSession.class).annotatedWith(Names.named("logger")).to(NoSqlRawLogger.class).asEagerSingleton();
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);

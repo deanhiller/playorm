@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.Row;
 
@@ -75,19 +76,32 @@ public class RowImpl implements Row {
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#columnSlice(byte[], byte[])
 	 */
 	@Override
-	public Collection<Column> columnSlice(Key from, Key to) {
+	public Collection<IndexColumn> columnSlice(Key from, Key to) {
+		throw new UnsupportedOperationException("bug, this is not an index row");
+	}
+	public Collection<Column> columnSlice(byte[] from, byte[] to) {
 		NavigableMap<ByteArray, Column> map = columns;
 		if(from != null) {
-			ByteArray fromArray = new ByteArray(from.getKey());
-			map = columns.tailMap(fromArray, from.isInclusive());
+			ByteArray fromArray = new ByteArray(from);
+			map = columns.tailMap(fromArray, true);
 		}
 		
 		if(to != null) {
-			ByteArray toArray = new ByteArray(to.getKey());
-			map = map.headMap(toArray, to.isInclusive());
+			ByteArray toArray = new ByteArray(to);
+			map = map.headMap(toArray, true);
 		}
 
-		return map.values();
+		List<Column> list = deepCopy(map.values());
+		
+		return list;
+	}
+
+	private List<Column> deepCopy(Collection<Column> map) {
+		List<Column> list = new ArrayList<Column>();
+		for(Column c : map) {
+			list.add(c.copy());
+		}
+		return list;
 	}
 
 	/* (non-Javadoc)
@@ -104,7 +118,33 @@ public class RowImpl implements Row {
 			} else if(started)
 				break; //since we hit the prefix and we are sorted, we can break.
 		}
-		return prefixed;
+		return deepCopy(prefixed);
+	}
+
+	@Override
+	public void addColumns(List<Column> cols) {
+		for(Column c : cols) {
+			ByteArray b = new ByteArray(c.getName());
+			columns.put(b, c);
+		}
+	}
+
+	@Override
+	public Row deepCopy() {
+		RowImpl impl = new RowImpl();
+		impl.key = key;
+		for(Entry<ByteArray, Column> s : columns.entrySet()) {
+			impl.columns.put(s.getKey(), s.getValue().copy());
+		}
+		return impl;
+	}
+
+	@Override
+	public void removeColumns(Collection<byte[]> columnNames) {
+		for(byte[] k : columnNames) {
+			ByteArray b = new ByteArray(k);
+			columns.remove(b);
+		}
 	}
 
 }

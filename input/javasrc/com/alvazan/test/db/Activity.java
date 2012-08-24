@@ -14,19 +14,22 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE e WHERE e.numTimes >= :begin and e.numTimes < :to"),
-	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE e WHERE e.uniqueColumn = :unique"),
-	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE e WHERE" +
+	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE as e WHERE e.numTimes >= :begin and e.numTimes < :to"),
+	@NoSqlQuery(name="findBetween2", query="select * FROM TABLE as e WHERE e.numTimes > :begin and e.numTimes <= :to"),
+	@NoSqlQuery(name="findAbove", query="select * FROM TABLE as e WHERE e.numTimes > :begin"),
+	@NoSqlQuery(name="findBelow", query="select * FROM TABLE as e WHERE e.numTimes < :to"),
+	@NoSqlQuery(name="findUnique", query="select *  FROM TABLE as e WHERE e.uniqueColumn = :unique"),
+	@NoSqlQuery(name="findWithParens", query="select * FROM TABLE as e WHERE" +
 			" e.name=:name and (e.numTimes = :numTimes or e.myFloat = :myFloat)"),	
-	@NoSqlQuery(name="findWithoutParens", query="select * FROM TABLE e WHERE" +
+	@NoSqlQuery(name="findWithoutParens", query="select * FROM TABLE as e WHERE" +
 			" e.name=:name and e.numTimes = :numTimes or e.myFloat = :myFloat"),
-	@NoSqlQuery(name="findWithAnd", query="select * FROM TABLE e WHERE e.name=:name and e.numTimes = :numTimes"),
-	@NoSqlQuery(name="findWithOr", query="select * FROM TABLE e WHERE e.name=:name or e.numTimes = :numTimes"),
-	@NoSqlQuery(name="findByName", query="select * FROM TABLE e WHERE e.name=:name"),
-	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE e WHERE e.numTimes=:numTimes"),
-	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE e WHERE e.myFloat=:myFloat"),
-	@NoSqlQuery(name="findByCool", query="select * FROM TABLE e WHERE e.isCool=:cool"),
-	@NoSqlQuery(name="findAll", query="select * FROM TABLE e")
+	@NoSqlQuery(name="findWithAnd", query="select * FROM TABLE as e WHERE e.name=:name and e.numTimes = :numTimes"),
+	@NoSqlQuery(name="findWithOr", query="select * FROM TABLE as e WHERE e.name=:name or e.numTimes = :numTimes"),
+	@NoSqlQuery(name="findByName", query="select * FROM TABLE as e WHERE e.name=:name"),
+	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE as e WHERE e.numTimes=:numTimes"),
+	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE as e WHERE e.myFloat=:myFloat"),
+	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
+	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e")
 	
 })
 public class Activity {
@@ -123,7 +126,26 @@ public class Activity {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);
 		query.setParameter("to", to);
-		return query.getResultList();
+		return query.getResultList(0, null);
+	}
+	
+	public static List<Activity> findBetween2(NoSqlEntityManager mgr, long from, long to) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween2");
+		query.setParameter("begin", from);
+		query.setParameter("to", to);
+		return query.getResultList(0, null);
+	}
+	
+	public static List<Activity> findAbove(NoSqlEntityManager mgr, long from) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAbove");
+		query.setParameter("begin", from);
+		return query.getResultList(0, null);
+	}
+
+	public static List<Activity> findBelow(NoSqlEntityManager mgr, long to) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBelow");
+		query.setParameter("to", to);
+		return query.getResultList(0, null);
 	}
 	
 	public static Activity findSingleResult(NoSqlEntityManager mgr, String key) {
@@ -134,39 +156,39 @@ public class Activity {
 	public static List<Activity> findByName(NoSqlEntityManager mgr, String name) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByName");
 		query.setParameter("name", name);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findByCool(NoSqlEntityManager mgr, boolean isCool) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByCool");
 		query.setParameter("cool", isCool);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findNumTimes(NoSqlEntityManager mgr, long numTimes) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByNumTimes");
 		query.setParameter("numTimes", numTimes);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 	
 	public static List<Activity> findByFloat(NoSqlEntityManager mgr, float myFloat) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByFloat");
 		query.setParameter("myFloat", myFloat);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 	
 	public static List<Activity> findWithAnd(NoSqlEntityManager mgr, String name, long numTimes) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithAnd");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findWithOr(NoSqlEntityManager mgr, String name, long numTimes) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithOr");
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findWithoutParens(NoSqlEntityManager mgr,
@@ -175,7 +197,7 @@ public class Activity {
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		query.setParameter("myFloat", myFloat);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findWithParens(NoSqlEntityManager mgr,
@@ -184,11 +206,12 @@ public class Activity {
 		query.setParameter("name", name);
 		query.setParameter("numTimes", numTimes);
 		query.setParameter("myFloat", myFloat);
-		return query.getResultList();
+		return query.getResultList(0, null);
 	}
 
 	public static List<Activity> findAll(NoSqlEntityManager mgr) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAll");
-		return query.getResultList();		
+		return query.getResultList(0, null);		
 	}
+
 }

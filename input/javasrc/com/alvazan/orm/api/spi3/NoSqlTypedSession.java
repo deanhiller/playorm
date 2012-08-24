@@ -3,6 +3,7 @@ package com.alvazan.orm.api.spi3;
 import java.util.List;
 
 import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 import com.google.inject.ImplementedBy;
 
@@ -38,9 +39,11 @@ public interface NoSqlTypedSession {
 	
 	public <T> TypedRow<T> find(String cf, T id);
 	
-	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> rowKeys);
-
-	public List<KeyValue<TypedRow>> runQuery(String query);
+	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> rowKeys);
+	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
+	
+	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
+	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr);
 	
 	public void flush();
 

@@ -5,34 +5,35 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi3.KeyValue;
 import com.alvazan.orm.api.spi3.NoSqlTypedSession;
 import com.alvazan.orm.api.spi3.TypedRow;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 import com.alvazan.orm.api.spi3.meta.IndexData;
 import com.alvazan.orm.api.spi3.meta.MetaAndIndexTuple;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.NoSqlSessionFactory;
+import com.alvazan.orm.api.spi3.meta.QueryParser;
 import com.alvazan.orm.api.spi3.meta.RowToPersist;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.Row;
 
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@Inject
-	private NoSqlSessionFactory noSqlSessionFactory;
+	private QueryParser noSqlSessionFactory;
 	@Inject
 	private CachedMeta cachedMeta;
 	
 	private NoSqlSession session;
 	
 	/**
+	 * NOTE: This must be here so that if you get TypedSession from the NoSqlEntitManager, he will
+	 * have the same session object and flush flushes both typed and ORM data at the same time!!!
 	 * To be removed eventually
 	 * @param s
 	 */
@@ -83,86 +84,42 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public <T> TypedRow<T> find(String cf, T id) {
 		List<T> keys = new ArrayList<T>();
 		keys.add(id);
-		List<KeyValue<TypedRow<T>>> rows = findAll(cf, keys);
+		List<KeyValue<TypedRow<T>>> rows = findAllList(cf, keys);
 		return rows.get(0).getValue();
 	}
 	
 	@Override
-	public <T> List<KeyValue<TypedRow<T>>> findAll(String colFamily, List<T> keys) {
+	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
 		if(meta == null)
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
-
-		List<byte[]> noSqlKeys = new ArrayList<byte[]>();
 		DboColumnMeta idMeta = meta.getIdColumnMeta();
-		for(T k : keys) {
-			byte[] rowK = idMeta.convertToStorage2(k);
-			noSqlKeys.add(rowK);
-		}
-		
-		return findAllImpl(meta, keys, noSqlKeys, null);
+		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<T>(idMeta, keys);
+		return findAllImpl2(meta, keys, noSqlKeys, null);
 	}
 
-	<T> List<KeyValue<TypedRow<T>>> findAllImpl(DboTableMeta meta, List<T> keys, List<byte[]> noSqlKeys, String indexName) {
+	<T> Iterable<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		List<Row> rows = session.find(cf, noSqlKeys);
-		return getKeyValues(meta, keys, noSqlKeys, rows, indexName);
-	}
-	
-	private <T> List<KeyValue<TypedRow<T>>> getKeyValues(DboTableMeta meta, List<T> keys,List<byte[]> noSqlKeys,List<Row> rows, String indexName){
-		List<KeyValue<TypedRow<T>>> keyValues = new ArrayList<KeyValue<TypedRow<T>>>();
-
+		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
 		if(keys != null)
-			translateRows(meta, keys, rows, keyValues);
+			return new TypedResponseIter<T>(meta, keys, rows2);
 		else
-			translateRowsForQuery(meta, noSqlKeys, rows, keyValues, indexName);
-		
-		return keyValues;
-	}
-
-	@SuppressWarnings("unchecked")
-	private <T> void translateRowsForQuery(DboTableMeta meta, List<byte[]> noSqlKeys, List<Row> rows, List<KeyValue<TypedRow<T>>> keyValues, String indexName) {
-		for(int i = 0; i < rows.size(); i++) {
-			Row row = rows.get(i);
-			byte[] rowKey = noSqlKeys.get(i);
-			DboColumnIdMeta idField = meta.getIdColumnMeta();
-			T key = (T) idField.convertFromStorage2(rowKey);
-			
-			KeyValue<TypedRow<T>> keyVal;
-			if(row == null) {
-				keyVal = new KeyValue<TypedRow<T>>();
-				keyVal.setKey(key);
-				RowNotFoundException exc = new RowNotFoundException("Your query="+indexName+" contained a value with a pk where that entity no longer exists in the nosql store");
-				keyVal.setException(exc);
-			} else {
-				keyVal = meta.translateFromRow(row);
-			}
-			
-			keyValues.add(keyVal);
-		}		
+			return new TypedResponseIter<T>(meta, rows2, indexName);
 	}
 	
-	private <T> void translateRows(DboTableMeta meta,
-			List<T> keys, List<Row> rows,
-			List<KeyValue<TypedRow<T>>> keyValues) {
-		for(int i = 0; i < rows.size(); i++) {
-			Row row = rows.get(i);
-			T key = keys.get(i);
-			
-			KeyValue<TypedRow<T>> keyVal;
-			if(row == null) {
-				keyVal = new KeyValue<TypedRow<T>>();
-				keyVal.setKey(key);
-			} else {
-				keyVal = meta.translateFromRow(row);
-			}
-			
-			keyValues.add(keyVal);
+	@Override
+	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> keys) {
+		List<KeyValue<TypedRow<T>>> rows = new ArrayList<KeyValue<TypedRow<T>>>();
+		Iterable<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
+		for (KeyValue<TypedRow<T>> keyValue : iter) {
+			rows.add(keyValue);
 		}
+
+		return rows;
 	}
 	
 	@Override
@@ -172,15 +129,32 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<KeyValue<TypedRow>> runQuery(String query) {
-		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query);
+	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
+		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(null, null, session);
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
 		
-		List<byte[]> primaryKeys = spiQueryAdapter.getResultList();
-		
+		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		Iterable<byte[]> indexIterable = new IterableIndex(iter);
+
 		DboTableMeta meta = metaQuery.getTargetTable();
-		List rows = this.findAllImpl(meta, null, primaryKeys, null);
+		Iterable results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+		
+		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
+		//skips false positives so as the client loops, we skip some of the results based on that they are false
+		//AND we could then trigger index rebuilds as we see there are false columns
+		
+		
+		return results;
+	}
+
+	@Override
+	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
+		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
+		Iterable<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
+		for (KeyValue<TypedRow> keyValue : iter) {
+			rows.add(keyValue);
+		}
 		return rows;
 	}
 }

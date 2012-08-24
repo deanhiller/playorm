@@ -7,11 +7,15 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -24,6 +28,8 @@ import com.alvazan.orm.api.spi9.db.ScanInfo;
  */
 public class NoSqlDevLogger implements NoSqlSession {
 
+	private static final Logger log = LoggerFactory.getLogger(NoSqlDevLogger.class);
+	
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
 	@Inject
@@ -63,16 +69,17 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
-		NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
-		return session.find(colFamily, rowKeys);
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+		log.warn("CAN't use this method as it would cause the iterable to loop and we only want to loop ONCE so need a proxy iterable to pass down!!!!");
+		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
+		return session.findAll(colFamily, rowKeys, skipCache);
 	}
-
+	
 	@Override
 	public Row find(String colFamily, byte[] rowKey) {
 		List<byte[]> keys = new ArrayList<byte[]>();
 		keys.add(rowKey);
-		NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, keys);
+		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, keys);
 		return session.find(colFamily, rowKey);
 	}
 
@@ -87,10 +94,15 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, Key from, Key to, int batchSize) {
-		return session.columnRangeScan(scanInfo, from, to, batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
-
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		return session.scanIndex(info, from, to, batchSize);
+	}
+	
 	@Override
 	public void setOrmSessionForMeta(Object orm) {
 		session.setOrmSessionForMeta(orm);

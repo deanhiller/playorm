@@ -1,14 +1,11 @@
 package com.alvazan.orm.layer5.indexing;
 
 import org.antlr.runtime.tree.CommonTree;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class ExpressionNode {
 
-	private static final Logger log = LoggerFactory.getLogger(ExpressionNode.class);
 	private ExpressionNode leftChild;
 	private ExpressionNode rightChild;
 	private CommonTree commonNode;
@@ -125,14 +122,15 @@ public class ExpressionNode {
 
 	public void addExpression(ExpressionNode attrExpNode) {
 		String msg = "this type="+this.getType()+" node type="+attrExpNode.getType();
-		StateAttribute state2 = (StateAttribute) attrExpNode.getState();
+		ExpressionNode attributeSideNode = attrExpNode.getLeftChild();
+		StateAttribute state2 = (StateAttribute) attributeSideNode.getState();
 		if(attrExpNode.getType() == NoSqlLexer.EQ || this.getType() == NoSqlLexer.EQ) {
 			throw new IllegalArgumentException("uhhhmmmm, you are using column="+state2.getColumnInfo().getColumnName()
 					+" twice with 'AND' statement yet one has an = so change to 'OR' or get rid of one. "+ msg);
-		} else if(attrExpNode.getType() == NoSqlLexer.GE || attrExpNode.getType() == NoSqlLexer.GE) {
+		} else if(attrExpNode.getType() == NoSqlLexer.GE || attrExpNode.getType() == NoSqlLexer.GT) {
 			greaterThanExpression = attrExpNode;
 			lessThanExpression = this;
-		} else if(this.getType() == NoSqlLexer.GE || this.getType() == NoSqlLexer.GE) {
+		} else if(this.getType() == NoSqlLexer.GE || this.getType() == NoSqlLexer.GT) {
 			greaterThanExpression = this;
 			lessThanExpression = attrExpNode;
 		} else if(this.getType() == NoSqlLexer.LE || this.getType() == NoSqlLexer.LT) {

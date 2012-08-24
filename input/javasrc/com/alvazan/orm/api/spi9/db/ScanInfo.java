@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.spi9.db;
 
+import java.io.UnsupportedEncodingException;
+
 public class ScanInfo {
 	private String indexColFamily; 
 	private byte[] rowKey;
@@ -34,4 +36,17 @@ public class ScanInfo {
 		return columnName;
 	}
 
+	@Override
+	public String toString() {
+		return "CF="+indexColFamily+"(for cf="+entityColFamily+") rowKey="+toUTF8(rowKey);
+	}
+
+	private String toUTF8(byte[] data) {
+		try {
+			return new String(data, "UTF8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 }

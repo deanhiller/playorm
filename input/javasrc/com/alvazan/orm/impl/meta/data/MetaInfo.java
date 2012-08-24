@@ -1,8 +1,11 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -59,7 +62,14 @@ public class MetaInfo {
 
 	
 	public Collection<MetaAbstractClass> getAllEntities() {
-		return classToClassMeta.values();
+		//The random order every time we start is very annoying to me and to users. Let's order the values every
+		//time instead
+		List<MetaAbstractClass> all = new ArrayList<MetaAbstractClass>();
+		for(MetaAbstractClass meta : classToClassMeta.values()) {
+			all.add(meta);
+		}
+		Collections.sort(all, new MetaComparator());
+		return all;
 	}
 
 	public void addTableNameLookup(MetaAbstractClass classMeta) {

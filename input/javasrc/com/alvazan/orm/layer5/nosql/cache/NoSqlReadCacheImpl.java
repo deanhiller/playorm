@@ -1,6 +1,5 @@
 package com.alvazan.orm.layer5.nosql.cache;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -8,30 +7,41 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.inject.Provider;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 
-	private static final Logger log = LoggerFactory.getLogger(NoSqlReadCacheImpl.class);
-	
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
 	private Map<TheKey, RowHolder<Row>> cache = new HashMap<TheKey, RowHolder<Row>>();
-			
+	@Inject
+	private Provider<Row> rowProvider;
+	
 	@Override
 	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
+		if(currentRow == null) {
+			currentRow = new RowHolder<Row>(rowKey);
+		}
+
+		Row value = currentRow.getValue();
+		if(value == null)
+			value = rowProvider.get();
+		
+		value.setKey(rowKey);
+		value.addColumns(columns);
+		cacheRow(colFamily, rowKey, value);
 	}
 
 	@Override
@@ -54,6 +64,17 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Override
 	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
+		
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
+		if(currentRow == null) {
+			return;
+		}
+		Row value = currentRow.getValue();
+		if(value == null) {
+			return;
+		}
+		
+		value.removeColumns(columnNames);
 	}
 
 	@Override
@@ -68,56 +89,33 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public List<Row> find(String colFamily, List<byte[]> rowKeys) {
-		//READ FROM CACHE HERE to skip reading from database.
-		//All Proxies read from this find method too so they can get cache hits when you have a large 
-		//object graph and fill themselves in properly
-		List<Row> rows = new ArrayList<Row>();
-		List<byte[]> rowKeysToFetch = new ArrayList<byte[]>();
-		List<Integer> indexForRow = new ArrayList<Integer>();
-		for(int i = 0; i < rowKeys.size();i++) {
-			byte[] key = rowKeys.get(i);
-			RowHolder<Row> result = fromCache(colFamily, key);
-			if(result == null) {
-				indexForRow.add(i);
-				rowKeysToFetch.add(key);
-				//we still add the null result that will be replaced after we
-				//hit the database with rows that are still needed..
-				rows.add(null);
-			} else {
-				log.info("cache hit(need to profile/optimize)");
-				rows.add(result.getValue());
-			}
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+		if(skipCache) {
+			return session.findAll(colFamily, rowKeys, skipCache);
 		}
 		
-		List<Row> rowsFromDb = new ArrayList<Row>();
-		if(rowKeysToFetch.size() > 0)
-			rowsFromDb = session.find(colFamily, rowKeysToFetch);
-		
-		for(int i = 0; i < rowKeysToFetch.size(); i++) {
-			Integer index = indexForRow.get(i);
-			Row r = rowsFromDb.get(i);
-			byte[] key = rowKeysToFetch.get(i);
-			rows.set(index, r);
-			cacheRow(colFamily, key, r);
-		}
-		
-		return rows;
+		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
+		Iterable<KeyValue<Row>> rowsFromDb = session.findAll(colFamily, proxy, skipCache);
+		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
+		//existing rows
+		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
+		Iterable<KeyValue<Row>> theRows = new IterCacheProxy(this, colFamily, inCache, rowsFromDb);
+		return theRows;
 	}
 	
-	private RowHolder<Row> fromCache(String colFamily, byte[] key) {
+	RowHolder<Row> fromCache(String colFamily, byte[] key) {
 		TheKey k = new TheKey(colFamily, key);
 		return cache.get(k);
 	}
 
-	private void cacheRow(String colFamily, byte[] key, Row r) {
+	void cacheRow(String colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
 		TheKey k = new TheKey(colFamily, key);
-		RowHolder<Row> holder = new RowHolder<Row>(r); //r may be null so we are caching null here
+		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);
 	}
 
-	private static class TheKey {
+	static class TheKey {
 		private String colFamily;
 		private ByteArray key;
 		
@@ -182,8 +180,13 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnRangeScan(ScanInfo info,Key from, Key to, int batchSize) {
-		return session.columnRangeScan(info, from, to, batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
+	}
+	
+	@Override
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		return session.scanIndex(info, from, to, batchSize);
 	}
 
 	@Override

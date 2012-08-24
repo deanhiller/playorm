@@ -19,6 +19,7 @@ import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -37,17 +38,23 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public List<Row> find(String colFamily, List<byte[]> keys) {
-		List<Row> rows = new ArrayList<Row>();
-		for(byte[] key : keys) {
+	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
+		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);
+			Row newRow = null;
+			if(row != null)
+				newRow = row.deepCopy();
+			KeyValue<Row> kv = new KeyValue<Row>();
+			kv.setKey(key);
+			kv.setValue(newRow);
 			//This add null if there is no row to the list on purpose
-			rows.add(row);
+			rows.add(kv);
 		}
 		
 		return rows;
 	}
-
+	
 	private Row findRow(String colFamily, byte[] key) {
 		Table table = database.findTable(colFamily);
 		if(table == null)
@@ -79,14 +86,16 @@ public class InMemorySession implements NoSqlRawSession {
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
-		row.addIndexedColumn(column);
+		row.addIndexedColumn(column.copy());
 	}
+
+
 
 	private void removeIndex(RemoveIndex action, Table table) {
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
-		row.removeIndexedColumn(column);		
+		row.removeIndexedColumn(column.copy());		
 	}
 	
 	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
@@ -95,14 +104,16 @@ public class InMemorySession implements NoSqlRawSession {
 		if(table != null)
 			return table;
 		
-		log.info("CREATING column family="+colFamily+" in cassandra");
+		log.info("CREATING column family="+colFamily+" in the in memory nosql store");
 			
 		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
 		if(cf == null) {
 			//check the database now for the meta since it was not found in the ORM meta data.  This is for
 			//those that are modifying meta data themselves
-			DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-			cf = db.getMeta(colFamily);
+			//DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+			cf = mgr.find(DboTableMeta.class, colFamily);
+			log.info("cf from db="+cf);
+			//cf = db.getMeta(colFamily);
 		}
 		
 		if(cf == null) {
@@ -180,7 +191,7 @@ public class InMemorySession implements NoSqlRawSession {
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			row.put(col.getName(), col);
+			row.put(col.getName(), col.copy());
 		}
 	}
 
@@ -195,15 +206,8 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Collection<Column> columnRangeScan(ScanInfo info, Key from, Key to, int batchSize) {
-		String colFamily = info.getIndexColFamily();
-		byte[] rowKey = info.getRowKey();
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, int batchSize) {
 		Table table = database.findTable(colFamily);
 		if(table == null) {
 			return new HashSet<Column>();
@@ -213,6 +217,26 @@ public class InMemorySession implements NoSqlRawSession {
 			return new HashSet<Column>();
 		
 		return row.columnSlice(from, to);
+	}
+	
+	@Override
+	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+		String colFamily = info.getIndexColFamily();
+		byte[] rowKey = info.getRowKey();
+		Table table = database.findTable(colFamily);
+		if(table == null) {
+			return new HashSet<IndexColumn>();
+		}
+		Row row = table.findOrCreateRow(rowKey);
+		if(row == null)
+			return new HashSet<IndexColumn>();
+		
+		return row.columnSlice(from, to);
+	}
+
+	@Override
+	public void close() {
+		
 	}
 
 }

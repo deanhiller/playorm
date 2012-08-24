@@ -2,7 +2,7 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi3.KeyValue;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 
 public interface Query<T> {
 
@@ -14,21 +14,37 @@ public interface Query<T> {
 	 * the exception until code accesses that missing value.  In this method, if you only
 	 * iterate through the first 4 elements and the missing element was #5, you will not see
 	 * any exception at all and code will keep working.
+	 * 
+	 * Also, you can call getException instead of getValue to avoid the Exception
 	 * @return
 	 */
-	public List<KeyValue<T>> getResultKeyValueList();
-	
-	
+	public Iterable<KeyValue<T>> getResults();
 	
 	public T getSingleObject();
 	
 	/**
-	 * You may want to use getResultKeyValueList instead since that will delay exceptions caused by info being in the
-	 * index but the entity not existing.
+	 * WARNING: If you want to keep getting page after page, USE getResults method instead as that can iterate
+	 * over trillions of rows without blowing out memory(BUT of course you should really only be iterating over 1 million
+	 * or less rows to stay efficient and fast)
+	 * 
+	 * You probably should use getResultKeyValueList instead since that will delay exceptions caused by entities
+	 * do not exist but are in the index (this is nosql after all)
+	 * @param firstResult TODO
+	 * @param maxResults TODO
+	 * @param firstResult 0 or larger
+	 * @param maxResults null if you want all the results though you should probably cap this so you don't blow out memory
+	 * or use getResults method instead.
+	 * 
 	 * @return
 	 */
-	public List<T> getResultList();
+	public List<T> getResultList(int firstResult, Integer maxResults);
 	
-	public void setFirstResult(int firstResult);
-	public void setMaxResults(int batchSize);
+	/**
+	 * The rate at which we pull from the nosql store.  The default is 500.  We grab 500 entities
+	 * and once you hit 501, we grab the next 500 and so on so you can discard entities as you iterate
+	 * over them.
+	 * 
+	 * @param batchSize
+	 */
+	public void setBatchSize(int batchSize);
 }

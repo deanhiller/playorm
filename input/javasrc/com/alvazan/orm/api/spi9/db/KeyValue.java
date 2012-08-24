@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.spi3;
+package com.alvazan.orm.api.spi9.db;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 
@@ -7,6 +7,7 @@ public class KeyValue<T> {
 
 	private Object key;
 	private T value;
+	
 	private RowNotFoundException e;
 	
 	public Object getKey() {

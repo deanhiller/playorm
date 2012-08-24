@@ -10,8 +10,8 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findById", query="select t from TABLE t where t.key = :key"),
-	@NoSqlQuery(name="findByTemp", query="select t from TABLE t where t.temp = :temp")
+	@NoSqlQuery(name="findById", query="select t from TABLE as t where t.key = :key"),
+	@NoSqlQuery(name="findByTemp", query="select t from TABLE as t where t.temp = :temp")
 })
 public class TimeSeriesData {
 

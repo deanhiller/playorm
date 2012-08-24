@@ -6,6 +6,7 @@ import java.util.List;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.spi9.db.KeyValue;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -47,7 +48,7 @@ public interface NoSqlSession {
 	 */
 	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 	
-	public List<Row> find(String colFamily, List<byte[]> rowKeys);
+	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache);
 	
 	public Row find(String colFamily, byte[] rowKey);
 	
@@ -66,8 +67,9 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @return
 	 */
-	public Iterable<Column> columnRangeScan(ScanInfo scanInfo, Key from, Key to, int batchSize);
-
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize);
+	
 	public void setOrmSessionForMeta(Object entityMgr);
 
 }

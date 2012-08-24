@@ -5,15 +5,15 @@ import com.netflix.astyanax.annotations.Component;
 public class GenericComposite {
 
 	@Component(ordinal=0)
-	private	byte[] value;
+	private	byte[] indexedValue;
 	@Component(ordinal=1)
 	private	byte[] pk;
 	
-	byte[] getValue() {
-		return value;
+	byte[] getIndexedValue() {
+		return indexedValue;
 	}
-	void setValue(byte[] value) {
-		this.value = value;
+	void setIndexedValue(byte[] value) {
+		this.indexedValue = value;
 	}
 	byte[] getPk() {
 		return pk;

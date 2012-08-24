@@ -58,7 +58,7 @@ public class TestIndexTypes {
 		Assert.assertEquals(1, list.size());
 		
 		List<Activity> zero = Activity.findNumTimes(mgr, 0L);
-		Assert.assertEquals(0, zero.size());		
+		Assert.assertEquals(0, zero.size());
 	}
 
 	@Test
@@ -79,6 +79,10 @@ public class TestIndexTypes {
 		act.setIsCool(true);
 		mgr.put(act);
 		
+		//Everything is null for this activity so queries above should not find him...
+		Activity act2 = new Activity();
+		act2.setNumTimes(58);
+		mgr.put(act2);
 		
 		mgr.flush();
 	}
