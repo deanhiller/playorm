@@ -35,14 +35,14 @@ public class QueryAdapter<T> implements Query<T> {
 	private MetaQuery<T> meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
-	private MetaClass<T> metaClass;
 	private Integer batchSize;
+	private MetaClass<T> mainMetaClass;
 
-	public void setup(MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr, MetaClass<T> metaClass) {
+	public void setup(MetaClass<T> target, MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
+		this.mainMetaClass = target;
 		this.meta = meta;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
-		this.metaClass = metaClass;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -58,8 +58,9 @@ public class QueryAdapter<T> implements Query<T> {
 			throw new UnsupportedOperationException("not done here yet, need to validate constant type");
 
 		DboColumnMeta metaFieldDbo = typeInfo.getColumnInfo();
-		
+		String colFamily = metaFieldDbo.getOwner().getColumnFamily();
 		String columnName = metaFieldDbo.getColumnName();
+		MetaClass metaClass = metaInfo.getMetaClass(colFamily);
 		MetaField metaField = metaClass.getMetaFieldByCol(columnName);
 		
 		Field field = metaField.getField();
@@ -98,7 +99,7 @@ public class QueryAdapter<T> implements Query<T> {
 	public Iterable<KeyValue<T>> getResults() {
 		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IndexIterable(indice);
-		Iterable<KeyValue<T>> results = mgr.findAllImpl2(metaClass, keys, meta.getQuery(), batchSize);
+		Iterable<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 		return results;
 	}
 
