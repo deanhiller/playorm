@@ -1,6 +1,7 @@
 PlayOrm Feature List
 
-* Partitioning so you can query a one trillion row table in just ms with JQL(Java Query Language)
+* JQL+ supported which is modified JQL that scales to infinity
+* Partitioning so you can query a one trillion row table in just ms with JQL+(Java Query Language)
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * Inhertance class heirarchy in one table is supported like hibernate
