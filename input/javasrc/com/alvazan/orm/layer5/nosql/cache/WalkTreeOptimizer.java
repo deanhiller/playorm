@@ -5,14 +5,14 @@ import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
-public class BetweenVisitor {
+public class WalkTreeOptimizer {
 
 	private String tableAndColumnName;
 	private ExpressionNode firstMatch;
 	private ExpressionNode secondMatch;
 	private ExpressionNode rootNode;
 	
-	public BetweenVisitor(String key) {
+	public WalkTreeOptimizer(String key) {
 		this.tableAndColumnName = key;
 	}
 

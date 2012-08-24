@@ -6,6 +6,7 @@ import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class ExpressionNode {
 
+	private NodeType nodeType;
 	private ExpressionNode leftChild;
 	private ExpressionNode rightChild;
 	private CommonTree commonNode;
@@ -27,6 +28,14 @@ public class ExpressionNode {
 		return greaterThanExpression != null;
 	}
 
+	public NodeType getNodeType() {
+		return nodeType;
+	}
+
+	public void setNodeType(NodeType nodeType) {
+		this.nodeType = nodeType;
+	}
+
 	public int getType() {
 		return commonNode.getType();		
 	}
@@ -39,6 +48,16 @@ public class ExpressionNode {
 		this.parent = p;
 	}
 	
+	public void setChild(ChildSide side, ExpressionNode child) {
+		if(side == ChildSide.LEFT) {
+			leftChild = child;
+			this.commonNode.setChild(0, child.commonNode);
+		} else {
+			rightChild = child;
+			this.commonNode.setChild(1, child.commonNode);
+		}
+		child.setParent(this);
+	}
 	public void setLeftChild(ExpressionNode childNode) {
 		leftChild = childNode;
 		leftChild.setParent(this);

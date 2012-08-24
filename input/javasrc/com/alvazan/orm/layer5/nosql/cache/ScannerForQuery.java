@@ -27,8 +27,10 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi3.meta.TypeInfo;
+import com.alvazan.orm.layer5.indexing.ChildSide;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.JoinType;
+import com.alvazan.orm.layer5.indexing.NodeType;
 import com.alvazan.orm.layer5.indexing.SpiMetaQueryImpl;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
 import com.alvazan.orm.layer5.indexing.TableInfo;
@@ -90,7 +92,7 @@ public class ScannerForQuery {
 		validateNoPartitionsMissed(theTree, visitor1, wiring);
 		
 		ExpressionNode node = wiring.getAstTree();
-		ExpressionNode newTree = rewireTreeIfNeededForBetween(node, wiring.getAttributeUsedCount(), query);
+		ExpressionNode newTree = optimize(node, wiring.getAttributeUsedCount(), query);
 		
 		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
 		
@@ -116,7 +118,7 @@ public class ScannerForQuery {
 		}
 	}
 
-	private ExpressionNode rewireTreeIfNeededForBetween(ExpressionNode node,
+	private ExpressionNode optimize(ExpressionNode node,
 			Map<String, Integer> attributeUsedCount, String query) {
 		ExpressionNode root = node;
 		for(Entry<String, Integer> m : attributeUsedCount.entrySet()) {
@@ -124,7 +126,7 @@ public class ScannerForQuery {
 				continue;
 			
 			log.info("optimizing query tree for varname="+m.getKey());
-			BetweenVisitor visitor = new BetweenVisitor(m.getKey());
+			WalkTreeOptimizer visitor = new WalkTreeOptimizer(m.getKey());
 			root = visitor.walkAndFixTree(root, query);
 		}
 		
@@ -418,19 +420,33 @@ public class ScannerForQuery {
 		case NoSqlLexer.OR:
 			node.setState("ANDORnode");
 			List<CommonTree> children = expression.getChildren();
-			for(int i = 0; i < 2; i++) {
-				CommonTree child = children.get(i);
-				ExpressionNode childNode = new ExpressionNode(child);
-				if(i == 0)
-					node.setLeftChild(childNode);
-				else if(i == 1)
-					node.setRightChild(childNode);
-				else
-					throw new RuntimeException("We have a big problem, we don't have a binary tree anymore");
-				
-				compileExpression(childNode, metaQuery, wiring);
-				
+			ExpressionNode leftN = processSide(node, metaQuery, wiring, children, 0, ChildSide.LEFT);
+			ExpressionNode rightN =processSide(node, metaQuery, wiring, children, 1, ChildSide.RIGHT);
+			
+			if(leftN.getNodeType() == NodeType.COMPARATOR && rightN.getNodeType() == NodeType.COMPARATOR) {
+				TableInfo infoLeft = (TableInfo) leftN.getState();
+				TableInfo infoRight = (TableInfo) rightN.getState();
+				if(infoLeft == null && infoRight == null) {
+					node.setNodeType(NodeType.CONSTANTS_AND_OR);
+				} else if(infoLeft == null && infoRight != null) {
+					node.setNodeType(NodeType.COLUMN_AND_OR);
+					node.setState(infoRight);
+				} else if(infoRight == null && infoLeft != null) {
+					node.setNodeType(NodeType.COLUMN_AND_OR);
+					node.setState(infoLeft);
+				} else if(infoLeft == infoRight) {
+					node.setNodeType(NodeType.COLUMN_AND_OR);
+					node.setState(infoLeft);
+				} else {
+					//WELL, this one is a join
+					infoLeft.get
+					DboTableMeta leftMeta = infoLeft.getTableMeta();
+					DboTableMeta tableMeta = infoRight.getTableMeta();
+					
+					
+				}
 			}
+			
 			break;
 		case NoSqlLexer.EQ:
 		case NoSqlLexer.NE:
@@ -438,7 +454,8 @@ public class ScannerForQuery {
 		case NoSqlLexer.LT:
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
-			node.setState("comparatorNode");
+			node.setNodeType(NodeType.COMPARATOR);
+
 			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
 			CommonTree leftSide = (CommonTree) expression.getChild(0);
 			CommonTree rightSide = (CommonTree) expression.getChild(1);
@@ -452,6 +469,7 @@ public class ScannerForQuery {
 			//matching since developers can do that BEFORE they run the query anyways in the 
 			//java code.  ie. FIRST, let's find the side with type information
 			
+			//screw it, we deleted that code and force you to have one side be a column for now!!!!
 			if(isAttribute(rightSide)) {
 				expression.setChild(0, rightSide);
 				expression.setChild(1, leftSide);
@@ -470,10 +488,27 @@ public class ScannerForQuery {
 			TypeInfo typeInfo = processSide(metaQuery, left, wiring, null);
 			processSide(metaQuery, right, wiring, typeInfo);
 			
+			Object state = left.getState();
+			if(state instanceof StateAttribute) {
+				StateAttribute st = (StateAttribute) state;
+				TableInfo tableInfo = st.getTableInfo();
+				node.setState(tableInfo);
+			}
+			
 			break;
 		default:
 			break;
 		}
+	}
+
+	private static <T> ExpressionNode processSide(ExpressionNode node,
+			MetaQuery<T> metaQuery, InfoForWiring wiring,
+			List<CommonTree> children, int i, ChildSide side) {
+		CommonTree child = children.get(i);
+		ExpressionNode childNode = new ExpressionNode(child);
+		node.setChild(side, childNode);
+		compileExpression(childNode, metaQuery, wiring);
+		return childNode;
 	}
 
 	
