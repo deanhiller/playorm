@@ -217,7 +217,7 @@ public class ScannerForQuery {
 		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
 		DboTableMeta fkTableMeta = toOne.getFkToColumnFamily();
 
-		TableInfo fkInfo = new TableInfo(fkTableMeta, JoinType.INNER);
+		TableInfo fkInfo = new TableInfo(newAlias, fkTableMeta, JoinType.INNER);
 		tableInfo.putJoinTable(column, fkInfo);
 		wiring.putAliasTable(newAlias, fkInfo);
 	}
@@ -310,7 +310,7 @@ public class ScannerForQuery {
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Query="+metaQuery+" failed to parse.  entity="+tableName+" cannot be found");
 			
-		TableInfo info = new TableInfo(metaClass, JoinType.NONE);
+		TableInfo info = new TableInfo(null, metaClass, JoinType.NONE);
 		if(wiring.getFirstTable() == null)
 			wiring.setFirstTable(info);
 		
@@ -322,8 +322,9 @@ public class ScannerForQuery {
 			CommonTree aliasNode = (CommonTree) tableNode.getChildren().get(0);
 			String alias = aliasNode.getText();
 			wiring.putAliasTable(alias, info);
+			info.setAlias(alias);
 		}
-		
+
 		//set the very first table as the target table
 		if(metaQuery.getTargetTable() != null)
 			throw new RuntimeException("Two tables are not supported at this time.  query="+metaQuery);
