@@ -12,6 +12,16 @@ public class IndexColumn {
 
 	public IndexColumn() {}
 	
+	public IndexColumn copy() {
+		IndexColumn c = new IndexColumn();
+		c.indexedValue = indexedValue;
+		c.primaryKey = primaryKey;
+		c.timestamp = timestamp;
+		c.value = value;
+		c.columnName = columnName;
+		return c;
+	}
+	
 	public Long getTimestamp() {
 		return timestamp;
 	}

@@ -4,12 +4,12 @@ import java.util.Iterator;
 
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
-public class IterProxy<T> implements Iterable<byte[]> {
+public class IterableKey<T> implements Iterable<byte[]> {
 
 	private MetaClass<T> meta;
 	private Iterable<? extends Object> keys;
 
-	public IterProxy(MetaClass<T> meta, Iterable<? extends Object> keys) {
+	public IterableKey(MetaClass<T> meta, Iterable<? extends Object> keys) {
 		this.meta = meta;
 		this.keys = keys;
 	}

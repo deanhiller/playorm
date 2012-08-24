@@ -96,7 +96,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(meta == null)
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
 		DboColumnMeta idMeta = meta.getIdColumnMeta();
-		Iterable<byte[]> noSqlKeys = new TypedIterProxy<T>(idMeta, keys);
+		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<T>(idMeta, keys);
 		return findAllImpl2(meta, keys, noSqlKeys, null);
 	}
 
@@ -135,7 +135,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
 		
 		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
-		Iterable<byte[]> indexIterable = new IndexIterable(iter);
+		Iterable<byte[]> indexIterable = new IterableIndex(iter);
 
 		DboTableMeta meta = metaQuery.getTargetTable();
 		Iterable results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());

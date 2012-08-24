@@ -6,12 +6,12 @@ import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 
-public class SpiIterProxy implements Iterable<IndexColumnInfo> {
+public class IterableSimpleTranslator implements Iterable<IndexColumnInfo> {
 
 	private Iterable<IndexColumn> scan;
 	private DboColumnMeta info;
 
-	public SpiIterProxy(DboColumnMeta info, Iterable<IndexColumn> scan) {
+	public IterableSimpleTranslator(DboColumnMeta info, Iterable<IndexColumn> scan) {
 		this.info = info;
 		this.scan = scan;
 	}

@@ -92,7 +92,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		if(meta == null)
 			throw new IllegalArgumentException("Class type="+entityType.getName()+" was not found, please check that you scanned the right package and look at the logs to see if this class was scanned");
 
-		Iterable<byte[]> iter = new IterProxy<T>(meta, keys);
+		Iterable<byte[]> iter = new IterableKey<T>(meta, keys);
 		
 		//we pass in null for batch size such that we do infinite size or basically all keys passed into this method in one
 		//shot
@@ -103,7 +103,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		return new IterRowProxy<T>(meta, noSqlKeys, session, query, batchSize);
+		return new IterableRow<T>(meta, noSqlKeys, session, query, batchSize);
 	}
 
 	@SuppressWarnings("unchecked")

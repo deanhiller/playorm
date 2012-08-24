@@ -88,9 +88,27 @@ public class TestOneToMany {
 		deleteActivity(mgr1, acc1, "dean");
 		deleteActivity(mgr2, acc2, "werwer");
 
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
-		SomeEntity theAccount = mgr.find(SomeEntity.class, entity.getId());
+		SomeEntity theAccount = mgr3.find(SomeEntity.class, entity.getId());
 		Assert.assertEquals(0, theAccount.getActivities().size());
+	}
+	
+	@Test
+	public void testCachingOut() {
+		SomeEntity entity = new SomeEntity();
+		entity.setName("asdf");
+		mgr.put(entity);
+		mgr.flush();
+		
+		SomeEntity newEntity = mgr.find(SomeEntity.class, entity.getId());
+		Assert.assertEquals(0, newEntity.getActivities().size());
+		
+		addAndSaveActivity1(mgr, entity, "dean");
+		
+		SomeEntity second = mgr.find(SomeEntity.class, entity.getId());
+		Assert.assertEquals(1,  second.getActivities().size());
+		
 	}
 	
 	private void deleteActivity(NoSqlEntityManager mgr1, SomeEntity acc1, String name) {
@@ -115,8 +133,9 @@ public class TestOneToMany {
 		addAndSaveActivity1(mgr1, acc1, "dean");
 		addAndSaveActivity1(mgr2, acc2, "xxxx");
 
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
-		SomeEntity theAccount = mgr.find(SomeEntity.class, entity.getId());
+		SomeEntity theAccount = mgr3.find(SomeEntity.class, entity.getId());
 		Assert.assertEquals(2, theAccount.getActivities().size());
 	}
 
@@ -178,8 +197,9 @@ public class TestOneToMany {
 		addAndSaveActivity1(mgr1, acc1, "dean");
 		addAndSaveActivity1(mgr2, acc2, "xxxx");
 
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
-		Account theAccount = mgr.find(Account.class, acc.getId());
+		Account theAccount = mgr3.find(Account.class, acc.getId());
 		Assert.assertEquals(2, theAccount.getActivities().size());
 	}
 	
@@ -228,8 +248,9 @@ public class TestOneToMany {
 		removeActivity1(mgr1, acc1, act1);
 		removeActivity1(mgr2, acc2, act2);
 
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
-		Account theAccount = mgr.find(Account.class, acc.getId());
+		Account theAccount = mgr3.find(Account.class, acc.getId());
 		Assert.assertEquals(0, theAccount.getActivities().size());
 	}
 	

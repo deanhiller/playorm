@@ -10,6 +10,10 @@ public class RowHolder<T> {
 		this.value = v;
 	}
 
+	public RowHolder(byte[] key) {
+		this.key = key;
+	}
+
 	public T getValue() {
 		return value;
 	}

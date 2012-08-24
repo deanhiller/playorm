@@ -1,6 +1,7 @@
 package com.alvazan.orm.api.spi9.db;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.alvazan.orm.layer9z.spi.db.inmemory.RowImpl;
 import com.google.inject.ImplementedBy;
@@ -25,5 +26,11 @@ public interface Row {
 	Collection<IndexColumn> columnSlice(Key from, Key to);
 
 	Collection<Column> columnByPrefix(byte[] prefix);
+
+	Row deepCopy();
+
+	void addColumns(List<Column> columns);
+
+	void removeColumns(Collection<byte[]> columnNames);
 
 }

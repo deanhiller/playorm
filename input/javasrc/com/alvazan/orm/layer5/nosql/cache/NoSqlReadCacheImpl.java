@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi5.NoSqlSession;
@@ -23,10 +24,24 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
 	private Map<TheKey, RowHolder<Row>> cache = new HashMap<TheKey, RowHolder<Row>>();
-			
+	@Inject
+	private Provider<Row> rowProvider;
+	
 	@Override
 	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
+		if(currentRow == null) {
+			currentRow = new RowHolder<Row>(rowKey);
+		}
+
+		Row value = currentRow.getValue();
+		if(value == null)
+			value = rowProvider.get();
+		
+		value.setKey(rowKey);
+		value.addColumns(columns);
+		cacheRow(colFamily, rowKey, value);
 	}
 
 	@Override
@@ -49,6 +64,17 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	@Override
 	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
+		
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
+		if(currentRow == null) {
+			return;
+		}
+		Row value = currentRow.getValue();
+		if(value == null) {
+			return;
+		}
+		
+		value.removeColumns(columnNames);
 	}
 
 	@Override

@@ -20,6 +20,7 @@
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 
 ### Features soon to be added
+* WAY better support for @Embedded and putting Map<String, Type> in your entities for wide row support
 * TONS of documentation is in the works due out 9/16/12
 * Joins
 * More query sytax for ad-hoc tool 

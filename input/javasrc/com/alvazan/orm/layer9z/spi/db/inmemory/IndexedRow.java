@@ -58,7 +58,13 @@ public class IndexedRow extends RowImpl {
 			
 			results.add(c);
 		}
-		return results;
+		
+		List<IndexColumn> cols = new ArrayList<IndexColumn>();
+		for(IndexColumn c2 : results) {
+			cols.add(c2.copy());
+		}
+		
+		return cols;
 	}
 
 	private boolean isMatch(Key from, IndexColumn c) {

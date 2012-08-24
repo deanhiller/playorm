@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
 
-public class IndexIterable implements Iterable<byte[]> {
+public class IterableIndex implements Iterable<byte[]> {
 
 	private Iterable<IndexColumnInfo> iterable;
 
-	public IndexIterable(Iterable<IndexColumnInfo> iter) {
+	public IterableIndex(Iterable<IndexColumnInfo> iter) {
 		this.iterable = iter;
 	}
 

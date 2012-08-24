@@ -2,12 +2,12 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
-public class CountingIterable implements Iterable<byte[]> {
+public class IterableCounting implements Iterable<byte[]> {
 
 	private Iterator<byte[]> keysIterator;
 	private boolean alreadyRun = false;
 	private int batchSize;
-	public CountingIterable(Iterator<byte[]> keysIterator, int batchSize2) {
+	public IterableCounting(Iterator<byte[]> keysIterator, int batchSize2) {
 		this.keysIterator = keysIterator;
 		this.batchSize = batchSize2;
 	}

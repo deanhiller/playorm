@@ -34,5 +34,13 @@ public class Column {
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
 	}
+
+	public Column copy() {
+		Column c = new Column();
+		c.name = name;
+		c.timestamp = timestamp;
+		c.value = value;
+		return c;
+	}
 	
 }
