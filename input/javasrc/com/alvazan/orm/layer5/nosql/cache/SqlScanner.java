@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -40,10 +41,15 @@ public class SqlScanner {
 	
 	public ExpressionNode compileSql(String query, InfoForWiring wiring, MetaFacade facade) {
 		CommonTree theTree = parseTree(query);
-		walkTheTree(theTree, wiring);
+		walkTheTree(theTree, wiring, facade);
 		validateNoPartitionsMissed(theTree, wiring);
 		ExpressionNode node = wiring.getAstTree();
-		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, wiring.getAttributeUsedCount(), query);
+		Map<String, Integer> attrs = wiring.getAttributeUsedCount();
+		
+		
+		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, attrs, query);
+		
+		
 		return newTree;
 	}
 	
@@ -80,19 +86,19 @@ public class SqlScanner {
     }
 	
 	@SuppressWarnings("unchecked")
-	private <T> void walkTheTree(CommonTree tree, InfoForWiring wiring) {
+	private <T> void walkTheTree(CommonTree tree, InfoForWiring wiring, MetaFacade facade) {
 		int type = tree.getType();
 		switch (type) {
 		//The tree should come in with this order OR we are in BIG TROUBLE as we need the information
 		//in the from clause first to get alias and what table the alias maps too
 		case NoSqlLexer.FROM_CLAUSE:
-			compileFromClause(tree, wiring);
+			compileFromClause(tree, wiring, facade);
 			break;
 		case NoSqlLexer.JOIN_CLAUSE:
 			compileJoinClause(tree, wiring);
 			break;
 		case NoSqlLexer.PARTITIONS_CLAUSE:
-			compilePartitionsClause(tree, wiring);
+			compilePartitionsClause(tree, wiring, facade);
 			break;
 		case NoSqlLexer.SELECT_CLAUSE:
 			compileSelectClause(tree, wiring);
@@ -102,14 +108,14 @@ public class SqlScanner {
 			//this line of code here....
 			CommonTree expression = (CommonTree)tree.getChildren().get(0);
 			ExpressionNode node = new ExpressionNode(expression);
-			compileExpression(node, wiring);
+			compileExpression(node, wiring, facade);
 			wiring.setAstTree(node);
 			break;
 
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
-				walkTheTree(child, wiring);
+				walkTheTree(child, wiring, facade);
 			}
 			break;
 		default:
@@ -158,14 +164,14 @@ public class SqlScanner {
 	
 	@SuppressWarnings("unchecked")
 	private <T> void compilePartitionsClause(CommonTree tree,
-			InfoForWiring wiring) {
+			InfoForWiring wiring, MetaFacade facade) {
 		List<CommonTree> childrenList = tree.getChildren();
 		for(CommonTree child : childrenList) {
-			compileSinglePartition(wiring, child);
+			compileSinglePartition(wiring, child, facade);
 		}
 	}
 
-	private void compileSinglePartition(InfoForWiring wiring, CommonTree child) {
+	private void compileSinglePartition(InfoForWiring wiring, CommonTree child, MetaFacade facade) {
 		String alias = child.getText();
 		TableInfo info = wiring.getInfoFromAlias(alias);
 		if(info == null)
@@ -196,7 +202,7 @@ public class SqlScanner {
 		CommonTree partitionIdNode = (CommonTree) child.getChild(0);
 		TypeInfo typeInfo = new TypeInfo(partitionColumn);
 		ExpressionNode node = new ExpressionNode(partitionIdNode);
-		processSide(node, wiring, typeInfo);
+		processSide(node, wiring, typeInfo, facade);
 
 		PartitionMeta p = new PartitionMeta(partitionColumn, node);
 		info.setPartition(p);
@@ -212,7 +218,7 @@ public class SqlScanner {
 
 	@SuppressWarnings({ "unchecked" })
 	private <T> void compileFromClause(CommonTree tree,
-			InfoForWiring wiring) {
+			InfoForWiring wiring, MetaFacade facade) {
 		List<CommonTree> childrenList = tree.getChildren();
 		if (childrenList == null)
 			return;
@@ -221,7 +227,7 @@ public class SqlScanner {
 			int type = child.getType();
 			switch (type) {
 			case NoSqlLexer.TABLE_NAME:
-				loadTableIntoWiringInfo(wiring, child);
+				loadTableIntoWiringInfo(wiring, child, facade);
 				break;
 			default:
 				break;
@@ -229,17 +235,17 @@ public class SqlScanner {
 		}
 	}
 
-	private <T> void loadTableIntoWiringInfo(InfoForWiring wiring, CommonTree tableNode) {
+	private <T> void loadTableIntoWiringInfo(InfoForWiring wiring, CommonTree tableNode, MetaFacade facade) {
 		// What should we add to metaQuery here
 		// AND later when we do joins, we need to tell the factory
 		// here as well
 		String tableName = tableNode.getText();
 		String targetTable = wiring.getTargetTable();
-		DboTableMeta metaClass = findTable(wiring, tableName);
+		DboTableMeta metaClass = findTable(facade, tableName);
 		
 		//NOTE: special case for ORM layer only NOT for ad-hoc query!!!
 		if(tableName.equals("TABLE") && targetTable != null) {
-			metaClass = findTable(wiring, targetTable);
+			metaClass = findTable(facade, targetTable);
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Meta data(or Entity)="+tableName+" cannot be found");
 			
@@ -259,16 +265,14 @@ public class SqlScanner {
 		}
 
 		//set the very first table as the target table
-		if(wiring.getTargetTable() != null)
+		if(wiring.getMetaQueryTargetTable() != null)
 			throw new RuntimeException("Two tables are not supported at this time.");
 		
 		wiring.setMetaQueryTargetTable(metaClass);
 	}
 
-	private DboTableMeta findTable(InfoForWiring wiring, String tableName) {
-		DboTableMeta metaClass = metaInfo.getMeta(tableName);
-		if(metaClass == null && wiring.getMgr() != null)
-			metaClass = wiring.getMgr().find(DboTableMeta.class, tableName);
+	private DboTableMeta findTable(MetaFacade facade, String tableName) {
+		DboTableMeta metaClass = facade.getColumnFamily(tableName);
 		return metaClass;
 	}
 	
@@ -366,17 +370,17 @@ public class SqlScanner {
 //		}
 	}
 	@SuppressWarnings("unchecked")
-	private static <T> void compileExpression(ExpressionNode node, InfoForWiring wiring) {
+	private static <T> void compileExpression(ExpressionNode node, InfoForWiring wiring, MetaFacade facade) {
 		CommonTree expression = node.getASTNode();
 		int type = expression.getType();
 		log.debug("where type:" + expression.getType());
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
-			node.setState("ANDORnode");
+			node.setState("ANDORnode", null);
 			List<CommonTree> children = expression.getChildren();
-			ExpressionNode leftN = processSide(node, wiring, children, 0, ChildSide.LEFT);
-			ExpressionNode rightN =processSide(node, wiring, children, 1, ChildSide.RIGHT);
+			ExpressionNode leftN = processSide(node, wiring, children, 0, ChildSide.LEFT, facade);
+			ExpressionNode rightN =processSide(node, wiring, children, 1, ChildSide.RIGHT, facade);
 			
 			break;
 		case NoSqlLexer.EQ:
@@ -413,17 +417,17 @@ public class SqlScanner {
 			
 			ExpressionNode left  = new ExpressionNode(leftSide);
 			ExpressionNode right = new ExpressionNode(rightSide);
-			node.setLeftChild(left);
-			node.setRightChild(right);
+			node.setChild(ChildSide.LEFT, left);
+			node.setChild(ChildSide.RIGHT, right);
 			
-			TypeInfo typeInfo = processSide(left, wiring, null);
-			processSide(right, wiring, typeInfo);
+			TypeInfo typeInfo = processSide(left, wiring, null, facade);
+			processSide(right, wiring, typeInfo, facade);
 			
 			Object state = left.getState();
 			if(state instanceof StateAttribute) {
 				StateAttribute st = (StateAttribute) state;
 				TableInfo tableInfo = st.getTableInfo();
-				node.setState(tableInfo);
+				node.setState(tableInfo, null);
 			}
 			
 			break;
@@ -433,11 +437,11 @@ public class SqlScanner {
 	}
 
 	private static <T> ExpressionNode processSide(ExpressionNode node, InfoForWiring wiring,
-			List<CommonTree> children, int i, ChildSide side) {
+			List<CommonTree> children, int i, ChildSide side, MetaFacade facade) {
 		CommonTree child = children.get(i);
 		ExpressionNode childNode = new ExpressionNode(child);
 		node.setChild(side, childNode);
-		compileExpression(childNode, wiring);
+		compileExpression(childNode, wiring, facade);
 		return childNode;
 	}
 
@@ -455,9 +459,9 @@ public class SqlScanner {
 //		return false;
 //	}
 
-	private static TypeInfo processSide(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo) {
+	private static TypeInfo processSide(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo, MetaFacade facade) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME) {
-			return processColumnName(node, wiring, typeInfo);
+			return processColumnName(node, wiring, typeInfo, facade);
 		} else if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
 			return processParam(node, wiring, typeInfo);
 		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
@@ -474,17 +478,17 @@ public class SqlScanner {
 		if(node.getType() == NoSqlLexer.DECIMAL){
 			ourType = StorageTypeEnum.DECIMAL;
 			BigDecimal dec = new BigDecimal(constant);
-			node.setState(dec); 
+			node.setState(dec, constant); 
 		}
 		else if(node.getType() == NoSqlLexer.STR_VAL){
 			String withoutQuotes = constant.substring(1, constant.length()-1);		
 			ourType = StorageTypeEnum.STRING;
-			node.setState(withoutQuotes);
+			node.setState(withoutQuotes, constant);
 		}
 		else if(node.getType() == NoSqlLexer.INT_VAL){
 			ourType = StorageTypeEnum.INTEGER;
 			BigInteger bigInt = new BigInteger(constant);
-			node.setState(bigInt);
+			node.setState(bigInt, constant);
 		}
 			
 		else 
@@ -514,7 +518,7 @@ public class SqlScanner {
 	
 
 	private static TypeInfo processColumnName( 
-			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType) {
+			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType, MetaFacade facade) {
 		TableInfo tableInfo;
 		
 		CommonTree colNameNode = attributeNode2.getASTNode();
@@ -537,7 +541,7 @@ public class SqlScanner {
 		
 		DboTableMeta metaClass = tableInfo.getTableMeta();
 		//At this point, we have looked up the metaClass associated with the alias
-		DboColumnMeta colMeta = metaClass.getColumnMeta(columnName);
+		DboColumnMeta colMeta = facade.getColumnMeta(metaClass, columnName);
 		if (colMeta == null) {
 			//okay, there is no column found, but maybe the column name for the id matches(id is a special case)
 			colMeta = metaClass.getIdColumnMeta();
@@ -548,9 +552,9 @@ public class SqlScanner {
 		if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @Index annotation on the field in the entity");
 		
-		StateAttribute attr = new StateAttribute(tableInfo, colMeta); 
-		attributeNode2.setState(attr);
-		wiring.incrementAttributesCount(metaClass.getColumnFamily()+"-"+colMeta.getColumnName());
+		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
+		attributeNode2.setState(attr, textInSql);
+		wiring.incrementAttributesCount(textInSql);
 		
 		TypeInfo typeInfo = new TypeInfo(colMeta);
 		
@@ -560,7 +564,7 @@ public class SqlScanner {
 		if(otherSideType.getConstantType() != null) {
 			validateTypes(wiring, otherSideType.getConstantType(), typeInfo);
 		} else {
-			Class classType = otherSideType.getColumnInfo().getClassType();
+			Class<?> classType = otherSideType.getColumnInfo().getClassType();
 			if(!classType.equals(colMeta.getClassType()))
 				throw new IllegalArgumentException("Types are not the same for query="+wiring.getQuery()+" types="+classType+" and "+colMeta.getClassType());
 		}
@@ -568,14 +572,13 @@ public class SqlScanner {
 		return null;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static TypeInfo processParam(ExpressionNode parameterNode2, InfoForWiring wiring, TypeInfo typeInfo) {
 		CommonTree parameterNode = parameterNode2.getASTNode();
 		String parameter = parameterNode.getText();
 		
 		wiring.getParameterFieldMap().put(parameter, typeInfo);
 		
-		parameterNode2.setState(parameter);
+		parameterNode2.setState(parameter, ":"+parameter);
 		return null;
 	}	
 }

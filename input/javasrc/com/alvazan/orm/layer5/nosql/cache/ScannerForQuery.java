@@ -3,9 +3,6 @@ package com.alvazan.orm.layer5.nosql.cache;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
@@ -17,8 +14,6 @@ import com.alvazan.orm.parser.antlr.ParseQueryException;
 @SuppressWarnings("rawtypes")
 public class ScannerForQuery {
 
-	private static final Logger log = LoggerFactory
-			.getLogger(ScannerForQuery.class);
 	@Inject
 	private Provider<SpiMetaQueryImpl> factory;
 	@Inject
@@ -54,8 +49,8 @@ public class ScannerForQuery {
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
 		visitor1.initialize(query, spiMetaQuery);
 
-		InfoForWiring wiring = new InfoForWiring(query, targetTable, (NoSqlEntityManager) mgr);
-		MetaFacade facade = new MetaFacadeImpl((NoSqlEntityManager)mgr);
+		InfoForWiring wiring = new InfoForWiring(query, targetTable);
+		MetaFacade facade = new MetaFacadeImpl((NoSqlEntityManager)mgr, metaInfo);
 		
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		

@@ -34,10 +34,10 @@ public class TestJoins {
 		other.clearDatabase(true);
 	}
 	
-	//@Test
+	@Test
 	public void testEmpty() {}
 	
-	@Test
+	//@Test
 	public void testJoin() {
 		putEntities();
 		

@@ -14,6 +14,7 @@ public class ExpressionNode implements ParsedNode {
 	private CommonTree commonNode;
 	
 	private Object state;
+	private String textInSql;
 	private ExpressionNode parent;
 	/**
 	 * In the case where one has a query of where x.size > 5 and x.size < 10, and if this is the x.size > 5 node, we add the x.size < 10 node
@@ -50,39 +51,31 @@ public class ExpressionNode implements ParsedNode {
 		this.parent = p;
 	}
 	
-	public void setChild(ChildSide side, ExpressionNode child) {
+	public void setChild(ChildSide side, ParsedNode child2) {
+		ExpressionNode child = (ExpressionNode) child2;
 		if(side == ChildSide.LEFT) {
 			leftChild = child;
-			this.commonNode.setChild(0, child.commonNode);
+			this.commonNode.setChild(0, leftChild.commonNode);
 		} else {
 			rightChild = child;
-			this.commonNode.setChild(1, child.commonNode);
+			this.commonNode.setChild(1, rightChild.commonNode);
 		}
 		child.setParent(this);
 	}
-	public void setLeftChild(ExpressionNode childNode) {
-		leftChild = childNode;
-		leftChild.setParent(this);
+
+	public void setState(Object state, String textInSql) {
+		this.state = state;
+		this.textInSql = textInSql;
+	}
+
+	@Override
+	public String getAliasAndColumn() {
+		if(!(state instanceof StateAttribute))
+			return null;
+		StateAttribute attr = (StateAttribute) state;
+		return attr.getTextInSql();
 	}
 	
-	public void setRightChild(ExpressionNode child) {
-		rightChild = child;
-		rightChild.setParent(this);
-		this.commonNode.setChild(1, child.commonNode);
-	}
-
-	public void setState(Object state) {
-		this.state = state;
-	}
-
-	public ExpressionNode getLeftChild() {
-		return leftChild;
-	}
-
-	public ExpressionNode getRightChild() {
-		return rightChild;
-	}
-
 	public Object getState() {
 		return state;
 	}
@@ -92,9 +85,9 @@ public class ExpressionNode implements ParsedNode {
 		if(greaterThanExpression != null && !isCalledFromFirstIfBlock) {
 			//This one is a bit tough, as we can't toString on ONE of the two greaterThanExpression or lessThanExpression as that would be OURSELF and
 			//we woudl infinitely recurse into the getExpressionAsString function :(
-			String newSign = "<";
+			String newSign = " < ";
 			if(greaterThanExpression.getType() == NoSqlLexer.GE)
-				newSign = "<=";
+				newSign = " <= ";
 			
 			String lessThanExpr = "";
 			if(lessThanExpression == this) {
@@ -104,7 +97,7 @@ public class ExpressionNode implements ParsedNode {
 				lessThanExpr = lessThanExpression+"";
 			}
 			
-			ExpressionNode rightChild = greaterThanExpression.getRightChild();
+			ExpressionNode rightChild = greaterThanExpression.getChild(ChildSide.RIGHT);
 			String line = rightChild+newSign+lessThanExpr;
 			return line;
 		} else if(leftChild != null && rightChild != null) {
@@ -113,7 +106,8 @@ public class ExpressionNode implements ParsedNode {
 				return "("+msg+")";
 			return msg;
 		}
-		return this.commonNode+"["+commonNode.getType()+"]";
+		
+		return textInSql;
 	}
 
 	@Override
@@ -121,22 +115,15 @@ public class ExpressionNode implements ParsedNode {
 		return getExpressionAsString(false);
 	}
 
-	public boolean isRightChildNode() {
+	@Override
+	public boolean isChildOnSide(ChildSide side) {
 		if(getParent() == null)
 			return false;
-		else if(getParent().getRightChild() == this)
+		else if(getParent().getChild(side) == this)
 			return true;
 		return false;
 	}
-
-	public boolean isLeftChildNode() {
-		if(getParent() == null)
-			return false;
-		else if(getParent().getLeftChild() == this)
-			return true;
-		return false;
-	}
-
+	
 	public ExpressionNode getParent() {
 		return parent;
 	}
@@ -174,5 +161,7 @@ public class ExpressionNode implements ParsedNode {
 	public ExpressionNode getLessThan() {
 		return lessThanExpression;
 	}
+
+
 
 }
