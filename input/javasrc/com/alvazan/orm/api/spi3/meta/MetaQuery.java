@@ -35,11 +35,7 @@ public class MetaQuery<T> {
 	}
 
 	public TypeInfo getMetaFieldByParameter(String parameter){
-		return getParameterFieldMap().get(parameter);
-	}
-
-	public Map<String,TypeInfo> getParameterFieldMap() {
-		return parameterFieldMap;
+		return parameterFieldMap.get(parameter);
 	}
 
 	public SpiQueryAdapter createSpiMetaQuery(NoSqlSession session) {
@@ -64,6 +60,10 @@ public class MetaQuery<T> {
 
 	public String getQuery() {
 		return query;
+	}
+
+	public void setParameterFieldMap(Map<String, TypeInfo> parameterFieldMap2) {
+		this.parameterFieldMap = parameterFieldMap2;
 	}
 	
 }

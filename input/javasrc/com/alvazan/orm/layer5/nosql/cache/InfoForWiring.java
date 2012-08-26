@@ -5,11 +5,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.spi3.meta.TypeInfo;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.TableInfo;
 
 public class InfoForWiring {
 
+	private Map<String,TypeInfo> parameterFieldMap = new HashMap<String, TypeInfo>();
 	private TableInfo noAliasTable;
 	private Map<String, TableInfo> aliasToMeta = new HashMap<String, TableInfo>();
 	private boolean selectStarDefined;
@@ -19,6 +22,7 @@ public class InfoForWiring {
 	private TableInfo firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private NoSqlEntityManager mgr;
+	private DboTableMeta metaQueryTargetTable;
 	
 	public InfoForWiring(String query, String targetTable, NoSqlEntityManager mgr) {
 		this.query = query;
@@ -96,4 +100,15 @@ public class InfoForWiring {
 		return this.aliasToMeta.keySet();
 	}
 
+	public void setMetaQueryTargetTable(DboTableMeta metaClass) {
+		this.metaQueryTargetTable= metaClass;
+	}
+
+	public DboTableMeta getMetaQueryTargetTable() {
+		return metaQueryTargetTable;
+	}
+
+	public Map<String,TypeInfo> getParameterFieldMap() {
+		return this.parameterFieldMap;
+	}
 }

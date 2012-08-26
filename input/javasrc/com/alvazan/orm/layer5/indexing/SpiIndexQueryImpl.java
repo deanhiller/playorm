@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.orm.layer5.nosql.cache.PartitionMeta;
+import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
