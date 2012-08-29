@@ -196,8 +196,14 @@ public class ColumnFamilyHelper {
 	}
 	
 	public Info lookupOrCreate2(String colFamily, NoSqlEntityManager mgr) {
-		String cf = colFamily.toLowerCase();
-		if(existingColumnFamilies2.get(cf) == null) {
+		//There is a few possibilities here
+		//1. Another server already created the CF while we were online in which case we just need to load it into memory
+		//2. No one has created the CF yet
+		
+		//fetch will load from cassandra if we don't have it in-memory
+		Info info = fetchColumnFamilyInfo(colFamily);
+		if(info == null) {
+			//no one has created the CF yet so we need to create it.
 			createColFamily(colFamily, mgr);
 		}
 		
