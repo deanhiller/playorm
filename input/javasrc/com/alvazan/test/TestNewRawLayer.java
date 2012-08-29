@@ -97,6 +97,12 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
+		//Testing a negative value in the SQL here
+		Iterable<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
+		KeyValue<TypedRow> keyValue2 = rows2.iterator().next();
+		TypedRow theRow2 = keyValue2.getValue();
+		Assert.assertEquals(row.getRowKey(), theRow2.getRowKey());
+		Assert.assertEquals(row.getColumn("temp").getValue(), theRow2.getColumn("temp").getValue());
 	}
 	
 	private TypedRow<String> createUser(String key, String name, String lastname) {

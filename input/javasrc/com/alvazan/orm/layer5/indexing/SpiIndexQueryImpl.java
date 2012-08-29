@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
 import com.alvazan.orm.layer5.nosql.cache.PartitionMeta;
+import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
@@ -114,13 +115,13 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 	
 	private Iterable<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
-		StateAttribute attr = (StateAttribute) root.getLeftChild().getState();
+		StateAttribute attr = (StateAttribute) root.getChild(ChildSide.LEFT).getState();
 		DboColumnMeta info = attr.getColumnInfo();
 		ScanInfo scanInfo = createScanInfo(attr.getTableInfo(), info);
 		
 		Iterable<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
-			byte[] data = retrieveValue(info, root.getRightChild());
+			byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
 			Key key = new Key(data, true);
 			scan = session.scanIndex(scanInfo, key, key, batchSize);
 		} else if(root.getType() == NoSqlLexer.GT
@@ -152,7 +153,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private Key createRightKey(ExpressionNode node, DboColumnMeta info) {
-		byte[] data = retrieveValue(info, node.getRightChild());
+		byte[] data = retrieveValue(info, node.getChild(ChildSide.RIGHT));
 		if(node.getType() == NoSqlLexer.LT)
 			return new Key(data, false);
 		else if(node.getType() == NoSqlLexer.LE)
@@ -162,7 +163,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private Key createLeftKey(ExpressionNode node, DboColumnMeta info) {
-		byte[] data = retrieveValue(info, node.getRightChild());
+		byte[] data = retrieveValue(info, node.getChild(ChildSide.RIGHT));
 		if(node.getType() == NoSqlLexer.GT)
 			return new Key(data, false);
 		else if(node.getType() == NoSqlLexer.GE)

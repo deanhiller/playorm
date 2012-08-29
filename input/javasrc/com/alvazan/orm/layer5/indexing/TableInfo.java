@@ -8,12 +8,14 @@ import com.alvazan.orm.layer5.nosql.cache.PartitionMeta;
 
 public class TableInfo {
 
+	private String alias;
 	private JoinType joinType;
 	private DboTableMeta tableMeta;
 	private Map<String, TableInfo> joinsByColumn = new HashMap<String, TableInfo>();
 	private PartitionMeta partition;
 	
-	public TableInfo(DboTableMeta tableMeta, JoinType joinType) {
+	public TableInfo(String alias, DboTableMeta tableMeta, JoinType joinType) {
+		this.alias = alias;
 		this.tableMeta = tableMeta;
 		this.joinType = joinType;
 	}
@@ -34,5 +36,11 @@ public class TableInfo {
 	}
 	public PartitionMeta getPartition() {
 		return partition;
+	}
+	public String getAlias() {
+		return alias;
+	}
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 }

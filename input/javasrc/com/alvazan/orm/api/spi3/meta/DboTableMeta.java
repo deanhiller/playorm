@@ -99,7 +99,7 @@ public class DboTableMeta {
 		this.idColumn = idMeta;
 	}
 	
-	void addColumnMeta(DboColumnMeta fieldDbo) {
+	public void addColumnMeta(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
 	

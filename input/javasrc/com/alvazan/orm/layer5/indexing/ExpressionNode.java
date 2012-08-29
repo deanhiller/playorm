@@ -2,15 +2,19 @@ package com.alvazan.orm.layer5.indexing;
 
 import org.antlr.runtime.tree.CommonTree;
 
+import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
+import com.alvazan.orm.parser.antlr.ParsedNode;
 
-public class ExpressionNode {
+public class ExpressionNode implements ParsedNode {
 
+	private NodeType nodeType;
 	private ExpressionNode leftChild;
 	private ExpressionNode rightChild;
 	private CommonTree commonNode;
 	
 	private Object state;
+	private String textInSql;
 	private ExpressionNode parent;
 	/**
 	 * In the case where one has a query of where x.size > 5 and x.size < 10, and if this is the x.size > 5 node, we add the x.size < 10 node
@@ -27,6 +31,14 @@ public class ExpressionNode {
 		return greaterThanExpression != null;
 	}
 
+	public NodeType getNodeType() {
+		return nodeType;
+	}
+
+	public void setNodeType(NodeType nodeType) {
+		this.nodeType = nodeType;
+	}
+
 	public int getType() {
 		return commonNode.getType();		
 	}
@@ -39,29 +51,31 @@ public class ExpressionNode {
 		this.parent = p;
 	}
 	
-	public void setLeftChild(ExpressionNode childNode) {
-		leftChild = childNode;
-		leftChild.setParent(this);
+	public void setChild(ChildSide side, ParsedNode child2) {
+		ExpressionNode child = (ExpressionNode) child2;
+		if(side == ChildSide.LEFT) {
+			leftChild = child;
+			this.commonNode.setChild(0, leftChild.commonNode);
+		} else {
+			rightChild = child;
+			this.commonNode.setChild(1, rightChild.commonNode);
+		}
+		child.setParent(this);
+	}
+
+	public void setState(Object state, String textInSql) {
+		this.state = state;
+		this.textInSql = textInSql;
+	}
+
+	@Override
+	public String getAliasAndColumn() {
+		if(!(state instanceof StateAttribute))
+			return null;
+		StateAttribute attr = (StateAttribute) state;
+		return attr.getTextInSql();
 	}
 	
-	public void setRightChild(ExpressionNode child) {
-		rightChild = child;
-		rightChild.setParent(this);
-		this.commonNode.setChild(1, child.commonNode);
-	}
-
-	public void setState(Object state) {
-		this.state = state;
-	}
-
-	public ExpressionNode getLeftChild() {
-		return leftChild;
-	}
-
-	public ExpressionNode getRightChild() {
-		return rightChild;
-	}
-
 	public Object getState() {
 		return state;
 	}
@@ -71,9 +85,9 @@ public class ExpressionNode {
 		if(greaterThanExpression != null && !isCalledFromFirstIfBlock) {
 			//This one is a bit tough, as we can't toString on ONE of the two greaterThanExpression or lessThanExpression as that would be OURSELF and
 			//we woudl infinitely recurse into the getExpressionAsString function :(
-			String newSign = "<";
+			String newSign = " < ";
 			if(greaterThanExpression.getType() == NoSqlLexer.GE)
-				newSign = "<=";
+				newSign = " <= ";
 			
 			String lessThanExpr = "";
 			if(lessThanExpression == this) {
@@ -83,7 +97,7 @@ public class ExpressionNode {
 				lessThanExpr = lessThanExpression+"";
 			}
 			
-			ExpressionNode rightChild = greaterThanExpression.getRightChild();
+			ExpressionNode rightChild = greaterThanExpression.getChild(ChildSide.RIGHT);
 			String line = rightChild+newSign+lessThanExpr;
 			return line;
 		} else if(leftChild != null && rightChild != null) {
@@ -92,7 +106,8 @@ public class ExpressionNode {
 				return "("+msg+")";
 			return msg;
 		}
-		return this.commonNode+"["+commonNode.getType()+"]";
+		
+		return textInSql;
 	}
 
 	@Override
@@ -100,39 +115,32 @@ public class ExpressionNode {
 		return getExpressionAsString(false);
 	}
 
-	public boolean isRightChildNode() {
+	@Override
+	public boolean isChildOnSide(ChildSide side) {
 		if(getParent() == null)
 			return false;
-		else if(getParent().getRightChild() == this)
+		else if(getParent().getChild(side) == this)
 			return true;
 		return false;
 	}
-
-	public boolean isLeftChildNode() {
-		if(getParent() == null)
-			return false;
-		else if(getParent().getLeftChild() == this)
-			return true;
-		return false;
-	}
-
+	
 	public ExpressionNode getParent() {
 		return parent;
 	}
 
-	public void addExpression(ExpressionNode attrExpNode) {
+	public void addExpression(ParsedNode attrExpNode) {
 		String msg = "this type="+this.getType()+" node type="+attrExpNode.getType();
-		ExpressionNode attributeSideNode = attrExpNode.getLeftChild();
+		ExpressionNode attributeSideNode = (ExpressionNode) attrExpNode.getChild(ChildSide.LEFT);
 		StateAttribute state2 = (StateAttribute) attributeSideNode.getState();
 		if(attrExpNode.getType() == NoSqlLexer.EQ || this.getType() == NoSqlLexer.EQ) {
 			throw new IllegalArgumentException("uhhhmmmm, you are using column="+state2.getColumnInfo().getColumnName()
 					+" twice with 'AND' statement yet one has an = so change to 'OR' or get rid of one. "+ msg);
 		} else if(attrExpNode.getType() == NoSqlLexer.GE || attrExpNode.getType() == NoSqlLexer.GT) {
-			greaterThanExpression = attrExpNode;
+			greaterThanExpression = (ExpressionNode) attrExpNode;
 			lessThanExpression = this;
 		} else if(this.getType() == NoSqlLexer.GE || this.getType() == NoSqlLexer.GT) {
 			greaterThanExpression = this;
-			lessThanExpression = attrExpNode;
+			lessThanExpression = (ExpressionNode) attrExpNode;
 		} else if(this.getType() == NoSqlLexer.LE || this.getType() == NoSqlLexer.LT) {
 			throw new IllegalArgumentException("uhmmmm, you are using column="+state2.getColumnInfo()+" twice(which is fine) but both of them are using greater than, delete one of them. " +msg);
 		} else
@@ -153,5 +161,7 @@ public class ExpressionNode {
 	public ExpressionNode getLessThan() {
 		return lessThanExpression;
 	}
+
+
 
 }

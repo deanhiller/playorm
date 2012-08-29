@@ -141,13 +141,13 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			byte[] from, byte[] to, int batchSize) {
 		long time = 0;
 		if(log.isInfoEnabled()) {
-			log.info("[rawsession] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
+			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
 			time = System.currentTimeMillis();
 		}
 		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize);
 		if(log.isInfoEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("[rawsession] column range scan took="+total+" ms");
+			log.info("[rawlogger] column range scan took="+total+" ms");
 		}
 		return ret;
 	}
@@ -223,7 +223,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		session.clearDatabase();
 		if(log.isInfoEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("[rawsession] clearDatabase took(including spi plugin)="+total+" ms");
+			log.info("[rawlogger] clearDatabase took(including spi plugin)="+total+" ms");
 		}
 	}
 
@@ -262,8 +262,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			long time = System.currentTimeMillis();
 			ret = session.find(colFamily, iterProxy);
 			long total = System.currentTimeMillis() - time;
-			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
-
+			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
+				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size());
+			else if(log.isTraceEnabled())
+				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
 		} else
 			ret = session.find(colFamily, allKeys);
 

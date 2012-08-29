@@ -1,5 +1,7 @@
 package com.alvazan.orm.layer5.indexing;
 
+import com.alvazan.orm.parser.antlr.ChildSide;
+
 public class NodeTuple {
 
 	private ExpressionNode node;

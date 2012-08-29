@@ -29,13 +29,17 @@ public class FactorySingleton {
 			 **************************************************/
 			String clusterName = "PlayCluster";
 			DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
-			String host = "localhost";
-			createFactory(serverType, clusterName, host);
+			String seeds = "localhost";
+			//We used this below commented out seeds to test our suite on a cluster of 6 nodes to see if any issues pop up with more
+			//nodes using the default astyanax consistency levels which I believe for writes and reads are both QOURUM
+			//which is perfect for us as we know we will get the latest results
+			//String seeds = "a1.bigde.nrel.gov:9160,a2.bigde.nrel.gov:9160,a3.bigde.nrel.gov:9160";
+			createFactory(serverType, clusterName, seeds);
 		}
 		return factory;
 	}
 
-	private static void createFactory(DbTypeEnum server, String clusterName, String host) {
+	private static void createFactory(DbTypeEnum server, String clusterName, String seeds) {
 		log.info("CREATING FACTORY FOR TESTS");
 		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
@@ -44,7 +48,7 @@ public class FactorySingleton {
 			//nothing to do
 			break;
 		case CASSANDRA:
-			Builder builder = buildBuilder(clusterName, host);
+			Builder builder = buildBuilder(clusterName, seeds);
 			props.put(Bootstrap.CASSANDRA_BUILDER, builder);
 			break;
 		default:
@@ -54,7 +58,7 @@ public class FactorySingleton {
 		factory = Bootstrap.create(server, props, null, null);
 	}
 	
-	public static Builder buildBuilder(String clusterName, String host) {
+	public static Builder buildBuilder(String clusterName, String seeds) {
 		Builder builder = new AstyanaxContext.Builder()
 	    .forCluster(clusterName)
 	    .forKeyspace("PlayKeyspace")
@@ -64,7 +68,7 @@ public class FactorySingleton {
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
 	        .setMaxConnsPerHost(2)
 	        .setInitConnsPerHost(2)
-	        .setSeeds(host+":9160")
+	        .setSeeds(seeds)
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());		
 		

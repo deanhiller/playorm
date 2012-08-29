@@ -270,8 +270,12 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		cluster.dropKeyspace(keyspaceName);
-		cluster.addKeyspace(ourDef);
+		String id = cluster.addKeyspace(ourDef);
+		
+		columnFamilies.waitForNodesToBeUpToDate(id, 30000);
 	}
+
+
 
 	@Override
 	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final int batchSize) {
