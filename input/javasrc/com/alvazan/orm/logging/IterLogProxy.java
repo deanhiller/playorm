@@ -50,7 +50,7 @@ public class IterLogProxy implements Iterable<byte[]> {
 		@Override
 		public boolean hasNext() {
 			boolean hasNext = rowKeys.hasNext();
-			if(!hasNext && log.isInfoEnabled()) {
+			if(!hasNext && log.isInfoEnabled() && realKeys.size() > 0) {
 				//we are finished and can now log the keys about to be looked up
 				log.info(prefix+"CF="+colFamily+" finding keys="+realKeys);
 			}

@@ -262,8 +262,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			long time = System.currentTimeMillis();
 			ret = session.find(colFamily, iterProxy);
 			long total = System.currentTimeMillis() - time;
-			log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
-
+			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
+				log.info("[rawsession] Total find keyset time(including spi plugin)="+total);
+			else if(log.isTraceEnabled())
+				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
 		} else
 			ret = session.find(colFamily, allKeys);
 
