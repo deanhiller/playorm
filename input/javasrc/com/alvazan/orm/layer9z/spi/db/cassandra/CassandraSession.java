@@ -33,6 +33,7 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
+import com.netflix.astyanax.model.ConsistencyLevel;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
@@ -94,8 +95,9 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
-		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
+		ColumnFamilyQuery<byte[], byte[]> query1 = keyspace.prepareQuery(cf);
+		ColumnFamilyQuery<byte[], byte[]> q2 = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keys);
 		
 		long time = System.currentTimeMillis();
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
@@ -137,7 +139,9 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		MutationBatch m = keyspace.prepareMutationBatch();
+		MutationBatch m1 = keyspace.prepareMutationBatch();
+		MutationBatch m = m1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		
 		for(Action action : actions) {
 			if(action instanceof Persist) {
 				persist((Persist)action, mgr, m);
@@ -347,7 +351,8 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnFamily cf = info1.getColumnFamilyObj();
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
+		ColumnFamilyQuery query1 = keyspace.prepareQuery(cf);
+		ColumnFamilyQuery query = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
 							.withColumnRange(range);
