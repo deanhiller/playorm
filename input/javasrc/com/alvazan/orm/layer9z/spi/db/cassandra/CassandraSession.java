@@ -271,6 +271,14 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		cluster.dropKeyspace(keyspaceName);
 		cluster.addKeyspace(ourDef);
+		
+		try {
+			log.info("SLEEPING 3 seconds for clear keyspace="+keyspaceName+" as cassandra seems to have no way to specify ConsistencyLevel.ALL");
+			//We need to allow the keyspace time to propagate
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

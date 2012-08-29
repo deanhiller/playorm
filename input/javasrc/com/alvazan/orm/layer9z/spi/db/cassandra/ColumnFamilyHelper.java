@@ -300,8 +300,12 @@ public class ColumnFamilyHelper {
 	private void addColumnFamily(ColumnFamilyDefinition def) {
 		try {
 			cluster.addColumnFamily(def);
+			log.info("SLEEPING FOR 3 seconds for Column Family creation="+def.getName());
+			Thread.sleep(3000);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e.getMessage(), e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 	}
 }
