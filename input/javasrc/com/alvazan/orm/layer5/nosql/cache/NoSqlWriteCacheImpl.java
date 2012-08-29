@@ -126,13 +126,13 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabase();
 	}
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
-		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null);
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
-		return rawSession.scanIndex(info, from, to, batchSize);
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
+		return rawSession.scanIndex(info, from, to, batchSize, null);
 	}
 	
 	@Override

@@ -17,6 +17,7 @@ import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
 import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
 import com.alvazan.orm.api.spi9.db.Action;
+import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
@@ -138,27 +139,26 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) {
-		long time = 0;
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
-			time = System.currentTimeMillis();
+			list = new LogBatchFetch(l, batchSize);
 		}
-		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize);
-		if(log.isInfoEnabled()) {
-			long total = System.currentTimeMillis()-time;
-			log.info("[rawlogger] column range scan took="+total+" ms");
-		}
+		
+		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
+		
 		return ret;
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
-			log.info("small WARNING: We need to figure out how to time each call to get batch size better...doing it here does not work as it is done only in the iterable");
+			list = new LogBatchFetch(l, batchSize);
 		}
-		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize);
+		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize, list);
 		return ret;
 	}
 	

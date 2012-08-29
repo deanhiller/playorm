@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi9.db.Action;
+import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.ColumnType;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
@@ -33,7 +34,6 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
-import com.netflix.astyanax.model.ConsistencyLevel;
 import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
@@ -95,8 +95,8 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery<byte[], byte[]> query1 = keyspace.prepareQuery(cf);
-		ColumnFamilyQuery<byte[], byte[]> q2 = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
+		//ColumnFamilyQuery<byte[], byte[]> q2 = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keys);
 		
 		long time = System.currentTimeMillis();
@@ -139,8 +139,8 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		MutationBatch m1 = keyspace.prepareMutationBatch();
-		MutationBatch m = m1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		MutationBatch m = keyspace.prepareMutationBatch();
+		//MutationBatch m = m1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		
 		for(Action action : actions) {
 			if(action instanceof Persist) {
@@ -283,7 +283,7 @@ public class CassandraSession implements NoSqlRawSession {
 
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final int batchSize) {
+	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
@@ -297,18 +297,21 @@ public class CassandraSession implements NoSqlRawSession {
 			
 			@Override
 			public RowQuery<byte[], byte[]> createRowQuery() {
-				ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+				RangeBuilder rangeBldr = new RangeBuilder().setStart(from).setEnd(to);
+				if(batchSize != null)
+					rangeBldr = rangeBldr.setLimit(batchSize);
+				ByteBufferRange range = rangeBldr.build(); 
 				return createBasicRowQuery(rowKey, info1, range);
 			}
 		};
 			
 
-		return findBasic(Column.class, rowKey, l, batchSize);
+		return findBasic(Column.class, rowKey, l, batchListener);
 	}
 
 	@Override
 	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
-			int batchSize) {
+			Integer batchSize, BatchListener bListener) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
@@ -325,7 +328,7 @@ public class CassandraSession implements NoSqlRawSession {
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
 			Listener l = new Listener(rowKey, info1, from, to, batchSize);
-			return findBasic(IndexColumn.class, rowKey, l, batchSize);
+			return findBasic(IndexColumn.class, rowKey, l, bListener);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
@@ -352,17 +355,17 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnFamily cf = info1.getColumnFamilyObj();
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery query1 = keyspace.prepareQuery(cf);
-		ColumnFamilyQuery query = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
+		//ColumnFamilyQuery query = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
 							.withColumnRange(range);
 		return rowQuery;
 	}
 	
-	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
+	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new IterableColumnSlice<T>(l, batchSize, isComposite);
+		return new IterableColumnSlice<T>(l, isComposite, bListener);
 	}
 
 	public interface CreateColumnSliceCallback {
@@ -374,9 +377,9 @@ public class CassandraSession implements NoSqlRawSession {
 		private Info info1;
 		private Key from;
 		private Key to;
-		private int batchSize;
+		private Integer batchSize;
 
-		public Listener(byte[] rowKey, Info info1, Key from, Key to, int batchSize) {
+		public Listener(byte[] rowKey, Info info1, Key from, Key to, Integer batchSize) {
 			this.rowKey = rowKey;
 			this.info1 = info1;
 			this.from = from;
@@ -392,7 +395,8 @@ public class CassandraSession implements NoSqlRawSession {
 		@SuppressWarnings("unused")
 		public RowQuery<byte[], byte[]> createRowQuery() {
 			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
-			range = range.limit(batchSize);			
+			if(batchSize != null)
+				range = range.limit(batchSize);			
 			return createBasicRowQuery(rowKey, info1, range);
 		}
 	}

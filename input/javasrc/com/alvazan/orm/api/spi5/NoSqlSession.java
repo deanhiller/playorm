@@ -67,8 +67,8 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @return
 	 */
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize);
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize);
+	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
+	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	
 	public void setOrmSessionForMeta(Object entityMgr);
 

@@ -28,7 +28,7 @@ public class FactorySingleton {
 			 * FLIP THIS BIT TO CHANGE FROM CASSANDRA TO ANOTHER ONE
 			 **************************************************/
 			String clusterName = "PlayCluster";
-			DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
+			DbTypeEnum serverType = DbTypeEnum.CASSANDRA;
 			String seeds = "localhost";
 			//We used this below commented out seeds to test our suite on a cluster of 6 nodes to see if any issues pop up with more
 			//nodes using the default astyanax consistency levels which I believe for writes and reads are both QOURUM

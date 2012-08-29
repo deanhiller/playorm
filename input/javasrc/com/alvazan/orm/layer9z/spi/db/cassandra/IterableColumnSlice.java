@@ -2,9 +2,7 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
@@ -14,16 +12,14 @@ import com.netflix.astyanax.query.RowQuery;
 
 class IterableColumnSlice<T> implements Iterable<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(IterableColumnSlice.class);
-	
 	private CreateColumnSliceCallback callback;
-	private int batchSize;
 	private boolean isComposite;
+	private BatchListener bListener;
 
-	public IterableColumnSlice(CreateColumnSliceCallback l, int batchSize2, boolean isComposite) {
+	public IterableColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener) {
 		this.callback = l;
-		this.batchSize = batchSize2;
 		this.isComposite = isComposite;
+		this.bListener = bListener;
 	}
 
 	@Override
@@ -32,19 +28,19 @@ class IterableColumnSlice<T> implements Iterable<T> {
 		//we iterate a second time, we get 5 results when first time we got the correct 3 results...weird
 		RowQuery<byte[], byte[]> rowQuery = callback.createRowQuery();
 		
-		return new OurIterator<T>(rowQuery, batchSize, isComposite);
+		return new OurIterator<T>(rowQuery, isComposite, bListener);
 	}
 	
 	private static class OurIterator<T> implements Iterator<T> {
 		private RowQuery<byte[], byte[]> query;
 		private Iterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
-		private int batchSize;
 		private boolean isComposite;
+		private BatchListener batchListener;
 		
-		public OurIterator(RowQuery<byte[], byte[]> query, int batchSize, boolean isComposite) {
+		public OurIterator(RowQuery<byte[], byte[]> query, boolean isComposite, BatchListener bListener) {
 			this.query = query;
-			this.batchSize = batchSize;
 			this.isComposite = isComposite;
+			this.batchListener = bListener;
 		}
 
 		@Override
@@ -101,18 +97,16 @@ class IterableColumnSlice<T> implements Iterable<T> {
 		private void fetchMoreResultsImpl() throws ConnectionException {
 			if(subIterator != null && subIterator.hasNext())
 				return; //no need to fetch more since subIterator has more
-			
-			long time = System.currentTimeMillis();
+
+			batchListener.beforeFetchingNextBatch();
 			ColumnList<byte[]> columns = query.execute().getResult();
-			if(log.isInfoEnabled()) {
-				long total = System.currentTimeMillis()-time;
-				log.info("astyanx column slice took="+total+" ms batchSize="+batchSize);
-			}
-			
+
 			if(columns.isEmpty())
 				subIterator = null; 
 			else 
 				subIterator = columns.iterator();
+			
+			batchListener.afterFetchingNextBatch(columns.size());
 		}
 	}
 }

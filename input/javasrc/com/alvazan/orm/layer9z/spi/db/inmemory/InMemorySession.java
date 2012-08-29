@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi9.db.Action;
+import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
@@ -207,7 +208,7 @@ public class InMemorySession implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) {
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Table table = database.findTable(colFamily);
 		if(table == null) {
 			return new HashSet<Column>();
@@ -220,7 +221,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 	
 	@Override
-	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);

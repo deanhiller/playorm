@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi9.db.Action;
+import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
@@ -44,14 +45,14 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) {
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Iterable<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
-			int batchSize) {
+			Integer batchSize, BatchListener l) {
 		// TODO Auto-generated method stub
 		return null;
 	}
