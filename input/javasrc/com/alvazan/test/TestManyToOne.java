@@ -94,7 +94,7 @@ public class TestManyToOne {
 			mgr.put(act);
 			Assert.fail("Should have failed since account has no pk during activity save");
 		} catch(ChildWithNoPkException e) {
-			log.info("expected failure", e);
+			log.info("expected failure");
 		}
 	}
 

@@ -299,13 +299,38 @@ public class ColumnFamilyHelper {
 
 	private void addColumnFamily(ColumnFamilyDefinition def) {
 		try {
-			cluster.addColumnFamily(def);
-			log.info("SLEEPING FOR 3 seconds for Column Family creation="+def.getName());
-			Thread.sleep(3000);
+			String id = cluster.addColumnFamily(def);
+			long timeout = 30000;
+			waitForNodesToBeUpToDate(id, timeout);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e.getMessage(), e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		}
+	}
+	
+	public void waitForNodesToBeUpToDate(String id, long timeout)
+			throws ConnectionException {
+		log.info("CHANGING SCHEMA, LOOP until all nodes have new schema id="+id+" OR timeout in "+timeout+" milliseconds");
+		long currentTime = System.currentTimeMillis();
+		while(true) {
+			Map<String, List<String>> describeSchemaVersions = cluster.describeSchemaVersions();
+			long now = System.currentTimeMillis();
+			if(describeSchemaVersions.size() == 1) {
+				String key = describeSchemaVersions.keySet().iterator().next();
+				if(!id.equals(key)) {
+					log.warn("BUG, in cassandra? id we upgraded schema to="+id+" but the schema on all nodes is now="+key);
+				}
+				assert id.equals(key) : "The key and id should be equal!!!! as it is updating to our schema";
+				break;
+			} else if(now >= currentTime+timeout) {
+				log.warn("All nodes are still not up to date, but we have already waited 30 seconds!!! so we are returning");
+				break;
+			}
+			
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 }
