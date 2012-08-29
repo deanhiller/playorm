@@ -45,6 +45,13 @@ public abstract class DboColumnMeta {
 		return id;
 	}
 
+	
+	@Override
+	public String toString() {
+		return "["+columnName+",ind="+isIndexed+",type="+getClass().getSimpleName()+"]";
+	}
+
+
 	public String getColumnName() {
 		return columnName;
 	}

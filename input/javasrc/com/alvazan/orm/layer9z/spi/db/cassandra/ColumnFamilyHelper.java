@@ -120,7 +120,7 @@ public class ColumnFamilyHelper {
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		findExistingColumnFamilies(keySpaceMeta);
-		log.info("Existing column families="+existingColumnFamilies2+"\nNOTE: WE WILL CREATE " +
+		log.info("Existing column families="+existingColumnFamilies2.keySet()+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
 	}
 
@@ -232,11 +232,11 @@ public class ColumnFamilyHelper {
 
 	private Info tryToLoadColumnFamilyImpl(String colFamily) throws ConnectionException {
 		synchronized(colFamily.intern()) {
-			log.info("Column family NOT found in-memory, CHECK and LOAD from Cassandra if available");
+			log.info("Column family NOT found in-memory="+colFamily+", CHECK and LOAD from Cassandra if available");
 			String cf = colFamily.toLowerCase();
 			Info info = existingColumnFamilies2.get(cf);
 			if(info != null) {//someone else beat us into the synchronization block
-				log.info("NEVER MIND, someone beat us to loading it into memory, it is now there");
+				log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+cf);
 				return info;
 			}
 
@@ -247,10 +247,10 @@ public class ColumnFamilyHelper {
 			KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 			ColumnFamilyDefinition def = keySpaceMeta.getColumnFamily(colFamily);
 			if(def == null) {
-				log.info("Well, we did NOT find any column family to load in cassandra");
+				log.info("Well, we did NOT find any column family="+colFamily+" to load in cassandra");
 				return null;
 			} 
-			log.info("coooool, we found a new column family to load so we are going to load that for you so every future operation is FAST");
+			log.info("coooool, we found a new column family="+colFamily+" to load so we are going to load that for you so every future operation is FAST");
 			loadColumnFamily(def);
 			return existingColumnFamilies2.get(cf);
 		}
