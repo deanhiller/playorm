@@ -232,7 +232,7 @@ public class ColumnFamilyHelper {
 
 	private Info tryToLoadColumnFamilyImpl(String colFamily) throws ConnectionException {
 		synchronized(colFamily.intern()) {
-			log.info("Column family NOT found in-memory, let's check Cassandra for a new column family instead");
+			log.info("Column family NOT found in-memory, CHECK and LOAD from Cassandra if available");
 			String cf = colFamily.toLowerCase();
 			Info info = existingColumnFamilies2.get(cf);
 			if(info != null) {//someone else beat us into the synchronization block
@@ -368,7 +368,11 @@ public class ColumnFamilyHelper {
 	
 	public void waitForNodesToBeUpToDate(String id, long timeout)
 			throws ConnectionException {
-		log.info("CHANGING SCHEMA, LOOP until all nodes have new schema id="+id+" OR timeout in "+timeout+" milliseconds");
+		if(id != null)
+			log.info("LOOP until all nodes have same schema version id="+id+" OR timeout in "+timeout+" milliseconds");
+		else
+			log.info("LOOP until all nodes have same schema version OR timeout in "+timeout+" milliseconds");
+		
 		long currentTime = System.currentTimeMillis();
 		while(true) {
 			Map<String, List<String>> describeSchemaVersions = cluster.describeSchemaVersions();

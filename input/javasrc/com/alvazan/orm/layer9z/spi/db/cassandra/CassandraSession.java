@@ -264,6 +264,7 @@ public class CassandraSession implements NoSqlRawSession {
 	public void clearImpl() throws ConnectionException {
 		Cluster cluster = columnFamilies.getCluster();
 		String keyspaceName = columnFamilies.getKeyspaceName();
+		log.info("Clearing keyspace="+keyspaceName+" in cassandra");
 		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
 		KeyspaceDefinition ourDef = null;
 		for(KeyspaceDefinition kDef : keyspaces) {
