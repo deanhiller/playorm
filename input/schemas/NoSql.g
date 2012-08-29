@@ -148,8 +148,12 @@ parameter: COLON parameterName -> PARAMETER_NAME[$parameterName.text];
 valueList: LPAREN value (COMMA value)* RPAREN -> ^(VALUE_LIST value (value)*);
 value: intVal | doubleVal | strVal | NULL;
 
-intVal	:	INTEGER -> INT_VAL[$INTEGER.text];
-doubleVal   :   DECIMAL -> DEC_VAL[$DECIMAL.text];
+intVal	 :	(MINUS)?INTEGER 
+                  -> {$MINUS.text == null}? INT_VAL[$INTEGER.text]
+                  -> INT_VAL[$MINUS.text+$INTEGER.text];
+doubleVal:   (MINUS)?DECIMAL
+                  -> {$MINUS.text == null}? INT_VAL[$DECIMAL.text]
+                  -> INT_VAL[$MINUS.text+$DECIMAL.text];
 strVal	:	stringA | stringB;
 stringA : STRINGA -> STR_VAL[$STRINGA.text];
 stringB : STRINGB -> STR_VAL[$STRINGB.text];
@@ -171,6 +175,7 @@ DECIMAL	:	('.' ('0'..'9')+)  | (('0'..'9')+ '.' '0'..'9'*);
 
 STRINGA	:	'"' (options {greedy=false;}: ESC | .)* '"';
 STRINGB	:	'\'' (options {greedy=false;}: ESC | .)* '\'';
+MINUS : '-';
 
 WS	:
  	(   ' '
