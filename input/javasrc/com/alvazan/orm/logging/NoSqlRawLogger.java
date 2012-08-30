@@ -162,7 +162,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		return ret;
 	}
 	
-	private void logColScan(ScanInfo info, Key from, Key to, int batchSize) {
+	private void logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
 		try {
 			String msg = logColScanImpl(info, from, to, batchSize);
 			log.info("[rawlogger]"+msg);
@@ -171,7 +171,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		}
 	}
 
-	private String logColScanImpl(ScanInfo info, Key from, Key to, int batchSize) {
+	private String logColScanImpl(ScanInfo info, Key from, Key to, Integer batchSize) {
 		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -249,18 +249,34 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
 		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
 		
+		DboTableMeta meta = null;
+		if(log.isInfoEnabled()) {
+			meta = databaseInfo.getMeta(colFamily);
+		}
+		
 		List<byte[]> allKeys = new ArrayList<byte[]>();
+		List<String> realKeys = new ArrayList<String>();
 		for(byte[] k : rKeys) {
 			allKeys.add(k);
+			if(log.isInfoEnabled()) {
+				try {
+					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
+					String str = meta.getIdColumnMeta().convertTypeToString(obj);
+					realKeys.add(str);
+				} catch(Exception e) {
+					log.trace("Exception occurred", e);
+					realKeys.add("[exception, turn on trace logging]");
+				}
+			}
 		}
 		
 		Iterable<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
-			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
-			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
-			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, allKeys);
+
+			if(allKeys.size() > 0)
+				log.info("[rawlogger] Finding keys="+realKeys);
 			long time = System.currentTimeMillis();
-			ret = session.find(colFamily, iterProxy);
+			ret = session.find(colFamily, allKeys);
 			long total = System.currentTimeMillis() - time;
 			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
 				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size());

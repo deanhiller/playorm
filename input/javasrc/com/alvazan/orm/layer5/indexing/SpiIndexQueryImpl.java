@@ -27,7 +27,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private NoSqlSession session;
 	private Map<String, ByteArray> parameters = new HashMap<String, ByteArray>();
 
-	private int batchSize = 500;
+	private Integer batchSize = null;
 	
 	public void setup(SpiMetaQueryImpl spiMetaQueryImpl, NoSqlSession session) {
 		this.spiMeta = spiMetaQueryImpl;

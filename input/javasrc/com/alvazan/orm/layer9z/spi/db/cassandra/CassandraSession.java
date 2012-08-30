@@ -101,9 +101,9 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		long time = System.currentTimeMillis();
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
-		if(log.isInfoEnabled()) {
+		if(log.isTraceEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("astyanx find took="+total+" ms");
+			log.trace("astyanx find took="+total+" ms");
 		}
 		
 		Rows rows = result.getResult();
@@ -306,13 +306,13 @@ public class CassandraSession implements NoSqlRawSession {
 		};
 			
 
-		return findBasic(Column.class, rowKey, l, batchListener);
+		return findBasic(Column.class, rowKey, l, batchListener, batchSize);
 	}
 
 	@Override
 	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
 			Integer batchSize, BatchListener bListener) {
-		if(batchSize <= 0)
+		if(batchSize != null && batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
@@ -328,7 +328,7 @@ public class CassandraSession implements NoSqlRawSession {
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
 			Listener l = new Listener(rowKey, info1, from, to, batchSize);
-			return findBasic(IndexColumn.class, rowKey, l, bListener);
+			return findBasic(IndexColumn.class, rowKey, l, bListener, batchSize);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
@@ -363,9 +363,9 @@ public class CassandraSession implements NoSqlRawSession {
 		return rowQuery;
 	}
 	
-	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener) {
+	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new IterableColumnSlice<T>(l, isComposite, bListener);
+		return new IterableColumnSlice<T>(l, isComposite, bListener, batchSize);
 	}
 
 	public interface CreateColumnSliceCallback {

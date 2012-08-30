@@ -224,7 +224,12 @@ public class ColumnFamilyHelper {
 
 	private Info tryToLoadColumnFamily(String colFamily) {
 		try {
-			return tryToLoadColumnFamilyImpl(colFamily);
+			long start = System.currentTimeMillis();
+			Info info = tryToLoadColumnFamilyImpl(colFamily);
+			long total = System.currentTimeMillis() - start;
+			if(log.isInfoEnabled())
+				log.info("Total time to LOAD column family meta from cassandra="+total);
+			return info;
 		} catch(ConnectionException e) {
 			throw new RuntimeException(e);
 		}
@@ -258,7 +263,11 @@ public class ColumnFamilyHelper {
 
 	private synchronized void createColFamily(String colFamily, NoSqlEntityManager mgr) {
 		try {
+			long start = System.currentTimeMillis();
 			createColFamilyImpl(colFamily, mgr);
+			long total = System.currentTimeMillis() - start;
+			if(log.isInfoEnabled())
+				log.info("Total time to CREATE column family in cassandra and wait for all nodes to update="+total);
 		} catch(Exception e) {
 			log.warn("Exception creating col family but may because another node just did that at the same time!!! so this is normal if it happens very rarely", e);
 			//try to continue now...

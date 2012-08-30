@@ -15,11 +15,13 @@ class IterableColumnSlice<T> implements Iterable<T> {
 	private CreateColumnSliceCallback callback;
 	private boolean isComposite;
 	private BatchListener bListener;
+	private Integer batchSize;
 
-	public IterableColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener) {
+	public IterableColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener, Integer batchSize) {
 		this.callback = l;
 		this.isComposite = isComposite;
 		this.bListener = bListener;
+		this.batchSize = batchSize;
 	}
 
 	@Override
@@ -28,7 +30,7 @@ class IterableColumnSlice<T> implements Iterable<T> {
 		//we iterate a second time, we get 5 results when first time we got the correct 3 results...weird
 		RowQuery<byte[], byte[]> rowQuery = callback.createRowQuery();
 		
-		return new OurIterator<T>(rowQuery, isComposite, bListener);
+		return new OurIterator<T>(rowQuery, isComposite, bListener, batchSize);
 	}
 	
 	private static class OurIterator<T> implements Iterator<T> {
@@ -36,11 +38,14 @@ class IterableColumnSlice<T> implements Iterable<T> {
 		private Iterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
 		private boolean isComposite;
 		private BatchListener batchListener;
+		private int count;
+		private Integer batchSize;
 		
-		public OurIterator(RowQuery<byte[], byte[]> query, boolean isComposite, BatchListener bListener) {
+		public OurIterator(RowQuery<byte[], byte[]> query, boolean isComposite, BatchListener bListener, Integer batchSize) {
 			this.query = query;
 			this.isComposite = isComposite;
 			this.batchListener = bListener;
+			this.batchSize = batchSize;
 		}
 
 		@Override
@@ -61,7 +66,8 @@ class IterableColumnSlice<T> implements Iterable<T> {
 				throw new ArrayIndexOutOfBoundsException("no more elements");
 
 			com.netflix.astyanax.model.Column<byte[]> col = subIterator.next();
-
+			count++;
+			
 			Object obj = col.getName();
 			if(isComposite) {
 				GenericComposite bigDec = (GenericComposite)obj;
@@ -95,9 +101,20 @@ class IterableColumnSlice<T> implements Iterable<T> {
 		}
 		
 		private void fetchMoreResultsImpl() throws ConnectionException {
-			if(subIterator != null && subIterator.hasNext())
-				return; //no need to fetch more since subIterator has more
-
+			if(subIterator != null){
+				//If subIterator is not null, we have already previously fetched results!!!
+				if(subIterator.hasNext())
+					return; //no need to fetch more since subIterator has more
+				else if(batchSize == null) //then we already fetched everything in first round
+					return;
+				else if(count < batchSize - 1) {
+					//since we have previous results, we then have a count of those results BUT they
+					//did NOT fill up the batch so no need to go to database as we know it has no more results
+					return;
+				}
+			}
+			
+			count = 0;
 			batchListener.beforeFetchingNextBatch();
 			ColumnList<byte[]> columns = query.execute().getResult();
 
