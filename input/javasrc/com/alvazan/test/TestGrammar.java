@@ -49,4 +49,44 @@ public class TestGrammar {
 		String result = ""+newTree;
 		Assert.assertEquals("(:asfd < p.leftside <= :fdfd and :ff <= p.rightside < :tttt)", result);
 	}
+	
+	@Test
+	public void testRewriteJoin() {
+		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+	}
+	//@Test
+	public void testJoinJoinOnSame() {
+		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN p.something as t where p.numShares = :shares and s.securityType = :type";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+	}
+	//@Test
+	public void testJoinJoinOnChain() {
+		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN s.something as t where p.numShares = :shares and s.securityType = :type";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+	}	
+	@Test
+	public void testNoRewrite() {
+		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and p.something = :something";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("p.numShares =:shares and p.something = :something", result);
+	}
+	
+	//@Test
+	public void testLargeTree() {
+		String sql = "select a FROM TABLE as a INNER JOIN a.security as d INNER JOIN a.something as b INNER JOIN b.some as e" +
+				" INNER JOIN b.two as g INNER JOIN g.two as f INNER JOIN f.try as h" +
+				" where ( ((a.y>:a and d.y>:a) or (a.z>:a and b.z>:a)) and (b.x>:a and e.y>:a) )" +
+				" and ( ((f.x>:a and f.y>:a) or (g.x>:a and g.y>:a)) and h.f>:a )";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("p.numShares =:shares and p.something = :something", result);
+	}
 }

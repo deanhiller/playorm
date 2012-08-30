@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -15,6 +14,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
@@ -25,8 +25,9 @@ import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.JoinType;
 import com.alvazan.orm.layer5.indexing.NodeType;
 import com.alvazan.orm.layer5.indexing.StateAttribute;
-import com.alvazan.orm.layer5.indexing.TableInfo;
+import com.alvazan.orm.layer5.indexing.ViewInfo;
 import com.alvazan.orm.parser.antlr.ChildSide;
+import com.alvazan.orm.parser.antlr.JoinInfo;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 import com.alvazan.orm.parser.antlr.Optimizer;
@@ -44,17 +45,13 @@ public class SqlScanner {
 		walkTheTree(theTree, wiring, facade);
 		validateNoPartitionsMissed(theTree, wiring);
 		ExpressionNode node = wiring.getAstTree();
-		Map<String, Integer> attrs = wiring.getAttributeUsedCount();
-		
-		
-		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, attrs, query);
-		
+		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, wiring, query);
 		
 		return newTree;
 	}
 	
 	private void validateNoPartitionsMissed(CommonTree theTree, InfoForWiring wiring) {
-		TableInfo noAliasTable = wiring.getNoAliasTable();
+		ViewInfo noAliasTable = wiring.getNoAliasTable();
 		if(noAliasTable != null) {
 			if(noAliasTable.getTableMeta().getPartitionedColumns().size() > 0)
 				throw new IllegalArgumentException("In your from you have a table defined with no alias" +
@@ -63,7 +60,7 @@ public class SqlScanner {
 		}		
 		Collection<String> aliases = wiring.getAllAliases();
 		for(String alias : aliases) {
-			TableInfo t = wiring.getInfoFromAlias(alias);
+			ViewInfo t = wiring.getInfoFromAlias(alias);
 			DboTableMeta meta = t.getTableMeta();
 			if(meta.getPartitionedColumns().size() > 0 && t.getPartition() == null)
 				throw new IllegalArgumentException("You are missing a definition of a partition for alias='"+alias+"' since table="
@@ -123,32 +120,33 @@ public class SqlScanner {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private <T> void compileJoinClause(CommonTree tree,
 			InfoForWiring wiring) {
-		List children = tree.getChildren();
+		List<CommonTree> children = tree.getChildren();
 		
-		for(Object child : children) {
-			CommonTree node = (CommonTree) child;
-			int type = node.getType();
+		for(CommonTree child : children) {
+			int type = child.getType();
 			if(type == NoSqlLexer.LEFT_OUTER_JOIN) {
 				throw new UnsupportedOperationException("do not yet support left out join, please let me know and I can implement quickly");
 			} else if(type == NoSqlLexer.INNER_JOIN) {
-				compileJoin(node, wiring, JoinType.INNER);
+				compileJoin(child, wiring, JoinType.INNER);
 			} else
 				throw new UnsupportedOperationException("bug?, type="+type+" and we don't process that type for joins");
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T> void compileJoin(CommonTree tree, InfoForWiring wiring, JoinType type) {
-		List children = tree.getChildren();
-		CommonTree aliasedColumn = (CommonTree) children.get(0);
+		List<CommonTree> children = tree.getChildren();
+		CommonTree aliasedColumn = children.get(0);
 		CommonTree aliasNode = (CommonTree) aliasedColumn.getChild(0);
-		CommonTree newAliasNode = (CommonTree) children.get(1);
+		CommonTree newAliasNode = children.get(1);
 		String column = aliasedColumn.getText();
 		String alias = aliasNode.getText();
 		String newAlias = newAliasNode.getText();
 		
-		TableInfo tableInfo = wiring.getInfoFromAlias(alias);
+		ViewInfo tableInfo = wiring.getInfoFromAlias(alias);
 		DboTableMeta tableMeta = tableInfo.getTableMeta();
 		DboColumnMeta columnMeta = tableMeta.getColumnMeta(column);
 		if(!(columnMeta instanceof DboColumnToOneMeta))
@@ -157,9 +155,18 @@ public class SqlScanner {
 		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
 		DboTableMeta fkTableMeta = toOne.getFkToColumnFamily();
 
-		TableInfo fkInfo = new TableInfo(newAlias, fkTableMeta, JoinType.INNER);
-		tableInfo.putJoinTable(column, fkInfo);
-		wiring.putAliasTable(newAlias, fkInfo);
+		ViewInfo existing = wiring.getInfoFromAlias(newAlias);
+		if(existing == null) {
+			existing = new ViewInfo(newAlias, fkTableMeta);
+			wiring.putAliasTable(newAlias, existing);
+		}
+		
+		//since this is an inner join on primary key, use id column
+		DboColumnIdMeta colMeta2 = existing.getTableMeta().getIdColumnMeta();
+		JoinInfo join = new JoinInfo(tableInfo, columnMeta, existing, colMeta2, type);
+		
+		tableInfo.addJoin(join);
+		existing.addJoin(join);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -173,7 +180,7 @@ public class SqlScanner {
 
 	private void compileSinglePartition(InfoForWiring wiring, CommonTree child, MetaFacade facade) {
 		String alias = child.getText();
-		TableInfo info = wiring.getInfoFromAlias(alias);
+		ViewInfo info = wiring.getInfoFromAlias(alias);
 		if(info == null)
 			throw new IllegalArgumentException("In your PARTITIONS clause, you have an alias='"+alias+"' that is not found in your FROM clause");
 		else if(info.getPartition() != null)
@@ -249,7 +256,7 @@ public class SqlScanner {
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Meta data(or Entity)="+tableName+" cannot be found");
 			
-		TableInfo info = new TableInfo(null, metaClass, JoinType.NONE);
+		ViewInfo info = new ViewInfo(null, metaClass);
 		if(wiring.getFirstTable() == null)
 			wiring.setFirstTable(info);
 		
@@ -310,18 +317,18 @@ public class SqlScanner {
 			case NoSqlLexer.ATTR_NAME:
 				
 				String columnNameOrAlias = child.getText();
-				TableInfo info = wiring.getInfoFromAlias(columnNameOrAlias);
+				ViewInfo info = wiring.getInfoFromAlias(columnNameOrAlias);
 				if(info != null) {
 					wiring.setSelectStarDefined(true);
 					continue;
 				}
 				
 				String alias = null;
-				List children = child.getChildren();
+				List<CommonTree> children = child.getChildren();
 				if(children == null) //It must be an alias if there are no children!!!
 					throw new IllegalArgumentException("You have an alias of="+columnNameOrAlias+" that does not exist in the FROM part of the select statement.  query="+wiring.getQuery());
 				if(children.size() > 0) { //we have an alias too!!!
-					CommonTree aliasNode = (CommonTree) child.getChildren().get(0);
+					CommonTree aliasNode = children.get(0);
 					alias = aliasNode.getText();
 					
 					String fullName = alias+"."+columnNameOrAlias;
@@ -344,31 +351,6 @@ public class SqlScanner {
 		}
 	}
 
-	private static void forAndOr() {
-//		if(leftN.getNodeType() == NodeType.COMPARATOR && rightN.getNodeType() == NodeType.COMPARATOR) {
-//			TableInfo infoLeft = (TableInfo) leftN.getState();
-//			TableInfo infoRight = (TableInfo) rightN.getState();
-//			if(infoLeft == null && infoRight == null) {
-//				node.setNodeType(NodeType.CONSTANTS_AND_OR);
-//			} else if(infoLeft == null && infoRight != null) {
-//				node.setNodeType(NodeType.COLUMN_AND_OR);
-//				node.setState(infoRight);
-//			} else if(infoRight == null && infoLeft != null) {
-//				node.setNodeType(NodeType.COLUMN_AND_OR);
-//				node.setState(infoLeft);
-//			} else if(infoLeft == infoRight) {
-//				node.setNodeType(NodeType.COLUMN_AND_OR);
-//				node.setState(infoLeft);
-//			} else {
-//				//WELL, this one is a join
-//				infoLeft.get
-//				DboTableMeta leftMeta = infoLeft.getTableMeta();
-//				DboTableMeta tableMeta = infoRight.getTableMeta();
-//				
-//				
-//			}
-//		}
-	}
 	@SuppressWarnings("unchecked")
 	private static <T> void compileExpression(ExpressionNode node, InfoForWiring wiring, MetaFacade facade) {
 		CommonTree expression = node.getASTNode();
@@ -379,8 +361,8 @@ public class SqlScanner {
 		case NoSqlLexer.OR:
 			node.setState("ANDORnode", null);
 			List<CommonTree> children = expression.getChildren();
-			ExpressionNode leftN = processSide(node, wiring, children, 0, ChildSide.LEFT, facade);
-			ExpressionNode rightN =processSide(node, wiring, children, 1, ChildSide.RIGHT, facade);
+			processSide(node, wiring, children, 0, ChildSide.LEFT, facade);
+			processSide(node, wiring, children, 1, ChildSide.RIGHT, facade);
 			
 			break;
 		case NoSqlLexer.EQ:
@@ -426,7 +408,7 @@ public class SqlScanner {
 			Object state = left.getState();
 			if(state instanceof StateAttribute) {
 				StateAttribute st = (StateAttribute) state;
-				TableInfo tableInfo = st.getTableInfo();
+				ViewInfo tableInfo = st.getViewInfo();
 				node.setState(tableInfo, null);
 			}
 			
@@ -519,7 +501,7 @@ public class SqlScanner {
 
 	private static TypeInfo processColumnName( 
 			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType, MetaFacade facade) {
-		TableInfo tableInfo;
+		ViewInfo tableInfo;
 		
 		CommonTree colNameNode = attributeNode2.getASTNode();
 		String columnName = colNameNode.getText();

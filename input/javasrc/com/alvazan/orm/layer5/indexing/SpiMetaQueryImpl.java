@@ -12,7 +12,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
-	private TableInfo mainTable;
+	private ViewInfo mainTable;
 	
 	@Override
 	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session) {
@@ -21,7 +21,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	public void setASTTree(ExpressionNode node, TableInfo mainTable) {
+	public void setASTTree(ExpressionNode node, ViewInfo mainTable) {
 		this.astTreeRoot = node;
 		this.mainTable = mainTable;
 	}
@@ -30,7 +30,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return astTreeRoot;
 	}
 
-	public TableInfo getMainTableMeta() {
+	public ViewInfo getMainTableMeta() {
 		return mainTable;
 	}
 	

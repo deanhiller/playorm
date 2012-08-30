@@ -1,14 +1,14 @@
 package com.alvazan.orm.parser.antlr;
 
 
-public class WalkTreeOptimizer {
+public class GltLtConvertToInBetween {
 
 	private String aliasAndColumnName;
 	private ParsedNode firstMatch;
 	private ParsedNode secondMatch;
 	private ParsedNode rootNode;
 	
-	public WalkTreeOptimizer(String aliasAndColumnName) {
+	public GltLtConvertToInBetween(String aliasAndColumnName) {
 		this.aliasAndColumnName = aliasAndColumnName;
 	}
 

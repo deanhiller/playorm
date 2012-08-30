@@ -3,6 +3,7 @@ package com.alvazan.orm.layer5.indexing;
 import org.antlr.runtime.tree.CommonTree;
 
 import com.alvazan.orm.parser.antlr.ChildSide;
+import com.alvazan.orm.parser.antlr.JoinMeta;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.ParsedNode;
 
@@ -22,6 +23,7 @@ public class ExpressionNode implements ParsedNode {
 	 */
 	private ExpressionNode greaterThanExpression;
 	private ExpressionNode lessThanExpression;
+	private JoinMeta joinMeta;
 	
 	public ExpressionNode(CommonTree expression) {
 		this.commonNode = expression;
@@ -162,6 +164,29 @@ public class ExpressionNode implements ParsedNode {
 		return lessThanExpression;
 	}
 
+	@Override
+	public ViewInfo getViewInfo() {
+		if(!(state instanceof StateAttribute))
+			throw new IllegalStateException("This node is of the wrong type="+this.commonNode.getType());
+		StateAttribute attr = (StateAttribute) state;
+		return attr.getViewInfo();
+	}
 
+	@Override
+	public boolean isAndOrType() {
+		if(commonNode.getType() == NoSqlLexer.AND || commonNode.getType() == NoSqlLexer.OR)
+			return true;
+		return false;
+	}
+
+	@Override
+	public void setJoinMeta(JoinMeta meta) {
+		this.joinMeta = meta;
+	}
+
+	@Override
+	public JoinMeta getJoinMeta() {
+		return joinMeta;
+	}
 
 }

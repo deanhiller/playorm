@@ -1,5 +1,8 @@
 package com.alvazan.orm.parser.antlr;
 
+import com.alvazan.orm.layer5.indexing.ViewInfo;
+
+
 
 public interface ParsedNode {
 
@@ -17,4 +20,10 @@ public interface ParsedNode {
 
 	String getAliasAndColumn();
 
+	//For join optimization...
+	ViewInfo getViewInfo();
+	boolean isAndOrType();
+	void setJoinMeta(JoinMeta info);
+	JoinMeta getJoinMeta();
+	
 }

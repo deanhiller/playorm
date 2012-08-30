@@ -5,10 +5,10 @@ import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 public class StateAttribute {
 
 	private DboColumnMeta columnInfo; 
-	private TableInfo tableInfo;
+	private ViewInfo tableInfo;
 	private String textInSql;
 	
-	public StateAttribute(TableInfo tableInfo, DboColumnMeta columnName2, String textInSql) {
+	public StateAttribute(ViewInfo tableInfo, DboColumnMeta columnName2, String textInSql) {
 		this.tableInfo = tableInfo;
 		this.columnInfo = columnName2;
 		this.textInSql = textInSql;
@@ -19,7 +19,7 @@ public class StateAttribute {
 	}
 
 
-	public TableInfo getTableInfo() {
+	public ViewInfo getViewInfo() {
 		return tableInfo;
 	}
 

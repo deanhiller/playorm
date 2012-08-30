@@ -7,18 +7,18 @@ import java.util.Map;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.TypeInfo;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
-import com.alvazan.orm.layer5.indexing.TableInfo;
+import com.alvazan.orm.layer5.indexing.ViewInfo;
 
 public class InfoForWiring {
 
 	private Map<String,TypeInfo> parameterFieldMap = new HashMap<String, TypeInfo>();
-	private TableInfo noAliasTable;
-	private Map<String, TableInfo> aliasToMeta = new HashMap<String, TableInfo>();
+	private ViewInfo noAliasTable;
+	private Map<String, ViewInfo> aliasToMeta = new HashMap<String, ViewInfo>();
 	private boolean selectStarDefined;
 	private String query;
 	private String targetTable;
 	private ExpressionNode astTree;
-	private TableInfo firstTable;
+	private ViewInfo firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private DboTableMeta metaQueryTargetTable;
 	
@@ -27,19 +27,19 @@ public class InfoForWiring {
 		this.targetTable= targetTable;
 	}
 	
-	public void setNoAliasTable(TableInfo metaClass) {
+	public void setNoAliasTable(ViewInfo metaClass) {
 		this.noAliasTable = metaClass;
 	}
 
-	public TableInfo getNoAliasTable() {
+	public ViewInfo getNoAliasTable() {
 		return noAliasTable;
 	}
 
-	public void putAliasTable(String alias, TableInfo metaClass) {
+	public void putAliasTable(String alias, ViewInfo metaClass) {
 		aliasToMeta.put(alias, metaClass);
 	}
 
-	public TableInfo getInfoFromAlias(String alias) {
+	public ViewInfo getInfoFromAlias(String alias) {
 		return aliasToMeta.get(alias);
 	}
 
@@ -67,10 +67,10 @@ public class InfoForWiring {
 		return astTree;
 	}
 
-	public TableInfo getFirstTable() {
+	public ViewInfo getFirstTable() {
 		return firstTable;
 	}
-	public void setFirstTable(TableInfo t) {
+	public void setFirstTable(ViewInfo t) {
 		this.firstTable = t;
 	}
 

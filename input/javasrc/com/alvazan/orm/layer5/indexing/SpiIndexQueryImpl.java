@@ -51,7 +51,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	public Iterable<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
-			TableInfo tableInfo = spiMeta.getMainTableMeta();
+			ViewInfo tableInfo = spiMeta.getMainTableMeta();
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
@@ -65,7 +65,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		return processExpressionTree(root);
 	}
 
-	private ScanInfo createScanInfo(TableInfo tableInfo, DboColumnMeta metaCol) {
+	private ScanInfo createScanInfo(ViewInfo tableInfo, DboColumnMeta metaCol) {
 		PartitionMeta partitionMeta = tableInfo.getPartition();
 		String partitionBy = null;
 		String partitionId = null;
@@ -117,7 +117,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private Iterable<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
 		StateAttribute attr = (StateAttribute) root.getChild(ChildSide.LEFT).getState();
 		DboColumnMeta info = attr.getColumnInfo();
-		ScanInfo scanInfo = createScanInfo(attr.getTableInfo(), info);
+		ScanInfo scanInfo = createScanInfo(attr.getViewInfo(), info);
 		
 		Iterable<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
