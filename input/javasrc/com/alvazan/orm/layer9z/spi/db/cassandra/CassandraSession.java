@@ -157,9 +157,9 @@ public class CassandraSession implements NoSqlRawSession {
 		long time = System.currentTimeMillis();
 		m.execute();
 		
-		if(log.isInfoEnabled()) {
+		if(log.isTraceEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("astyanx save took="+total+" ms");
+			log.trace("astyanx save took="+total+" ms");
 		}
 	}
 
