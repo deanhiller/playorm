@@ -110,7 +110,13 @@ public class ExpressionNode implements ParsedNode {
 			String line = greaterThanRightVar+greaterThanSign+greaterThanLeftCol+lessThanSign+lessThanRightVar;
 			return line;
 		} else if(leftChild != null && rightChild != null) {
-			String msg = leftChild.getExpressionAsString(false)+" "+this.commonNode+" "+rightChild.getExpressionAsString(false);
+			String joinType = "";
+			if(joinMeta != null) {
+				if(joinMeta.getJoinType() == JoinType.INNER)
+					joinType = "(innerjoin)";
+			}
+			
+			String msg = leftChild.getExpressionAsString(false)+" "+this.commonNode+joinType+" "+rightChild.getExpressionAsString(false);
 			if(getType() == NoSqlLexer.AND || getType() == NoSqlLexer.OR)
 				return "("+msg+")";
 			return msg;

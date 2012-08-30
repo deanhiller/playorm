@@ -18,7 +18,7 @@ public class Optimizer {
 		
 		ParsedNode root = optimizeGtLtToBetween(node, wiring, query, facade);
 		
-		//root = addJoinInformation(root, wiring);
+		root = addJoinInformation(root, wiring);
 		
 		return root;
 	}

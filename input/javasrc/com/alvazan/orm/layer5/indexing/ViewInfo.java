@@ -27,7 +27,7 @@ public class ViewInfo {
 	
 	@Override
 	public String toString() {
-		return "ViewInfo [alias=" + alias + ", table="+tableMeta.getColumnFamily()+"]";
+		return "{" + alias + "/"+tableMeta.getColumnFamily()+"}";
 	}
 
 	public DboTableMeta getTableMeta() {

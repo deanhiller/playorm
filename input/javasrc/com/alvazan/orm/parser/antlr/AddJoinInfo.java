@@ -38,14 +38,14 @@ public class AddJoinInfo {
 		ViewInfo view1 = left.getViewInfo();
 		if(right.isConstant() || right.isParameter()) {
 			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
-			return new JoinMetaComposite(info, info.getJoinType());
+			return new JoinMeta(info, info.getJoinType());
 		}
 		
 		//okay, table vs. table then
 		ViewInfo view2 = right.getViewInfo();
 		if(view1.equals(view2)) {
 			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
-			return new JoinMetaComposite(info, info.getJoinType());
+			return new JoinMeta(info, info.getJoinType());
 		}
 		
 		JoinInfo info = view1.getJoinInfo(view2);
@@ -55,7 +55,7 @@ public class AddJoinInfo {
 					"to happen first.  Rewrite your query. (ie. something like b&(c or a)" +
 					" needs to be rewritten to b&c or b&a as b is in the middle");
 		
-		JoinMetaComposite comp = new JoinMetaComposite(info, info.getJoinType());
+		JoinMeta comp = new JoinMeta(info, info.getJoinType());
 		return comp;
 	}
 

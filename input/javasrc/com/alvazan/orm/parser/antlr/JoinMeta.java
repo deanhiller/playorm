@@ -1,11 +1,37 @@
 package com.alvazan.orm.parser.antlr;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.alvazan.orm.layer5.indexing.JoinType;
 import com.alvazan.orm.layer5.indexing.ViewInfo;
 
-public abstract class JoinMeta {
+public class JoinMeta {
+
+	private Set<JoinInfo> infos = new HashSet<JoinInfo>();
+	private Set<ViewInfo> views = new HashSet<ViewInfo>();
+	private JoinType joinType;
+
+	public JoinMeta(Set<JoinInfo> infos) {
+		this.infos = infos;
+	}
+
+	public JoinMeta(JoinInfo info, JoinType type, Set<JoinInfo> set1, Set<JoinInfo> set2) {
+		this(info, type);
+		addInfos(set1);
+		addInfos(set2);
+	}
+	
+	public JoinMeta(JoinInfo info, JoinType type) {
+		this.infos.add(info);
+		views.addAll(info.getViews());
+		this.joinType = type;
+	}
+	
+	@Override
+	public String toString() {
+		return "["+joinType+",views="+views+"]";
+	}
 
 	public JoinMeta fetchJoinMeta(JoinMeta rightSide) {
 		Set<ViewInfo> views1 = this.getViews();
@@ -17,7 +43,7 @@ public abstract class JoinMeta {
 				if(joinInfo != null) {
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
 					Set<JoinInfo> set2 = rightSide.getJoinInfoSet();
-					JoinMetaComposite meta = new JoinMetaComposite(joinInfo, JoinType.NONE, set1, set2);
+					JoinMeta meta = new JoinMeta(joinInfo, JoinType.NONE, set1, set2);
 					return meta;
 				}
 			}
@@ -29,7 +55,7 @@ public abstract class JoinMeta {
 				if(joinInfo != null) {
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
 					Set<JoinInfo> set2 = rightSide.getJoinInfoSet();
-					JoinMetaComposite meta = new JoinMetaComposite(joinInfo, JoinType.NONE, set1, set2);
+					JoinMeta meta = new JoinMeta(joinInfo, JoinType.NONE, set1, set2);
 					return meta;
 				}
 			}
@@ -41,7 +67,23 @@ public abstract class JoinMeta {
 						" or 3. wait for us to implement the optimizer");
 	}
 
-	protected abstract Set<ViewInfo> getViews();
+	public JoinType getJoinType() {
+		return joinType;
+	}
 
-	protected abstract Set<JoinInfo> getJoinInfoSet();
+	protected Set<JoinInfo> getJoinInfoSet() {
+		return infos;
+	}
+
+	private void addInfos(Set<JoinInfo> set) {
+		infos.addAll(set);
+		
+		for(JoinInfo info : set) {
+			views.addAll(info.getViews());
+		}
+	}
+
+	protected Set<ViewInfo> getViews() {
+		return views;
+	}
 }

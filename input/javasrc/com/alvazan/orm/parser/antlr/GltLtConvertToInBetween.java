@@ -1,7 +1,5 @@
 package com.alvazan.orm.parser.antlr;
 
-import org.mortbay.log.Log;
-
 import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
 
 
@@ -91,8 +89,6 @@ public class GltLtConvertToInBetween {
 		match.getParent().replace(match, betweenExpr);
 		
 		addExpression(betweenExpr, first, match);
-		
-		Log.info("msg="+betweenExpr);
 	}
 
 	private void delete(ParsedNode first) {
