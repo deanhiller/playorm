@@ -45,7 +45,7 @@ public class SqlScanner {
 		walkTheTree(theTree, wiring, facade);
 		validateNoPartitionsMissed(theTree, wiring);
 		ExpressionNode node = wiring.getAstTree();
-		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, wiring, query);
+		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, wiring, facade, query);
 		
 		return newTree;
 	}
@@ -92,7 +92,7 @@ public class SqlScanner {
 			compileFromClause(tree, wiring, facade);
 			break;
 		case NoSqlLexer.JOIN_CLAUSE:
-			compileJoinClause(tree, wiring);
+			compileJoinClause(tree, wiring, facade);
 			break;
 		case NoSqlLexer.PARTITIONS_CLAUSE:
 			compilePartitionsClause(tree, wiring, facade);
@@ -122,7 +122,7 @@ public class SqlScanner {
 
 	@SuppressWarnings("unchecked")
 	private <T> void compileJoinClause(CommonTree tree,
-			InfoForWiring wiring) {
+			InfoForWiring wiring, MetaFacade facade) {
 		List<CommonTree> children = tree.getChildren();
 		
 		for(CommonTree child : children) {
@@ -130,14 +130,14 @@ public class SqlScanner {
 			if(type == NoSqlLexer.LEFT_OUTER_JOIN) {
 				throw new UnsupportedOperationException("do not yet support left out join, please let me know and I can implement quickly");
 			} else if(type == NoSqlLexer.INNER_JOIN) {
-				compileJoin(child, wiring, JoinType.INNER);
+				compileJoin(child, wiring, facade, JoinType.INNER);
 			} else
 				throw new UnsupportedOperationException("bug?, type="+type+" and we don't process that type for joins");
 		}
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T> void compileJoin(CommonTree tree, InfoForWiring wiring, JoinType type) {
+	private <T> void compileJoin(CommonTree tree, InfoForWiring wiring, MetaFacade facade, JoinType type) {
 		List<CommonTree> children = tree.getChildren();
 		CommonTree aliasedColumn = children.get(0);
 		CommonTree aliasNode = (CommonTree) aliasedColumn.getChild(0);
@@ -148,7 +148,7 @@ public class SqlScanner {
 		
 		ViewInfo tableInfo = wiring.getInfoFromAlias(alias);
 		DboTableMeta tableMeta = tableInfo.getTableMeta();
-		DboColumnMeta columnMeta = tableMeta.getColumnMeta(column);
+		DboColumnMeta columnMeta = facade.getFkMetaIfExist(tableMeta, column);
 		if(!(columnMeta instanceof DboColumnToOneMeta))
 			throw new IllegalArgumentException("Column="+column+" on table="+tableMeta.getColumnFamily()+" is NOT a OneToOne NOR ManyToOne relationship according to our meta data");
 		
@@ -371,50 +371,56 @@ public class SqlScanner {
 		case NoSqlLexer.LT:
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
-			node.setNodeType(NodeType.COMPARATOR);
-
-			//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
-			CommonTree leftSide = (CommonTree) expression.getChild(0);
-			CommonTree rightSide = (CommonTree) expression.getChild(1);
-			
-			//This is a VERY difficult issue.  We basically want the type information
-			//first either from the constant OR from the column name, then we want to use
-			//that NOW or later to verify the type of the other side of the equation, BUT which
-			//one has the type information as he needs to go first.  If both are parameters
-			//that are passed in, we have no type information, correct?  :name and :something
-			//could be any types and may not match at all so first let's disallow param to param
-			//matching since developers can do that BEFORE they run the query anyways in the 
-			//java code.  ie. FIRST, let's find the side with type information
-			
-			//screw it, we deleted that code and force you to have one side be a column for now!!!!
-			if(isAttribute(rightSide)) {
-				expression.setChild(0, rightSide);
-				expression.setChild(1, leftSide);
-				CommonTree temp = rightSide;
-				rightSide = leftSide;
-				leftSide = temp;				
-			} else if(!isAttribute(leftSide)) {
-				throw new IllegalArgumentException("Currently, each param in the where clause must be compared to an attribute.  bad query="+wiring.getQuery()+" bad piece="+node);
-			}
-			
-			ExpressionNode left  = new ExpressionNode(leftSide);
-			ExpressionNode right = new ExpressionNode(rightSide);
-			node.setChild(ChildSide.LEFT, left);
-			node.setChild(ChildSide.RIGHT, right);
-			
-			TypeInfo typeInfo = processSide(left, wiring, null, facade);
-			processSide(right, wiring, typeInfo, facade);
-			
-			Object state = left.getState();
-			if(state instanceof StateAttribute) {
-				StateAttribute st = (StateAttribute) state;
-				ViewInfo tableInfo = st.getViewInfo();
-				node.setState(tableInfo, null);
-			}
-			
+			compileComparator(node, wiring, facade, expression);
 			break;
+		case NoSqlLexer.BETWEEN:
+			throw new UnsupportedOperationException("not supported yet, use <= and >= intead for now");
 		default:
 			break;
+		}
+	}
+
+	private static void compileComparator(ExpressionNode node,
+			InfoForWiring wiring, MetaFacade facade, CommonTree expression) {
+		node.setNodeType(NodeType.COMPARATOR);
+
+		//The right side could be value/constant or variable or true or false, or decimal, etc. etc.
+		CommonTree leftSide = (CommonTree) expression.getChild(0);
+		CommonTree rightSide = (CommonTree) expression.getChild(1);
+		
+		//This is a VERY difficult issue.  We basically want the type information
+		//first either from the constant OR from the column name, then we want to use
+		//that NOW or later to verify the type of the other side of the equation, BUT which
+		//one has the type information as he needs to go first.  If both are parameters
+		//that are passed in, we have no type information, correct?  :name and :something
+		//could be any types and may not match at all so first let's disallow param to param
+		//matching since developers can do that BEFORE they run the query anyways in the 
+		//java code.  ie. FIRST, let's find the side with type information
+		
+		//screw it, we deleted that code and force you to have one side be a column for now!!!!
+		if(isAttribute(rightSide)) {
+			expression.setChild(0, rightSide);
+			expression.setChild(1, leftSide);
+			CommonTree temp = rightSide;
+			rightSide = leftSide;
+			leftSide = temp;				
+		} else if(!isAttribute(leftSide)) {
+			throw new IllegalArgumentException("Currently, each param in the where clause must be compared to an attribute.  bad query="+wiring.getQuery()+" bad piece="+node);
+		}
+		
+		ExpressionNode left  = new ExpressionNode(leftSide);
+		ExpressionNode right = new ExpressionNode(rightSide);
+		node.setChild(ChildSide.LEFT, left);
+		node.setChild(ChildSide.RIGHT, right);
+		
+		TypeInfo typeInfo = processSide(left, wiring, null, facade);
+		processSide(right, wiring, typeInfo, facade);
+		
+		Object state = left.getState();
+		if(state instanceof StateAttribute) {
+			StateAttribute st = (StateAttribute) state;
+			ViewInfo tableInfo = st.getViewInfo();
+			node.setState(tableInfo, null);
 		}
 	}
 

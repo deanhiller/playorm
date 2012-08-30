@@ -14,10 +14,6 @@ public interface ParsedNode {
 	
 	void setChild(ChildSide left, ParsedNode nodeToMove);
 
-	boolean isChildOnSide(ChildSide side);
-
-	void addExpression(ParsedNode firstMatch);
-
 	String getAliasAndColumn();
 
 	//For join optimization...
@@ -25,5 +21,11 @@ public interface ParsedNode {
 	boolean isAndOrType();
 	void setJoinMeta(JoinMeta info);
 	JoinMeta getJoinMeta();
+
+	boolean isConstant();
+	boolean isParameter();
+
+	void replace(ParsedNode oldChild, ParsedNode newChild);
+	ParsedNode getOppositeChild(ParsedNode first);
 	
 }

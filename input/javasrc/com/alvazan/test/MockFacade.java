@@ -5,8 +5,11 @@ import java.util.Map;
 
 import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
+import com.alvazan.orm.parser.antlr.ParsedNode;
 
 public class MockFacade implements MetaFacade {
 
@@ -19,7 +22,6 @@ public class MockFacade implements MetaFacade {
 			existing = new DboTableMeta();
 			existing.setColumnFamily(tableName);
 			nameToTable.put(tableName, existing);
-			
 		}
 		return existing;
 	}
@@ -35,6 +37,20 @@ public class MockFacade implements MetaFacade {
 		}
 			
 		return colMeta;
+	}
+
+	@Override
+	public DboColumnMeta getFkMetaIfExist(DboTableMeta tableMeta, String column) {
+		DboTableMeta fkToTable = new DboTableMeta();
+		fkToTable.setColumnFamily("fktable"+System.currentTimeMillis());
+		DboColumnToOneMeta toOne = new DboColumnToOneMeta();
+		toOne.setup(tableMeta, column, fkToTable, true, false);
+		return toOne;
+	}
+
+	@Override
+	public ParsedNode createExpression(int nodeType) {
+		return new ExpressionNode(nodeType);
 	}
 
 	

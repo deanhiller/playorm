@@ -1,5 +1,9 @@
 package com.alvazan.orm.parser.antlr;
 
+import org.mortbay.log.Log;
+
+import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
+
 
 public class GltLtConvertToInBetween {
 
@@ -28,26 +32,26 @@ public class GltLtConvertToInBetween {
 		return secondMatch;
 	}
 
-	public ParsedNode walkAndFixTree(ParsedNode node, String query) {
+	public ParsedNode walkAndFixTree(ParsedNode node, String query, MetaFacade facade) {
 		this.rootNode = node;
-		walkTree(rootNode, query);
+		walkTree(rootNode, query, facade);
 		return rootNode;
 	}
 	
-	public void walkTree(ParsedNode node, String query) {
+	public void walkTree(ParsedNode node, String query, MetaFacade facade) {
 		if(node.getType() != NoSqlLexer.AND && node.getType() != NoSqlLexer.OR)
 			return;  //We are not interested in other nodes, only AND and OR nodes so we can look at their children ourselves
 
-		findProcessMatch(node, ChildSide.RIGHT);
-		findProcessMatch(node, ChildSide.LEFT);
+		findProcessMatch(node, ChildSide.RIGHT, facade);
+		findProcessMatch(node, ChildSide.LEFT, facade);
 		
 		ParsedNode right = node.getChild(ChildSide.RIGHT);
 		ParsedNode left = node.getChild(ChildSide.LEFT);
-		walkTree(right, query);
-		walkTree(left, query);
+		walkTree(right, query, facade);
+		walkTree(left, query, facade);
 	}
 
-	private void findProcessMatch(ParsedNode node, ChildSide side) {
+	private void findProcessMatch(ParsedNode node, ChildSide side, MetaFacade facade) {
 		if(node.getType() != NoSqlLexer.AND)
 			return; // nothing to do
 		
@@ -58,10 +62,10 @@ public class GltLtConvertToInBetween {
 		if(getFirstMatch() == null)
 			processFirstMatch(node, match, side);
 		else if(getSecondMatch() == null)
-			processSecondMatch(node, match);
+			processSecondMatch(node, match, facade);
 		else
 			throw new IllegalArgumentException("Your query uses the column="+aliasAndColumnName
-					+" 3 times in the query with AND every time.  This is not allowed as it only needs to be used twice in and clauses");
+					+" 3 times in the query with AND every time.  This is not allowed as it only needs to be used twice in the 'and' clauses");
 	}
 
 	private ParsedNode findSidesMatch(ParsedNode node, ChildSide side) {
@@ -78,29 +82,53 @@ public class GltLtConvertToInBetween {
 		return null;
 	}
 	
-	private void processSecondMatch(ParsedNode node, ParsedNode match) {
+	private void processSecondMatch(ParsedNode node, ParsedNode match, MetaFacade facade) {
 		setSecondMatch(match);
-		ParsedNode firstMatch = getFirstMatch();
-		match.addExpression(firstMatch);
+		
+		ParsedNode betweenExpr = facade.createExpression(NoSqlLexer.BETWEEN);
+		ParsedNode first = getFirstMatch();
+		delete(first);
+		match.getParent().replace(match, betweenExpr);
+		
+		addExpression(betweenExpr, first, match);
+		
+		Log.info("msg="+betweenExpr);
+	}
+
+	private void delete(ParsedNode first) {
+		ParsedNode parent = first.getParent();
+		ParsedNode nodeToMove = parent.getOppositeChild(first);
+		if(parent == rootNode) {
+			//If we are the root node, the tree is now collapsing and removing root node
+			rootNode = nodeToMove;
+		} else {
+			parent.replace(first, nodeToMove);
+		}
 	}
 
 	private void processFirstMatch(ParsedNode node, ParsedNode match, ChildSide side) {
-		//let's play re-organize the tree now
+		//let's cache for tree organization later
 		setFirstMatch(match);
-		ParsedNode nodeToMove = node.getChild(ChildSide.RIGHT);
-		if(side == ChildSide.RIGHT) {
-			nodeToMove = node.getChild(ChildSide.LEFT);
-		}
 
-		if(node == rootNode) {
-			rootNode = nodeToMove;
-		} else if(node.isChildOnSide(ChildSide.LEFT)) {
-			node.getParent().setChild(ChildSide.LEFT, nodeToMove);
-		} else if(node.isChildOnSide(ChildSide.RIGHT)) {
-			node.getParent().setChild(ChildSide.RIGHT, nodeToMove);
-		} else {
-			throw new RuntimeException("bug, should not get here");
-		}
 	}
-	
+	public void addExpression(ParsedNode betweenExpr, ParsedNode firstMatch, ParsedNode secondMatch) {
+		ParsedNode leftAttributeSide = firstMatch.getChild(ChildSide.LEFT);
+		String aliasAndColumn = leftAttributeSide.getAliasAndColumn();
+
+		if(firstMatch.getType() == NoSqlLexer.EQ || secondMatch.getType() == NoSqlLexer.EQ) {
+			throw new IllegalArgumentException("uhhhmmmm, you are using column="+aliasAndColumn
+					+" twice with 'AND' statement yet one has an = so change to 'OR' or get rid of one. ");
+		} else if(firstMatch.getType() == NoSqlLexer.GE || firstMatch.getType() == NoSqlLexer.GT) {
+			betweenExpr.setChild(ChildSide.LEFT, firstMatch);
+			betweenExpr.setChild(ChildSide.RIGHT, secondMatch);
+			if(secondMatch.getType() == NoSqlLexer.GE || secondMatch.getType() == NoSqlLexer.GT)
+				throw new IllegalArgumentException("You are using > or >= twice on the same column so delete one of those in your query so we don't have to");
+		} else if(firstMatch.getType() == NoSqlLexer.LE || firstMatch.getType() == NoSqlLexer.LT) {
+			betweenExpr.setChild(ChildSide.LEFT, secondMatch);
+			betweenExpr.setChild(ChildSide.RIGHT, firstMatch);
+			if(secondMatch.getType() == NoSqlLexer.LE || secondMatch.getType() == NoSqlLexer.LT)
+				throw new IllegalArgumentException("uhmmmm, you are using column="+aliasAndColumn+" twice(which is fine) but both of them are using less than, delete one of them. ");
+		} else
+			throw new RuntimeException("bug, we should never get here but this should be easy to fix.  ");
+	}
 }

@@ -17,37 +17,40 @@ public class AddJoinInfo {
 	private void walkTheTree(ParsedNode node, InfoForWiring wiring) {
 		ParsedNode left = node.getChild(ChildSide.LEFT);
 		ParsedNode right = node.getChild(ChildSide.RIGHT);
-		if(left.isAndOrType()) {
+		if(node.isAndOrType()) {
 			walkTheTree(left, wiring);
-		}
-		if(right.isAndOrType()) {
 			walkTheTree(right, wiring);
+		} else {
+			//let's find out the join type
+			JoinMeta meta = findDirectJoin(wiring, left, right);
+			node.setJoinMeta(meta);
+			return;
 		}
 		
-		if(!left.isAndOrType() && !right.isAndOrType()) {
-			//let's find out the join type
-			JoinMeta meta = findSimpleJoin(wiring, left, right);
-			node.setJoinMeta(meta);
-		} else {
-			JoinMeta rightType = right.getJoinMeta();
-			JoinMeta leftType = left.getJoinMeta();
-			JoinMeta info = rightType.fetchJoinMeta(leftType);
-			node.setJoinMeta(info);
-		}
+		JoinMeta rightType = right.getJoinMeta();
+		JoinMeta leftType = left.getJoinMeta();
+		JoinMeta info = rightType.fetchJoinMeta(leftType);
+		node.setJoinMeta(info);
 	}
 
-	private JoinMeta findSimpleJoin(InfoForWiring wiring, ParsedNode left,
-			ParsedNode right) {
-		ViewInfo table1 = left.getViewInfo();
-		ViewInfo table2 = right.getViewInfo();
-		if(table1.equals(table2)) {
-			JoinInfo info = new JoinInfo(table1, null, null, null, JoinType.NONE);
+	private JoinMeta findDirectJoin(InfoForWiring wiring, ParsedNode left, ParsedNode right) {
+		//At this point, we know the left will be a table, but the rightside could be a constant or another table or same table
+		ViewInfo view1 = left.getViewInfo();
+		if(right.isConstant() || right.isParameter()) {
+			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
 			return new JoinMetaComposite(info, info.getJoinType());
 		}
 		
-		JoinInfo info = table1.getJoinInfo(table2);
+		//okay, table vs. table then
+		ViewInfo view2 = right.getViewInfo();
+		if(view1.equals(view2)) {
+			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
+			return new JoinMetaComposite(info, info.getJoinType());
+		}
+		
+		JoinInfo info = view1.getJoinInfo(view2);
 		if(info == null)
-			throw new IllegalArgumentException("Sorry, but you have a and/or clause on alias="+table1.getAlias()+" and alias="+table2.getAlias()+
+			throw new IllegalArgumentException("Sorry, but you have a and/or clause on alias="+view1.getAlias()+" and alias="+view2.getAlias()+
 					" where the two tables have another join between them that needs " +
 					"to happen first.  Rewrite your query. (ie. something like b&(c or a)" +
 					" needs to be rewritten to b&c or b&a as b is in the middle");

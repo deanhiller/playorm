@@ -28,6 +28,13 @@ public class TestGrammar {
 		wiring = new InfoForWiring("<thequery>", null);
 		facade = new MockFacade();
 	}
+	@Test
+	public void testBetween() {
+		String sql = "select p FROM MyTable as p where p.leftside between :asfd and :ff";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("(p.leftside between :asfd and :ff)", result);
+	}
 	
 	@Test
 	public void testGrammar() throws RecognitionException {
@@ -50,7 +57,7 @@ public class TestGrammar {
 		Assert.assertEquals("(:asfd < p.leftside <= :fdfd and :ff <= p.rightside < :tttt)", result);
 	}
 	
-	@Test
+	//@Test
 	public void testRewriteJoin() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
@@ -79,7 +86,7 @@ public class TestGrammar {
 		Assert.assertEquals("p.numShares =:shares and p.something = :something", result);
 	}
 	
-	//@Test
+	@Test
 	public void testLargeTree() {
 		String sql = "select a FROM TABLE as a INNER JOIN a.security as d INNER JOIN a.something as b INNER JOIN b.some as e" +
 				" INNER JOIN b.two as g INNER JOIN g.two as f INNER JOIN f.try as h" +

@@ -4,6 +4,8 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.layer5.indexing.ExpressionNode;
+import com.alvazan.orm.parser.antlr.ParsedNode;
 
 public class MetaFacadeImpl implements MetaFacade {
 
@@ -16,6 +18,11 @@ public class MetaFacadeImpl implements MetaFacade {
 	}
 
 	@Override
+	public ParsedNode createExpression(int nodeType) {
+		return new ExpressionNode(nodeType);
+	}
+	
+	@Override
 	public DboTableMeta getColumnFamily(String tableName) {
 		DboTableMeta metaClass = metaInfo.getMeta(tableName);
 		if(metaClass == null && mgr != null)
@@ -27,5 +34,12 @@ public class MetaFacadeImpl implements MetaFacade {
 	public DboColumnMeta getColumnMeta(DboTableMeta metaClass, String columnName) {
 		return metaClass.getColumnMeta(columnName);
 	}
+
+	@Override
+	public DboColumnMeta getFkMetaIfExist(DboTableMeta tableMeta, String column) {
+		DboColumnMeta columnMeta = tableMeta.getColumnMeta(column);
+		return columnMeta;
+	}
+
 
 }
