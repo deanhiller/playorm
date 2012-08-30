@@ -55,7 +55,7 @@ public class JoinMeta {
 				if(joinInfo != null) {
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
 					Set<JoinInfo> set2 = rightSide.getJoinInfoSet();
-					JoinMeta meta = new JoinMeta(joinInfo, JoinType.NONE, set1, set2);
+					JoinMeta meta = new JoinMeta(joinInfo, joinInfo.getJoinType(), set1, set2);
 					return meta;
 				}
 			}
