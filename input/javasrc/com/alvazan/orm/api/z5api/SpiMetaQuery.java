@@ -1,5 +1,8 @@
 package com.alvazan.orm.api.z5api;
 
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+
 
 
 
@@ -21,8 +24,11 @@ public interface SpiMetaQuery {
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
 	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session);
-	
-	
-	//public void setASTTree(ExpressionNode node);
+
+	public TypeInfo getMetaFieldByParameter(String name);
+
+	public String getQuery();
+
+	public DboTableMeta getTargetTable();
 	
 }

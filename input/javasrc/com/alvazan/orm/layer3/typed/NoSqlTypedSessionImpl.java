@@ -7,9 +7,9 @@ import javax.inject.Inject;
 
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.QueryParser;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
@@ -129,8 +129,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
-		MetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
+		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
+		
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
 		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		Iterable<byte[]> indexIterable = new IterableIndex(iter);

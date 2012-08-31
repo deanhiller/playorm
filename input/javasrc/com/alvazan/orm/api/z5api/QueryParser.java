@@ -6,8 +6,7 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(ScannerForQuery.class)
 public interface QueryParser {
 
-	@SuppressWarnings("rawtypes")
-	public MetaQuery parseQueryForAdHoc(String query, Object mgr);
+	public SpiMetaQuery parseQueryForAdHoc(String query, Object mgr);
 		
 	/**
 	 * For ORM layer that want to use TABLE as the alias instead of typing Entity name which allows
@@ -17,8 +16,7 @@ public interface QueryParser {
 	 * @param targetTable
 	 * @return
 	 */
-	@SuppressWarnings("rawtypes")
-	public MetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg);
+	public SpiMetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg);
 	
 	public void close();
 	

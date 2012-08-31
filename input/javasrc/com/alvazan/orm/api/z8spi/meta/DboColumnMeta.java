@@ -13,8 +13,8 @@ import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.z8spi.Row;
-import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.conv.Converters.BaseConverter;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 
 @SuppressWarnings("rawtypes")
 @NoSqlEntity

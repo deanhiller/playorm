@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -24,7 +24,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	
 	protected MetaIdField<T> idField;
 	
-	private Map<String, MetaQuery<T>> queryInfo = new HashMap<String, MetaQuery<T>>();
+	private Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 	
 	public Object fetchId(T entity) {
 		if(entity == null)
@@ -83,14 +83,14 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		return metaDbo;
 	}
 	
-	public MetaQuery<T> getNamedQuery(String name) {
-		MetaQuery<T> query = queryInfo.get(name);
+	public SpiMetaQuery getNamedQuery(String name) {
+		SpiMetaQuery query = queryInfo.get(name);
 		if(query == null)
 			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+this.metaClass.getName());
 		return query;
 	}
 
-	public void addQuery(String name, MetaQuery<T> metaQuery) {
+	public void addQuery(String name, SpiMetaQuery metaQuery) {
 		queryInfo.put(name, metaQuery);
 	}
 

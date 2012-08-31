@@ -16,7 +16,7 @@ import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z5api.MetaQuery;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -24,8 +24,8 @@ import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-//import com.alvazan.orm.layer3.typed.IterableIndex;
 import com.alvazan.orm.layer3.typed.IterableIndex;
+//import com.alvazan.orm.layer3.typed.IterableIndex;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -33,15 +33,15 @@ public class QueryAdapter<T> implements Query<T> {
 	@Inject
 	private MetaInfo metaInfo;
 	
-	private MetaQuery<T> meta;
+	private SpiMetaQuery meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
 	private Integer batchSize;
 	private MetaClass<T> mainMetaClass;
 
-	public void setup(MetaClass<T> target, MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
+	public void setup(MetaClass<T> target, SpiMetaQuery metaQuery, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
 		this.mainMetaClass = target;
-		this.meta = meta;
+		this.meta = metaQuery;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
 	}

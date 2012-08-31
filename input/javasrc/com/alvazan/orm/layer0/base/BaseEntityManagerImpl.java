@@ -10,8 +10,8 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
-import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -138,9 +138,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
-		MetaQuery<T> metaQuery = metaClass.getNamedQuery(namedQuery);
+		SpiMetaQuery metaQuery = metaClass.getNamedQuery(namedQuery);
 		
-		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(session);
+		SpiQueryAdapter spiAdapter = metaQuery.createQueryInstanceFromQuery(session);
 		
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads

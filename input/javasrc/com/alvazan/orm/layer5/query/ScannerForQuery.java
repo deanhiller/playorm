@@ -6,8 +6,8 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
-import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.QueryParser;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
@@ -16,7 +16,6 @@ import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParseQueryException;
 import com.alvazan.orm.parser.antlr.ScannerSql;
 
-@SuppressWarnings("rawtypes")
 public class ScannerForQuery implements QueryParser {
 
 	@Inject
@@ -27,22 +26,20 @@ public class ScannerForQuery implements QueryParser {
 	@Inject
 	private DboDatabaseMeta metaInfo;
 	@Inject
-	private Provider<MetaQueryImpl> metaQueryFactory;
-	@Inject
 	private ScannerSql compiler;
 	
 	@Override
-	public MetaQuery parseQueryForAdHoc(String query, Object mgr) {		
-		MetaQuery metaQuery = newsetupByVisitingTree(query, null, mgr, "Query="+query+". ");
+	public SpiMetaQuery parseQueryForAdHoc(String query, Object mgr) {		
+		SpiMetaQuery metaQuery = newsetupByVisitingTree(query, null, mgr, "Query="+query+". ");
 		return metaQuery;
 	}
 
 	@Override
-	public MetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg) {
+	public SpiMetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg) {
 		return newsetupByVisitingTree(query, targetTable, null, errorMsg);
 	}
 
-	private MetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr, String errorMsg) {
+	private SpiMetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr, String errorMsg) {
 		try {
 			return newsetupByVisitingTreeImpl(query, targetTable, mgr, errorMsg);
 		} catch(ParseQueryException e) {
@@ -53,21 +50,19 @@ public class ScannerForQuery implements QueryParser {
 		}
 	}
 	
-	@SuppressWarnings({ "unchecked" })
-	private MetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, Object mgr, String errorMsg) {
-		MetaQueryImpl visitor1 = metaQueryFactory.get();
+	private SpiMetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, Object mgr, String errorMsg) {
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
-		visitor1.initialize(query, spiMetaQuery);
 
 		InfoForWiring wiring = new InfoForWiring(query, targetTable);
 		MetaFacade facade = new MetaFacadeImpl((NoSqlEntityManager)mgr, metaInfo);
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		
 		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
-		visitor1.setParameterFieldMap(wiring.getParameterFieldMap());
-		visitor1.setTargetTable(wiring.getMetaQueryTargetTable());
+		spiMetaQuery.setQuery(query);
+		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
+		spiMetaQuery.setTargetTable(wiring.getMetaQueryTargetTable());
 		
-		return visitor1;
+		return spiMetaQuery;
 	}
 	
 	@Override

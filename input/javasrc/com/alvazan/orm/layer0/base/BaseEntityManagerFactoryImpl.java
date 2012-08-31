@@ -18,8 +18,8 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.QueryParser;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -131,7 +131,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		rescan(classToScan, cl);
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "rawtypes" })
 	public void setupQueryStuff(MetaAbstractClass classMeta) {
 		Class<?> clazz = classMeta.getMetaClass();
 		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
@@ -148,13 +148,13 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		//log.info("Parsing queries for entity="+classMeta.getMetaClass());
 		for(NoSqlQuery query : theQueries) {
 			log.info("["+classMeta.getMetaClass().getSimpleName()+"]parsing query="+query.name()+" query="+query.query());
-			MetaQuery metaQuery = createQueryAndAdd(classMeta, query);
+			SpiMetaQuery metaQuery = createQueryAndAdd(classMeta, query);
 			classMeta.addQuery(query.name(), metaQuery);
 		}
 	}
 
 	@SuppressWarnings("rawtypes")
-	private MetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
+	private SpiMetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
 		// parse and setup this query once here to be used by ALL of the
 		// SpiIndexQuery objects.
 		// NOTE: This is meta data to be re-used by all threads and all
@@ -165,7 +165,7 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		// The second visitor is the SPI Index so it can create it's "prototype"
 		// query (prototype pattern)
 		String errorMsg = "Named Query on class "+classMeta.getMetaClass().getName()+" (name=\""+query.name()+"\",query=\""+query.query()+"\")";
-		MetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily(), errorMsg);
+		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForOrm(query.query(), classMeta.getColumnFamily(), errorMsg);
 
 		return metaQuery;
 	}
