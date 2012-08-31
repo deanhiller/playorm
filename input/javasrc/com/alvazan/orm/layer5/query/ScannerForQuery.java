@@ -27,7 +27,7 @@ public class ScannerForQuery implements QueryParser {
 	@Inject
 	private DboDatabaseMeta metaInfo;
 	@Inject
-	private Provider<MetaQuery> metaQueryFactory;
+	private Provider<MetaQueryImpl> metaQueryFactory;
 	@Inject
 	private ScannerSql compiler;
 	
@@ -55,7 +55,7 @@ public class ScannerForQuery implements QueryParser {
 	
 	@SuppressWarnings({ "unchecked" })
 	private MetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, Object mgr, String errorMsg) {
-		MetaQuery visitor1 = metaQueryFactory.get();
+		MetaQueryImpl visitor1 = metaQueryFactory.get();
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
 		visitor1.initialize(query, spiMetaQuery);
 
