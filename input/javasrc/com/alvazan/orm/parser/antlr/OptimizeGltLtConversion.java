@@ -1,16 +1,15 @@
 package com.alvazan.orm.parser.antlr;
 
-import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
 
 
-public class GltLtConvertToInBetween {
+public class OptimizeGltLtConversion {
 
 	private String aliasAndColumnName;
 	private ParsedNode firstMatch;
 	private ParsedNode secondMatch;
 	private ParsedNode rootNode;
 	
-	public GltLtConvertToInBetween(String aliasAndColumnName) {
+	public OptimizeGltLtConversion(String aliasAndColumnName) {
 		this.aliasAndColumnName = aliasAndColumnName;
 	}
 

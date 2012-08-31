@@ -22,13 +22,14 @@ import com.alvazan.orm.api.spi5.NoSqlSession;
 import com.alvazan.orm.api.spi5.SpiQueryAdapter;
 import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
-public class BaseEntityManagerImpl implements NoSqlEntityManager {
+public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;

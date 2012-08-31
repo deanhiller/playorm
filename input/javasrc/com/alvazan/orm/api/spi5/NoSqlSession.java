@@ -7,6 +7,7 @@ import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -70,6 +71,6 @@ public interface NoSqlSession {
 	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	
-	public void setOrmSessionForMeta(Object entityMgr);
+	public void setOrmSessionForMeta(MetaLookup entityMgr);
 
 }

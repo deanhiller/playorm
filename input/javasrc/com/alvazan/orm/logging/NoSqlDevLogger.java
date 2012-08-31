@@ -16,6 +16,7 @@ import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Row;
 import com.alvazan.orm.api.spi9.db.ScanInfo;
@@ -104,7 +105,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 	
 	@Override
-	public void setOrmSessionForMeta(Object orm) {
+	public void setOrmSessionForMeta(MetaLookup orm) {
 		session.setOrmSessionForMeta(orm);
 	}
 

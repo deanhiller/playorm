@@ -21,6 +21,7 @@ import com.alvazan.orm.api.spi9.db.Column;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -64,7 +65,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions, Object ormSession) {
+	public void sendChanges(List<Action> actions, MetaLookup ormSession) {
 		sendChangesImpl(actions, ormSession);
 	}
 	

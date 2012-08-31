@@ -28,6 +28,7 @@ import com.alvazan.orm.layer5.indexing.StateAttribute;
 import com.alvazan.orm.layer5.indexing.ViewInfo;
 import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.JoinInfo;
+import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.NoSqlParser;
 import com.alvazan.orm.parser.antlr.Optimizer;
@@ -45,7 +46,9 @@ public class SqlScanner {
 		walkTheTree(theTree, wiring, facade);
 		validateNoPartitionsMissed(theTree, wiring);
 		ExpressionNode node = wiring.getAstTree();
-		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, wiring, facade, query);
+		
+		facade.setAttributeUserCount(wiring.getAttributeUsedCount());
+		ExpressionNode newTree = (ExpressionNode) optimizer.optimize(node, facade, query);
 		
 		return newTree;
 	}

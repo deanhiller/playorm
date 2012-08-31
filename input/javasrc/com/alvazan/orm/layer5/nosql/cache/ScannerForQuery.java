@@ -9,6 +9,7 @@ import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.MetaQuery;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
 import com.alvazan.orm.layer5.indexing.SpiMetaQueryImpl;
+import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParseQueryException;
 
 @SuppressWarnings("rawtypes")
@@ -51,7 +52,6 @@ public class ScannerForQuery {
 
 		InfoForWiring wiring = new InfoForWiring(query, targetTable);
 		MetaFacade facade = new MetaFacadeImpl((NoSqlEntityManager)mgr, metaInfo);
-		
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		
 		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());

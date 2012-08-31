@@ -8,12 +8,13 @@ import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.layer5.indexing.ExpressionNode;
-import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
+import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParsedNode;
 
 public class MockFacade implements MetaFacade {
 
 	private Map<String, DboTableMeta> nameToTable = new HashMap<String, DboTableMeta>();
+	private Map<String, Integer> attributeUsedCnt;
 	
 	@Override
 	public DboTableMeta getColumnFamily(String tableName) {
@@ -51,6 +52,16 @@ public class MockFacade implements MetaFacade {
 	@Override
 	public ParsedNode createExpression(int nodeType) {
 		return new ExpressionNode(nodeType);
+	}
+
+	@Override
+	public Map<String, Integer> getAttributeUsedCount() {
+		return attributeUsedCnt;
+	}
+
+	@Override
+	public void setAttributeUserCount(Map<String, Integer> attributeUsedCount) {
+		attributeUsedCnt = attributeUsedCount;
 	}
 
 	

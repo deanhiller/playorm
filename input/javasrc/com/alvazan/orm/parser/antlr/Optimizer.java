@@ -6,40 +6,35 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.layer5.nosql.cache.InfoForWiring;
-import com.alvazan.orm.layer5.nosql.cache.MetaFacade;
-
 public class Optimizer {
 
 	private final static Logger log = LoggerFactory.getLogger(Optimizer.class);
 	
-	public ParsedNode optimize(ParsedNode node,
-			InfoForWiring wiring, MetaFacade facade, String query) {
+	public ParsedNode optimize(ParsedNode node, MetaFacade facade, String query) {
 		if(node == null)
 			return null;
 		
-		ParsedNode root = optimizeGtLtToBetween(node, wiring, query, facade);
+		ParsedNode root = optimizeGtLtToBetween(node, query, facade);
 		
-		root = addJoinInformation(root, wiring);
+		root = addJoinInformation(root);
 		
 		return root;
 	}
 
-	private ParsedNode addJoinInformation(ParsedNode root, InfoForWiring wiring) {
-		AddJoinInfo treeWalker = new AddJoinInfo();
-		return treeWalker.walkTree(root, wiring);
+	private ParsedNode addJoinInformation(ParsedNode root) {
+		OptimizeAddJoinInfo treeWalker = new OptimizeAddJoinInfo();
+		return treeWalker.walkTree(root);
 	}
 
-	private ParsedNode optimizeGtLtToBetween(ParsedNode node,
-			InfoForWiring wiring, String query, MetaFacade facade) {
-		Map<String, Integer> attrs = wiring.getAttributeUsedCount();
+	private ParsedNode optimizeGtLtToBetween(ParsedNode node, String query, MetaFacade facade) {
+		Map<String, Integer> attrs = facade.getAttributeUsedCount();
 		ParsedNode root = node;
 		for(Entry<String, Integer> m : attrs.entrySet()) {
 			if(m.getValue().intValue() <= 1)
 				continue;
 			
 			log.info("optimizing query tree for varname="+m.getKey());
-			GltLtConvertToInBetween visitor = new GltLtConvertToInBetween(m.getKey());
+			OptimizeGltLtConversion visitor = new OptimizeGltLtConversion(m.getKey());
 			root = visitor.walkAndFixTree(root, query, facade);
 		}
 		return root;

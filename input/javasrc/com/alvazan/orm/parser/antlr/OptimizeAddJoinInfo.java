@@ -2,24 +2,23 @@ package com.alvazan.orm.parser.antlr;
 
 import com.alvazan.orm.layer5.indexing.JoinType;
 import com.alvazan.orm.layer5.indexing.ViewInfo;
-import com.alvazan.orm.layer5.nosql.cache.InfoForWiring;
 
-public class AddJoinInfo {
+public class OptimizeAddJoinInfo {
 
 	private ParsedNode root;
 
-	public ParsedNode walkTree(ParsedNode originalRoot, InfoForWiring wiring) {
+	public ParsedNode walkTree(ParsedNode originalRoot) {
 		this.root = originalRoot;
-		walkTheTree(originalRoot, wiring);
+		walkTheTree(originalRoot);
 		return this.root;
 	}
 
-	private void walkTheTree(ParsedNode node, InfoForWiring wiring) {
+	private void walkTheTree(ParsedNode node) {
 		ParsedNode left = node.getChild(ChildSide.LEFT);
 		ParsedNode right = node.getChild(ChildSide.RIGHT);
 		if(node.isAndOrType()) {
-			walkTheTree(left, wiring);
-			walkTheTree(right, wiring);
+			walkTheTree(left);
+			walkTheTree(right);
 			
 			JoinMeta rightType = right.getJoinMeta();
 			JoinMeta leftType = left.getJoinMeta();
@@ -37,11 +36,11 @@ public class AddJoinInfo {
 		}
 		
 		//let's find out the join type
-		JoinMeta meta = findDirectJoin(wiring, left, right);
+		JoinMeta meta = findDirectJoin(left, right);
 		node.setJoinMeta(meta);
 	}
 
-	private JoinMeta findDirectJoin(InfoForWiring wiring, ParsedNode left, ParsedNode right) {
+	private JoinMeta findDirectJoin(ParsedNode left, ParsedNode right) {
 		//At this point, we know the left will be a table, but the rightside could be a constant or another table or same table
 		ViewInfo view1 = left.getViewInfo();
 		if(right.isConstant() || right.isParameter()) {

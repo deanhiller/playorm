@@ -1,8 +1,9 @@
-package com.alvazan.orm.layer5.nosql.cache;
+package com.alvazan.orm.parser.antlr;
+
+import java.util.Map;
 
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.parser.antlr.ParsedNode;
 
 public interface MetaFacade {
 
@@ -13,5 +14,9 @@ public interface MetaFacade {
 	DboColumnMeta getFkMetaIfExist(DboTableMeta tableMeta, String column);
 
 	ParsedNode createExpression(int nodeType);
+
+	Map<String, Integer> getAttributeUsedCount();
+
+	void setAttributeUserCount(Map<String, Integer> attributeUsedCount);
 
 }

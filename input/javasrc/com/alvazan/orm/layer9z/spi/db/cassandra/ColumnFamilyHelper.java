@@ -14,13 +14,13 @@ import org.apache.cassandra.db.marshal.UTF8Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Bootstrap;
-import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
 import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.spi3.meta.DboTableMeta;
 import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
 import com.alvazan.orm.api.spi9.db.ColumnType;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
+import com.alvazan.orm.api.spi9.db.SpiConstants;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
@@ -74,7 +74,7 @@ public class ColumnFamilyHelper {
 //		Object seedsObj = properties.get(Bootstrap.SEEDS);
 //		Object keyspaceNameObj = properties.get(Bootstrap.KEYSPACE);
 //		Object clusterNameObj = properties.get(Bootstrap.CLUSTER_NAME);
-		Object builderObj = properties.get(Bootstrap.CASSANDRA_BUILDER);
+		Object builderObj = properties.get(SpiConstants.CASSANDRA_BUILDER);
 //		if(seedsObj == null || !(seedsObj instanceof String))
 //			throw new IllegalArgumentException("The property Bootstrap.HOST was not in the Map or was in the Map but not as a String");
 //		else if(keyspaceNameObj == null || !(keyspaceNameObj instanceof String))
@@ -195,7 +195,7 @@ public class ColumnFamilyHelper {
 		return info;
 	}
 	
-	public Info lookupOrCreate2(String colFamily, NoSqlEntityManager mgr) {
+	public Info lookupOrCreate2(String colFamily, MetaLookup ormSession) {
 		//There is a few possibilities here
 		//1. Another server already created the CF while we were online in which case we just need to load it into memory
 		//2. No one has created the CF yet
@@ -204,7 +204,7 @@ public class ColumnFamilyHelper {
 		Info info = fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//no one has created the CF yet so we need to create it.
-			createColFamily(colFamily, mgr);
+			createColFamily(colFamily, ormSession);
 		}
 		
 		return fetchColumnFamilyInfo(colFamily);
@@ -261,10 +261,10 @@ public class ColumnFamilyHelper {
 		}
 	}
 
-	private synchronized void createColFamily(String colFamily, NoSqlEntityManager mgr) {
+	private synchronized void createColFamily(String colFamily, MetaLookup ormSession) {
 		try {
 			long start = System.currentTimeMillis();
-			createColFamilyImpl(colFamily, mgr);
+			createColFamilyImpl(colFamily, ormSession);
 			long total = System.currentTimeMillis() - start;
 			if(log.isInfoEnabled())
 				log.info("Total time to CREATE column family in cassandra and wait for all nodes to update="+total);
@@ -274,7 +274,7 @@ public class ColumnFamilyHelper {
 		}
 	}
 	
-	private synchronized void createColFamilyImpl(String colFamily, NoSqlEntityManager mgr) {
+	private synchronized void createColFamilyImpl(String colFamily, MetaLookup ormSession) {
 		if(existingColumnFamilies2.get(colFamily.toLowerCase()) != null)
 			return;
 			
@@ -284,7 +284,7 @@ public class ColumnFamilyHelper {
 		if(cf == null) {
 			//check the database now for the meta since it was not found in the ORM meta data.  This is for
 			//those that are modifying meta data themselves
-			cf = mgr.find(DboTableMeta.class, colFamily);
+			cf = ormSession.find(DboTableMeta.class, colFamily);
 			log.info("cf from db="+cf);
 		}
 		

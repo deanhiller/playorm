@@ -3,6 +3,7 @@ package com.alvazan.orm.api.base;
 import java.util.Map;
 
 import com.alvazan.orm.api.spi3.meta.conv.Converter;
+import com.alvazan.orm.api.spi9.db.SpiConstants;
 
 @SuppressWarnings("rawtypes")
 public abstract class Bootstrap {
@@ -12,7 +13,7 @@ public abstract class Bootstrap {
 	public static final String SEEDS = "nosql.host";
 	public static final String KEYSPACE = "nosql.keyspace";
 	public static final String CLUSTER_NAME = "nosql.clustername";
-	public static final String CASSANDRA_BUILDER = "nosql.cassandra.builder";
+	public static final String CASSANDRA_BUILDER = SpiConstants.CASSANDRA_BUILDER;
 
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		return create(type, "com.alvazan.orm.impl.bindings.BootstrapImpl", properties, converters, cl);

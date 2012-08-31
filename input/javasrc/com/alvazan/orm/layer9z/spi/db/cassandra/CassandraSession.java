@@ -10,7 +10,6 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.spi9.db.Action;
 import com.alvazan.orm.api.spi9.db.BatchListener;
 import com.alvazan.orm.api.spi9.db.Column;
@@ -18,6 +17,7 @@ import com.alvazan.orm.api.spi9.db.ColumnType;
 import com.alvazan.orm.api.spi9.db.IndexColumn;
 import com.alvazan.orm.api.spi9.db.Key;
 import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.spi9.db.MetaLookup;
 import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
 import com.alvazan.orm.api.spi9.db.Persist;
 import com.alvazan.orm.api.spi9.db.PersistIndex;
@@ -130,25 +130,25 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions, Object ormSession) {
+	public void sendChanges(List<Action> actions, MetaLookup ormSession) {
 		try {
-			sendChangesImpl(actions, (NoSqlEntityManager) ormSession);
+			sendChangesImpl(actions, ormSession);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
+	public void sendChangesImpl(List<Action> actions, MetaLookup ormSession) throws ConnectionException {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		MutationBatch m = keyspace.prepareMutationBatch();
 		//MutationBatch m = m1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		
 		for(Action action : actions) {
 			if(action instanceof Persist) {
-				persist((Persist)action, mgr, m);
+				persist((Persist)action, ormSession, m);
 			} else if(action instanceof Remove) {
 				remove((Remove)action, m);
 			} else if(action instanceof PersistIndex) {
-				persistIndex((PersistIndex)action, mgr, m);
+				persistIndex((PersistIndex)action, ormSession, m);
 			} else if(action instanceof RemoveIndex) {
 				removeIndex((RemoveIndex)action, m);
 			}
@@ -190,7 +190,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 
-	private void persistIndex(PersistIndex action, NoSqlEntityManager mgr, MutationBatch m) {
+	private void persistIndex(PersistIndex action, MetaLookup mgr, MutationBatch m) {
 		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), mgr);
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -233,9 +233,9 @@ public class CassandraSession implements NoSqlRawSession {
 		return toPersist;
 	}
 	
-	private void persist(Persist action, NoSqlEntityManager mgr, MutationBatch m) {
+	private void persist(Persist action, MetaLookup ormSession, MutationBatch m) {
 		
-		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), mgr);
+		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), ormSession);
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
