@@ -6,9 +6,8 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
-import com.alvazan.orm.api.z3api.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.z3api.meta.MetaQuery;
-import com.alvazan.orm.api.z3api.meta.QueryParser;
+import com.alvazan.orm.api.z5api.MetaQuery;
+import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
@@ -32,13 +31,10 @@ public class ScannerForQuery implements QueryParser {
 	@Inject
 	private ScannerSql compiler;
 	
-	public MetaAndIndexTuple parseQueryForAdHoc(String query, Object mgr) {		
+	@Override
+	public MetaQuery parseQueryForAdHoc(String query, Object mgr) {		
 		MetaQuery metaQuery = newsetupByVisitingTree(query, null, mgr, "Query="+query+". ");
-		
-		MetaAndIndexTuple tuple = new MetaAndIndexTuple();
-		tuple.setMetaQuery(metaQuery);
-		//tuple.setIndexName(split[1]);
-		return tuple;
+		return metaQuery;
 	}
 
 	@Override

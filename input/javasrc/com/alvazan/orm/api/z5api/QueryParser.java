@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.z3api.meta;
+package com.alvazan.orm.api.z5api;
 
 import com.alvazan.orm.layer5.query.ScannerForQuery;
 import com.google.inject.ImplementedBy;
@@ -6,7 +6,8 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(ScannerForQuery.class)
 public interface QueryParser {
 
-	public MetaAndIndexTuple parseQueryForAdHoc(String query, Object mgr);
+	@SuppressWarnings("rawtypes")
+	public MetaQuery parseQueryForAdHoc(String query, Object mgr);
 		
 	/**
 	 * For ORM layer that want to use TABLE as the alias instead of typing Entity name which allows

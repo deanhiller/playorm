@@ -2,7 +2,7 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.util.List;
 
-import com.alvazan.orm.api.z3api.meta.MetaQuery;
+import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;

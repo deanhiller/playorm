@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.z3api.meta.MetaQuery;
+import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;

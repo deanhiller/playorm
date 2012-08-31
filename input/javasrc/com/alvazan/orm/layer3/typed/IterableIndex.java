@@ -2,7 +2,7 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
 
 public class IterableIndex implements Iterable<byte[]> {
 

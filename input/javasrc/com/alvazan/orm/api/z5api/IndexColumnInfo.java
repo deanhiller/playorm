@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.z3api.meta;
+package com.alvazan.orm.api.z5api;
 
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;

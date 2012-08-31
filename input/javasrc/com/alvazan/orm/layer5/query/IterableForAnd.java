@@ -2,7 +2,7 @@ package com.alvazan.orm.layer5.query;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.util.CachingIterator;
 

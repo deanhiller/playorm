@@ -6,7 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.Key;

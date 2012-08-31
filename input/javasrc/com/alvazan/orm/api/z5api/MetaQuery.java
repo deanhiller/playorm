@@ -1,11 +1,8 @@
-package com.alvazan.orm.api.z3api.meta;
+package com.alvazan.orm.api.z5api;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z5api.SpiMetaQuery;
-import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 
@@ -16,9 +13,6 @@ public class MetaQuery<T> {
 	
 	private SpiMetaQuery spiMetaQuery;
 	private String query;
-
-	//NOTE: This is really JUST for ad-hoc query tool
-	private String indexName;
 
 	private DboTableMeta targetTable;
 	
@@ -42,10 +36,6 @@ public class MetaQuery<T> {
 
 	public SpiQueryAdapter createSpiMetaQuery(NoSqlSession session) {
 		return spiMetaQuery.createQueryInstanceFromQuery(session);
-	}
-
-	public String getIndexName() {
-		return indexName;
 	}
 
 	public void setTargetTable(DboTableMeta metaClass) {

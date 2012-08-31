@@ -96,12 +96,7 @@ public class ExpressionNode implements ParsedNode {
 			String line = greaterThanRightVar+greaterThanSign+greaterThanLeftCol+lessThanSign+lessThanRightVar;
 			return line;
 		} else if(leftChild != null && rightChild != null) {
-			String joinType = "";
-			if(joinMeta != null) {
-				if(joinMeta.getJoinType() == JoinType.INNER)
-					joinType = "(innerjoin)";
-			}
-			
+			String joinType = fetchJoinType();
 			String msg = leftChild.getExpressionAsString(false)+" "+this.commonNode+joinType+" "+rightChild.getExpressionAsString(false);
 			if(getType() == NoSqlLexer.AND || getType() == NoSqlLexer.OR)
 				return "("+msg+")";
@@ -109,6 +104,14 @@ public class ExpressionNode implements ParsedNode {
 		}
 		
 		return textInSql;
+	}
+
+	private String fetchJoinType() {
+		if(joinMeta != null) {
+			if(joinMeta.getJoinType() == JoinType.INNER)
+				return "(innerjoin)";
+		}
+		return "";
 	}
 
 	@Override

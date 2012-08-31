@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.util.CachingIterator;
 

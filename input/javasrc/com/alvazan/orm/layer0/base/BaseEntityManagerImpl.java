@@ -10,7 +10,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
-import com.alvazan.orm.api.z3api.meta.MetaQuery;
+import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;

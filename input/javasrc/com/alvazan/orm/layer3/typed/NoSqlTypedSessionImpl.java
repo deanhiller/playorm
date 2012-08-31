@@ -6,11 +6,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
-import com.alvazan.orm.api.z3api.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.z3api.meta.MetaQuery;
-import com.alvazan.orm.api.z3api.meta.QueryParser;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.MetaQuery;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
@@ -130,8 +129,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
-		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
-		MetaQuery metaQuery = tuple.getMetaQuery();
+		MetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
 		
 		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();

@@ -1,6 +1,5 @@
 package com.alvazan.orm.api.z5api;
 
-import com.alvazan.orm.api.z3api.meta.IndexColumnInfo;
 
 
 public interface SpiQueryAdapter {

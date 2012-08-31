@@ -44,11 +44,6 @@
 	<depends>api8</depends>
 </package>
 
-<package name="dbmeta" package="com.alvazan.orm.api.z3api.meta" subpackages="include">
-	<depends>api5</depends>
-	<depends>api8</depends>
-</package>
-
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
     <depends>api3</depends>
 	<depends>api5</depends>
@@ -91,15 +86,13 @@
 	<depends>metascan</depends>
 	<depends>metadata</depends>
 	<depends>annotationParser</depends>
+	<!-- I hate this dependency on another impl... -->
 	<depends>typedlayer</depends>
 </package>
 
 <package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
-	<depends>api</depends>
-	<depends>api5</depends>
-	<depends>api8</depends>
+	<depends>allapis</depends>
 	<depends>util</depends>
-	<depends>dbmeta</depends>
 	<depends>ourParser</depends>
 </package>
 
