@@ -70,7 +70,7 @@ public interface NoSqlSession {
 	 * @return
 	 */
 	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
+	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	
 	public void setOrmSessionForMeta(MetaLookup entityMgr);
 

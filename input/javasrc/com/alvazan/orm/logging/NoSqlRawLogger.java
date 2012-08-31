@@ -11,6 +11,7 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -139,7 +140,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
@@ -147,19 +148,19 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			list = new LogBatchFetch(l, batchSize);
 		}
 		
-		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
+		Cursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
 		
 		return ret;
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
 			list = new LogBatchFetch(l, batchSize);
 		}
-		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize, list);
+		Cursor<IndexColumn> ret = session.scanIndex(info, from, to, batchSize, list);
 		return ret;
 	}
 	

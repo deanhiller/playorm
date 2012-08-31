@@ -12,6 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -86,10 +87,11 @@ public class TestColumnSlice {
 
 		byte[] from = toDecBytes(-250);
 		byte[] to = toDecBytes(12);
-		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
+		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
-		for(Column col : results) {
+		while(results.hasNext()) {
+			Column col = results.next();
 			if(counter == 0) {
 				Assert.assertEquals(-200.23, toDouble(col.getName()).doubleValue());
 			}
@@ -147,10 +149,11 @@ public class TestColumnSlice {
 
 		byte[] from = toIntBytes(-250);
 		byte[] to = toIntBytes(50);
-		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
+		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
 		
 		int counter = 0;
-		for(Column col : results) {
+		while(results.hasNext()) {
+			Column col = results.next();
 			if(counter == 0)
 				Assert.assertEquals(-200L, toLong(col.getName()).longValue());
 			counter++;

@@ -3,6 +3,7 @@ package com.alvazan.orm.api.z8spi;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z8spi.action.Action;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
@@ -34,7 +35,7 @@ public interface NoSqlRawSession {
 	
 	public void close();
 
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, BatchListener l);
+	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, BatchListener l);
 	
 	/**
 	 * 
@@ -44,6 +45,6 @@ public interface NoSqlRawSession {
 	 * @param batchSize 
 	 * @return
 	 */
-	public Iterable<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l);
+	public Cursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l);
 
 }

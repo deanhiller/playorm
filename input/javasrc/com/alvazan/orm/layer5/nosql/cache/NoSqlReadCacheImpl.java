@@ -182,7 +182,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 	

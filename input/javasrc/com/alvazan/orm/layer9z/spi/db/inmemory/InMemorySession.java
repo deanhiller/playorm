@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
@@ -207,8 +208,7 @@ public class InMemorySession implements NoSqlRawSession {
 		
 	}
 
-	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Table table = database.findTable(colFamily);
 		if(table == null) {
@@ -221,8 +221,7 @@ public class InMemorySession implements NoSqlRawSession {
 		return row.columnSlice(from, to);
 	}
 	
-	@Override
-	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+	public Collection<IndexColumn> scanIndexImpl(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);
@@ -239,6 +238,20 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public void close() {
 		
+	}
+
+	@Override
+	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
+		return new CursorProxy<Column>(iter);
+	}
+
+	@Override
+	public Cursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
+			Integer batchSize, BatchListener l) {
+		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
+		return new CursorProxy<IndexColumn>(iter);
 	}
 
 }

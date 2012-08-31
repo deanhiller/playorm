@@ -1,6 +1,5 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +9,7 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.ColumnType;
 import com.alvazan.orm.api.z8spi.Key;
@@ -283,14 +283,14 @@ public class CassandraSession implements NoSqlRawSession {
 
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener) {
+	public Cursor<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<Column>();
+			return new EmptyCursor<Column>();
 		}
 
 		CreateColumnSliceCallback l = new CreateColumnSliceCallback() {
@@ -310,7 +310,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
+	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
 			Integer batchSize, BatchListener bListener) {
 		if(batchSize != null && batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
@@ -320,7 +320,7 @@ public class CassandraSession implements NoSqlRawSession {
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<IndexColumn>();
+			return new EmptyCursor<IndexColumn>();
 		}
 		
 		ColumnType type = info1.getColumnType();
@@ -363,7 +363,7 @@ public class CassandraSession implements NoSqlRawSession {
 		return rowQuery;
 	}
 	
-	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
+	private <T> Cursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
 		return new IterableColumnSlice<T>(l, isComposite, bListener, batchSize);
 	}
