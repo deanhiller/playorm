@@ -9,7 +9,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.util.AbstractCursor;
 
-public class IterableRow<T> extends AbstractCursor<KeyValue<T>>{
+public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 
 	private MetaClass<T> meta;
 	private NoSqlSession session;
@@ -19,7 +19,7 @@ public class IterableRow<T> extends AbstractCursor<KeyValue<T>>{
 	private Iterator<byte[]> keysIterator;
 	private Iterator<KeyValue<Row>> lastCachedRows;
 	
-	public IterableRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
+	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
 		this.keysIterator = noSqlKeys.iterator();
 		this.session = s;

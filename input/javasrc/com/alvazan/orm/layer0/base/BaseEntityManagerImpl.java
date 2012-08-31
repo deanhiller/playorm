@@ -105,7 +105,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		return new IterableRow<T>(meta, noSqlKeys, session, query, batchSize);
+		return new CursorRow<T>(meta, noSqlKeys, session, query, batchSize);
 	}
 
 	@SuppressWarnings("unchecked")
