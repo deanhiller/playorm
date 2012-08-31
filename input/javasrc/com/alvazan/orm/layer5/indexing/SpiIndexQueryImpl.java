@@ -94,6 +94,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		case NoSqlLexer.LT:
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
+		case NoSqlLexer.BETWEEN:
 			return processRangeExpression(parent);
 		default:
 			throw new UnsupportedOperationException("bug, unsupported type="+type);
@@ -115,9 +116,17 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 	
 	private Iterable<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
-		StateAttribute attr = (StateAttribute) root.getChild(ChildSide.LEFT).getState();
+		StateAttribute attr;
+		if(root.getType() == NoSqlLexer.BETWEEN) {
+			ExpressionNode grandChild = root.getChild(ChildSide.LEFT).getChild(ChildSide.LEFT);
+			attr = (StateAttribute) grandChild.getState();
+		} else {
+			attr = (StateAttribute) root.getChild(ChildSide.LEFT).getState();
+		}
+		
 		DboColumnMeta info = attr.getColumnInfo();
-		ScanInfo scanInfo = createScanInfo(attr.getViewInfo(), info);
+		ViewInfo viewInfo = attr.getViewInfo();		
+		ScanInfo scanInfo = createScanInfo(viewInfo, info);
 		
 		Iterable<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
@@ -127,7 +136,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else if(root.getType() == NoSqlLexer.GT
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT
-				|| root.getType() == NoSqlLexer.LE) {
+				|| root.getType() == NoSqlLexer.LE
+				|| root.isInBetweenExpression()) {
 			Key from = null;
 			Key to = null;
 			if(root.isInBetweenExpression()) {
