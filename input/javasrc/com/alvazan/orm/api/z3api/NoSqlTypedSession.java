@@ -2,6 +2,7 @@ package com.alvazan.orm.api.z3api;
 
 import java.util.List;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -41,9 +42,9 @@ public interface NoSqlTypedSession {
 	public <T> TypedRow<T> find(String cf, T id);
 	
 	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> rowKeys);
-	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
+	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
 	
-	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr);
 	
 	public void flush();

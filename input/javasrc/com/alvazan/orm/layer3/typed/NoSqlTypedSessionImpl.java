@@ -89,7 +89,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
-	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
+	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
@@ -100,7 +100,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return findAllImpl2(meta, keys, noSqlKeys, null);
 	}
 
-	<T> Iterable<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
+	<T> Cursor<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
@@ -114,8 +114,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> keys) {
 		List<KeyValue<TypedRow<T>>> rows = new ArrayList<KeyValue<TypedRow<T>>>();
-		Iterable<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
-		for (KeyValue<TypedRow<T>> keyValue : iter) {
+		Cursor<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
+		while(iter.hasNext()) {
+			KeyValue<TypedRow<T>> keyValue = iter.next();
 			rows.add(keyValue);
 		}
 
@@ -129,7 +130,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
 		//TODO: switch Iterable to Cursor above
 		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
@@ -139,7 +140,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		Iterable<byte[]> indexIterable = new IterableIndex(iter);
 
 		DboTableMeta meta = metaQuery.getTargetTable();
-		Iterable results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+		Cursor results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
 		
 		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
 		//skips false positives so as the client loops, we skip some of the results based on that they are false
@@ -152,8 +153,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
-		Iterable<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
-		for (KeyValue<TypedRow> keyValue : iter) {
+		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
+		while(iter.hasNext()) {
+			KeyValue<TypedRow> keyValue = iter.next();
 			rows.add(keyValue);
 		}
 		return rows;

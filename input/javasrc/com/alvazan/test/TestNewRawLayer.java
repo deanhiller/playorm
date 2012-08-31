@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -91,15 +92,15 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
-		KeyValue<TypedRow> keyValue = rows.iterator().next();
+		Cursor<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
+		KeyValue<TypedRow> keyValue = rows.next();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
-		Iterable<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
-		KeyValue<TypedRow> keyValue2 = rows2.iterator().next();
+		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
+		KeyValue<TypedRow> keyValue2 = rows2.next();
 		TypedRow theRow2 = keyValue2.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow2.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow2.getColumn("temp").getValue());
