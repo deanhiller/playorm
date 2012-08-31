@@ -39,8 +39,8 @@ public class JoinMeta {
 		//View matches are MUCH less costly than join matches so find view match first!!
 		for(ViewInfo infoL : views1) {
 			for(ViewInfo infoR : views2) {
-				JoinInfo joinInfo = infoL.findViewMatch(infoR);
-				if(joinInfo != null) {
+				if(infoL == infoR) {
+					JoinInfo joinInfo = new JoinInfo(infoL, null, null, null, JoinType.NONE);
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
 					Set<JoinInfo> set2 = rightSide.getJoinInfoSet();
 					JoinMeta meta = new JoinMeta(joinInfo, JoinType.NONE, set1, set2);

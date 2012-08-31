@@ -159,6 +159,8 @@ public class ExpressionNode implements ParsedNode {
 
 	@Override
 	public boolean isAndOrType() {
+		if(commonNode == null)
+			return false;
 		if(commonNode.getType() == NoSqlLexer.AND || commonNode.getType() == NoSqlLexer.OR)
 			return true;
 		return false;

@@ -27,5 +27,7 @@ public interface ParsedNode {
 
 	void replace(ParsedNode oldChild, ParsedNode newChild);
 	ParsedNode getOppositeChild(ParsedNode first);
+
+	boolean isInBetweenExpression();
 	
 }

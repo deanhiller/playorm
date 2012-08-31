@@ -62,12 +62,5 @@ public class ViewInfo {
 		return null;
 	}
 
-	public JoinInfo findViewMatch(ViewInfo infoR) {
-		if(this == infoR) {
-			JoinInfo info = new JoinInfo(this, null, null, null, JoinType.NONE);
-			return info;
-		}
-		return null;
-	}
 
 }

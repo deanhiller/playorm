@@ -20,17 +20,25 @@ public class AddJoinInfo {
 		if(node.isAndOrType()) {
 			walkTheTree(left, wiring);
 			walkTheTree(right, wiring);
-		} else {
-			//let's find out the join type
-			JoinMeta meta = findDirectJoin(wiring, left, right);
-			node.setJoinMeta(meta);
+			
+			JoinMeta rightType = right.getJoinMeta();
+			JoinMeta leftType = left.getJoinMeta();
+			JoinMeta info = rightType.fetchJoinMeta(leftType);
+			node.setJoinMeta(info);
+			return;
+			
+		} else if(node.isInBetweenExpression()) {
+			ParsedNode leftGrand = left.getChild(ChildSide.LEFT);
+			ViewInfo viewInfo = leftGrand.getViewInfo();
+			JoinInfo info = new JoinInfo(viewInfo, null, null, null, JoinType.NONE);
+			JoinMeta meta1 = new JoinMeta(info, info.getJoinType());
+			node.setJoinMeta(meta1);
 			return;
 		}
 		
-		JoinMeta rightType = right.getJoinMeta();
-		JoinMeta leftType = left.getJoinMeta();
-		JoinMeta info = rightType.fetchJoinMeta(leftType);
-		node.setJoinMeta(info);
+		//let's find out the join type
+		JoinMeta meta = findDirectJoin(wiring, left, right);
+		node.setJoinMeta(meta);
 	}
 
 	private JoinMeta findDirectJoin(InfoForWiring wiring, ParsedNode left, ParsedNode right) {

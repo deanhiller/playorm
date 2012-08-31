@@ -28,7 +28,7 @@ public class TestGrammar {
 		wiring = new InfoForWiring("<thequery>", null);
 		facade = new MockFacade();
 	}
-	@Test
+	//@Test
 	public void testBetween() {
 		String sql = "select p FROM MyTable as p where p.leftside between :asfd and :ff";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
@@ -57,33 +57,33 @@ public class TestGrammar {
 		Assert.assertEquals("(:asfd < p.leftside <= :fdfd and :ff <= p.rightside < :tttt)", result);
 	}
 	
-	//@Test
+	@Test
 	public void testRewriteJoin() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
 	}
-	//@Test
+	@Test
 	public void testJoinJoinOnSame() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN p.something as t where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
 	}
-	//@Test
+	@Test
 	public void testJoinJoinOnChain() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN s.something as t where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("p.numShares = :shares and(inner join) s.securityType = :type", result);
+		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
 	}	
 	@Test
 	public void testNoRewrite() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and p.something = :something";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("p.numShares =:shares and p.something = :something", result);
+		Assert.assertEquals("(p.numShares = :shares and p.something = :something)", result);
 	}
 	
 	@Test
@@ -94,6 +94,6 @@ public class TestGrammar {
 				" and ( ((f.x>:a and f.y>:a) or (g.x>:a and g.y>:a)) and h.f>:a )";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("p.numShares =:shares and p.something = :something", result);
+		Assert.assertEquals("((((a.y > :a and(innerjoin) d.y > :a) or (a.z > :a and(innerjoin) b.z > :a)) and (b.x > :a and(innerjoin) e.y > :a)) and(innerjoin) (((f.x > :a and f.y > :a) or(innerjoin) (g.x > :a and g.y > :a)) and(innerjoin) h.f > :a))", result);
 	}
 }
