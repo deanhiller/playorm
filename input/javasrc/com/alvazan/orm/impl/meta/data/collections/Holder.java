@@ -1,6 +1,6 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
-import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
 

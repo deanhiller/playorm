@@ -2,8 +2,8 @@ package com.alvazan.orm.parser.antlr;
 
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public interface MetaFacade {
 

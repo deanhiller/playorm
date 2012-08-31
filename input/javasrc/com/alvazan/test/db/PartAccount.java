@@ -11,7 +11,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z8spi.KeyValue;
 
 @NoSqlEntity
 @NoSqlQueries({

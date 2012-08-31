@@ -7,24 +7,24 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.impl.bindings.ProductionBindings;
-import com.alvazan.orm.layer5.indexing.ExpressionNode;
-import com.alvazan.orm.layer5.nosql.cache.InfoForWiring;
-import com.alvazan.orm.layer5.nosql.cache.SqlScanner;
+import com.alvazan.orm.parser.antlr.ExpressionNode;
+import com.alvazan.orm.parser.antlr.InfoForWiring;
 import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParseQueryException;
+import com.alvazan.orm.parser.antlr.ScannerSql;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class TestGrammar {
 
-	private SqlScanner scanner;
+	private ScannerSql scanner;
 	private MetaFacade facade;
 	private InfoForWiring wiring;
 
 	@Before
 	public void setup() {
 		Injector injector = Guice.createInjector(new ProductionBindings(DbTypeEnum.IN_MEMORY));
-		scanner = injector.getInstance(SqlScanner.class);
+		scanner = injector.getInstance(ScannerSql.class);
 		wiring = new InfoForWiring("<thequery>", null);
 		facade = new MockFacade();
 	}

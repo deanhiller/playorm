@@ -3,8 +3,6 @@ package com.alvazan.orm.parser.antlr;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.alvazan.orm.layer5.indexing.JoinType;
-import com.alvazan.orm.layer5.indexing.ViewInfo;
 
 public class JoinMeta {
 

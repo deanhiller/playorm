@@ -14,16 +14,16 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.NoSqlTypedSession;
-import com.alvazan.orm.api.spi3.TypedColumn;
-import com.alvazan.orm.api.spi3.TypedRow;
-import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 @SuppressWarnings("rawtypes")
 public class TestNewRawLayer {

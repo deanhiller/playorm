@@ -2,8 +2,8 @@ package com.alvazan.orm.api.base;
 
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.meta.conv.Converter;
-import com.alvazan.orm.api.spi9.db.SpiConstants;
+import com.alvazan.orm.api.z8spi.SpiConstants;
+import com.alvazan.orm.api.z8spi.conv.Converter;
 
 @SuppressWarnings("rawtypes")
 public abstract class Bootstrap {

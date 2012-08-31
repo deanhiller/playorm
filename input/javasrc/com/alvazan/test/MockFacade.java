@@ -3,11 +3,11 @@ package com.alvazan.test;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.layer5.indexing.ExpressionNode;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParsedNode;
 

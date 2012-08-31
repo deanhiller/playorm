@@ -2,9 +2,9 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi3.NoSqlTypedSession;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
 import com.google.inject.ImplementedBy;
 

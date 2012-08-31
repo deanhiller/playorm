@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
 
 public class IndexedRow extends RowImpl {
 	

@@ -3,8 +3,8 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.util.Iterator;
 import java.util.List;
 
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
 
 public class IterCacheProxy implements Iterable<KeyValue<Row>> {
 

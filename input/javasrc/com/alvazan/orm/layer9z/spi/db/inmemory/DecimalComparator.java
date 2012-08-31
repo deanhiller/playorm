@@ -3,8 +3,8 @@ package com.alvazan.orm.layer9z.spi.db.inmemory;
 import java.math.BigDecimal;
 import java.util.Comparator;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 
 public class DecimalComparator implements Comparator<ByteArray> {
 

@@ -3,11 +3,11 @@ package com.alvazan.orm.layer3.typed;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi3.TypedRow;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class TypedResponseIter<T> implements Iterable<KeyValue<TypedRow<T>>> {
 

@@ -3,9 +3,7 @@ package com.alvazan.orm.parser.antlr;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.layer5.indexing.JoinType;
-import com.alvazan.orm.layer5.indexing.ViewInfo;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
 public class JoinInfo {
 

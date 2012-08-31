@@ -14,10 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi3.meta.conv.Converter;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public class NoSqlProxyImpl<T> implements MethodHandler {

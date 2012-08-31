@@ -1,0 +1,6 @@
+package com.alvazan.orm.api.z8spi;
+
+public enum ColumnType {
+
+	ANY_EXCEPT_COMPOSITE, COMPOSITE_STRINGPREFIX, COMPOSITE_DECIMALPREFIX, COMPOSITE_INTEGERPREFIX;
+}

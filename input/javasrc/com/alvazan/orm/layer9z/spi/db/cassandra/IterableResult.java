@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
 import com.netflix.astyanax.model.Rows;
 
 public class IterableResult implements Iterable<KeyValue<Row>> {

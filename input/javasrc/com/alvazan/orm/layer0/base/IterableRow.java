@@ -3,9 +3,9 @@ package com.alvazan.orm.layer0.base;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
 public class IterableRow<T> implements Iterable<KeyValue<T>>{

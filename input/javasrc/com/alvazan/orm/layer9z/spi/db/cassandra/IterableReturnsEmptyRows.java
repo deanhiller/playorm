@@ -2,8 +2,8 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
 
 public class IterableReturnsEmptyRows implements Iterable<KeyValue<Row>> {
 

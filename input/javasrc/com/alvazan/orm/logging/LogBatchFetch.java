@@ -3,7 +3,7 @@ package com.alvazan.orm.logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi9.db.BatchListener;
+import com.alvazan.orm.api.z8spi.BatchListener;
 
 public class LogBatchFetch implements BatchListener {
 
