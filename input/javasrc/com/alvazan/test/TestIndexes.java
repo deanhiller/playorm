@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
@@ -179,10 +180,11 @@ public class TestIndexes {
 		
 		mgr.flush();
 		
-		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		Cursor<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
 		
 		KeyValue<PartAccount> kVal = null;
-		for(KeyValue<PartAccount> k : all) {
+		while(all.hasNext()) {
+			KeyValue<PartAccount> k = all.next();
 			if(k.getKey().equals(key))
 				kVal = k;
 		}

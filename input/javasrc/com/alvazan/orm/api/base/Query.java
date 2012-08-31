@@ -18,7 +18,7 @@ public interface Query<T> {
 	 * Also, you can call getException instead of getValue to avoid the Exception
 	 * @return
 	 */
-	public Iterable<KeyValue<T>> getResults();
+	public Cursor<KeyValue<T>> getResults();
 	
 	public T getSingleObject();
 	

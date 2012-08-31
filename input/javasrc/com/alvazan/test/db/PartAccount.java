@@ -3,6 +3,7 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -54,7 +55,7 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
-	public static Iterable<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
+	public static Cursor<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
 		return query.getResults();		
 	}

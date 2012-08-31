@@ -71,7 +71,7 @@ public interface NoSqlEntityManager {
 	 * @param keys
 	 * @return
 	 */
-	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys);
+	public <T> Cursor<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys);
 	
 	/**
 	 * Just like hibernate getReference call.  Use this when you have an id of an object and

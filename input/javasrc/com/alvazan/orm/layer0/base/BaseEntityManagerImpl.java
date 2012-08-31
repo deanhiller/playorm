@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -80,13 +81,13 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 	public <T> T find(Class<T> entityType, Object key) {
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
-		Iterable<KeyValue<T>> entities = findAll(entityType, keys);
-		return entities.iterator().next().getValue();
+		Cursor<KeyValue<T>> entities = findAll(entityType, keys);
+		return entities.next().getValue();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
+	public <T> Cursor<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
@@ -100,7 +101,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		return findAllImpl2(meta, iter, null, null);
 	}
 	
-	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query, Integer batchSize) {
+	<T> Cursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
@@ -121,8 +122,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		}
 		
 		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
-		Iterable<KeyValue<T>> results = findAll(entityType, keys);
-		for(KeyValue<T> r : results) {
+		Cursor<KeyValue<T>> results = findAll(entityType, keys);
+		while(results.hasNext()) {
+			KeyValue<T> r = results.next();
 			all.add(r);
 		}
 		

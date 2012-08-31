@@ -10,6 +10,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
@@ -86,28 +87,27 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public T getSingleObject() {
-		Iterable<KeyValue<T>> results = getResults();
-		Iterator<KeyValue<T>> iterator = results.iterator();
-		if(!iterator.hasNext())
+		Cursor<KeyValue<T>> results = getResults();
+		if(!results.hasNext())
 			return null;
-		KeyValue<T> kv = iterator.next();
-		if(iterator.hasNext())
+		KeyValue<T> kv = results.next();
+		if(results.hasNext())
 			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
 		return kv.getValue();
 	}
 
 	@Override
-	public Iterable<KeyValue<T>> getResults() {
+	public Cursor<KeyValue<T>> getResults() {
 		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IterableIndex(indice);
-		Iterable<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
+		Cursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;
 	}
 
 	@Override
 	public List<T> getResultList(int firstResult, Integer maxResults) {
-		Iterable<KeyValue<T>> all = getResults();
+		Cursor<KeyValue<T>> all = getResults();
 		List<T> foundElements = new ArrayList<T>();
 		try {
 			return getEntities(all, foundElements, firstResult, maxResults);
@@ -117,12 +117,13 @@ public class QueryAdapter<T> implements Query<T> {
 		}
 	}
 	
-	private List<T> getEntities(Iterable<KeyValue<T>> keyValues, List<T> foundElements, int firstResult, Integer maxResults){
+	private List<T> getEntities(Cursor<KeyValue<T>> all, List<T> foundElements, int firstResult, Integer maxResults){
 		List<T> entities = new ArrayList<T>();
 		RowNotFoundException exc = null;
 		
 		int counter = 0;
-		for(KeyValue<T> keyVal : keyValues) {
+		while(all.hasNext()) {
+			KeyValue<T> keyVal = all.next();
 			if(counter < firstResult)
 				continue; //skip it
 			else if(maxResults != null && counter >= firstResult+maxResults)
