@@ -9,6 +9,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -186,7 +187,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
+	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
 		return session.scanIndex(info, from, to, batchSize);
 	}
 

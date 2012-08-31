@@ -1,12 +1,14 @@
 package com.alvazan.orm.api.z5api;
 
+import com.alvazan.orm.api.base.Cursor;
+
 
 
 public interface SpiQueryAdapter {
 
 	public void setParameter(String parameterName, byte[] value);
 
-	public Iterable<IndexColumnInfo> getResultList();
+	public Cursor<IndexColumnInfo> getResultList();
 
 	/**
 	 * The Iterable from getResults() is only loaded with 'batchSize' at a time from the nosql store so as you iterate

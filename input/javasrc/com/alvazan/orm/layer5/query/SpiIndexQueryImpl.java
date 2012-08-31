@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
@@ -51,7 +52,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 	
 	@Override
-	public Iterable<IndexColumnInfo> getResultList() {
+	public Cursor<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfo tableInfo = spiMeta.getMainTableMeta();
@@ -59,7 +60,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
 			
-			Iterable<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
+			Cursor<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
 			return processKeys(null, scan);
 		}
 	
@@ -85,7 +86,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		return scanInfo;
 	}
 
-	private Iterable<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
+	private Cursor<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
 		int type = parent.getType();
 		switch (type) {
 		case NoSqlLexer.AND:
@@ -104,21 +105,21 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 	}
 
-	private Iterable<IndexColumnInfo> processAndOr(ExpressionNode root) {
+	private Cursor<IndexColumnInfo> processAndOr(ExpressionNode root) {
 		ExpressionNode left = root.getChild(ChildSide.LEFT);
 		ExpressionNode right = root.getChild(ChildSide.RIGHT);
 		
-		Iterable<IndexColumnInfo> leftResults = processExpressionTree(left);
-		Iterable<IndexColumnInfo> rightResults = processExpressionTree(right);
+		Cursor<IndexColumnInfo> leftResults = processExpressionTree(left);
+		Cursor<IndexColumnInfo> rightResults = processExpressionTree(right);
 		
 		if(root.getType() == NoSqlLexer.AND) {
-			return new IterableForAnd(leftResults, rightResults);
+			return new CursorForAnd(leftResults, rightResults);
 		} else {
-			return new IterableForOr(leftResults, rightResults);
+			return new CursorForOr(leftResults, rightResults);
 		}
 	}
 	
-	private Iterable<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
+	private Cursor<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
 		StateAttribute attr;
 		if(root.getType() == NoSqlLexer.BETWEEN) {
 			ExpressionNode grandChild = root.getChild(ChildSide.LEFT).getChild(ChildSide.LEFT);
@@ -131,7 +132,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		ViewInfo viewInfo = attr.getViewInfo();		
 		ScanInfo scanInfo = createScanInfo(viewInfo, info);
 		
-		Iterable<IndexColumn> scan;
+		Cursor<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
 			byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
 			Key key = new Key(data, true);
@@ -161,7 +162,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 
-		Iterable<IndexColumnInfo> processKeys = processKeys(info, scan);
+		Cursor<IndexColumnInfo> processKeys = processKeys(info, scan);
 		return processKeys;
 	}
 
@@ -185,8 +186,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new RuntimeException("bug, should never happen, but should be easy to fix this one. type="+node.getType());	
 	}
 
-	private Iterable<IndexColumnInfo> processKeys(DboColumnMeta info, Iterable<IndexColumn> scan) {
-		return new IterableSimpleTranslator(info, scan);
+	private Cursor<IndexColumnInfo> processKeys(DboColumnMeta info, Cursor<IndexColumn> scan) {
+		return new CursorSimpleTranslator(info, scan);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {

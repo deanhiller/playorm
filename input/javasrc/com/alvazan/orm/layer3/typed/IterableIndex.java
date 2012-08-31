@@ -2,37 +2,38 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 
 public class IterableIndex implements Iterable<byte[]> {
 
-	private Iterable<IndexColumnInfo> iterable;
-
-	public IterableIndex(Iterable<IndexColumnInfo> iter) {
-		this.iterable = iter;
+	private Cursor<IndexColumnInfo> cursor;
+	public IterableIndex(Cursor<IndexColumnInfo> indice) {
+		this.cursor = indice;
 	}
 
 	@Override
 	public Iterator<byte[]> iterator() {
-		return new IndexIterator(iterable.iterator());
+		cursor.beforeFirst();
+		return new IndexIterator(cursor);
 	}
 	
 	private static class IndexIterator implements Iterator<byte[]> {
 
-		private Iterator<IndexColumnInfo> iterator;
+		private Cursor<IndexColumnInfo> cursor;
 
-		public IndexIterator(Iterator<IndexColumnInfo> iterator) {
-			this.iterator = iterator;
+		public IndexIterator(Cursor<IndexColumnInfo> cursor) {
+			this.cursor = cursor;
 		}
 
 		@Override
 		public boolean hasNext() {
-			return this.iterator.hasNext();
+			return this.cursor.hasNext();
 		}
 
 		@Override
 		public byte[] next() {
-			return iterator.next().getPrimary().getPrimaryKey();
+			return cursor.next().getPrimary().getPrimaryKey();
 		}
 
 		@Override

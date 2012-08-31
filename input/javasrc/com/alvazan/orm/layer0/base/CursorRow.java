@@ -16,17 +16,25 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	private String query;
 	private Integer batchSize;
 	
+	private Iterable<byte[]> noSqlKeys;
 	private Iterator<byte[]> keysIterator;
+	//TODO: lastCachedRows SHOULD be Cursor I believe....
 	private Iterator<KeyValue<Row>> lastCachedRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
+		this.noSqlKeys = noSqlKeys;
 		this.keysIterator = noSqlKeys.iterator();
 		this.session = s;
 		this.query = query2;
 		this.batchSize = batchSize;
 	}
-
+	
+	@Override
+	public void beforeFirst() {
+		keysIterator = noSqlKeys.iterator();
+	}
+	
 	@Override
 	protected Holder<KeyValue<T>> nextImpl() {
 		fetchMoreResults();

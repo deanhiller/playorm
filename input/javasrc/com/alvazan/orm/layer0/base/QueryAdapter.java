@@ -2,7 +2,6 @@ package com.alvazan.orm.layer0.base;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -98,7 +97,7 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
-		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
+		Cursor<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IterableIndex(indice);
 		Cursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 

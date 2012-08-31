@@ -3,6 +3,7 @@ package com.alvazan.orm.api.z5api;
 import java.util.Collection;
 import java.util.List;
 
+import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -63,12 +64,12 @@ public interface NoSqlSession {
 	 * your memory does not explode if you have a huge amount of records.
 	 * @param from
 	 * @param to
-	 * @param batchSize TODO
+	 * @param batchSize 
 	 * @param colFamily
 	 * @param rowKey
 	 * @return
 	 */
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
+	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	
 	public void setOrmSessionForMeta(MetaLookup entityMgr);

@@ -27,34 +27,27 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public void start(Map<String, Object> properties) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public Iterable<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Iterable<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
 			Integer batchSize, BatchListener l) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
