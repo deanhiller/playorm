@@ -29,16 +29,22 @@ public class CursorForOr extends AbstractCursor<IndexColumnInfo> {
 	
 	@Override
 	protected com.alvazan.orm.util.AbstractCursor.Holder<IndexColumnInfo> nextImpl() {
-		while(leftResults.hasNext()) {
-			IndexColumnInfo result = leftResults.next();
+		while(true) {
+			Holder<IndexColumnInfo> nextFromCursor = nextFromCursor(leftResults);
+			if(nextFromCursor == null)
+				break;
+			IndexColumnInfo result = nextFromCursor.getValue();
 			pksToAlreadyFound.put(result.getPrimaryKey(), result);
 			return new Holder<IndexColumnInfo>(result);
 		}
 		
 		//NOW, as we go through the results on the right side, make sure we filter out 
 		//duplicate primary keys by checking ones that we already returned.
-		while(rightResults.hasNext()) {
-			IndexColumnInfo lastCachedResult = rightResults.next();
+		while(true) {
+			Holder<IndexColumnInfo> nextFromCursor = nextFromCursor(rightResults);
+			if(nextFromCursor == null)
+				break;
+			IndexColumnInfo lastCachedResult = nextFromCursor.getValue();
 			IndexColumnInfo found = pksToAlreadyFound.get(lastCachedResult.getPrimaryKey());
 			if(found != null) {
 				found.setNextOrColumn(lastCachedResult);
