@@ -85,8 +85,8 @@ public class GltLtConvertToInBetween {
 		
 		ParsedNode betweenExpr = facade.createExpression(NoSqlLexer.BETWEEN);
 		ParsedNode first = getFirstMatch();
-		delete(first);
 		match.getParent().replace(match, betweenExpr);
+		delete(first);
 		
 		addExpression(betweenExpr, first, match);
 	}

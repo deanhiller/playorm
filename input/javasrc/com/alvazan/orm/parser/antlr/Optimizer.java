@@ -15,6 +15,8 @@ public class Optimizer {
 	
 	public ParsedNode optimize(ParsedNode node,
 			InfoForWiring wiring, MetaFacade facade, String query) {
+		if(node == null)
+			return null;
 		
 		ParsedNode root = optimizeGtLtToBetween(node, wiring, query, facade);
 		

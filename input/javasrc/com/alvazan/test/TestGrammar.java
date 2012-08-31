@@ -50,6 +50,21 @@ public class TestGrammar {
 	}
 
 	@Test
+	public void testSimple() {
+		String sql = "select p FROM MyTable as p";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		Assert.assertNull(newTree);
+	}
+
+	@Test
+	public void testOptimizeBetween2() {
+		String sql = "select *  FROM TABLE as e WHERE e.numTimes >= :begin and e.numTimes < :to";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals(":begin <= e.numTimes < :to", result);
+	}
+	
+	@Test
 	public void testOptimizeBetween() {
 		String sql = "select p FROM MyTable as p where p.leftside > :asfd and p.rightside >= :ff and p.rightside < :tttt and p.leftside <= :fdfd";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
