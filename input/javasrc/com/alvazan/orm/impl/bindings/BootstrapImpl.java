@@ -27,6 +27,7 @@ public class BootstrapImpl extends Bootstrap {
 		NoSqlRawSession inst = injector.getInstance(key);
 		inst.start(properties);
 		
+		//why not just add setInjector() and setup() in NoSqlEntityManagerFactory
 		BaseEntityManagerFactoryImpl impl = (BaseEntityManagerFactoryImpl)factory;
 		impl.setInjector(injector);
 		
