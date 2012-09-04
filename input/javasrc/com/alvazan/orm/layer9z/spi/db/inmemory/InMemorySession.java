@@ -11,8 +11,8 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -241,14 +241,14 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey,
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
 		return new CursorProxy<Column>(iter);
 	}
 
 	@Override
-	public Cursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
 			Integer batchSize, BatchListener l) {
 		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
 		return new CursorProxy<IndexColumn>(iter);

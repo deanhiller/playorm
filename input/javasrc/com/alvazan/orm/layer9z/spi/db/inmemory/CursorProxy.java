@@ -2,7 +2,7 @@ package com.alvazan.orm.layer9z.spi.db.inmemory;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.util.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 
 public class CursorProxy<T> extends AbstractCursor<T> {
 
@@ -20,7 +20,7 @@ public class CursorProxy<T> extends AbstractCursor<T> {
 	}
 
 	@Override
-	protected com.alvazan.orm.util.AbstractCursor.Holder<T> nextImpl() {
+	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<T> nextImpl() {
 		if(!iterator.hasNext())
 			return null;
 		return new Holder<T>(iterator.next());

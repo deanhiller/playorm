@@ -7,8 +7,8 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -128,12 +128,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabase();
 	}
 	@Override
-	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null);
 	}
 	
 	@Override
-	public Cursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
 		return rawSession.scanIndex(info, from, to, batchSize, null);
 	}
 	

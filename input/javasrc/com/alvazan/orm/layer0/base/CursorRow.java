@@ -4,10 +4,10 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.util.AbstractCursor;
 
 public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 
@@ -36,7 +36,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	}
 	
 	@Override
-	protected Holder<KeyValue<T>> nextImpl() {
+	public Holder<KeyValue<T>> nextImpl() {
 		fetchMoreResults();
 		if(lastCachedRows == null)
 			return null;

@@ -3,7 +3,7 @@ package com.alvazan.orm.layer9z.spi.db.hadoop;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.base.Cursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -41,13 +41,13 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Cursor<Column> columnSlice(String colFamily, byte[] rowKey,
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		return null;
 	}
 
 	@Override
-	public Cursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
 			Integer batchSize, BatchListener l) {
 		return null;
 	}

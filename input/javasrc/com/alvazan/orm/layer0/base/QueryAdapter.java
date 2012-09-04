@@ -18,6 +18,7 @@ import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
@@ -26,6 +27,7 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.layer3.typed.IterableIndex;
 //import com.alvazan.orm.layer3.typed.IterableIndex;
+import com.alvazan.orm.util.AbstractIterable;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -97,8 +99,8 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
-		Cursor<IndexColumnInfo> indice = indexQuery.getResultList();
-		Iterable<byte[]> keys = new IterableIndex(indice);
+		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
+		AbstractIterable<byte[]> keys = new IterableIndex(indice);
 		Cursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;

@@ -2,11 +2,11 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
-import com.alvazan.orm.util.AbstractCursor;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
@@ -37,7 +37,7 @@ class IterableColumnSlice<T> extends AbstractCursor<T> {
 	}
 
 	@Override
-	protected com.alvazan.orm.util.AbstractCursor.Holder<T> nextImpl() {
+	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<T> nextImpl() {
 		fetchMoreResults();
 		if(subIterator == null)
 			return null;

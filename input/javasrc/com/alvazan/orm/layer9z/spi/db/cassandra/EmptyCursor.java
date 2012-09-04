@@ -1,22 +1,17 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import com.alvazan.orm.api.base.Cursor;
-import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 
-public class EmptyCursor<T> implements Cursor<T> {
+public class EmptyCursor<T> extends AbstractCursor<T> {
 
 	@Override
 	public void beforeFirst() {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return false;
+	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<T> nextImpl() {
+		return null;
 	}
 
-	@Override
-	public T next() {
-		throw new IllegalArgumentException("You should really call hasNext first, this cursor is out of items(actually it never had any so hah!, serves you right)");
-	}
 
 }

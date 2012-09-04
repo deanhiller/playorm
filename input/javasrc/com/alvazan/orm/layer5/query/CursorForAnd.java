@@ -1,17 +1,16 @@
 package com.alvazan.orm.layer5.query;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
-import com.alvazan.orm.util.AbstractCursor;
 
 public class CursorForAnd extends AbstractCursor<IndexColumnInfo> {
 
-	private Cursor<IndexColumnInfo> leftResults;
-	private Cursor<IndexColumnInfo> rightResults;
+	private AbstractCursor<IndexColumnInfo> leftResults;
+	private AbstractCursor<IndexColumnInfo> rightResults;
 	
-	public CursorForAnd(Cursor<IndexColumnInfo> leftResults,
-			Cursor<IndexColumnInfo> rightResults) {
+	public CursorForAnd(AbstractCursor<IndexColumnInfo> leftResults,
+			AbstractCursor<IndexColumnInfo> rightResults) {
 		this.leftResults = leftResults;
 		this.rightResults = rightResults;
 	}
@@ -19,7 +18,7 @@ public class CursorForAnd extends AbstractCursor<IndexColumnInfo> {
 	@Override
 	public Holder<IndexColumnInfo> nextImpl() {
 		while(true) {
-			Holder<IndexColumnInfo> nextFromCursor = nextFromCursor(leftResults);
+			Holder<IndexColumnInfo> nextFromCursor = leftResults.nextImpl();
 			if(nextFromCursor == null)
 				break;
 			IndexColumnInfo next = nextFromCursor.getValue();
@@ -37,7 +36,7 @@ public class CursorForAnd extends AbstractCursor<IndexColumnInfo> {
 
 	private Holder<IndexColumnInfo> runInnerLoop(IndexColumnInfo next) {
 		while(true) {
-			Holder<IndexColumnInfo> nextFromCursor = nextFromCursor(rightResults);
+			Holder<IndexColumnInfo> nextFromCursor = rightResults.nextImpl();
 			if(nextFromCursor == null)
 				break;
 			IndexColumnInfo andedInfo = nextFromCursor.getValue();

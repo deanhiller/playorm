@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
@@ -106,9 +107,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		String cf = meta.getColumnFamily();
 		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
 		if(keys != null)
-			return new TypedResponseIter<T>(meta, keys, rows2);
+			return new CursorTypedResp<T>(meta, keys, rows2);
 		else
-			return new TypedResponseIter<T>(meta, rows2, indexName);
+			return new CursorTypedResp<T>(meta, rows2, indexName);
 	}
 	
 	@Override
@@ -136,7 +137,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
-		Cursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		AbstractCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		Iterable<byte[]> indexIterable = new IterableIndex(iter);
 
 		DboTableMeta meta = metaQuery.getTargetTable();

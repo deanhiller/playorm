@@ -101,11 +101,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		return findAllImpl2(meta, iter, null, null);
 	}
 	
-	<T> Cursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query, Integer batchSize) {
+	<T> Cursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		return new CursorRow<T>(meta, noSqlKeys, session, query, batchSize);
+		return new CursorRow<T>(meta, iter, session, query, batchSize);
 	}
 
 	@SuppressWarnings("unchecked")

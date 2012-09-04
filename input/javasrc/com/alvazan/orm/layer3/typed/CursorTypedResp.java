@@ -3,14 +3,14 @@ package com.alvazan.orm.layer3.typed;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
-import com.alvazan.orm.util.AbstractCursor;
 
-public class TypedResponseIter<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
+public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 
 	private DboTableMeta meta;
 	private Iterable<T> keysIterable;
@@ -19,7 +19,7 @@ public class TypedResponseIter<T> extends AbstractCursor<KeyValue<TypedRow<T>>> 
 	private Iterator<KeyValue<Row>> rows;
 	private String query;
 
-	public TypedResponseIter(DboTableMeta meta, Iterable<T> keys,
+	public CursorTypedResp(DboTableMeta meta, Iterable<T> keys,
 			Iterable<KeyValue<Row>> rows) {
 		this.meta = meta;
 		this.keysIterable = keys;
@@ -27,7 +27,7 @@ public class TypedResponseIter<T> extends AbstractCursor<KeyValue<TypedRow<T>>> 
 		beforeFirst();
 	}
 
-	public TypedResponseIter(DboTableMeta meta2, Iterable<KeyValue<Row>> rows2,
+	public CursorTypedResp(DboTableMeta meta2, Iterable<KeyValue<Row>> rows2,
 			String query) {
 		this.meta = meta2;
 		this.rowsIterable = rows2;
@@ -43,7 +43,7 @@ public class TypedResponseIter<T> extends AbstractCursor<KeyValue<TypedRow<T>>> 
 	}
 
 	@Override
-	protected com.alvazan.orm.util.AbstractCursor.Holder<KeyValue<TypedRow<T>>> nextImpl() {
+	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<KeyValue<TypedRow<T>>> nextImpl() {
 		if(!rows.hasNext())
 			return null;
 		KeyValue<TypedRow<T>> val = nextChunk();
