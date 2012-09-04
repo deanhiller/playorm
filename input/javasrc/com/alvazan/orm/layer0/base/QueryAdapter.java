@@ -27,6 +27,7 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.layer3.typed.IterableIndex;
+import com.alvazan.orm.parser.antlr.ViewInfo;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -39,12 +40,14 @@ public class QueryAdapter<T> implements Query<T> {
 	private BaseEntityManagerImpl mgr;
 	private Integer batchSize;
 	private MetaClass<T> mainMetaClass;
+	private ViewInfo mainView;
 
 	public void setup(MetaClass<T> target, SpiMetaQuery metaQuery, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
 		this.mainMetaClass = target;
 		this.meta = metaQuery;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
+		this.mainView = metaQuery.getMainViewMeta();
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -99,7 +102,13 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
 		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
-		Iterable<byte[]> keys = new IterableIndex(indice);
+		
+		//BIG NOTE: Here, we could return all the keys from the join so we can eagerly fetch other entities as well
+		//instead of waiting for the user to loop through those entities AND if user accesses those entites, we could block
+		//while the load is happening too in the background
+		Iterable<byte[]> keys = new IterableIndex(mainView, indice);
+		
+		
 		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;

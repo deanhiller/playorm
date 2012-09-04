@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.z8spi.action;
 
+
 public class IndexColumn {
 	private byte[] indexedValue;
 	private byte[] primaryKey;
@@ -9,7 +10,7 @@ public class IndexColumn {
 	//NOTE: columnName is set and used for logging purposes only when writing out
 	//index columns
 	private String columnName;
-
+	
 	public IndexColumn() {}
 	
 	public IndexColumn copy() {

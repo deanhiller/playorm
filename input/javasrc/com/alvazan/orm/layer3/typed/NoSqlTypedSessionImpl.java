@@ -21,6 +21,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
+import com.alvazan.orm.parser.antlr.ViewInfo;
 
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
@@ -138,9 +139,10 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
 		AbstractCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
-		Iterable<byte[]> indexIterable = new IterableIndex(iter);
+		ViewInfo mainView = metaQuery.getMainViewMeta();
+		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
 
-		DboTableMeta meta = metaQuery.getTargetTable();
+		DboTableMeta meta = mainView.getTableMeta();
 		Cursor results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
 		
 		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that

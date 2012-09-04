@@ -4,13 +4,16 @@ import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.parser.antlr.ViewInfo;
 
 public class CursorSimpleTranslator extends AbstractCursor<IndexColumnInfo> {
 
 	private AbstractCursor<IndexColumn> cursor;
 	private DboColumnMeta info;
+	private ViewInfo viewInfo;
 
-	public CursorSimpleTranslator(DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
+	public CursorSimpleTranslator(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
+		this.viewInfo = viewInfo;
 		this.info = info;
 		this.cursor = scan;
 	}
@@ -29,8 +32,7 @@ public class CursorSimpleTranslator extends AbstractCursor<IndexColumnInfo> {
 		if(indCol == null)
 			return new Holder<IndexColumnInfo>(null);
 		IndexColumnInfo info = new IndexColumnInfo();
-		info.setPrimary(indCol);
-		info.setColumnMeta(this.info);
+		info.putIndexNode(viewInfo, indCol);
 		return new Holder<IndexColumnInfo>(info);
 	}
 

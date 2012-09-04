@@ -39,7 +39,8 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return astTreeRoot;
 	}
 
-	public ViewInfo getMainTableMeta() {
+	@Override
+	public ViewInfo getMainViewMeta() {
 		return mainTable;
 	}
 
@@ -65,9 +66,4 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return query;
 	}
 
-	@Override
-	public DboTableMeta getTargetTable() {
-		return targetTable;
-	}
-	
 }

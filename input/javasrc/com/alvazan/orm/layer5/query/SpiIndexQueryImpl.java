@@ -19,6 +19,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.JoinInfo;
+import com.alvazan.orm.parser.antlr.JoinMeta;
 import com.alvazan.orm.parser.antlr.JoinType;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.PartitionMeta;
@@ -57,13 +58,13 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	public AbstractCursor<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
-			ViewInfo tableInfo = spiMeta.getMainTableMeta();
+			ViewInfo tableInfo = spiMeta.getMainViewMeta();
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
 			
 			AbstractCursor<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
-			return processKeys(null, scan);
+			return processKeys(tableInfo, null, scan);
 		}
 	
 		log.info("root(type="+root.getType()+")="+root);
@@ -114,20 +115,28 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		AbstractCursor<IndexColumnInfo> leftResults = processExpressionTree(left);
 		AbstractCursor<IndexColumnInfo> rightResults = processExpressionTree(right);
 		
+		JoinMeta joinMeta = left.getJoinMeta();
+		ViewInfo leftView = joinMeta.getPrimaryJoinInfo().getPrimaryTable();
+		JoinMeta joinMeta2 = right.getJoinMeta();
+		ViewInfo rightView = joinMeta2.getPrimaryJoinInfo().getPrimaryTable();
+		
 		if(root.getJoinMeta().getJoinType() == JoinType.INNER) {
 			//We need to proxy the right results to translate to the same primary key as the
 			//left results and our And and Or Cursor can then take care of the rest
 			JoinInfo joinInfo = root.getJoinMeta().getPrimaryJoinInfo();
-			ViewInfo table = joinInfo.getPrimaryTable();
+			ViewInfo newView = joinInfo.getPrimaryTable();
 			DboColumnMeta col = joinInfo.getPrimaryCol();
-			ScanInfo scanInfo = createScanInfo(table, col);
-			rightResults = new CursorForInnerJoin(rightResults, scanInfo, session, batchSize);
+			ScanInfo scanInfo = createScanInfo(newView, col);
+			rightResults = new CursorForInnerJoin(newView, rightView, rightResults, scanInfo, session, batchSize);
+			rightView = newView;
 		}
 		
+
+		
 		if(root.getType() == NoSqlLexer.AND) {
-			return new CursorForAnd(leftResults, rightResults);
+			return new CursorForAnd(leftView, leftResults, rightView, rightResults);
 		} else {
-			return new CursorForOr(leftResults, rightResults);
+			return new CursorForOr(leftView, leftResults, rightView, rightResults);
 		}
 	}
 	
@@ -174,7 +183,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 
-		AbstractCursor<IndexColumnInfo> processKeys = processKeys(info, scan);
+		AbstractCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
 		return processKeys;
 	}
 
@@ -198,8 +207,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new RuntimeException("bug, should never happen, but should be easy to fix this one. type="+node.getType());	
 	}
 
-	private AbstractCursor<IndexColumnInfo> processKeys(DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
-		return new CursorSimpleTranslator(info, scan);
+	private AbstractCursor<IndexColumnInfo> processKeys(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
+		return new CursorSimpleTranslator(viewInfo, info, scan);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {

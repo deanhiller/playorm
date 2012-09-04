@@ -1,47 +1,34 @@
 package com.alvazan.orm.api.z5api;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
-import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.parser.antlr.ViewInfo;
 
 public class IndexColumnInfo {
 
-	private IndexColumn primary;
-	private IndexColumnInfo nextAndedColumn;
-	private IndexColumnInfo nextOrColumn;
-	private DboColumnMeta columnMeta;
-	private transient ByteArray cachedPrimaryKey;
+	private Map<ViewInfo, IndexColumn> colNameToValue = new HashMap<ViewInfo, IndexColumn>();
 	
-	public IndexColumn getPrimary() {
-		return primary;
-	}
-	public void setPrimary(IndexColumn primary) {
-		this.primary = primary;
+	public void putIndexNode(ViewInfo viewInfo, IndexColumn indCol) {
+		this.colNameToValue.put(viewInfo, indCol);
 	}
 
-	public DboColumnMeta getColumnMeta() {
-		return columnMeta;
+	public IndexColumn getIndexNode(ViewInfo view) {
+		return colNameToValue.get(view);
 	}
-	public void setColumnMeta(DboColumnMeta columnMeta) {
-		this.columnMeta = columnMeta;
+
+	public ByteArray getPrimaryKey(ViewInfo leftView) {
+		IndexColumn indexColumn = colNameToValue.get(leftView);
+		return new ByteArray(indexColumn.getPrimaryKey());
 	}
-	public ByteArray getPrimaryKey() {
-		if(cachedPrimaryKey == null) {
-			cachedPrimaryKey = new ByteArray(primary.getPrimaryKey());
+
+	public void mergeResults(IndexColumnInfo info) {
+		for (Entry<ViewInfo, IndexColumn> entry : colNameToValue.entrySet()) {
+			putIndexNode(entry.getKey(), entry.getValue());
 		}
-		return cachedPrimaryKey;
-	}
-	public IndexColumnInfo getNextAndedColumn() {
-		return nextAndedColumn;
-	}
-	public void setNextAndedColumn(IndexColumnInfo nextAndedColumn) {
-		this.nextAndedColumn = nextAndedColumn;
-	}
-	public IndexColumnInfo getNextOrColumn() {
-		return nextOrColumn;
-	}
-	public void setNextOrColumn(IndexColumnInfo nextOrColumn) {
-		this.nextOrColumn = nextOrColumn;
 	}
 	
 }

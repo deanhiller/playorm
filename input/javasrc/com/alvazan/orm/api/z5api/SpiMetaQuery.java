@@ -1,7 +1,7 @@
 package com.alvazan.orm.api.z5api;
 
-import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.parser.antlr.ViewInfo;
 
 
 
@@ -29,6 +29,6 @@ public interface SpiMetaQuery {
 
 	public String getQuery();
 
-	public DboTableMeta getTargetTable();
+	ViewInfo getMainViewMeta();
 	
 }
