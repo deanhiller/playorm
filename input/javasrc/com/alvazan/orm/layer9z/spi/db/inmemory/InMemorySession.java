@@ -256,4 +256,15 @@ public class InMemorySession implements NoSqlRawSession {
 		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list) {
+		List<IndexColumn> results = new ArrayList<IndexColumn>();
+		for(byte[] val : values) {
+			Key from = new Key(val, true);
+			Key to = new Key(val, true);
+			Collection<IndexColumn> iter = scanIndexImpl(scanInfo, from, to, null, null);
+			results.addAll(iter);
+		}
+		return new ProxyTempCursor<IndexColumn>(results);
+	}
 }

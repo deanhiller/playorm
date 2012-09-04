@@ -310,6 +310,26 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList) {
+		String colFamily = info.getIndexColFamily();
+		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		if(info1 == null) {
+			//well, if column family doesn't exist, then no entities exist either
+			log.info("query was run on column family that does not yet exist="+colFamily);
+			return new EmptyCursor<IndexColumn>();
+		}
+		
+		ColumnType type = info1.getColumnType();
+		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
+				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
+				type == ColumnType.COMPOSITE_STRINGPREFIX) {
+			StartQueryListener listener = new StartQueryManyKeys(columnFamilies, info1, info, values);
+			return new CursorOfFutures(listener, batchList);
+		} else
+			throw new UnsupportedOperationException("not done here yet");
+	}
+
+	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
 			Integer batchSize, BatchListener bListener) {
 		if(batchSize != null && batchSize <= 0)
@@ -333,7 +353,7 @@ public class CassandraSession implements NoSqlRawSession {
 			throw new UnsupportedOperationException("not done here yet");
 	}
 	
-	private static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
+	public static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
 		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
 		CompositeRangeBuilder range = serializer.buildRange();
 		if(from != null) {
@@ -362,12 +382,12 @@ public class CassandraSession implements NoSqlRawSession {
 							.withColumnRange(range);
 		return rowQuery;
 	}
-	
+
 	private <T> AbstractCursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
 		return new CursorColumnSlice<T>(l, isComposite, bListener, batchSize);
 	}
-
+	
 	public interface CreateColumnSliceCallback {
 		RowQuery<byte[], byte[]> createRowQuery();
 	}

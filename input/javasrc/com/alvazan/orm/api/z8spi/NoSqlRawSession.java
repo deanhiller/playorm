@@ -47,4 +47,6 @@ public interface NoSqlRawSession {
 	 */
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l);
 
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list);
+
 }

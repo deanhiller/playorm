@@ -52,4 +52,9 @@ public class HadoopSession implements NoSqlRawSession {
 		return null;
 	}
 
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
+		return null;
+	}
+
 }

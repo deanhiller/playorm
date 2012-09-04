@@ -141,10 +141,13 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
 		return rawSession.scanIndex(info, from, to, batchSize, null);
 	}
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values) {
+		return rawSession.scanIndex(scanInfo, values, null);
+	}
 	
 	@Override
 	public void setOrmSessionForMeta(MetaLookup session) {
 		this.ormSession = session;
 	}
-
 }

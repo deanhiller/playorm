@@ -196,4 +196,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 		session.setOrmSessionForMeta(ormSession);
 	}
 
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values) {
+		return session.scanIndex(scanInfo, values);
+	}
+
 }

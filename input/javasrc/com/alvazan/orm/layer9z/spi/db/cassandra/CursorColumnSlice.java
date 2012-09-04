@@ -56,15 +56,11 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		com.netflix.astyanax.model.Column<byte[]> col = latestIterator.next();
 		count++;
 		
-		Object obj = col.getName();
 		if(isComposite) {
-			GenericComposite bigDec = (GenericComposite)obj;
-			IndexColumn c = new IndexColumn();
-			c.setPrimaryKey(bigDec.getPk());
-			c.setIndexedValue(bigDec.getIndexedValue());
-			c.setValue(col.getByteArrayValue());
+			IndexColumn c = convertToIndexCol(col);
 			return new Holder<T>((T) c);
 		} else {
+			Object obj = col.getName();
 			Column c = new Column();
 			byte[] name = (byte[])obj;
 			c.setName(name);
@@ -72,6 +68,16 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 			c.setTimestamp(col.getTimestamp());
 			return new Holder<T>((T) c);
 		}
+	}
+
+	public static IndexColumn convertToIndexCol(com.netflix.astyanax.model.Column<byte[]> col) {
+		Object colName = col.getName();
+		GenericComposite bigDec = (GenericComposite)colName;
+		IndexColumn c = new IndexColumn();
+		c.setPrimaryKey(bigDec.getPk());
+		c.setIndexedValue(bigDec.getIndexedValue());
+		c.setValue(col.getByteArrayValue());
+		return c;
 	}
 	
 	

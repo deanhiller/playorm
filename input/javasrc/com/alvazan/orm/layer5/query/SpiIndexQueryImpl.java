@@ -18,6 +18,8 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
+import com.alvazan.orm.parser.antlr.JoinInfo;
+import com.alvazan.orm.parser.antlr.JoinType;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.PartitionMeta;
 import com.alvazan.orm.parser.antlr.StateAttribute;
@@ -111,6 +113,16 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		
 		AbstractCursor<IndexColumnInfo> leftResults = processExpressionTree(left);
 		AbstractCursor<IndexColumnInfo> rightResults = processExpressionTree(right);
+		
+		if(root.getJoinMeta().getJoinType() == JoinType.INNER) {
+			//We need to proxy the right results to translate to the same primary key as the
+			//left results and our And and Or Cursor can then take care of the rest
+			JoinInfo joinInfo = root.getJoinMeta().getPrimaryJoinInfo();
+			ViewInfo table = joinInfo.getPrimaryTable();
+			DboColumnMeta col = joinInfo.getPrimaryCol();
+			ScanInfo scanInfo = createScanInfo(table, col);
+			rightResults = new CursorForInnerJoin(rightResults, scanInfo, session, batchSize);
+		}
 		
 		if(root.getType() == NoSqlLexer.AND) {
 			return new CursorForAnd(leftResults, rightResults);

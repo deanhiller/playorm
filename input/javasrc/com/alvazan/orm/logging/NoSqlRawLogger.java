@@ -162,10 +162,55 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			logColScan(info, from, to, batchSize);
 			list = new LogBatchFetch(l, batchSize);
 		}
-		AbstractCursor<IndexColumn> ret = session.scanIndex(info, from, to, batchSize, list);
-		return ret;
+		return session.scanIndex(info, from, to, batchSize, list);
 	}
 	
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
+		BatchListener list = l;
+		if(log.isInfoEnabled()) {
+			logColScan2(scanInfo, values);
+			list = new LogBatchFetch(l, values.size());
+		}
+		long start = System.currentTimeMillis();
+		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list);
+		if(log.isInfoEnabled()) {
+			long total = System.currentTimeMillis()-start;
+			log.info("time to SEND request for scanindex of keys="+total+" ms");
+		}
+		return cursor;
+	}
+	
+	private void logColScan2(ScanInfo info, List<byte[]> values) {
+		try {
+			String msg = logColScan2Impl(info, values);
+			log.info("[rawlogger]"+msg);
+		} catch(Exception e) {
+			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+		}		
+	}
+
+	private String logColScan2Impl(ScanInfo info, List<byte[]> values) {
+		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		if(info.getEntityColFamily() == null)
+			return msg + " (meta for main CF can't be looked up)";
+
+		DboTableMeta meta = databaseInfo.getMeta(info.getEntityColFamily());
+		if(meta == null)
+			return msg + " (meta for main CF was not found)";
+		DboColumnMeta colMeta = meta.getColumnMeta(info.getColumnName());
+		if(colMeta == null)
+			return msg + " (CF meta found but columnMeta not found)";
+		
+		List<String> strVals = new ArrayList<String>();
+		for(byte[] val : values) {
+			Object fromObj = colMeta.convertFromStorage2(val);
+			String str = colMeta.convertTypeToString(fromObj);
+			strVals.add(str);
+		}
+		return msg+" lookup keys="+strVals;
+	}
+
 	private void logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
 		try {
 			String msg = logColScanImpl(info, from, to, batchSize);
@@ -260,19 +305,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		List<byte[]> allKeys = new ArrayList<byte[]>();
 		List<String> realKeys = new ArrayList<String>();
-		for(byte[] k : rKeys) {
-			allKeys.add(k);
-			if(log.isInfoEnabled()) {
-				try {
-					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
-					String str = meta.getIdColumnMeta().convertTypeToString(obj);
-					realKeys.add(str);
-				} catch(Exception e) {
-					log.trace("Exception occurred", e);
-					realKeys.add("[exception, turn on trace logging]");
-				}
-			}
-		}
+		addToLists(rKeys, meta, allKeys, realKeys);
 		
 		AbstractCursor<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
@@ -312,6 +345,23 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		ProxyTempCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(results);
 		return proxy;
+	}
+
+	private void addToLists(Iterable<byte[]> rKeys, DboTableMeta meta,
+			List<byte[]> allKeys, List<String> realKeys) {
+		for(byte[] k : rKeys) {
+			allKeys.add(k);
+			if(log.isInfoEnabled()) {
+				try {
+					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
+					String str = meta.getIdColumnMeta().convertTypeToString(obj);
+					realKeys.add(str);
+				} catch(Exception e) {
+					log.trace("Exception occurred", e);
+					realKeys.add("[exception, turn on trace logging]");
+				}
+			}
+		}
 	}
 
 }

@@ -110,5 +110,10 @@ public class NoSqlDevLogger implements NoSqlSession {
 		session.setOrmSessionForMeta(orm);
 	}
 
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values) {
+		return session.scanIndex(scanInfo, values);
+	}
+
 
 }
