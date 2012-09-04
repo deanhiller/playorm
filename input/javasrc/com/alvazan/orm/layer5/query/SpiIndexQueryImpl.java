@@ -127,8 +127,10 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			ViewInfo newView = joinInfo.getPrimaryTable();
 			DboColumnMeta col = joinInfo.getPrimaryCol();
 			ScanInfo scanInfo = createScanInfo(newView, col);
-			rightResults = new CursorForInnerJoin(newView, rightView, rightResults, scanInfo, session, batchSize);
-			rightView = newView;
+			//FROM an ORM perspective, we join to smaller tables in general as we don't want to blow out memory so do the
+			//join first(ie. we process left sides first in and and or cursors)
+			leftResults = new CursorForInnerJoin(newView, leftView, leftResults, scanInfo, session, batchSize);
+			leftView = newView;
 		}
 		
 

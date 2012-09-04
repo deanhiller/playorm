@@ -34,10 +34,10 @@ public class TestJoins {
 		other.clearDatabase(true);
 	}
 	
-	@Test
+	//@Test
 	public void testEmpty() {}
 	
-	//@Test
+	@Test
 	public void testJoin() {
 		putEntities();
 		
@@ -65,6 +65,8 @@ public class TestJoins {
 		trade1.setSecurity(sec);
 		trade1.setNumShares(5);
 		mgr.put(trade1);
+		
+		mgr.flush();
 		
 		AAPartitionedTrade trade2 = new AAPartitionedTrade();
 		trade2.setSecurity(sec);

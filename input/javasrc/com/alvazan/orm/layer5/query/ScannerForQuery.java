@@ -60,7 +60,6 @@ public class ScannerForQuery implements QueryParser {
 		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
-		spiMetaQuery.setTargetTable(wiring.getMetaQueryTargetTable());
 		
 		return spiMetaQuery;
 	}

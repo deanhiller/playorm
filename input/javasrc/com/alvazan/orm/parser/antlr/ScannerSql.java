@@ -142,7 +142,8 @@ public class ScannerSql {
 		DboColumnMeta columnMeta = facade.getFkMetaIfExist(tableMeta, column);
 		if(!(columnMeta instanceof DboColumnToOneMeta))
 			throw new IllegalArgumentException("Column="+column+" on table="+tableMeta.getColumnFamily()+" is NOT a OneToOne NOR ManyToOne relationship according to our meta data");
-		
+		else if(!columnMeta.isIndexed())
+			throw new IllegalArgumentException("Column="+column+" on table="+tableMeta.getColumnFamily()+" is not indexed.  Add @NoSqlIndex or map/reduce a new index in place and add annotation");
 		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
 		DboTableMeta fkTableMeta = toOne.getFkToColumnFamily();
 

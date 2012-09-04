@@ -22,6 +22,7 @@ public class CursorForInnerJoin extends AbstractCursor<IndexColumnInfo> {
 	private ViewInfo newView;
 	private ViewInfo rightView;
 	private Iterator<IndexColumnInfo> cachedFromRightResults;
+	private IndexColumnInfo lastCachedRightSide;
 
 	public CursorForInnerJoin(ViewInfo view, ViewInfo rightView, AbstractCursor<IndexColumnInfo> rightResults,
 			ScanInfo scanInfo, NoSqlSession session, Integer batchSize) {
@@ -44,9 +45,7 @@ public class CursorForInnerJoin extends AbstractCursor<IndexColumnInfo> {
 		if(cachedFromNewView != null) {
 			Holder<IndexColumn> next = cachedFromNewView.nextImpl();
 			if(next != null) {
-				IndexColumnInfo rightSide = cachedFromRightResults.next();
-				rightSide.putIndexNode(newView, next.getValue());
-				return new Holder<IndexColumnInfo>(rightSide);
+				return createResult(next);
 			}
 			//we need to fetch more...
 		}
@@ -57,11 +56,13 @@ public class CursorForInnerJoin extends AbstractCursor<IndexColumnInfo> {
 		
 		//optimize by fetching LOTS of keys at one time up to batchSize
 		int counter = 0;
-		while(rightResults.next()) {
-			if(batchSize != null && batchSize.intValue() < counter)
+		while(true) {
+			Holder<IndexColumnInfo> rightHolder = rightResults.nextImpl();
+			if(rightHolder == null ||
+					(batchSize != null && batchSize.intValue() < counter))
 				break;
 			
-			IndexColumnInfo rightResult = rightResults.getCurrent();
+			IndexColumnInfo rightResult = rightHolder.getValue();
 			ByteArray pk = rightResult.getPrimaryKey(rightView);
 			values.add(pk.getKey());
 			rightListResults.add(rightResult);
@@ -75,9 +76,26 @@ public class CursorForInnerJoin extends AbstractCursor<IndexColumnInfo> {
 		if(next == null)
 			return null;
 
-		IndexColumnInfo rightSide = cachedFromRightResults.next();
-		rightSide.putIndexNode(newView, next.getValue());
-		return new Holder<IndexColumnInfo>(rightSide);
+		lastCachedRightSide = cachedFromRightResults.next();
+		
+		return createResult(next);
+	}
+
+	private Holder<IndexColumnInfo> createResult(
+			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> next) {
+		IndexColumn indCol = next.getValue();	
+		//We need to compare lastCachedRightSide with our incoming to make see if they pair up
+		//or else move to the next right side answer.
+		ByteArray pkOfRightView = lastCachedRightSide.getPrimaryKey(rightView);
+		ByteArray valueOfLeft = new ByteArray(indCol.getIndexedValue());
+		if(!valueOfLeft.equals(pkOfRightView)) {
+			lastCachedRightSide = cachedFromRightResults.next();
+		}		
+	
+		IndexColumnInfo info = new IndexColumnInfo();
+		info.mergeResults(lastCachedRightSide);
+		info.putIndexNode(newView, indCol);
+		return new Holder<IndexColumnInfo>(info);
 	}
 
 }

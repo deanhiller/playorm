@@ -19,8 +19,8 @@ import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
-import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -108,8 +108,8 @@ public class QueryAdapter<T> implements Query<T> {
 		//while the load is happening too in the background
 		Iterable<byte[]> keys = new IterableIndex(mainView, indice);
 		
-		
-		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
+		String query = meta.getQuery();
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, batchSize);
 
 		return results;
 	}

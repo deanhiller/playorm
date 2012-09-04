@@ -8,7 +8,6 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
-import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.ViewInfo;
@@ -20,7 +19,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private ExpressionNode astTreeRoot;
 	private ViewInfo mainTable;
 	private Map<String, TypeInfo> parameterFieldMap;
-	private DboTableMeta targetTable;
 	private String query;
 	
 	@Override
@@ -46,10 +44,6 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 
 	public void setParameterFieldMap(Map<String, TypeInfo> parameterFieldMap) {
 		this.parameterFieldMap = parameterFieldMap;
-	}
-
-	public void setTargetTable(DboTableMeta table) {
-		this.targetTable = table;
 	}
 
 	public void setQuery(String query) {

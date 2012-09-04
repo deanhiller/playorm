@@ -77,21 +77,21 @@ public class TestGrammar {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
+		Assert.assertEquals("(s.securityType = :type and(innerjoin) p.numShares = :shares)", result);
 	}
 	@Test
 	public void testJoinJoinOnSame() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN p.something as t where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
+		Assert.assertEquals("(s.securityType = :type and(innerjoin) p.numShares = :shares)", result);
 	}
 	@Test
 	public void testJoinJoinOnChain() {
 		String sql = "select p FROM TABLE as p INNER JOIN p.security as s INNER JOIN s.something as t where p.numShares = :shares and s.securityType = :type";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("(p.numShares = :shares and(innerjoin) s.securityType = :type)", result);
+		Assert.assertEquals("(s.securityType = :type and(innerjoin) p.numShares = :shares)", result);
 	}	
 	@Test
 	public void testNoRewrite() {
@@ -109,6 +109,6 @@ public class TestGrammar {
 				" and ( ((f.x>:a and f.y>:a) or (g.x>:a and g.y>:a)) and h.f>:a )";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("((((a.y > :a and(innerjoin) d.y > :a) or (a.z > :a and(innerjoin) b.z > :a)) and (b.x > :a and(innerjoin) e.y > :a)) and(innerjoin) (((g.x > :a and g.y > :a) or(innerjoin) (f.x > :a and f.y > :a)) and(innerjoin) h.f > :a))", result);
+		Assert.assertEquals("((h.f > :a and(innerjoin) ((f.x > :a and f.y > :a) or(innerjoin) (g.x > :a and g.y > :a))) and(innerjoin) (((d.y > :a and(innerjoin) a.y > :a) or (b.z > :a and(innerjoin) a.z > :a)) and (e.y > :a and(innerjoin) b.x > :a)))", result);
 	}
 }

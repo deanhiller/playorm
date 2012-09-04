@@ -41,6 +41,7 @@ public class AAPartitionedTrade {
 	@NoSqlIndexed
 	private int numShares;
 	
+	@NoSqlIndexed
 	@NoSqlManyToOne
 	private PartSecurity security;
 	

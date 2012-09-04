@@ -33,5 +33,8 @@ public class RemoveIndex implements Action {
 	public void setRealColFamily(String realColFamily) {
 		this.realColFamily = realColFamily;
 	}
-	
+	@Override
+	public String toString() {
+		return "indexChg to:"+realColFamily+"."+column.getColumnName();
+	}
 }
