@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -52,9 +54,13 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		if(cacheLoaded)
 			return;
 
-		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
+		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
 		log.info("loading key list="+keys+" results="+rows);
-		for(KeyValue<Row> kv : rows) {
+		while(true) {
+			Holder<KeyValue<Row>> holder = rows.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
 			Row row = kv.getValue();
 			Tuple<V> tuple = classMeta.convertIdToProxy(row, key, session, null);

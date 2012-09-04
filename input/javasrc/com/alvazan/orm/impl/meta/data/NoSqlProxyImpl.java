@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
@@ -108,11 +109,11 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
 		
-		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), rowKeys, false);
-		Iterator<KeyValue<Row>> iter = rows.iterator();
-		if(!iter.hasNext())
+		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), rowKeys, false);
+		Holder<KeyValue<Row>> holder = rows.nextImpl();
+		if(holder == null)
 			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
-		KeyValue<Row> next = iter.next();
+		KeyValue<Row> next = holder.getValue();
 		if(next.getValue() == null)
 			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);
 		

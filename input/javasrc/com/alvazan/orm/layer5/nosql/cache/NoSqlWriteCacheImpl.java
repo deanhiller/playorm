@@ -82,8 +82,9 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
-		return rawSession.find(colFamily, rowKeys);
+	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+		Iterable<KeyValue<Row>> iterable = rawSession.find(colFamily, rowKeys);
+		return new ProxyTempCursor<KeyValue<Row>>(iterable);
 	}
 	
 	public List<Row> find(String colFamily, List<byte[]> keys) {

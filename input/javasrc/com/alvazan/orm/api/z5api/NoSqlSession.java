@@ -50,7 +50,7 @@ public interface NoSqlSession {
 	 */
 	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 	
-	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache);
+	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache);
 	
 	public Row find(String colFamily, byte[] rowKey);
 	

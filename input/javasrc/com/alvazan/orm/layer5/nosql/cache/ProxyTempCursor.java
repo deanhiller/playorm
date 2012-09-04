@@ -3,24 +3,23 @@ package com.alvazan.orm.layer5.nosql.cache;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.z8spi.AbstractCursor;
-import com.alvazan.orm.api.z8spi.action.IndexColumn;
 
-public class ProxyTempCursor extends AbstractCursor<IndexColumn> {
+public class ProxyTempCursor<T> extends AbstractCursor<T> {
 
-	private Iterator<IndexColumn> iterator;
-	private Iterable<IndexColumn> iterable;
+	private Iterator<T> iterator;
+	private Iterable<T> iterable;
 
-	public ProxyTempCursor(Iterable<IndexColumn> iterable) {
+	public ProxyTempCursor(Iterable<T> iterable) {
 		this.iterable = iterable;
 		this.iterator = iterable.iterator();
 	}
 
 	@Override
-	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<IndexColumn> nextImpl() {
+	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<T> nextImpl() {
 		if(!iterator.hasNext())
 			return null;
 		
-		return new Holder<IndexColumn>(iterator.next());
+		return new Holder<T>(iterator.next());
 	}
 
 	@Override

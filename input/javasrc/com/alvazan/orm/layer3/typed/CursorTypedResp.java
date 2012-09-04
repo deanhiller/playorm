@@ -15,19 +15,18 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 	private DboTableMeta meta;
 	private Iterable<T> keysIterable;
 	private Iterator<T> keys;
-	private Iterable<KeyValue<Row>> rowsIterable;
-	private Iterator<KeyValue<Row>> rows;
+	private AbstractCursor<KeyValue<Row>> rowsIterable;
 	private String query;
 
 	public CursorTypedResp(DboTableMeta meta, Iterable<T> keys,
-			Iterable<KeyValue<Row>> rows) {
+			AbstractCursor<KeyValue<Row>> rows) {
 		this.meta = meta;
 		this.keysIterable = keys;
 		this.rowsIterable = rows;
 		beforeFirst();
 	}
 
-	public CursorTypedResp(DboTableMeta meta2, Iterable<KeyValue<Row>> rows2,
+	public CursorTypedResp(DboTableMeta meta2, AbstractCursor<KeyValue<Row>> rows2,
 			String query) {
 		this.meta = meta2;
 		this.rowsIterable = rows2;
@@ -37,29 +36,30 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 
 	@Override
 	public void beforeFirst() {
-		rows = rowsIterable.iterator();
+		rowsIterable.beforeFirst();
 		if(keysIterable != null)
 			keys = keysIterable.iterator();
 	}
 
 	@Override
-	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<KeyValue<TypedRow<T>>> nextImpl() {
-		if(!rows.hasNext())
+	public Holder<KeyValue<TypedRow<T>>> nextImpl() {
+		Holder<KeyValue<Row>> nextImpl = rowsIterable.nextImpl();
+		if(nextImpl == null)
 			return null;
-		KeyValue<TypedRow<T>> val = nextChunk();
+		
+		KeyValue<TypedRow<T>> val = nextChunk(nextImpl.getValue());
 		return new Holder<KeyValue<TypedRow<T>>>(val);
 	}
 	
-	private KeyValue<TypedRow<T>> nextChunk() {
+	private KeyValue<TypedRow<T>> nextChunk(KeyValue<Row> keyValue) {
 		if(query == null) {
-			return nextVal();
+			return nextVal(keyValue);
 		}
-		return nextForQuery();
+		return nextForQuery(keyValue);
 	}
 
 	@SuppressWarnings("unchecked")
-	private KeyValue<TypedRow<T>> nextForQuery() {
-		KeyValue<Row> kv = rows.next();
+	private KeyValue<TypedRow<T>> nextForQuery(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		byte[] rowKey = (byte[]) kv.getKey();
 		DboColumnIdMeta idField = meta.getIdColumnMeta();
@@ -78,8 +78,7 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 		return keyVal;
 	}
 
-	private KeyValue<TypedRow<T>> nextVal() {
-		KeyValue<Row> kv = rows.next();
+	private KeyValue<TypedRow<T>> nextVal(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		T key = keys.next();
 		

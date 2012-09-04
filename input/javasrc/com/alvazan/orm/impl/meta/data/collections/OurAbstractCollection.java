@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -46,9 +47,13 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		Iterable<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
+		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
 		int counter = 0;
-		for(KeyValue<Row> kv : rows) {
+		while(true) {
+			com.alvazan.orm.api.z8spi.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
 			Row row = kv.getValue();
 			Tuple<T> tuple = classMeta.convertIdToProxy(row, key, session, null);

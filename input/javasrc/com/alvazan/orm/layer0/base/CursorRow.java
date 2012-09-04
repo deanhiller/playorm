@@ -19,7 +19,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	private Iterable<byte[]> noSqlKeys;
 	private Iterator<byte[]> keysIterator;
 	//TODO: lastCachedRows SHOULD be Cursor I believe....
-	private Iterator<KeyValue<Row>> lastCachedRows;
+	private AbstractCursor<KeyValue<Row>> lastCachedRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
@@ -65,8 +65,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 			proxyCounting = new IterableCounting(this.keysIterator, batchSize);
 		}
 		boolean skipCache = query != null; //if someone is querying into, we need to skip the cache!!!
-		Iterable<KeyValue<Row>> rows = session.findAll(cf, proxyCounting, skipCache);
-		lastCachedRows = rows.iterator();
+		lastCachedRows = session.findAll(cf, proxyCounting, skipCache);
 	}
 
 	private KeyValue<T> fetchRow() {
