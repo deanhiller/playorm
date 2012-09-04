@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -31,6 +32,7 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.layer5.nosql.cache.ProxyTempCursor;
 
 public class NoSqlRawLogger implements NoSqlRawSession {
 
@@ -246,7 +248,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rKeys) {
 		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
 		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
@@ -272,7 +274,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			}
 		}
 		
-		Iterable<KeyValue<Row>> ret;
+		AbstractCursor<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
 
 			if(allKeys.size() > 0)
@@ -291,7 +293,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
 		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-		for (KeyValue<Row> kv : ret) {
+		while(true) {
+			Holder<KeyValue<Row>> holder = ret.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			byte[] k = (byte[]) kv.getKey();
 			ByteArray b = new ByteArray(k);
 			map.put(b, kv);
@@ -303,7 +309,9 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			results.add(kv);
 		}
 		
-		return results;
+		
+		ProxyTempCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(results);
+		return proxy;
 	}
 
 }

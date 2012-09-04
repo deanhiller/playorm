@@ -35,7 +35,7 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys) {
 		return null;
 	}

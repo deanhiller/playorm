@@ -19,7 +19,7 @@ public interface NoSqlRawSession {
 	 * @param key
 	 * @return
 	 */
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys);
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys);
 	
 	/**
 	 * Action is subclassed by Remove and Persist and will be executed

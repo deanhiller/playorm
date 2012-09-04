@@ -4,62 +4,44 @@ import java.util.Iterator;
 
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.netflix.astyanax.model.Rows;
 
-public class IterableResult implements Iterable<KeyValue<Row>> {
+public class IterableResult extends AbstractCursor<KeyValue<Row>> {
 
-	private Rows<byte[], byte[]> rows;
+	private Rows<byte[], byte[]> rowsIterable;
 	private Provider<Row> rowProvider;
 
+	private Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> rows;
+	
 	public IterableResult(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
 		this.rowProvider = rowProvider;
-		this.rows = rows;
+		this.rowsIterable = rows;
 	}
 
 	@Override
-	public Iterator<KeyValue<Row>> iterator() {
-		return new ResultIteratorProxy(rowProvider, rows.iterator());
+	public void beforeFirst() {
+		rows = rowsIterable.iterator();
 	}
 
-	private static class ResultIteratorProxy implements Iterator<KeyValue<Row>> {
-
-		private Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> rows;
-		private Provider<Row> rowProvider;
-
-		public ResultIteratorProxy(Provider<Row> rowProvider, Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> iterator) {
-			this.rowProvider = rowProvider;
-			this.rows = iterator;
+	@Override
+	public Holder<KeyValue<Row>> nextImpl() {
+		if(!rows.hasNext())
+			return null;
+		com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.next();
+		KeyValue<Row> kv = new KeyValue<Row>();
+		kv.setKey(row.getKey());
+		if(!row.getColumns().isEmpty()) {
+			//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
+			//then
+			Row r = rowProvider.get();
+			r.setKey(row.getKey());
+			CassandraSession.processColumns(row, r);
+			kv.setValue(r);
 		}
-
-		@Override
-		public boolean hasNext() {
-			return rows.hasNext();
-		}
-
-		@Override
-		public KeyValue<Row> next() {
-			if(!rows.hasNext())
-				throw new IllegalStateException("There are no more values in this iterator="+rows);
-			com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.next();
-			KeyValue<Row> kv = new KeyValue<Row>();
-			kv.setKey(row.getKey());
-			if(!row.getColumns().isEmpty()) {
-				//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
-				//then
-				Row r = rowProvider.get();
-				r.setKey(row.getKey());
-				CassandraSession.processColumns(row, r);
-				kv.setValue(r);
-			}
-			
-			return kv;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("not supported, never will be");
-		}
+		
+		return new Holder<KeyValue<Row>>(kv);		
 	}
 }

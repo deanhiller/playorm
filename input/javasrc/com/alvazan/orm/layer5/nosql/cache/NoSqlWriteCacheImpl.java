@@ -9,6 +9,7 @@ import javax.inject.Named;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -83,14 +84,17 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
-		Iterable<KeyValue<Row>> iterable = rawSession.find(colFamily, rowKeys);
-		return new ProxyTempCursor<KeyValue<Row>>(iterable);
+		return rawSession.find(colFamily, rowKeys);
 	}
 	
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		Iterable<KeyValue<Row>> results = rawSession.find(colFamily, keys);
+		AbstractCursor<KeyValue<Row>> results = rawSession.find(colFamily, keys);
 		List<Row> rows = new ArrayList<Row>();
-		for(KeyValue<Row> kv : results) {
+		while(true) {
+			Holder<KeyValue<Row>> holder = results.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			rows.add(kv.getValue());
 		}
 		return rows;

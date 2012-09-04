@@ -67,7 +67,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		try {
 			return findImpl2(colFamily, rowKeys);
 		} catch (ConnectionException e) {
@@ -75,7 +75,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}		
 	}
 	
-	private Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
+	private AbstractCursor<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
@@ -85,7 +85,7 @@ public class CassandraSession implements NoSqlRawSession {
 				log.trace("iterating over keys to find for empty list");
 				//do nothing
 			}
-			return new IterableReturnsEmptyRows(keys);
+			return new CursorReturnsEmptyRows(keys);
 		}
 
 		ColumnFamily cf = info.getColumnFamilyObj();

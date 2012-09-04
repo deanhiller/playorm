@@ -30,6 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
+import com.alvazan.orm.layer5.nosql.cache.ProxyTempCursor;
 
 public class InMemorySession implements NoSqlRawSession {
 
@@ -41,7 +42,7 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);
@@ -55,7 +56,8 @@ public class InMemorySession implements NoSqlRawSession {
 			rows.add(kv);
 		}
 		
-		return rows;
+		AbstractCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(rows);
+		return proxy;
 	}
 	
 	private Row findRow(String colFamily, byte[] key) {
