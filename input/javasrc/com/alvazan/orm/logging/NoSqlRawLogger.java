@@ -11,23 +11,28 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi9.db.Action;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Persist;
-import com.alvazan.orm.api.spi9.db.PersistIndex;
-import com.alvazan.orm.api.spi9.db.Remove;
-import com.alvazan.orm.api.spi9.db.RemoveIndex;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Action;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.action.Persist;
+import com.alvazan.orm.api.z8spi.action.PersistIndex;
+import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlRawLogger implements NoSqlRawSession {
 
@@ -39,7 +44,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	private DboDatabaseMeta databaseInfo;
 	
 	@Override
-	public void sendChanges(List<Action> actions, Object ormFromAbove) {
+	public void sendChanges(List<Action> actions, MetaLookup ormFromAbove) {
 		long time = 0;
 		if(log.isInfoEnabled()) {
 			logInformation(actions);
@@ -137,32 +142,31 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) {
-		long time = 0;
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
-			time = System.currentTimeMillis();
+			list = new LogBatchFetch(l, batchSize);
 		}
-		Iterable<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize);
-		if(log.isInfoEnabled()) {
-			long total = System.currentTimeMillis()-time;
-			log.info("[rawlogger] column range scan took="+total+" ms");
-		}
+		
+		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
+		
 		return ret;
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			logColScan(info, from, to, batchSize);
-			log.info("small WARNING: We need to figure out how to time each call to get batch size better...doing it here does not work as it is done only in the iterable");
+			list = new LogBatchFetch(l, batchSize);
 		}
-		Iterable<IndexColumn> ret = session.scanIndex(info, from, to, batchSize);
+		AbstractCursor<IndexColumn> ret = session.scanIndex(info, from, to, batchSize, list);
 		return ret;
 	}
 	
-	private void logColScan(ScanInfo info, Key from, Key to, int batchSize) {
+	private void logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
 		try {
 			String msg = logColScanImpl(info, from, to, batchSize);
 			log.info("[rawlogger]"+msg);
@@ -171,7 +175,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		}
 	}
 
-	private String logColScanImpl(ScanInfo info, Key from, Key to, int batchSize) {
+	private String logColScanImpl(ScanInfo info, Key from, Key to, Integer batchSize) {
 		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
@@ -244,26 +248,42 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rKeys) {
 		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
 		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
 		
-		List<byte[]> allKeys = new ArrayList<byte[]>();
-		for(byte[] k : rKeys) {
-			allKeys.add(k);
+		DboTableMeta meta = null;
+		if(log.isInfoEnabled()) {
+			meta = databaseInfo.getMeta(colFamily);
 		}
 		
-		Iterable<KeyValue<Row>> ret;
+		List<byte[]> allKeys = new ArrayList<byte[]>();
+		List<String> realKeys = new ArrayList<String>();
+		for(byte[] k : rKeys) {
+			allKeys.add(k);
+			if(log.isInfoEnabled()) {
+				try {
+					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
+					String str = meta.getIdColumnMeta().convertTypeToString(obj);
+					realKeys.add(str);
+				} catch(Exception e) {
+					log.trace("Exception occurred", e);
+					realKeys.add("[exception, turn on trace logging]");
+				}
+			}
+		}
+		
+		AbstractCursor<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
-			//This iterable allows us to log inline so we don't for loop until the bottom with everyone
-			//else...We do ONE LOOP at the bottom on all iterators that were proxied up.
-			Iterable<byte[]> iterProxy = new IterLogProxy("[rawlogger]", databaseInfo, colFamily, allKeys);
+
+			if(allKeys.size() > 0)
+				log.info("[rawlogger] Finding keys="+realKeys);
 			long time = System.currentTimeMillis();
-			ret = session.find(colFamily, iterProxy);
+			ret = session.find(colFamily, allKeys);
 			long total = System.currentTimeMillis() - time;
 			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
-				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size());
+				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size()+" keys="+realKeys);
 			else if(log.isTraceEnabled())
 				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
 		} else
@@ -273,7 +293,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
 		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-		for (KeyValue<Row> kv : ret) {
+		while(true) {
+			Holder<KeyValue<Row>> holder = ret.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			byte[] k = (byte[]) kv.getKey();
 			ByteArray b = new ByteArray(k);
 			map.put(b, kv);
@@ -285,7 +309,9 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			results.add(kv);
 		}
 		
-		return results;
+		
+		ProxyTempCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(results);
+		return proxy;
 	}
 
 }

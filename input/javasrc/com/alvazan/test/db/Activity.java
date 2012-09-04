@@ -209,9 +209,10 @@ public class Activity {
 		return query.getResultList(0, null);
 	}
 
-	public static List<Activity> findAll(NoSqlEntityManager mgr) {
+	public static List<Activity> findAll(NoSqlEntityManager mgr, int batchSize) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAll");
-		return query.getResultList(0, null);		
+		query.setBatchSize(batchSize);
+		return query.getResultList(0, null);
 	}
 
 }

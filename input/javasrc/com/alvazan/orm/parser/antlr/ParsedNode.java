@@ -1,6 +1,8 @@
 package com.alvazan.orm.parser.antlr;
 
 
+
+
 public interface ParsedNode {
 
 	int getType();
@@ -11,10 +13,20 @@ public interface ParsedNode {
 	
 	void setChild(ChildSide left, ParsedNode nodeToMove);
 
-	boolean isChildOnSide(ChildSide side);
-
-	void addExpression(ParsedNode firstMatch);
-
 	String getAliasAndColumn();
 
+	//For join optimization...
+	ViewInfo getViewInfo();
+	boolean isAndOrType();
+	void setJoinMeta(JoinMeta info);
+	JoinMeta getJoinMeta();
+
+	boolean isConstant();
+	boolean isParameter();
+
+	void replace(ParsedNode oldChild, ParsedNode newChild);
+	ParsedNode getOppositeChild(ParsedNode first);
+
+	boolean isInBetweenExpression();
+	
 }

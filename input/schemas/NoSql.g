@@ -120,14 +120,18 @@ whereClause: WHERE^ expression;  //NOTE: This should be (expression | orExpr) BU
 expression: orExpr; //The ^ makes LPAREN a root while the ! makes RPAREN get dropped from example I saw
 orExpr: andExpr (OR^ andExpr)*;
 andExpr: primaryExpr (AND^ primaryExpr)*;
-primaryExpr: colParamExpr | paramColExpr | inExpr | LPAREN! expression RPAREN!;
+primaryExpr: colParamExpr | paramColExpr | between | inExpr | LPAREN! expression RPAREN!;
 
 //An column now is either a simpleColumn OR a aliasedColumn
 //NOTE: We need to fix this later so we create a parameterOrValueOrColumn: value | parameter | column
 //so that in a join, we could compare two values
-colParamExpr:	column (EQ | NE | GT | LT | GE | LE)^ parameterOrValue;
-paramColExpr:	parameterOrValue (EQ | NE | GT | LT | GE | LE)^ column;
+colParamExpr:	column operator^ parameterOrValue;
+paramColExpr:	parameterOrValue operator column -> ^(operator column parameterOrValue);
+//colToCol:       column operator^ column;
 inExpr:         column IN^ valueList;
+between:        column BETWEEN a=parameterOrValue AND b=parameterOrValue -> ^(BETWEEN column $a $b);
+
+operator: EQ | NE | GT | LT | GE | LE;
 
 parameterOrValue: value | parameter;
 
@@ -152,12 +156,12 @@ intVal	 :	(MINUS)?INTEGER
                   -> {$MINUS.text == null}? INT_VAL[$INTEGER.text]
                   -> INT_VAL[$MINUS.text+$INTEGER.text];
 doubleVal:   (MINUS)?DECIMAL
-                  -> {$MINUS.text == null}? INT_VAL[$DECIMAL.text]
-                  -> INT_VAL[$MINUS.text+$DECIMAL.text];
+                  -> {$MINUS.text == null}? DEC_VAL[$DECIMAL.text]
+                  -> DEC_VAL[$MINUS.text+$DECIMAL.text];
 strVal	:	stringA | stringB;
 stringA : STRINGA -> STR_VAL[$STRINGA.text];
 stringB : STRINGB -> STR_VAL[$STRINGB.text];
-	
+
 PARTITIONS: ('P'|'p')('A'|'a')('R'|'r')('T'|'t')('I'|'i')('T'|'t')('I'|'i')('O'|'o')('N'|'n')('S'|'s');
 LEFT    :   ('L'|'l')('E'|'e')('F'|'f')('T'|'t');
 INNER   :   ('I'|'i')('N'|'n')('N'|'n')('E'|'e')('R'|'r');
@@ -166,6 +170,7 @@ SELECT	:	('S'|'s')('E'|'e')('L'|'l')('E'|'e')('C'|'c')('T'|'t');
 FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
 WHERE	:	('W'|'w')('H'|'h')('E'|'e')('R'|'r')('E'|'e');
 NULL    :   ('N'|'n')('U'|'u')('L'|'l')('L'|'l');
+BETWEEN :   ('B'|'b')('E'|'e')('T'|'t')('W'|'w')('E'|'e')('E'|'e')('N'|'n');
 
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;

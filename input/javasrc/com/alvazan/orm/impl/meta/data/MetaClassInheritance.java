@@ -10,13 +10,13 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
-import com.alvazan.orm.api.spi3.meta.IndexData;
-import com.alvazan.orm.api.spi3.meta.RowToPersist;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 @SuppressWarnings("rawtypes")

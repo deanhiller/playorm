@@ -19,13 +19,14 @@ import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.PartAccount;
@@ -144,7 +145,7 @@ public class TestIndexes {
 		List<Account> all2 = Account.findAll(mgr);
 		Assert.assertEquals(3, all2.size());
 		
-		List<Activity> all3 = Activity.findAll(mgr);
+		List<Activity> all3 = Activity.findAll(mgr, 100);
 		Assert.assertEquals(1, all3.size());
 	}
 	
@@ -167,7 +168,7 @@ public class TestIndexes {
 		NoSqlSession session = mgr.getSession();
 		DboTableMeta table = mgr.find(DboTableMeta.class, "PartAccount");
 		DboColumnMeta colMeta = table.getColumnMeta("businessName");
-		ScanInfo info = colMeta.createScanInfo(null, null);
+		ScanInfo info = ScanInfo.createScanInfo(colMeta, null, null);
 		IndexColumn col = new IndexColumn();
 		col.setColumnName("businessName");
 		String key = "nonexistpk";
@@ -179,10 +180,11 @@ public class TestIndexes {
 		
 		mgr.flush();
 		
-		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		Cursor<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
 		
 		KeyValue<PartAccount> kVal = null;
-		for(KeyValue<PartAccount> k : all) {
+		while(all.next()) {
+			KeyValue<PartAccount> k = all.getCurrent();
 			if(k.getKey().equals(key))
 				kVal = k;
 		}

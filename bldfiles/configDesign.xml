@@ -31,25 +31,23 @@
 
 <package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>
 
-<package name="api9" package="com.alvazan.orm.api.spi9.db" subpackages="include"/>
-<package name="api5" package="com.alvazan.orm.api.spi5" subpackages="include">
-	<depends>api9</depends>
-</package>
-<package name="api3" package="com.alvazan.orm.api.spi3">
-	<depends>api5</depends>
+<package name="api8" package="com.alvazan.orm.api.z8spi" subpackages="include">
+	<depends>javassist</depends>
 </package>
 
-<package name="dbmeta" package="com.alvazan.orm.api.spi3.meta" subpackages="include">
-	<depends>javassist</depends>
-	<depends>api3</depends>
+<package name="api5" package="com.alvazan.orm.api.z5api" subpackages="include">
+	<depends>api8</depends>
+</package>
+
+<package name="api3" package="com.alvazan.orm.api.z3api">
 	<depends>api5</depends>
-	<depends>api9</depends>
+	<depends>api8</depends>
 </package>
 
 <package name="api" package="com.alvazan.orm.api.base" subpackages="include">
-	<depends>api3</depends>
+    <depends>api3</depends>
 	<depends>api5</depends>
-	<depends>dbmeta</depends>
+	<depends>api8</depends>
 </package>
 
 <package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
@@ -59,10 +57,9 @@
 	<depends>allapis</depends>
 </package>
 
-<package name="util" package="com.alvazan.orm.util"></package>
-
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
+	<depends>api8</depends>
 </package>
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
@@ -88,33 +85,28 @@
 	<depends>metascan</depends>
 	<depends>metadata</depends>
 	<depends>annotationParser</depends>
+	<!-- I hate this dependency on another impl... -->
 	<depends>typedlayer</depends>
 </package>
 
 <package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
-	<depends>api</depends>
-	<depends>api5</depends>
-	<depends>api9</depends>
-	<depends>util</depends>
-	<depends>dbmeta</depends>
-	<depends>antlr</depends>
+	<depends>allapis</depends>
 	<depends>ourParser</depends>
 </package>
 
 <package name="loggingX" package="com.alvazan.orm.logging" subpackages="include">
-	<depends>api9</depends>
+	<depends>api8</depends>
 	<depends>api5</depends>
-	<depends>dbmeta</depends>
 </package>
 
 <!-- This section is just the database adapters depending on the spi -->
 <package name="cass" package="com.alvazan.orm.layer9z.spi.db.cassandra">
-	<depends>allapis</depends>
+	<depends>api8</depends>
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
-	<depends>api9</depends>
+	<depends>api8</depends>
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
 	<depends>allapis</depends>

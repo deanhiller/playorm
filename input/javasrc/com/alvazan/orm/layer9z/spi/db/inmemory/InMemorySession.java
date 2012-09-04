@@ -12,21 +12,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi9.db.Action;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Persist;
-import com.alvazan.orm.api.spi9.db.PersistIndex;
-import com.alvazan.orm.api.spi9.db.Remove;
-import com.alvazan.orm.api.spi9.db.RemoveIndex;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Action;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.action.Persist;
+import com.alvazan.orm.api.z8spi.action.PersistIndex;
+import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 
 public class InMemorySession implements NoSqlRawSession {
 
@@ -38,7 +42,7 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);
@@ -52,7 +56,8 @@ public class InMemorySession implements NoSqlRawSession {
 			rows.add(kv);
 		}
 		
-		return rows;
+		AbstractCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(rows);
+		return proxy;
 	}
 	
 	private Row findRow(String colFamily, byte[] key) {
@@ -63,7 +68,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions, Object ormSession) {
+	public void sendChanges(List<Action> actions, MetaLookup ormSession) {
 		sendChangesImpl(actions, ormSession);
 	}
 	
@@ -205,9 +210,8 @@ public class InMemorySession implements NoSqlRawSession {
 		
 	}
 
-	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, int batchSize) {
+	public Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Table table = database.findTable(colFamily);
 		if(table == null) {
 			return new HashSet<Column>();
@@ -219,8 +223,7 @@ public class InMemorySession implements NoSqlRawSession {
 		return row.columnSlice(from, to);
 	}
 	
-	@Override
-	public Collection<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public Collection<IndexColumn> scanIndexImpl(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
 		Table table = database.findTable(colFamily);
@@ -237,6 +240,20 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public void close() {
 		
+	}
+
+	@Override
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
+		return new ProxyTempCursor<Column>(iter);
+	}
+
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
+			Integer batchSize, BatchListener l) {
+		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
+		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
 }

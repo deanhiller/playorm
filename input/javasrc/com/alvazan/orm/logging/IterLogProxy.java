@@ -7,12 +7,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class IterLogProxy implements Iterable<byte[]> {
 
-	private static final Logger log = LoggerFactory.getLogger(NoSqlRawLogger.class);
+	private static final Logger log = LoggerFactory.getLogger(IterLogProxy.class);
 	private String prefix;
 	private DboDatabaseMeta databaseInfo;
 	private String colFamily;
@@ -38,7 +38,7 @@ public class IterLogProxy implements Iterable<byte[]> {
 		private Iterator<byte[]> rowKeys;
 		private List<String> realKeys = new ArrayList<String>();
 		private DboTableMeta meta;
-		
+		private boolean alreadyLogged = false;
 		public IteratorLogProxy(String prefix, DboDatabaseMeta databaseInfo,
 				String colFamily, Iterator<byte[]> rowKeys) {
 			this.prefix = prefix;
@@ -50,9 +50,10 @@ public class IterLogProxy implements Iterable<byte[]> {
 		@Override
 		public boolean hasNext() {
 			boolean hasNext = rowKeys.hasNext();
-			if(!hasNext && log.isInfoEnabled() && realKeys.size() > 0) {
+			if(log.isInfoEnabled() && !hasNext && !alreadyLogged && realKeys.size() > 0) {
 				//we are finished and can now log the keys about to be looked up
 				log.info(prefix+" CF="+colFamily+" finding keys="+realKeys);
+				alreadyLogged = true;
 			}
 			return hasNext;
 		}

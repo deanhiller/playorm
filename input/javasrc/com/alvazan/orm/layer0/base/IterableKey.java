@@ -38,7 +38,7 @@ public class IterableKey<T> implements Iterable<byte[]> {
 		@Override
 		public byte[] next() {
 			Object next = iterator.next();
-			byte[] key = meta.convertIdToNoSql(next);
+			byte[] key = meta.convertIdToNoSql(next);			
 			return key;
 		}
 
@@ -47,5 +47,4 @@ public class IterableKey<T> implements Iterable<byte[]> {
 			throw new UnsupportedOperationException("not supported");
 		}
 	}
-
 }

@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.alvazan.orm.api.spi5.NoSqlSession;
+import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })

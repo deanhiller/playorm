@@ -2,12 +2,14 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
+
 public class IterableCounting implements Iterable<byte[]> {
 
-	private Iterator<byte[]> keysIterator;
+	private AbstractIterator<byte[]> keysIterator;
 	private boolean alreadyRun = false;
 	private int batchSize;
-	public IterableCounting(Iterator<byte[]> keysIterator, int batchSize2) {
+	public IterableCounting(AbstractIterator<byte[]> keysIterator, int batchSize2) {
 		this.keysIterator = keysIterator;
 		this.batchSize = batchSize2;
 	}
@@ -20,34 +22,21 @@ public class IterableCounting implements Iterable<byte[]> {
 		return new CountingIterator(keysIterator, batchSize);
 	}
 
-	private static class CountingIterator implements Iterator<byte[]>{
-
-		private Iterator<byte[]> keysIterator;
+	private static class CountingIterator extends AbstractIterator<byte[]>{
+		private AbstractIterator<byte[]> keysIterator;
 		private int count = 0;
 		private int batchSize;
-		public CountingIterator(Iterator<byte[]> keysIterator, int batchSize2) {
+		public CountingIterator(AbstractIterator<byte[]> keysIterator, int batchSize2) {
 			this.keysIterator = keysIterator;
 			this.batchSize = batchSize2;
 		}
 
 		@Override
-		public boolean hasNext() {
-			if(count < batchSize && keysIterator.hasNext())
-				return true;
-			return false;
-		}
-
-		@Override
-		public byte[] next() {
-			if(count < batchSize && keysIterator.hasNext()) {
-				return keysIterator.next();
-			} else
-				throw new IllegalArgumentException("You should really be calling iterator.hasNext before this method or you get this exception BECAUSE this iterator has run out of values");
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("not supported and probably will be so this is a bug if you see this");
+		public com.alvazan.orm.api.z8spi.iter.AbstractIterator.IterHolder<byte[]> nextImpl() {
+			if(count >= batchSize)
+				return null;
+			count++;
+			return keysIterator.nextImpl();
 		}
 	}
 }

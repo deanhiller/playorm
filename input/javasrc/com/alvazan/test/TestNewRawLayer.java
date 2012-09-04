@@ -14,16 +14,17 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.NoSqlTypedSession;
-import com.alvazan.orm.api.spi3.TypedColumn;
-import com.alvazan.orm.api.spi3.TypedRow;
-import com.alvazan.orm.api.spi3.meta.DboColumnCommonMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 @SuppressWarnings("rawtypes")
 public class TestNewRawLayer {
@@ -91,15 +92,17 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Iterable<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
-		KeyValue<TypedRow> keyValue = rows.iterator().next();
+		Cursor<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
+		rows.next();
+		KeyValue<TypedRow> keyValue = rows.getCurrent();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
-		Iterable<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
-		KeyValue<TypedRow> keyValue2 = rows2.iterator().next();
+		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
+		rows2.next();
+		KeyValue<TypedRow> keyValue2 = rows2.getCurrent();
 		TypedRow theRow2 = keyValue2.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow2.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow2.getColumn("temp").getValue());

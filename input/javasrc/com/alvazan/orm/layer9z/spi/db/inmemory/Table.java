@@ -5,10 +5,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.layer9z.spi.db.inmemory.IndexedRow.OurKey;
 
 public class Table {

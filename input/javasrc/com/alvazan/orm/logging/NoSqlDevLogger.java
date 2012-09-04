@@ -10,15 +10,17 @@ import javax.inject.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 
 /**
  * WE need to use this to see when the proxies are accidentally going back to the cache of already loaded rows and RE-translating everything
@@ -69,7 +71,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
 		log.warn("CAN't use this method as it would cause the iterable to loop and we only want to loop ONCE so need a proxy iterable to pass down!!!!");
 		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
 		return session.findAll(colFamily, rowKeys, skipCache);
@@ -94,17 +96,17 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
 		return session.scanIndex(info, from, to, batchSize);
 	}
 	
 	@Override
-	public void setOrmSessionForMeta(Object orm) {
+	public void setOrmSessionForMeta(MetaLookup orm) {
 		session.setOrmSessionForMeta(orm);
 	}
 

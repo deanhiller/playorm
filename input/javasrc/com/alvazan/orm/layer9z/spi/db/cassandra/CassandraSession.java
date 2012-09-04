@@ -1,6 +1,5 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,20 +9,22 @@ import javax.inject.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.spi9.db.Action;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.ColumnType;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Persist;
-import com.alvazan.orm.api.spi9.db.PersistIndex;
-import com.alvazan.orm.api.spi9.db.Remove;
-import com.alvazan.orm.api.spi9.db.RemoveIndex;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.ColumnType;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Action;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.action.Persist;
+import com.alvazan.orm.api.z8spi.action.PersistIndex;
+import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
@@ -66,7 +67,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		try {
 			return findImpl2(colFamily, rowKeys);
 		} catch (ConnectionException e) {
@@ -74,17 +75,17 @@ public class CassandraSession implements NoSqlRawSession {
 		}		
 	}
 	
-	private Iterable<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
+	private AbstractCursor<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
 			//WE MUST force a call up the iterator stream or the cache layer breaks here...
-			for(byte[] k : keys) {
+			for(@SuppressWarnings("unused") byte[] k : keys) {
 				log.trace("iterating over keys to find for empty list");
 				//do nothing
 			}
-			return new IterableReturnsEmptyRows(keys);
+			return new CursorReturnsEmptyRows(keys);
 		}
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -94,19 +95,20 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery<byte[], byte[]> query = keyspace.prepareQuery(cf);
-		RowSliceQuery<byte[], byte[]> slice = query.getKeySlice(keys);
+		ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
+		//ColumnFamilyQuery<byte[], byte[]> q2 = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keys);
 		
 		long time = System.currentTimeMillis();
 		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
-		if(log.isInfoEnabled()) {
+		if(log.isTraceEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("astyanx find took="+total+" ms");
+			log.trace("astyanx find took="+total+" ms");
 		}
 		
 		Rows rows = result.getResult();
 		
-		IterableResult r = new IterableResult(rowProvider, rows);
+		CursorResult r = new CursorResult(rowProvider, rows);
 		
 		return r;
 	}
@@ -128,23 +130,25 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public void sendChanges(List<Action> actions, Object ormSession) {
+	public void sendChanges(List<Action> actions, MetaLookup ormSession) {
 		try {
-			sendChangesImpl(actions, (NoSqlEntityManager) ormSession);
+			sendChangesImpl(actions, ormSession);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
 		}
 	}
-	public void sendChangesImpl(List<Action> actions, NoSqlEntityManager mgr) throws ConnectionException {
+	public void sendChangesImpl(List<Action> actions, MetaLookup ormSession) throws ConnectionException {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		MutationBatch m = keyspace.prepareMutationBatch();
+		//MutationBatch m = m1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+		
 		for(Action action : actions) {
 			if(action instanceof Persist) {
-				persist((Persist)action, mgr, m);
+				persist((Persist)action, ormSession, m);
 			} else if(action instanceof Remove) {
 				remove((Remove)action, m);
 			} else if(action instanceof PersistIndex) {
-				persistIndex((PersistIndex)action, mgr, m);
+				persistIndex((PersistIndex)action, ormSession, m);
 			} else if(action instanceof RemoveIndex) {
 				removeIndex((RemoveIndex)action, m);
 			}
@@ -153,9 +157,9 @@ public class CassandraSession implements NoSqlRawSession {
 		long time = System.currentTimeMillis();
 		m.execute();
 		
-		if(log.isInfoEnabled()) {
+		if(log.isTraceEnabled()) {
 			long total = System.currentTimeMillis()-time;
-			log.info("astyanx save took="+total+" ms");
+			log.trace("astyanx save took="+total+" ms");
 		}
 	}
 
@@ -186,7 +190,7 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 	}
 
-	private void persistIndex(PersistIndex action, NoSqlEntityManager mgr, MutationBatch m) {
+	private void persistIndex(PersistIndex action, MetaLookup mgr, MutationBatch m) {
 		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), mgr);
 
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -229,9 +233,9 @@ public class CassandraSession implements NoSqlRawSession {
 		return toPersist;
 	}
 	
-	private void persist(Persist action, NoSqlEntityManager mgr, MutationBatch m) {
+	private void persist(Persist action, MetaLookup ormSession, MutationBatch m) {
 		
-		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), mgr);
+		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), ormSession);
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
@@ -260,6 +264,7 @@ public class CassandraSession implements NoSqlRawSession {
 	public void clearImpl() throws ConnectionException {
 		Cluster cluster = columnFamilies.getCluster();
 		String keyspaceName = columnFamilies.getKeyspaceName();
+		log.info("Clearing keyspace="+keyspaceName+" in cassandra");
 		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
 		KeyspaceDefinition ourDef = null;
 		for(KeyspaceDefinition kDef : keyspaces) {
@@ -278,33 +283,36 @@ public class CassandraSession implements NoSqlRawSession {
 
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final int batchSize) {
+	public AbstractCursor<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<Column>();
+			return new EmptyCursor<Column>();
 		}
 
 		CreateColumnSliceCallback l = new CreateColumnSliceCallback() {
 			
 			@Override
 			public RowQuery<byte[], byte[]> createRowQuery() {
-				ByteBufferRange range = new RangeBuilder().setStart(from).setEnd(to).setLimit(batchSize).build();
+				RangeBuilder rangeBldr = new RangeBuilder().setStart(from).setEnd(to);
+				if(batchSize != null)
+					rangeBldr = rangeBldr.setLimit(batchSize);
+				ByteBufferRange range = rangeBldr.build(); 
 				return createBasicRowQuery(rowKey, info1, range);
 			}
 		};
 			
 
-		return findBasic(Column.class, rowKey, l, batchSize);
+		return findBasic(Column.class, rowKey, l, batchListener, batchSize);
 	}
 
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
-			int batchSize) {
-		if(batchSize <= 0)
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
+			Integer batchSize, BatchListener bListener) {
+		if(batchSize != null && batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
@@ -312,7 +320,7 @@ public class CassandraSession implements NoSqlRawSession {
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
-			return new ArrayList<IndexColumn>();
+			return new EmptyCursor<IndexColumn>();
 		}
 		
 		ColumnType type = info1.getColumnType();
@@ -320,7 +328,7 @@ public class CassandraSession implements NoSqlRawSession {
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
 			Listener l = new Listener(rowKey, info1, from, to, batchSize);
-			return findBasic(IndexColumn.class, rowKey, l, batchSize);
+			return findBasic(IndexColumn.class, rowKey, l, bListener, batchSize);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
@@ -348,15 +356,16 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		ColumnFamilyQuery query = keyspace.prepareQuery(cf);
+		//ColumnFamilyQuery query = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 		RowQuery rowQuery = query.getKey(rowKey)
 							.autoPaginate(true)
 							.withColumnRange(range);
 		return rowQuery;
 	}
 	
-	private <T> Iterable<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, int batchSize) {
+	private <T> AbstractCursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new IterableColumnSlice<T>(l, batchSize, isComposite);
+		return new CursorColumnSlice<T>(l, isComposite, bListener, batchSize);
 	}
 
 	public interface CreateColumnSliceCallback {
@@ -368,9 +377,9 @@ public class CassandraSession implements NoSqlRawSession {
 		private Info info1;
 		private Key from;
 		private Key to;
-		private int batchSize;
+		private Integer batchSize;
 
-		public Listener(byte[] rowKey, Info info1, Key from, Key to, int batchSize) {
+		public Listener(byte[] rowKey, Info info1, Key from, Key to, Integer batchSize) {
 			this.rowKey = rowKey;
 			this.info1 = info1;
 			this.from = from;
@@ -383,10 +392,10 @@ public class CassandraSession implements NoSqlRawSession {
 		 * a NEsted join.
 		 * @return
 		 */
-		@SuppressWarnings("unused")
 		public RowQuery<byte[], byte[]> createRowQuery() {
 			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
-			range = range.limit(batchSize);			
+			if(batchSize != null)
+				range = range.limit(batchSize);			
 			return createBasicRowQuery(rowKey, info1, range);
 		}
 	}

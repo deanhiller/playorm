@@ -9,26 +9,29 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.spi3.NoSqlTypedSession;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.IndexData;
-import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.RowToPersist;
-import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi5.SpiQueryAdapter;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
+import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
-public class BaseEntityManagerImpl implements NoSqlEntityManager {
+public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
@@ -79,13 +82,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	public <T> T find(Class<T> entityType, Object key) {
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
-		Iterable<KeyValue<T>> entities = findAll(entityType, keys);
-		return entities.iterator().next().getValue();
+		Cursor<KeyValue<T>> entities = findAll(entityType, keys);
+		entities.next();
+		return entities.getCurrent().getValue();
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Iterable<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
+	public <T> Cursor<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
@@ -99,11 +103,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		return findAllImpl2(meta, iter, null, null);
 	}
 	
-	<T> Iterable<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, String query, Integer batchSize) {
+	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		return new IterableRow<T>(meta, noSqlKeys, session, query, batchSize);
+		return new CursorRow<T>(meta, iter, session, query, batchSize);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -120,8 +124,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 		}
 		
 		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
-		Iterable<KeyValue<T>> results = findAll(entityType, keys);
-		for(KeyValue<T> r : results) {
+		Cursor<KeyValue<T>> results = findAll(entityType, keys);
+		while(results.next()) {
+			KeyValue<T> r = results.getCurrent();
 			all.add(r);
 		}
 		
@@ -137,9 +142,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager {
 	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
-		MetaQuery<T> metaQuery = metaClass.getNamedQuery(namedQuery);
+		SpiMetaQuery metaQuery = metaClass.getNamedQuery(namedQuery);
 		
-		SpiQueryAdapter spiAdapter = metaQuery.createSpiMetaQuery(session);
+		SpiQueryAdapter spiAdapter = metaQuery.createQueryInstanceFromQuery(session);
 		
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads

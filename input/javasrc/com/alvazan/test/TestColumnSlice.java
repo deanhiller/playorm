@@ -14,12 +14,13 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.conv.StandardConverters;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.Column;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class TestColumnSlice {
 
@@ -86,10 +87,11 @@ public class TestColumnSlice {
 
 		byte[] from = toDecBytes(-250);
 		byte[] to = toDecBytes(12);
-		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
+		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
-		for(Column col : results) {
+		while(results.next()) {
+			Column col = results.getCurrent();
 			if(counter == 0) {
 				Assert.assertEquals(-200.23, toDouble(col.getName()).doubleValue());
 			}
@@ -147,10 +149,11 @@ public class TestColumnSlice {
 
 		byte[] from = toIntBytes(-250);
 		byte[] to = toIntBytes(50);
-		Iterable<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
+		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
 		
 		int counter = 0;
-		for(Column col : results) {
+		while(results.next()) {
+			Column col = results.getCurrent();
 			if(counter == 0)
 				Assert.assertEquals(-200L, toLong(col.getName()).longValue());
 			counter++;

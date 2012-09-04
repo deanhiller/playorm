@@ -2,7 +2,7 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
 public class IterableTypedProxy<T> implements Iterable<byte[]> {
 

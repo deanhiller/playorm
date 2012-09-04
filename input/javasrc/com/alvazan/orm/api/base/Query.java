@@ -2,7 +2,8 @@ package com.alvazan.orm.api.base;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public interface Query<T> {
 
@@ -18,7 +19,7 @@ public interface Query<T> {
 	 * Also, you can call getException instead of getValue to avoid the Exception
 	 * @return
 	 */
-	public Iterable<KeyValue<T>> getResults();
+	public Cursor<KeyValue<T>> getResults();
 	
 	public T getSingleObject();
 	
@@ -29,8 +30,8 @@ public interface Query<T> {
 	 * 
 	 * You probably should use getResultKeyValueList instead since that will delay exceptions caused by entities
 	 * do not exist but are in the index (this is nosql after all)
-	 * @param firstResult TODO
-	 * @param maxResults TODO
+	 * @param firstResult 
+	 * @param maxResults 
 	 * @param firstResult 0 or larger
 	 * @param maxResults null if you want all the results though you should probably cap this so you don't blow out memory
 	 * or use getResults method instead.

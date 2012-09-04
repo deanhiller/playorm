@@ -3,8 +3,8 @@ package com.alvazan.orm.layer3.typed;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.TypedColumn;
-import com.alvazan.orm.api.spi3.TypedRow;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class TypedRowImpl<T> extends TypedRow<T> {
 	private Map<String, TypedColumn> originalValues = new HashMap<String, TypedColumn>();

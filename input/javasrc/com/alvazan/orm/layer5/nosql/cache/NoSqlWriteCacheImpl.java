@@ -7,20 +7,23 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.Action;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Persist;
-import com.alvazan.orm.api.spi9.db.PersistIndex;
-import com.alvazan.orm.api.spi9.db.Remove;
-import com.alvazan.orm.api.spi9.db.RemoveEnum;
-import com.alvazan.orm.api.spi9.db.RemoveIndex;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Action;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.action.Persist;
+import com.alvazan.orm.api.z8spi.action.PersistIndex;
+import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveEnum;
+import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 
@@ -28,7 +31,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Named("logger")
 	private NoSqlRawSession rawSession;
 	private List<Action> actions = new ArrayList<Action>();
-	private Object ormSession;
+	private MetaLookup ormSession;
 	
 	@Override
 	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
@@ -80,14 +83,18 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
 		return rawSession.find(colFamily, rowKeys);
 	}
 	
 	public List<Row> find(String colFamily, List<byte[]> keys) {
-		Iterable<KeyValue<Row>> results = rawSession.find(colFamily, keys);
+		AbstractCursor<KeyValue<Row>> results = rawSession.find(colFamily, keys);
 		List<Row> rows = new ArrayList<Row>();
-		for(KeyValue<Row> kv : results) {
+		while(true) {
+			Holder<KeyValue<Row>> holder = results.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<Row> kv = holder.getValue();
 			rows.add(kv.getValue());
 		}
 		return rows;
@@ -126,17 +133,17 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabase();
 	}
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
-		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize);
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null);
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
-		return rawSession.scanIndex(info, from, to, batchSize);
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
+		return rawSession.scanIndex(info, from, to, batchSize, null);
 	}
 	
 	@Override
-	public void setOrmSessionForMeta(Object session) {
+	public void setOrmSessionForMeta(MetaLookup session) {
 		this.ormSession = session;
 	}
 

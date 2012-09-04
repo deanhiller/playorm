@@ -2,13 +2,15 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
+
 public class IterableNotCounting implements Iterable<byte[]> {
 
-	private Iterator<byte[]> keysIterator;
+	private AbstractIterator<byte[]> keysIterator;
 	private boolean alreadyRun = false;
 	
-	public IterableNotCounting(Iterator<byte[]> keysIterator) {
-		this.keysIterator = keysIterator;
+	public IterableNotCounting(AbstractIterator<byte[]> keysIterator2) {
+		this.keysIterator = keysIterator2;
 	}
 
 	@Override
@@ -18,29 +20,15 @@ public class IterableNotCounting implements Iterable<byte[]> {
 		alreadyRun = true;
 		return new EmptyIterator(keysIterator);
 	}
-	private static class EmptyIterator implements Iterator<byte[]> {
+	private static class EmptyIterator extends AbstractIterator<byte[]> {
+		private AbstractIterator<byte[]> keysIterator;
 
-		private Iterator<byte[]> keysIterator;
-
-		public EmptyIterator(Iterator<byte[]> keysIterator) {
-			this.keysIterator = keysIterator;
+		public EmptyIterator(AbstractIterator<byte[]> keysIterator2) {
+			this.keysIterator = keysIterator2;
 		}
-
 		@Override
-		public boolean hasNext() {
-			return keysIterator.hasNext();
+		public IterHolder<byte[]> nextImpl() {
+			return keysIterator.nextImpl();
 		}
-
-		@Override
-		public byte[] next() {
-			return keysIterator.next();
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("not supported, bug if you see this");
-		}
-		
 	}
-
 }

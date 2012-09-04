@@ -14,13 +14,13 @@ import org.apache.cassandra.db.marshal.UTF8Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Bootstrap;
-import com.alvazan.orm.api.base.NoSqlEntityManager;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboDatabaseMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi9.db.ColumnType;
+import com.alvazan.orm.api.z8spi.ColumnType;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.SpiConstants;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
@@ -74,7 +74,7 @@ public class ColumnFamilyHelper {
 //		Object seedsObj = properties.get(Bootstrap.SEEDS);
 //		Object keyspaceNameObj = properties.get(Bootstrap.KEYSPACE);
 //		Object clusterNameObj = properties.get(Bootstrap.CLUSTER_NAME);
-		Object builderObj = properties.get(Bootstrap.CASSANDRA_BUILDER);
+		Object builderObj = properties.get(SpiConstants.CASSANDRA_BUILDER);
 //		if(seedsObj == null || !(seedsObj instanceof String))
 //			throw new IllegalArgumentException("The property Bootstrap.HOST was not in the Map or was in the Map but not as a String");
 //		else if(keyspaceNameObj == null || !(keyspaceNameObj instanceof String))
@@ -120,40 +120,44 @@ public class ColumnFamilyHelper {
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		findExistingColumnFamilies(keySpaceMeta);
-		log.info("Existing column families="+existingColumnFamilies2+"\nNOTE: WE WILL CREATE " +
+		log.info("Existing column families="+existingColumnFamilies2.keySet()+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
 	}
 
 	private void findExistingColumnFamilies(KeyspaceDefinition keySpaceMeta) {
 		List<ColumnFamilyDefinition> cfList = keySpaceMeta.getColumnFamilyList();
 		for(ColumnFamilyDefinition def : cfList) {
-			String comparatorType = def.getComparatorType();
-			ColumnType type = ColumnType.ANY_EXCEPT_COMPOSITE;
-			if(formName(UTF8Type.class, BytesType.class).equals(comparatorType)) {
-				type = ColumnType.COMPOSITE_STRINGPREFIX;
-			} else if(formName(IntegerType.class, BytesType.class).equals(comparatorType)) {
-				type = ColumnType.COMPOSITE_INTEGERPREFIX;
-			} else if(formName(DecimalType.class, BytesType.class).equals(comparatorType)) {
-				type = ColumnType.COMPOSITE_DECIMALPREFIX;
-			}
-			
-			String keyValidationClass = def.getKeyValidationClass();
-			StorageTypeEnum keyType = null;
-			if(UTF8Type.class.getName().equals(keyValidationClass)) {
-				keyType = StorageTypeEnum.STRING;
-			} else if(DecimalType.class.getName().equals(keyValidationClass)) {
-				keyType = StorageTypeEnum.DECIMAL;
-			} else if(IntegerType.class.getName().equals(keyValidationClass)) {
-				keyType = StorageTypeEnum.INTEGER;
-			} else if(BytesType.class.getName().equals(keyValidationClass)) {
-				keyType = StorageTypeEnum.BYTES;
-			}
-			
-			String colFamily = def.getName();
-			Info info = createInfo(colFamily, type, keyType);
-			String lowerCaseName = colFamily.toLowerCase();
-			existingColumnFamilies2.put(lowerCaseName, info);
+			loadColumnFamily(def);
 		}
+	}
+
+	private void loadColumnFamily(ColumnFamilyDefinition def) {
+		String comparatorType = def.getComparatorType();
+		ColumnType type = ColumnType.ANY_EXCEPT_COMPOSITE;
+		if(formName(UTF8Type.class, BytesType.class).equals(comparatorType)) {
+			type = ColumnType.COMPOSITE_STRINGPREFIX;
+		} else if(formName(IntegerType.class, BytesType.class).equals(comparatorType)) {
+			type = ColumnType.COMPOSITE_INTEGERPREFIX;
+		} else if(formName(DecimalType.class, BytesType.class).equals(comparatorType)) {
+			type = ColumnType.COMPOSITE_DECIMALPREFIX;
+		}
+		
+		String keyValidationClass = def.getKeyValidationClass();
+		StorageTypeEnum keyType = null;
+		if(UTF8Type.class.getName().equals(keyValidationClass)) {
+			keyType = StorageTypeEnum.STRING;
+		} else if(DecimalType.class.getName().equals(keyValidationClass)) {
+			keyType = StorageTypeEnum.DECIMAL;
+		} else if(IntegerType.class.getName().equals(keyValidationClass)) {
+			keyType = StorageTypeEnum.INTEGER;
+		} else if(BytesType.class.getName().equals(keyValidationClass)) {
+			keyType = StorageTypeEnum.BYTES;
+		}
+		
+		String colFamily = def.getName();
+		Info info = createInfo(colFamily, type, keyType);
+		String lowerCaseName = colFamily.toLowerCase();
+		existingColumnFamilies2.put(lowerCaseName, info);
 	}
 	
 	private String formName(Class class1, Class class2) {
@@ -191,10 +195,16 @@ public class ColumnFamilyHelper {
 		return info;
 	}
 	
-	public Info lookupOrCreate2(String colFamily, NoSqlEntityManager mgr) {
-		String cf = colFamily.toLowerCase();
-		if(existingColumnFamilies2.get(cf) == null) {
-			createColFamily(colFamily, mgr);
+	public Info lookupOrCreate2(String colFamily, MetaLookup ormSession) {
+		//There is a few possibilities here
+		//1. Another server already created the CF while we were online in which case we just need to load it into memory
+		//2. No one has created the CF yet
+		
+		//fetch will load from cassandra if we don't have it in-memory
+		Info info = fetchColumnFamilyInfo(colFamily);
+		if(info == null) {
+			//no one has created the CF yet so we need to create it.
+			createColFamily(colFamily, ormSession);
 		}
 		
 		return fetchColumnFamilyInfo(colFamily);
@@ -203,10 +213,68 @@ public class ColumnFamilyHelper {
 	public Info fetchColumnFamilyInfo(String colFamily) {
 		String cf = colFamily.toLowerCase();
 		Info info = existingColumnFamilies2.get(cf);
+		//in rare circumstances, there may be a new column family that was created by another server we need to load into
+		//memory for ourselves
+		if(info == null) {
+			info = tryToLoadColumnFamily(colFamily);
+		}
+		
 		return info;
 	}
+
+	private Info tryToLoadColumnFamily(String colFamily) {
+		try {
+			long start = System.currentTimeMillis();
+			Info info = tryToLoadColumnFamilyImpl(colFamily);
+			long total = System.currentTimeMillis() - start;
+			if(log.isInfoEnabled())
+				log.info("Total time to LOAD column family meta from cassandra="+total);
+			return info;
+		} catch(ConnectionException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Info tryToLoadColumnFamilyImpl(String colFamily) throws ConnectionException {
+		synchronized(colFamily.intern()) {
+			log.info("Column family NOT found in-memory="+colFamily+", CHECK and LOAD from Cassandra if available");
+			String cf = colFamily.toLowerCase();
+			Info info = existingColumnFamilies2.get(cf);
+			if(info != null) {//someone else beat us into the synchronization block
+				log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+cf);
+				return info;
+			}
+
+			//perhaps the schema is changing and was caused by someone else, let's wait until it stablizes
+			waitForNodesToBeUpToDate(null, 30000);
+			
+			//NOW, the schema appears stable, let's get that column family and load it
+			KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
+			ColumnFamilyDefinition def = keySpaceMeta.getColumnFamily(colFamily);
+			if(def == null) {
+				log.info("Well, we did NOT find any column family="+colFamily+" to load in cassandra");
+				return null;
+			} 
+			log.info("coooool, we found a new column family="+colFamily+" to load so we are going to load that for you so every future operation is FAST");
+			loadColumnFamily(def);
+			return existingColumnFamilies2.get(cf);
+		}
+	}
+
+	private synchronized void createColFamily(String colFamily, MetaLookup ormSession) {
+		try {
+			long start = System.currentTimeMillis();
+			createColFamilyImpl(colFamily, ormSession);
+			long total = System.currentTimeMillis() - start;
+			if(log.isInfoEnabled())
+				log.info("Total time to CREATE column family in cassandra and wait for all nodes to update="+total);
+		} catch(Exception e) {
+			log.warn("Exception creating col family but may because another node just did that at the same time!!! so this is normal if it happens very rarely", e);
+			//try to continue now...
+		}
+	}
 	
-	private synchronized void createColFamily(String colFamily, NoSqlEntityManager mgr) {
+	private synchronized void createColFamilyImpl(String colFamily, MetaLookup ormSession) {
 		if(existingColumnFamilies2.get(colFamily.toLowerCase()) != null)
 			return;
 			
@@ -216,7 +284,7 @@ public class ColumnFamilyHelper {
 		if(cf == null) {
 			//check the database now for the meta since it was not found in the ORM meta data.  This is for
 			//those that are modifying meta data themselves
-			cf = mgr.find(DboTableMeta.class, colFamily);
+			cf = ormSession.find(DboTableMeta.class, colFamily);
 			log.info("cf from db="+cf);
 		}
 		
@@ -309,17 +377,21 @@ public class ColumnFamilyHelper {
 	
 	public void waitForNodesToBeUpToDate(String id, long timeout)
 			throws ConnectionException {
-		log.info("CHANGING SCHEMA, LOOP until all nodes have new schema id="+id+" OR timeout in "+timeout+" milliseconds");
+		if(id != null)
+			log.info("LOOP until all nodes have same schema version id="+id+" OR timeout in "+timeout+" milliseconds");
+		else
+			log.info("LOOP until all nodes have same schema version OR timeout in "+timeout+" milliseconds");
+		
 		long currentTime = System.currentTimeMillis();
 		while(true) {
 			Map<String, List<String>> describeSchemaVersions = cluster.describeSchemaVersions();
 			long now = System.currentTimeMillis();
 			if(describeSchemaVersions.size() == 1) {
 				String key = describeSchemaVersions.keySet().iterator().next();
-				if(!id.equals(key)) {
+				if(id != null && !id.equals(key)) {
 					log.warn("BUG, in cassandra? id we upgraded schema to="+id+" but the schema on all nodes is now="+key);
 				}
-				assert id.equals(key) : "The key and id should be equal!!!! as it is updating to our schema";
+				assert id == null || key.equals(id) : "The key and id should be equal!!!! as it is updating to our schema";
 				break;
 			} else if(now >= currentTime+timeout) {
 				log.warn("All nodes are still not up to date, but we have already waited 30 seconds!!! so we are returning");

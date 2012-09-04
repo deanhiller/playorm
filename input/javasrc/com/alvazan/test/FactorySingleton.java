@@ -15,6 +15,7 @@ import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
+import com.netflix.astyanax.model.ConsistencyLevel;
 
 public class FactorySingleton {
 
@@ -29,7 +30,7 @@ public class FactorySingleton {
 			 **************************************************/
 			String clusterName = "PlayCluster";
 			DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
-			String seeds = "localhost";
+			String seeds = "localhost:9160";
 			//We used this below commented out seeds to test our suite on a cluster of 6 nodes to see if any issues pop up with more
 			//nodes using the default astyanax consistency levels which I believe for writes and reads are both QOURUM
 			//which is perfect for us as we know we will get the latest results
@@ -71,6 +72,15 @@ public class FactorySingleton {
 	        .setSeeds(seeds)
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());		
+		
+		if(!"localhost:9160".equals(seeds)) {
+			//for a multi-node cluster, we want the test suite using quorum on writes and
+			//reads so we have no issues...
+			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
+			config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			builder = builder.withAstyanaxConfiguration(config);
+		}
 		
 		return builder;
 	}

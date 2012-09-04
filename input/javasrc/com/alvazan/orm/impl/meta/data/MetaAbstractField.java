@@ -4,13 +4,13 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.IndexData;
-import com.alvazan.orm.api.spi3.meta.InfoForIndex;
-import com.alvazan.orm.api.spi3.meta.PartitionTypeInfo;
-import com.alvazan.orm.api.spi3.meta.ReflectionUtil;
-import com.alvazan.orm.api.spi3.meta.RowToPersist;
-import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
+import com.alvazan.orm.api.z8spi.meta.PartitionTypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
+import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 
 @SuppressWarnings("unchecked")
 public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {

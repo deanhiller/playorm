@@ -5,21 +5,22 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.spi3.NoSqlTypedSession;
-import com.alvazan.orm.api.spi3.TypedRow;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
-import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
-import com.alvazan.orm.api.spi3.meta.IndexData;
-import com.alvazan.orm.api.spi3.meta.MetaAndIndexTuple;
-import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.QueryParser;
-import com.alvazan.orm.api.spi3.meta.RowToPersist;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi5.SpiQueryAdapter;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.QueryParser;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
+import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
@@ -89,7 +90,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
-	public <T> Iterable<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
+	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
@@ -100,22 +101,23 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return findAllImpl2(meta, keys, noSqlKeys, null);
 	}
 
-	<T> Iterable<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
+	<T> Cursor<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		Iterable<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
+		AbstractCursor<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
 		if(keys != null)
-			return new TypedResponseIter<T>(meta, keys, rows2);
+			return new CursorTypedResp<T>(meta, keys, rows2);
 		else
-			return new TypedResponseIter<T>(meta, rows2, indexName);
+			return new CursorTypedResp<T>(meta, rows2, indexName);
 	}
 	
 	@Override
 	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> keys) {
 		List<KeyValue<TypedRow<T>>> rows = new ArrayList<KeyValue<TypedRow<T>>>();
-		Iterable<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
-		for (KeyValue<TypedRow<T>> keyValue : iter) {
+		Cursor<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
+		while(iter.next()) {
+			KeyValue<TypedRow<T>> keyValue = iter.getCurrent();
 			rows.add(keyValue);
 		}
 
@@ -129,16 +131,17 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Iterable<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
-		MetaAndIndexTuple tuple = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
-		MetaQuery metaQuery = tuple.getMetaQuery();
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createSpiMetaQuery(session);
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
+		//TODO: switch Iterable to Cursor above
+		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
-		Iterable<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
+		
+		AbstractCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		Iterable<byte[]> indexIterable = new IterableIndex(iter);
 
 		DboTableMeta meta = metaQuery.getTargetTable();
-		Iterable results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+		Cursor results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
 		
 		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
 		//skips false positives so as the client loops, we skip some of the results based on that they are false
@@ -151,8 +154,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
-		Iterable<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
-		for (KeyValue<TypedRow> keyValue : iter) {
+		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
+		while(iter.next()) {
+			KeyValue<TypedRow> keyValue = iter.getCurrent();
 			rows.add(keyValue);
 		}
 		return rows;

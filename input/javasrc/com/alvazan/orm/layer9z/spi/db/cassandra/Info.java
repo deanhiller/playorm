@@ -1,7 +1,7 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import com.alvazan.orm.api.spi3.meta.StorageTypeEnum;
-import com.alvazan.orm.api.spi9.db.ColumnType;
+import com.alvazan.orm.api.z8spi.ColumnType;
+import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
 

@@ -7,11 +7,11 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
 
 public class RowImpl implements Row {
 	private byte[] key;

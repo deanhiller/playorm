@@ -2,42 +2,39 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 
 public class IterableIndex implements Iterable<byte[]> {
 
-	private Iterable<IndexColumnInfo> iterable;
-
-	public IterableIndex(Iterable<IndexColumnInfo> iter) {
-		this.iterable = iter;
+	private AbstractCursor<IndexColumnInfo> cursor;
+	public IterableIndex(AbstractCursor<IndexColumnInfo> indice) {
+		this.cursor = indice;
 	}
 
 	@Override
 	public Iterator<byte[]> iterator() {
-		return new IndexIterator(iterable.iterator());
+		cursor.beforeFirst();
+		return new IndexIterator(cursor);
 	}
 	
-	private static class IndexIterator implements Iterator<byte[]> {
+	private static class IndexIterator extends AbstractIterator<byte[]> {
 
-		private Iterator<IndexColumnInfo> iterator;
+		private AbstractCursor<IndexColumnInfo> cursor;
 
-		public IndexIterator(Iterator<IndexColumnInfo> iterator) {
-			this.iterator = iterator;
+		public IndexIterator(AbstractCursor<IndexColumnInfo> cursor) {
+			this.cursor = cursor;
 		}
 
 		@Override
-		public boolean hasNext() {
-			return this.iterator.hasNext();
-		}
-
-		@Override
-		public byte[] next() {
-			return iterator.next().getPrimary().getPrimaryKey();
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("This operation is not supported");
+		public IterHolder<byte[]> nextImpl() {
+			Holder<IndexColumnInfo> next = cursor.nextImpl();
+			if(next == null)
+				return null;
+			byte[] key = next.getValue().getPrimary().getPrimaryKey();
+			return new IterHolder<byte[]>(key);
 		}
 	}
 }

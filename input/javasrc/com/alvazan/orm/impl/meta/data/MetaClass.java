@@ -2,12 +2,12 @@ package com.alvazan.orm.impl.meta.data;
 
 import java.util.List;
 
-import com.alvazan.orm.api.spi3.meta.IndexData;
-import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.RowToPersist;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.Row;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 
 
 
@@ -22,7 +22,7 @@ public interface MetaClass<T> {
 
 	boolean hasIndexedField();
 
-	MetaQuery<T> getNamedQuery(String name);
+	SpiMetaQuery getNamedQuery(String name);
 
 	KeyValue<T> translateFromRow(Row row, NoSqlSession session);
 

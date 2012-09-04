@@ -10,11 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.spi3.meta.DboColumnIdMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnToManyMeta;
-import com.alvazan.orm.api.spi3.meta.DboColumnToOneMeta;
-import com.alvazan.orm.api.spi3.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 @Singleton
 public class CachedMeta {

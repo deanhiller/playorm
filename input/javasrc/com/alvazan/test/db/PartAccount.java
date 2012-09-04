@@ -11,7 +11,8 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -54,7 +55,7 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
-	public static Iterable<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
+	public static Cursor<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
 		return query.getResults();		
 	}

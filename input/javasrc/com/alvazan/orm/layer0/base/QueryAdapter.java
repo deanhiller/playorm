@@ -2,7 +2,6 @@ package com.alvazan.orm.layer0.base;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -15,12 +14,15 @@ import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
-import com.alvazan.orm.api.spi3.meta.DboColumnMeta;
-import com.alvazan.orm.api.spi3.meta.IndexColumnInfo;
-import com.alvazan.orm.api.spi3.meta.MetaQuery;
-import com.alvazan.orm.api.spi3.meta.TypeInfo;
-import com.alvazan.orm.api.spi5.SpiQueryAdapter;
-import com.alvazan.orm.api.spi9.db.KeyValue;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
+import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -32,15 +34,15 @@ public class QueryAdapter<T> implements Query<T> {
 	@Inject
 	private MetaInfo metaInfo;
 	
-	private MetaQuery<T> meta;
+	private SpiMetaQuery meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
 	private Integer batchSize;
 	private MetaClass<T> mainMetaClass;
 
-	public void setup(MetaClass<T> target, MetaQuery<T> meta, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
+	public void setup(MetaClass<T> target, SpiMetaQuery metaQuery, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
 		this.mainMetaClass = target;
-		this.meta = meta;
+		this.meta = metaQuery;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
 	}
@@ -85,28 +87,27 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public T getSingleObject() {
-		Iterable<KeyValue<T>> results = getResults();
-		Iterator<KeyValue<T>> iterator = results.iterator();
-		if(!iterator.hasNext())
+		Cursor<KeyValue<T>> results = getResults();
+		if(!results.next())
 			return null;
-		KeyValue<T> kv = iterator.next();
-		if(iterator.hasNext())
+		KeyValue<T> kv = results.getCurrent();
+		if(results.next())
 			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
 		return kv.getValue();
 	}
 
 	@Override
-	public Iterable<KeyValue<T>> getResults() {
-		Iterable<IndexColumnInfo> indice = indexQuery.getResultList();
+	public Cursor<KeyValue<T>> getResults() {
+		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
 		Iterable<byte[]> keys = new IterableIndex(indice);
-		Iterable<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;
 	}
 
 	@Override
 	public List<T> getResultList(int firstResult, Integer maxResults) {
-		Iterable<KeyValue<T>> all = getResults();
+		AbstractCursor<KeyValue<T>> all = (AbstractCursor<KeyValue<T>>) getResults();
 		List<T> foundElements = new ArrayList<T>();
 		try {
 			return getEntities(all, foundElements, firstResult, maxResults);
@@ -116,12 +117,16 @@ public class QueryAdapter<T> implements Query<T> {
 		}
 	}
 	
-	private List<T> getEntities(Iterable<KeyValue<T>> keyValues, List<T> foundElements, int firstResult, Integer maxResults){
+	private List<T> getEntities(AbstractCursor<KeyValue<T>> all, List<T> foundElements, int firstResult, Integer maxResults){
 		List<T> entities = new ArrayList<T>();
 		RowNotFoundException exc = null;
 		
 		int counter = 0;
-		for(KeyValue<T> keyVal : keyValues) {
+		while(true) {
+			Holder<KeyValue<T>> holder = all.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<T> keyVal = holder.getValue();
 			if(counter < firstResult)
 				continue; //skip it
 			else if(maxResults != null && counter >= firstResult+maxResults)

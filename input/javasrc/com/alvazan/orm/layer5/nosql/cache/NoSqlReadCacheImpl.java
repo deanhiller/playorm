@@ -9,15 +9,17 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.spi3.meta.conv.ByteArray;
-import com.alvazan.orm.api.spi5.NoSqlSession;
-import com.alvazan.orm.api.spi9.db.Column;
-import com.alvazan.orm.api.spi9.db.IndexColumn;
-import com.alvazan.orm.api.spi9.db.Key;
-import com.alvazan.orm.api.spi9.db.KeyValue;
-import com.alvazan.orm.api.spi9.db.NoSqlRawSession;
-import com.alvazan.orm.api.spi9.db.Row;
-import com.alvazan.orm.api.spi9.db.ScanInfo;
+import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.NoSqlRawSession;
+import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 
@@ -89,17 +91,17 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public Iterable<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
+	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
 		if(skipCache) {
 			return session.findAll(colFamily, rowKeys, skipCache);
 		}
 		
 		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
-		Iterable<KeyValue<Row>> rowsFromDb = session.findAll(colFamily, proxy, skipCache);
+		AbstractCursor<KeyValue<Row>> rowsFromDb = session.findAll(colFamily, proxy, skipCache);
 		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
 		//existing rows
 		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
-		Iterable<KeyValue<Row>> theRows = new IterCacheProxy(this, colFamily, inCache, rowsFromDb);
+		AbstractCursor<KeyValue<Row>> theRows = new CursorCacheProxy(this, colFamily, inCache, rowsFromDb);
 		return theRows;
 	}
 	
@@ -180,17 +182,17 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public Iterable<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, int batchSize) {
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 	
 	@Override
-	public Iterable<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, int batchSize) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
 		return session.scanIndex(info, from, to, batchSize);
 	}
 
 	@Override
-	public void setOrmSessionForMeta(Object ormSession) {
+	public void setOrmSessionForMeta(MetaLookup ormSession) {
 		session.setOrmSessionForMeta(ormSession);
 	}
 
