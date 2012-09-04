@@ -8,6 +8,7 @@ import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.util.AbstractIterator;
 
 public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 
@@ -17,21 +18,25 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	private Integer batchSize;
 	
 	private Iterable<byte[]> noSqlKeys;
-	private Iterator<byte[]> keysIterator;
+	private AbstractIterator<byte[]> keysIterator;
 	private AbstractCursor<KeyValue<Row>> lastCachedRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
 		this.noSqlKeys = noSqlKeys;
-		this.keysIterator = noSqlKeys.iterator();
 		this.session = s;
 		this.query = query2;
 		this.batchSize = batchSize;
+		beforeFirst();
 	}
 	
 	@Override
 	public void beforeFirst() {
-		keysIterator = noSqlKeys.iterator();
+		Iterator<byte[]> temp = noSqlKeys.iterator();
+		if(!(temp instanceof AbstractIterator)) {
+			keysIterator = new IterProxy(temp);
+		} else
+			keysIterator = (AbstractIterator<byte[]>) temp;
 	}
 	
 	@Override
