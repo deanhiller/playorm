@@ -1,6 +1,6 @@
 package com.alvazan.orm.api.z5api;
 
-import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 
 

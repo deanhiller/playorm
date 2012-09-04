@@ -1,8 +1,7 @@
-package com.alvazan.orm.util;
+package com.alvazan.orm.api.z8spi.iter;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 
 public class ProxyTempCursor<T> extends AbstractCursor<T> {
 
@@ -20,7 +19,7 @@ public class ProxyTempCursor<T> extends AbstractCursor<T> {
 	}
 	
 	@Override
-	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<T> nextImpl() {
+	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<T> nextImpl() {
 		if(!iterator.hasNext())
 			return null;
 		return new Holder<T>(iterator.next());

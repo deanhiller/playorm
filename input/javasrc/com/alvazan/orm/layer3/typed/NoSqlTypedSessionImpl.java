@@ -5,17 +5,17 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
@@ -116,8 +116,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> keys) {
 		List<KeyValue<TypedRow<T>>> rows = new ArrayList<KeyValue<TypedRow<T>>>();
 		Cursor<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
-		while(iter.hasNext()) {
-			KeyValue<TypedRow<T>> keyValue = iter.next();
+		while(iter.next()) {
+			KeyValue<TypedRow<T>> keyValue = iter.getCurrent();
 			rows.add(keyValue);
 		}
 
@@ -155,8 +155,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
 		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
-		while(iter.hasNext()) {
-			KeyValue<TypedRow> keyValue = iter.next();
+		while(iter.next()) {
+			KeyValue<TypedRow> keyValue = iter.getCurrent();
 			rows.add(keyValue);
 		}
 		return rows;

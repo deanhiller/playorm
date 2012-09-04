@@ -4,9 +4,9 @@ import java.util.Iterator;
 
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.netflix.astyanax.model.Rows;
 
 public class CursorResult extends AbstractCursor<KeyValue<Row>> {

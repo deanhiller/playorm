@@ -7,17 +7,17 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
@@ -83,7 +83,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
 		Cursor<KeyValue<T>> entities = findAll(entityType, keys);
-		return entities.next().getValue();
+		entities.next();
+		return entities.getCurrent().getValue();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -124,8 +125,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		
 		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
 		Cursor<KeyValue<T>> results = findAll(entityType, keys);
-		while(results.hasNext()) {
-			KeyValue<T> r = results.next();
+		while(results.next()) {
+			KeyValue<T> r = results.getCurrent();
 			all.add(r);
 		}
 		

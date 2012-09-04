@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class CursorForOr extends AbstractCursor<IndexColumnInfo> {
 

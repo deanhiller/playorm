@@ -12,12 +12,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -90,8 +90,8 @@ public class TestColumnSlice {
 		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
-		while(results.hasNext()) {
-			Column col = results.next();
+		while(results.next()) {
+			Column col = results.getCurrent();
 			if(counter == 0) {
 				Assert.assertEquals(-200.23, toDouble(col.getName()).doubleValue());
 			}
@@ -152,8 +152,8 @@ public class TestColumnSlice {
 		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
 		
 		int counter = 0;
-		while(results.hasNext()) {
-			Column col = results.next();
+		while(results.next()) {
+			Column col = results.getCurrent();
 			if(counter == 0)
 				Assert.assertEquals(-200L, toLong(col.getName()).longValue());
 			counter++;

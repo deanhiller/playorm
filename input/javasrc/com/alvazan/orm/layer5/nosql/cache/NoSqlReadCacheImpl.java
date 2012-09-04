@@ -10,7 +10,6 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -20,6 +19,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class NoSqlReadCacheImpl implements NoSqlSession {
 

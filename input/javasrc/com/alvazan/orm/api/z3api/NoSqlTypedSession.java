@@ -2,9 +2,9 @@ package com.alvazan.orm.api.z3api;
 
 import java.util.List;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 import com.google.inject.ImplementedBy;

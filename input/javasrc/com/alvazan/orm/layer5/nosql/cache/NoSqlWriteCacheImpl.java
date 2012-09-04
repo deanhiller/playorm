@@ -8,8 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
-import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -24,6 +22,8 @@ import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveEnum;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 

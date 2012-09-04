@@ -5,6 +5,7 @@ import java.util.List;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.layer0.base.BaseEntityManagerImpl;
 import com.google.inject.ImplementedBy;
 

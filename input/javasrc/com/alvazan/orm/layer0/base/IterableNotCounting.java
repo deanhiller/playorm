@@ -2,10 +2,9 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.util.AbstractIterable;
-import com.alvazan.orm.util.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 
-public class IterableNotCounting extends AbstractIterable<byte[]> {
+public class IterableNotCounting implements Iterable<byte[]> {
 
 	private AbstractIterator<byte[]> keysIterator;
 	private boolean alreadyRun = false;

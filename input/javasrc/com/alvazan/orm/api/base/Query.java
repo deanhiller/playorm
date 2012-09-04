@@ -3,6 +3,7 @@ package com.alvazan.orm.api.base;
 import java.util.List;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public interface Query<T> {
 

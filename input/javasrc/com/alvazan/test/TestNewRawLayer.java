@@ -12,11 +12,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -93,14 +93,16 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
 		Cursor<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
-		KeyValue<TypedRow> keyValue = rows.next();
+		rows.next();
+		KeyValue<TypedRow> keyValue = rows.getCurrent();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
 		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
-		KeyValue<TypedRow> keyValue2 = rows2.next();
+		rows2.next();
+		KeyValue<TypedRow> keyValue2 = rows2.getCurrent();
 		TypedRow theRow2 = keyValue2.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow2.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow2.getColumn("temp").getValue());

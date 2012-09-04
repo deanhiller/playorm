@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.impl.meta.data.Tuple;
@@ -50,7 +50,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
 		int counter = 0;
 		while(true) {
-			com.alvazan.orm.api.z8spi.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();
+			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();
 			if(holder == null)
 				break;
 			KeyValue<Row> kv = holder.getValue();

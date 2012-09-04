@@ -2,9 +2,9 @@ package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 
@@ -20,7 +20,7 @@ public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 	}
 
 	@Override
-	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<KeyValue<Row>> nextImpl() {
+	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> nextImpl() {
 		if(!keys.hasNext())
 			return null;
 		byte[] key = keys.next();

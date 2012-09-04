@@ -4,11 +4,11 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.impl.meta.data.MetaClass;
-import com.alvazan.orm.util.AbstractIterator;
 
 public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 

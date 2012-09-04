@@ -1,8 +1,8 @@
 package com.alvazan.orm.layer5.query;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
 public class CursorSimpleTranslator extends AbstractCursor<IndexColumnInfo> {

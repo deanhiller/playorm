@@ -2,7 +2,7 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.util.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 
 public class IterableCounting implements Iterable<byte[]> {
 
@@ -32,7 +32,7 @@ public class IterableCounting implements Iterable<byte[]> {
 		}
 
 		@Override
-		public com.alvazan.orm.util.AbstractIterator.IterHolder<byte[]> nextImpl() {
+		public com.alvazan.orm.api.z8spi.iter.AbstractIterator.IterHolder<byte[]> nextImpl() {
 			if(count >= batchSize)
 				return null;
 			count++;

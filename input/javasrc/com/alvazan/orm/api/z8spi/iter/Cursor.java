@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.base;
+package com.alvazan.orm.api.z8spi.iter;
 
 public interface Cursor<T> {
 
@@ -7,8 +7,8 @@ public interface Cursor<T> {
 	 */
 	void beforeFirst();
 	
-	boolean hasNext();
+	boolean next();
 
-	T next();
+	T getCurrent();
 
 }

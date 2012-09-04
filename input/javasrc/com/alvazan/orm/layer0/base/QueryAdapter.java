@@ -9,7 +9,6 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.alvazan.orm.api.base.Cursor;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.exc.StorageMissingEntitesException;
@@ -18,17 +17,16 @@ import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
-import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.layer3.typed.IterableIndex;
-//import com.alvazan.orm.layer3.typed.IterableIndex;
-import com.alvazan.orm.util.AbstractIterable;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -90,10 +88,10 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public T getSingleObject() {
 		Cursor<KeyValue<T>> results = getResults();
-		if(!results.hasNext())
+		if(!results.next())
 			return null;
-		KeyValue<T> kv = results.next();
-		if(results.hasNext())
+		KeyValue<T> kv = results.getCurrent();
+		if(results.next())
 			throw new TooManyResultException("Too many results to call getSingleObject...call getResultList instead");
 		return kv.getValue();
 	}
@@ -101,7 +99,7 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
 		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
-		AbstractIterable<byte[]> keys = new IterableIndex(indice);
+		Iterable<byte[]> keys = new IterableIndex(indice);
 		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;

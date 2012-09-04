@@ -3,12 +3,11 @@ package com.alvazan.orm.layer3.typed;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z8spi.AbstractCursor;
-import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
-import com.alvazan.orm.util.AbstractIterable;
-import com.alvazan.orm.util.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 
-public class IterableIndex extends AbstractIterable<byte[]> {
+public class IterableIndex implements Iterable<byte[]> {
 
 	private AbstractCursor<IndexColumnInfo> cursor;
 	public IterableIndex(AbstractCursor<IndexColumnInfo> indice) {
