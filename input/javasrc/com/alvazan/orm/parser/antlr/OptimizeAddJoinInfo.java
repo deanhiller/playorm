@@ -18,9 +18,22 @@ public class OptimizeAddJoinInfo {
 			walkTheTree(left);
 			walkTheTree(right);
 			
-			JoinMeta rightType = right.getJoinMeta();
 			JoinMeta leftType = left.getJoinMeta();
-			JoinMeta info = rightType.fetchJoinMeta(leftType);
+			JoinMeta rightType = right.getJoinMeta();
+			JoinMeta info = leftType.fetchJoinMeta(rightType);
+			JoinInfo primary = info.getPrimaryJoinInfo();
+			if(primary.getJoinType() != JoinType.NONE) {
+				ViewInfo primaryTable = primary.getPrimaryTable();
+				if(!leftType.contains(primaryTable)) {
+					//we need to rewrite the tree so the primary table is on the left(right now, primary is the right side)
+					if(!rightType.contains(primaryTable))
+						throw new RuntimeException("bug, should never get here, one side should have primarytable or we can't join");
+					node.setChild(ChildSide.LEFT, right);
+					node.setChild(ChildSide.RIGHT, left);
+				} else if(rightType.contains(primaryTable))
+					throw new RuntimeException("bug, should never get here.  Both sides should not both contain the primary table unless jointype=NONE");
+			}
+			
 			node.setJoinMeta(info);
 			return;
 			

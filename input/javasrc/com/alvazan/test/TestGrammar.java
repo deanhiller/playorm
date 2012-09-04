@@ -109,6 +109,6 @@ public class TestGrammar {
 				" and ( ((f.x>:a and f.y>:a) or (g.x>:a and g.y>:a)) and h.f>:a )";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
-		Assert.assertEquals("((((a.y > :a and(innerjoin) d.y > :a) or (a.z > :a and(innerjoin) b.z > :a)) and (b.x > :a and(innerjoin) e.y > :a)) and(innerjoin) (((f.x > :a and f.y > :a) or(innerjoin) (g.x > :a and g.y > :a)) and(innerjoin) h.f > :a))", result);
+		Assert.assertEquals("((((a.y > :a and(innerjoin) d.y > :a) or (a.z > :a and(innerjoin) b.z > :a)) and (b.x > :a and(innerjoin) e.y > :a)) and(innerjoin) (((g.x > :a and g.y > :a) or(innerjoin) (f.x > :a and f.y > :a)) and(innerjoin) h.f > :a))", result);
 	}
 }

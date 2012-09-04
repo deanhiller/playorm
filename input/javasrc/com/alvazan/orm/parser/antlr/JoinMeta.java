@@ -6,13 +6,10 @@ import java.util.Set;
 
 public class JoinMeta {
 
+	private JoinInfo primaryJoinInfo;
 	private Set<JoinInfo> infos = new HashSet<JoinInfo>();
 	private Set<ViewInfo> views = new HashSet<ViewInfo>();
 	private JoinType joinType;
-
-	public JoinMeta(Set<JoinInfo> infos) {
-		this.infos = infos;
-	}
 
 	public JoinMeta(JoinInfo info, JoinType type, Set<JoinInfo> set1, Set<JoinInfo> set2) {
 		this(info, type);
@@ -21,6 +18,7 @@ public class JoinMeta {
 	}
 	
 	public JoinMeta(JoinInfo info, JoinType type) {
+		this.primaryJoinInfo = info;
 		this.infos.add(info);
 		views.addAll(info.getViews());
 		this.joinType = type;
@@ -28,7 +26,12 @@ public class JoinMeta {
 	
 	@Override
 	public String toString() {
-		return "["+joinType+",views="+views+"]";
+		return "["+joinType+",views="+views+", primary="+primaryJoinInfo+"]";
+	}
+
+	
+	public JoinInfo getPrimaryJoinInfo() {
+		return primaryJoinInfo;
 	}
 
 	public JoinMeta fetchJoinMeta(JoinMeta rightSide) {
@@ -83,5 +86,9 @@ public class JoinMeta {
 
 	protected Set<ViewInfo> getViews() {
 		return views;
+	}
+
+	public boolean contains(ViewInfo primaryTable) {
+		return views.contains(primaryTable);
 	}
 }
