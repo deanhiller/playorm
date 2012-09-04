@@ -147,7 +147,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
-			list = new LogBatchFetch(l, batchSize);
+			list = new LogBatchFetch("basic column slice", l, batchSize);
 		}
 		
 		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
@@ -159,8 +159,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
-			logColScan(info, from, to, batchSize);
-			list = new LogBatchFetch(l, batchSize);
+			String cfAndIndex = logColScan(info, from, to, batchSize);
+			list = new LogBatchFetch(cfAndIndex, l, batchSize);
 		}
 		return session.scanIndex(info, from, to, batchSize, list);
 	}
@@ -169,29 +169,33 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
-			logColScan2(scanInfo, values);
-			list = new LogBatchFetch(l, values.size());
+			String cfAndIndex = logColScan2(scanInfo, values);
+			list = new LogBatchFetch(cfAndIndex, l, null);
 		}
 		long start = System.currentTimeMillis();
 		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list);
 		if(log.isInfoEnabled()) {
 			long total = System.currentTimeMillis()-start;
-			log.info("time to SEND request for scanindex of keys="+total+" ms");
+			log.info("time to SEND find non-contiguous columns on index of keys="+total+" ms");
 		}
 		return cursor;
 	}
 	
-	private void logColScan2(ScanInfo info, List<byte[]> values) {
+	private String logColScan2(ScanInfo info, List<byte[]> values) {
 		try {
-			String msg = logColScan2Impl(info, values);
-			log.info("[rawlogger]"+msg);
+			return logColScan2Impl(info, values);
 		} catch(Exception e) {
 			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			return info.getIndexColFamily()+" "+info.getEntityColFamily();
 		}		
 	}
 
 	private String logColScan2Impl(ScanInfo info, List<byte[]> values) {
-		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		String cfAndIndex = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
+		cfAndIndex += cfAndIndex + " rowkey="+rowKey;
+		
+		String msg = cfAndIndex;
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
@@ -208,20 +212,27 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String str = colMeta.convertTypeToString(fromObj);
 			strVals.add(str);
 		}
-		return msg+" lookup keys="+strVals;
+		
+		msg+=" finding non-contiguous keys index rowkey="+rowKey+" for keys:"+strVals;
+		log.info("[rawlogger]"+msg);
+		return rowKey;
 	}
 
-	private void logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
+	private String logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
 		try {
-			String msg = logColScanImpl(info, from, to, batchSize);
-			log.info("[rawlogger]"+msg);
+			return logColScanImpl(info, from, to, batchSize);
 		} catch(Exception e) {
 			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			return info.getIndexColFamily()+" "+info.getEntityColFamily();
 		}
 	}
 
 	private String logColScanImpl(ScanInfo info, Key from, Key to, Integer batchSize) {
-		String msg = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		String cfAndIndex = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
+		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
+		cfAndIndex += cfAndIndex + " rowkey="+rowKey;
+		
+		String msg = cfAndIndex;
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
@@ -257,9 +268,9 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			range += toStr;
 		}
 		
-		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		
-		return msg+" scanning index rowkey="+rowKey+" for value in range:"+range+" with batchSize="+batchSize;
+		msg+=" scanning index for value in range:"+range+" with batchSize="+batchSize;
+		log.info("[rawlogger]"+msg);
+		return rowKey;
 	}
 	
 	@Override
@@ -316,7 +327,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			ret = session.find(colFamily, allKeys);
 			long total = System.currentTimeMillis() - time;
 			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
-				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size()+" keys="+realKeys);
+				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size()+" keys="+realKeys+"="+total+" ms");
 			else if(log.isTraceEnabled())
 				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
 		} else

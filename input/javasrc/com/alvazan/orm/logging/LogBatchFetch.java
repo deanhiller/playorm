@@ -12,8 +12,10 @@ public class LogBatchFetch implements BatchListener {
 	private BatchListener listener;
 	private long startTime;
 	private Integer batchSize;
+	private String cfAndIndex;
 
-	public LogBatchFetch(BatchListener l, Integer batchSize) {
+	public LogBatchFetch(String cfAndIndex, BatchListener l, Integer batchSize) {
+		this.cfAndIndex = cfAndIndex;
 		this.listener = l;
 		this.batchSize = batchSize;
 	}
@@ -32,7 +34,7 @@ public class LogBatchFetch implements BatchListener {
 			if(batchSize != null)
 				bSize = batchSize+"";
 			long total = System.currentTimeMillis() - startTime;
-			log.info("Fetching batch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			log.info(cfAndIndex+" Fetching batch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
 		}
 		if(listener != null)
 			listener.afterFetchingNextBatch(numFetched);

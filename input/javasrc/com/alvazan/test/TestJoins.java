@@ -8,6 +8,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -16,6 +18,8 @@ import com.alvazan.test.db.PartSecurity;
 
 public class TestJoins {
 
+	private static final Logger log = LoggerFactory.getLogger(TestJoins.class);
+	
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 
@@ -34,14 +38,14 @@ public class TestJoins {
 		other.clearDatabase(true);
 	}
 	
-	//@Test
-	public void testEmpty() {}
-	
 	@Test
 	public void testJoin() {
 		putEntities();
 		
+		long start = System.currentTimeMillis();
 		List<AAPartitionedTrade> trades = AAPartitionedTrade.findInPartition(mgr, 5, "one", null);
+		long total = System.currentTimeMillis()-start;
+		log.info("TOTAL time="+total+" ms");
 		Assert.assertEquals(2, trades.size());
 	}
 	
