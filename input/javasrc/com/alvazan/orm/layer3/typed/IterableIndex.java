@@ -30,7 +30,7 @@ public class IterableIndex extends AbstractIterable<byte[]> {
 		}
 
 		@Override
-		public IterHolder<byte[]> nextImpl2() {
+		public IterHolder<byte[]> nextImpl() {
 			Holder<IndexColumnInfo> next = cursor.nextImpl();
 			if(next == null)
 				return null;

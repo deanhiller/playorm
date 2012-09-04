@@ -32,7 +32,7 @@ public class IterableCounting implements Iterable<byte[]> {
 		}
 
 		@Override
-		protected com.alvazan.orm.util.AbstractIterator.IterHolder<byte[]> nextImpl2() {
+		public com.alvazan.orm.util.AbstractIterator.IterHolder<byte[]> nextImpl() {
 			if(count >= batchSize)
 				return null;
 			count++;

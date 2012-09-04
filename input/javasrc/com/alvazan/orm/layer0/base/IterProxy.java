@@ -13,7 +13,7 @@ public class IterProxy extends AbstractIterator<byte[]> {
 	}
 
 	@Override
-	protected com.alvazan.orm.util.AbstractIterator.IterHolder<byte[]> nextImpl2() {
+	public com.alvazan.orm.util.AbstractIterator.IterHolder<byte[]> nextImpl() {
 		if(!iterator.hasNext())
 			return null;
 		return new IterHolder<byte[]>(iterator.next());
