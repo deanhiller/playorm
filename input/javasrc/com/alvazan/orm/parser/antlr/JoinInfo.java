@@ -7,15 +7,15 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
 public class JoinInfo {
 
-	private ViewInfo primaryTable;
+	private ViewInfoImpl primaryTable;
 	private DboColumnMeta primaryCol;
-	private ViewInfo secondaryTable;
+	private ViewInfoImpl secondaryTable;
 	private DboColumnMeta secondaryCol;
 	private JoinType joinType;
-	private Set<ViewInfo> viewInfos = new HashSet<ViewInfo>();
+	private Set<ViewInfoImpl> viewInfos = new HashSet<ViewInfoImpl>();
 	
-	public JoinInfo(ViewInfo tableInfo, DboColumnMeta columnMeta,
-			ViewInfo existing, DboColumnMeta colMeta2, JoinType type) {
+	public JoinInfo(ViewInfoImpl tableInfo, DboColumnMeta columnMeta,
+			ViewInfoImpl existing, DboColumnMeta colMeta2, JoinType type) {
 		this.primaryTable = tableInfo;
 		this.primaryCol = columnMeta;
 		this.secondaryTable = existing;
@@ -44,7 +44,7 @@ public class JoinInfo {
 	}
 
 
-	public ViewInfo getPrimaryTable() {
+	public ViewInfoImpl getPrimaryTable() {
 		return primaryTable;
 	}
 
@@ -52,7 +52,7 @@ public class JoinInfo {
 		return primaryCol;
 	}
 
-	public ViewInfo getSecondaryTable() {
+	public ViewInfoImpl getSecondaryTable() {
 		return secondaryTable;
 	}
 
@@ -68,7 +68,7 @@ public class JoinInfo {
 //		return false;
 //	}
 
-	public boolean hasView(ViewInfo view) {
+	public boolean hasView(ViewInfoImpl view) {
 		if(primaryTable == view)
 			return true;
 		else if(secondaryTable == view)
@@ -76,7 +76,7 @@ public class JoinInfo {
 		return false;
 	}
 	
-	public Set<ViewInfo> getViews() {
+	public Set<ViewInfoImpl> getViews() {
 		return viewInfos;
 	}
 

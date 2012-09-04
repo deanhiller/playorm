@@ -4,11 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 
+
 public class JoinMeta {
 
 	private JoinInfo primaryJoinInfo;
 	private Set<JoinInfo> infos = new HashSet<JoinInfo>();
-	private Set<ViewInfo> views = new HashSet<ViewInfo>();
+	private Set<ViewInfoImpl> views = new HashSet<ViewInfoImpl>();
 	private JoinType joinType;
 
 	public JoinMeta(JoinInfo info, JoinType type, Set<JoinInfo> set1, Set<JoinInfo> set2) {
@@ -35,11 +36,11 @@ public class JoinMeta {
 	}
 
 	public JoinMeta fetchJoinMeta(JoinMeta rightSide) {
-		Set<ViewInfo> views1 = this.getViews();
-		Set<ViewInfo> views2 = rightSide.getViews();
+		Set<ViewInfoImpl> views1 = this.getViews();
+		Set<ViewInfoImpl> views2 = rightSide.getViews();
 		//View matches are MUCH less costly than join matches so find view match first!!
-		for(ViewInfo infoL : views1) {
-			for(ViewInfo infoR : views2) {
+		for(ViewInfoImpl infoL : views1) {
+			for(ViewInfoImpl infoR : views2) {
 				if(infoL == infoR) {
 					JoinInfo joinInfo = new JoinInfo(infoL, null, null, null, JoinType.NONE);
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
@@ -50,8 +51,8 @@ public class JoinMeta {
 			}
 		}
 		
-		for(ViewInfo infoL : views1) {
-			for(ViewInfo infoR : views2) {
+		for(ViewInfoImpl infoL : views1) {
+			for(ViewInfoImpl infoR : views2) {
 				JoinInfo joinInfo = infoL.getJoinInfo(infoR);
 				if(joinInfo != null) {
 					Set<JoinInfo> set1 = this.getJoinInfoSet();
@@ -84,11 +85,11 @@ public class JoinMeta {
 		}
 	}
 
-	protected Set<ViewInfo> getViews() {
+	protected Set<ViewInfoImpl> getViews() {
 		return views;
 	}
 
-	public boolean contains(ViewInfo primaryTable) {
+	public boolean contains(ViewInfoImpl primaryTable) {
 		return views.contains(primaryTable);
 	}
 }

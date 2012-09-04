@@ -1,11 +1,7 @@
 package com.alvazan.orm.api.z5api;
 
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
-import com.alvazan.orm.parser.antlr.ViewInfo;
-
-
-
-
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public interface SpiMetaQuery {
 	

@@ -2,6 +2,7 @@ package com.alvazan.orm.parser.antlr;
 
 import org.antlr.runtime.tree.CommonTree;
 
+
 public class ExpressionNode implements ParsedNode {
 
 	/**
@@ -139,7 +140,7 @@ public class ExpressionNode implements ParsedNode {
 	}
 
 	@Override
-	public ViewInfo getViewInfo() {
+	public ViewInfoImpl getViewInfo() {
 		if(!(state instanceof StateAttribute))
 			throw new IllegalStateException("This node is of the wrong type="+this.commonNode.getType());
 		StateAttribute attr = (StateAttribute) state;

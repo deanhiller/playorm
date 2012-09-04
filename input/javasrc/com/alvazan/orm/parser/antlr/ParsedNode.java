@@ -3,6 +3,7 @@ package com.alvazan.orm.parser.antlr;
 
 
 
+
 public interface ParsedNode {
 
 	int getType();
@@ -16,7 +17,7 @@ public interface ParsedNode {
 	String getAliasAndColumn();
 
 	//For join optimization...
-	ViewInfo getViewInfo();
+	ViewInfoImpl getViewInfo();
 	boolean isAndOrType();
 	void setJoinMeta(JoinMeta info);
 	JoinMeta getJoinMeta();

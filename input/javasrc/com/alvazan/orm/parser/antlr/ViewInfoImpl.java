@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 /**
  * A Table can have different aliases like in a self-join where the table is alias "a" and alias "b"
@@ -11,14 +12,14 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
  * everyone with "b" has nother ViewInfo 
  * @author dhiller2
  */
-public class ViewInfo {
+public class ViewInfoImpl implements ViewInfo {
 
 	private String alias;
 	private DboTableMeta tableMeta;
 	private List<JoinInfo> joins = new ArrayList<JoinInfo>();
 	private PartitionMeta partition;
 	
-	public ViewInfo(String alias, DboTableMeta tableMeta) {
+	public ViewInfoImpl(String alias, DboTableMeta tableMeta) {
 		this.alias = alias;
 		this.tableMeta = tableMeta;
 	}
@@ -49,7 +50,7 @@ public class ViewInfo {
 	public void addJoin(JoinInfo join) {
 		joins.add(join);
 	}
-	public JoinInfo getJoinInfo(ViewInfo table2) {
+	public JoinInfo getJoinInfo(ViewInfoImpl table2) {
 		//even self joins will have a different alias
 		if(table2.equals(this))
 			throw new IllegalArgumentException("bug, you can't pass in our view even on self join because view is always different");

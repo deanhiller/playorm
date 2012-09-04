@@ -6,7 +6,7 @@ import java.util.Map.Entry;
 
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
-import com.alvazan.orm.parser.antlr.ViewInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IndexColumnInfo {
 

@@ -1,6 +1,7 @@
 package com.alvazan.orm.parser.antlr;
 
 
+
 public class OptimizeAddJoinInfo {
 
 	private ParsedNode root;
@@ -18,28 +19,14 @@ public class OptimizeAddJoinInfo {
 			walkTheTree(left);
 			walkTheTree(right);
 			
-			JoinMeta leftType = left.getJoinMeta();
-			JoinMeta rightType = right.getJoinMeta();
-			JoinMeta info = leftType.fetchJoinMeta(rightType);
-			JoinInfo primary = info.getPrimaryJoinInfo();
-			if(primary.getJoinType() != JoinType.NONE) {
-				ViewInfo primaryTable = primary.getPrimaryTable();
-				if(!rightType.contains(primaryTable)) {
-					//we need to rewrite the tree so the joining table is on the left(right now, joining is the right side)
-					if(!leftType.contains(primaryTable))
-						throw new RuntimeException("bug, should never get here, one side should have primarytable or we can't join");
-					node.setChild(ChildSide.LEFT, right);
-					node.setChild(ChildSide.RIGHT, left);
-				} else if(leftType.contains(primaryTable))
-					throw new RuntimeException("bug, should never get here.  Both sides should not both contain the primary table unless jointype=NONE");
-			}
+			JoinMeta info = switchChildrenIfNeeded(node, left, right);
 			
 			node.setJoinMeta(info);
 			return;
 			
 		} else if(node.isInBetweenExpression()) {
 			ParsedNode leftGrand = left.getChild(ChildSide.LEFT);
-			ViewInfo viewInfo = leftGrand.getViewInfo();
+			ViewInfoImpl viewInfo = leftGrand.getViewInfo();
 			JoinInfo info = new JoinInfo(viewInfo, null, null, null, JoinType.NONE);
 			JoinMeta meta1 = new JoinMeta(info, info.getJoinType());
 			node.setJoinMeta(meta1);
@@ -51,16 +38,41 @@ public class OptimizeAddJoinInfo {
 		node.setJoinMeta(meta);
 	}
 
+	private JoinMeta switchChildrenIfNeeded(ParsedNode node, ParsedNode left,
+			ParsedNode right) {
+		JoinMeta leftType = left.getJoinMeta();
+		JoinMeta rightType = right.getJoinMeta();
+		JoinMeta info = leftType.fetchJoinMeta(rightType);
+		JoinInfo primary = info.getPrimaryJoinInfo();
+		if(primary.getJoinType() != JoinType.NONE) {
+			ViewInfoImpl primaryTable = primary.getPrimaryTable();
+			if(!rightType.contains(primaryTable)) {
+				//we need to rewrite the tree so the joining table is on the left(right now, joining is the right side)
+				checkNoSidesHavePrimaryView(leftType, primaryTable);
+				node.setChild(ChildSide.LEFT, right);
+				node.setChild(ChildSide.RIGHT, left);
+			} else if(leftType.contains(primaryTable))
+				throw new RuntimeException("bug, should never get here.  Both sides should not both contain the primary table unless jointype=NONE");
+		}
+		return info;
+	}
+
+	private void checkNoSidesHavePrimaryView(JoinMeta leftType,
+			ViewInfoImpl primaryTable) {
+		if(!leftType.contains(primaryTable))
+			throw new RuntimeException("bug, should never get here, one side should have primarytable or we can't join");
+	}
+
 	private JoinMeta findDirectJoin(ParsedNode left, ParsedNode right) {
 		//At this point, we know the left will be a table, but the rightside could be a constant or another table or same table
-		ViewInfo view1 = left.getViewInfo();
+		ViewInfoImpl view1 = left.getViewInfo();
 		if(right.isConstant() || right.isParameter()) {
 			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
 			return new JoinMeta(info, info.getJoinType());
 		}
 		
 		//okay, table vs. table then
-		ViewInfo view2 = right.getViewInfo();
+		ViewInfoImpl view2 = right.getViewInfo();
 		if(view1.equals(view2)) {
 			JoinInfo info = new JoinInfo(view1, null, null, null, JoinType.NONE);
 			return new JoinMeta(info, info.getJoinType());

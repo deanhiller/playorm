@@ -42,7 +42,7 @@ public class ScannerSql {
 	}
 	
 	private void validateNoPartitionsMissed(CommonTree theTree, InfoForWiring wiring) {
-		ViewInfo noAliasTable = wiring.getNoAliasTable();
+		ViewInfoImpl noAliasTable = wiring.getNoAliasTable();
 		if(noAliasTable != null) {
 			if(noAliasTable.getTableMeta().getPartitionedColumns().size() > 0)
 				throw new IllegalArgumentException("In your from you have a table defined with no alias" +
@@ -51,7 +51,7 @@ public class ScannerSql {
 		}		
 		Collection<String> aliases = wiring.getAllAliases();
 		for(String alias : aliases) {
-			ViewInfo t = wiring.getInfoFromAlias(alias);
+			ViewInfoImpl t = wiring.getInfoFromAlias(alias);
 			DboTableMeta meta = t.getTableMeta();
 			if(meta.getPartitionedColumns().size() > 0 && t.getPartition() == null)
 				throw new IllegalArgumentException("You are missing a definition of a partition for alias='"+alias+"' since table="
@@ -137,7 +137,7 @@ public class ScannerSql {
 		String alias = aliasNode.getText();
 		String newAlias = newAliasNode.getText();
 		
-		ViewInfo tableInfo = wiring.getInfoFromAlias(alias);
+		ViewInfoImpl tableInfo = wiring.getInfoFromAlias(alias);
 		DboTableMeta tableMeta = tableInfo.getTableMeta();
 		DboColumnMeta columnMeta = facade.getFkMetaIfExist(tableMeta, column);
 		if(!(columnMeta instanceof DboColumnToOneMeta))
@@ -147,9 +147,9 @@ public class ScannerSql {
 		DboColumnToOneMeta toOne = (DboColumnToOneMeta) columnMeta;
 		DboTableMeta fkTableMeta = toOne.getFkToColumnFamily();
 
-		ViewInfo existing = wiring.getInfoFromAlias(newAlias);
+		ViewInfoImpl existing = wiring.getInfoFromAlias(newAlias);
 		if(existing == null) {
-			existing = new ViewInfo(newAlias, fkTableMeta);
+			existing = new ViewInfoImpl(newAlias, fkTableMeta);
 			wiring.putAliasTable(newAlias, existing);
 		}
 		
@@ -172,7 +172,7 @@ public class ScannerSql {
 
 	private void compileSinglePartition(InfoForWiring wiring, CommonTree child, MetaFacade facade) {
 		String alias = child.getText();
-		ViewInfo info = wiring.getInfoFromAlias(alias);
+		ViewInfoImpl info = wiring.getInfoFromAlias(alias);
 		if(info == null)
 			throw new IllegalArgumentException("In your PARTITIONS clause, you have an alias='"+alias+"' that is not found in your FROM clause");
 		else if(info.getPartition() != null)
@@ -248,7 +248,7 @@ public class ScannerSql {
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Meta data(or Entity)="+tableName+" cannot be found");
 			
-		ViewInfo info = new ViewInfo(null, metaClass);
+		ViewInfoImpl info = new ViewInfoImpl(null, metaClass);
 		if(wiring.getFirstTable() == null)
 			wiring.setFirstTable(info);
 		
@@ -309,7 +309,7 @@ public class ScannerSql {
 			case NoSqlLexer.ATTR_NAME:
 				
 				String columnNameOrAlias = child.getText();
-				ViewInfo info = wiring.getInfoFromAlias(columnNameOrAlias);
+				ViewInfoImpl info = wiring.getInfoFromAlias(columnNameOrAlias);
 				if(info != null) {
 					wiring.setSelectStarDefined(true);
 					continue;
@@ -410,7 +410,7 @@ public class ScannerSql {
 		Object state = left.getState();
 		if(state instanceof StateAttribute) {
 			StateAttribute st = (StateAttribute) state;
-			ViewInfo tableInfo = st.getViewInfo();
+			ViewInfoImpl tableInfo = st.getViewInfo();
 			node.setState(tableInfo, null);
 		}
 	}
@@ -498,7 +498,7 @@ public class ScannerSql {
 
 	private static TypeInfo processColumnName( 
 			ExpressionNode attributeNode2, InfoForWiring wiring, TypeInfo otherSideType, MetaFacade facade) {
-		ViewInfo tableInfo;
+		ViewInfoImpl tableInfo;
 		
 		CommonTree colNameNode = attributeNode2.getASTNode();
 		String columnName = colNameNode.getText();

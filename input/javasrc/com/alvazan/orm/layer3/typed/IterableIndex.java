@@ -7,7 +7,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
-import com.alvazan.orm.parser.antlr.ViewInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IterableIndex implements Iterable<byte[]> {
 

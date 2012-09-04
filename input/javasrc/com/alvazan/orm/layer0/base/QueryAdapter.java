@@ -23,11 +23,11 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.layer3.typed.IterableIndex;
-import com.alvazan.orm.parser.antlr.ViewInfo;
 
 public class QueryAdapter<T> implements Query<T> {
 

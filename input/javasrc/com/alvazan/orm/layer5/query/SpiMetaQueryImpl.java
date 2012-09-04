@@ -9,8 +9,8 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
-import com.alvazan.orm.parser.antlr.ViewInfo;
 
 public class SpiMetaQueryImpl implements SpiMetaQuery {
 

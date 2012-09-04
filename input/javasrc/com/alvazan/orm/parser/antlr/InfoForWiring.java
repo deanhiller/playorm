@@ -10,13 +10,13 @@ import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 public class InfoForWiring {
 
 	private Map<String,TypeInfo> parameterFieldMap = new HashMap<String, TypeInfo>();
-	private ViewInfo noAliasTable;
-	private Map<String, ViewInfo> aliasToMeta = new HashMap<String, ViewInfo>();
+	private ViewInfoImpl noAliasTable;
+	private Map<String, ViewInfoImpl> aliasToMeta = new HashMap<String, ViewInfoImpl>();
 	private boolean selectStarDefined;
 	private String query;
 	private String targetTable;
 	private ExpressionNode astTree;
-	private ViewInfo firstTable;
+	private ViewInfoImpl firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private DboTableMeta metaQueryTargetTable;
 	
@@ -25,19 +25,19 @@ public class InfoForWiring {
 		this.targetTable= targetTable;
 	}
 	
-	public void setNoAliasTable(ViewInfo metaClass) {
+	public void setNoAliasTable(ViewInfoImpl metaClass) {
 		this.noAliasTable = metaClass;
 	}
 
-	public ViewInfo getNoAliasTable() {
+	public ViewInfoImpl getNoAliasTable() {
 		return noAliasTable;
 	}
 
-	public void putAliasTable(String alias, ViewInfo metaClass) {
+	public void putAliasTable(String alias, ViewInfoImpl metaClass) {
 		aliasToMeta.put(alias, metaClass);
 	}
 
-	public ViewInfo getInfoFromAlias(String alias) {
+	public ViewInfoImpl getInfoFromAlias(String alias) {
 		return aliasToMeta.get(alias);
 	}
 
@@ -65,10 +65,10 @@ public class InfoForWiring {
 		return astTree;
 	}
 
-	public ViewInfo getFirstTable() {
+	public ViewInfoImpl getFirstTable() {
 		return firstTable;
 	}
-	public void setFirstTable(ViewInfo t) {
+	public void setFirstTable(ViewInfoImpl t) {
 		this.firstTable = t;
 	}
 

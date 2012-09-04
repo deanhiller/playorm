@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.ChildSide;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.JoinInfo;
@@ -24,7 +25,7 @@ import com.alvazan.orm.parser.antlr.JoinType;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
 import com.alvazan.orm.parser.antlr.PartitionMeta;
 import com.alvazan.orm.parser.antlr.StateAttribute;
-import com.alvazan.orm.parser.antlr.ViewInfo;
+import com.alvazan.orm.parser.antlr.ViewInfoImpl;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
@@ -58,7 +59,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	public AbstractCursor<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
-			ViewInfo tableInfo = spiMeta.getMainViewMeta();
+			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getMainViewMeta();
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
@@ -72,7 +73,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		return processExpressionTree(root);
 	}
 
-	private ScanInfo createScanInfo(ViewInfo tableInfo, DboColumnMeta metaCol) {
+	private ScanInfo createScanInfo(ViewInfoImpl tableInfo, DboColumnMeta metaCol) {
 		PartitionMeta partitionMeta = tableInfo.getPartition();
 		String partitionBy = null;
 		String partitionId = null;
@@ -124,7 +125,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			//We need to proxy the right results to translate to the same primary key as the
 			//left results and our And and Or Cursor can then take care of the rest
 			JoinInfo joinInfo = root.getJoinMeta().getPrimaryJoinInfo();
-			ViewInfo newView = joinInfo.getPrimaryTable();
+			ViewInfoImpl newView = joinInfo.getPrimaryTable();
 			DboColumnMeta col = joinInfo.getPrimaryCol();
 			ScanInfo scanInfo = createScanInfo(newView, col);
 			//FROM an ORM perspective, we join to smaller tables in general as we don't want to blow out memory so do the
@@ -152,7 +153,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 		
 		DboColumnMeta info = attr.getColumnInfo();
-		ViewInfo viewInfo = attr.getViewInfo();		
+		ViewInfoImpl viewInfo = attr.getViewInfo();		
 		ScanInfo scanInfo = createScanInfo(viewInfo, info);
 		
 		AbstractCursor<IndexColumn> scan;

@@ -21,7 +21,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
-import com.alvazan.orm.parser.antlr.ViewInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 @SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
