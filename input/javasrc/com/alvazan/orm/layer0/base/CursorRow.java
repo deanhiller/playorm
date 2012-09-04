@@ -51,11 +51,6 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 			//we need to fetch more
 		}
 		
-		if(!keysIterator.hasNext()) {
-			return null;
-		}
-		
-		
 		String cf = meta.getColumnFamily();		
 		//If batchSize is null, we MUST use the keysIterator not iterable(just trust me or the keyIterator.hasNext up above no longer works)
 		Iterable<byte[]> proxyCounting = new IterableNotCounting(this.keysIterator);

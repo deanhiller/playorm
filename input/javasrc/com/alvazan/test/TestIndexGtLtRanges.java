@@ -40,6 +40,9 @@ public class TestIndexGtLtRanges {
 	@Test
 	public void testBasicString() throws InterruptedException {
 		
+		List<Activity> all = Activity.findAll(mgr, 2);
+		Assert.assertEquals(5, all.size());
+		
 		List<Activity> list = Activity.findBetween(mgr, 4, 7);
 		Assert.assertEquals(2, list.size());
 		if(list.get(0).getNumTimes() != 4) {

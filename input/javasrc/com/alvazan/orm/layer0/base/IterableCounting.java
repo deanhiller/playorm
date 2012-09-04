@@ -40,6 +40,7 @@ public class IterableCounting implements Iterable<byte[]> {
 		@Override
 		public byte[] next() {
 			if(count < batchSize && keysIterator.hasNext()) {
+				count++;
 				return keysIterator.next();
 			} else
 				throw new IllegalArgumentException("You should really be calling iterator.hasNext before this method or you get this exception BECAUSE this iterator has run out of values");

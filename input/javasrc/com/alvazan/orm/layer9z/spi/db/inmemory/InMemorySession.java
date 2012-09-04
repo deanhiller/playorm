@@ -30,7 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
-import com.alvazan.orm.layer5.nosql.cache.ProxyTempCursor;
+import com.alvazan.orm.util.ProxyTempCursor;
 
 public class InMemorySession implements NoSqlRawSession {
 
@@ -246,14 +246,14 @@ public class InMemorySession implements NoSqlRawSession {
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
-		return new CursorProxy<Column>(iter);
+		return new ProxyTempCursor<Column>(iter);
 	}
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
 			Integer batchSize, BatchListener l) {
 		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
-		return new CursorProxy<IndexColumn>(iter);
+		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
 }

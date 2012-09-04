@@ -27,7 +27,7 @@ public class CursorForOr extends AbstractCursor<IndexColumnInfo> {
 	}
 	
 	@Override
-	public com.alvazan.orm.api.z8spi.AbstractCursor.Holder<IndexColumnInfo> nextImpl() {
+	public Holder<IndexColumnInfo> nextImpl() {
 		while(true) {
 			Holder<IndexColumnInfo> nextFromCursor = leftResults.nextImpl();
 			if(nextFromCursor == null)

@@ -32,7 +32,7 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.alvazan.orm.layer5.nosql.cache.ProxyTempCursor;
+import com.alvazan.orm.util.ProxyTempCursor;
 
 public class NoSqlRawLogger implements NoSqlRawSession {
 

@@ -19,6 +19,7 @@ import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.AbstractCursor;
+import com.alvazan.orm.api.z8spi.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
@@ -101,14 +102,14 @@ public class QueryAdapter<T> implements Query<T> {
 	public Cursor<KeyValue<T>> getResults() {
 		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
 		AbstractIterable<byte[]> keys = new IterableIndex(indice);
-		Cursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, meta.getQuery(), batchSize);
 
 		return results;
 	}
 
 	@Override
 	public List<T> getResultList(int firstResult, Integer maxResults) {
-		Cursor<KeyValue<T>> all = getResults();
+		AbstractCursor<KeyValue<T>> all = (AbstractCursor<KeyValue<T>>) getResults();
 		List<T> foundElements = new ArrayList<T>();
 		try {
 			return getEntities(all, foundElements, firstResult, maxResults);
@@ -118,13 +119,16 @@ public class QueryAdapter<T> implements Query<T> {
 		}
 	}
 	
-	private List<T> getEntities(Cursor<KeyValue<T>> all, List<T> foundElements, int firstResult, Integer maxResults){
+	private List<T> getEntities(AbstractCursor<KeyValue<T>> all, List<T> foundElements, int firstResult, Integer maxResults){
 		List<T> entities = new ArrayList<T>();
 		RowNotFoundException exc = null;
 		
 		int counter = 0;
-		while(all.hasNext()) {
-			KeyValue<T> keyVal = all.next();
+		while(true) {
+			Holder<KeyValue<T>> holder = all.nextImpl();
+			if(holder == null)
+				break;
+			KeyValue<T> keyVal = holder.getValue();
 			if(counter < firstResult)
 				continue; //skip it
 			else if(maxResults != null && counter >= firstResult+maxResults)

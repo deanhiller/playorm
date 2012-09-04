@@ -145,7 +145,7 @@ public class TestIndexes {
 		List<Account> all2 = Account.findAll(mgr);
 		Assert.assertEquals(3, all2.size());
 		
-		List<Activity> all3 = Activity.findAll(mgr);
+		List<Activity> all3 = Activity.findAll(mgr, 100);
 		Assert.assertEquals(1, all3.size());
 	}
 	

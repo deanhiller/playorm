@@ -9,16 +9,17 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.netflix.astyanax.model.Rows;
 
-public class IterableResult extends AbstractCursor<KeyValue<Row>> {
+public class CursorResult extends AbstractCursor<KeyValue<Row>> {
 
 	private Rows<byte[], byte[]> rowsIterable;
 	private Provider<Row> rowProvider;
 
 	private Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> rows;
 	
-	public IterableResult(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
+	public CursorResult(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
 		this.rowProvider = rowProvider;
 		this.rowsIterable = rows;
+		beforeFirst();
 	}
 
 	@Override

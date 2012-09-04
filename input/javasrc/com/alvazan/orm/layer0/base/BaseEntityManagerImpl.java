@@ -14,6 +14,7 @@ import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
+import com.alvazan.orm.api.z8spi.AbstractCursor;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.action.Column;
@@ -101,7 +102,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 		return findAllImpl2(meta, iter, null, null);
 	}
 	
-	<T> Cursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, Integer batchSize) {
+	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well

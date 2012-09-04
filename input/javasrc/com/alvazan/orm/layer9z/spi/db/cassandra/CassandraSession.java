@@ -108,7 +108,7 @@ public class CassandraSession implements NoSqlRawSession {
 		
 		Rows rows = result.getResult();
 		
-		IterableResult r = new IterableResult(rowProvider, rows);
+		CursorResult r = new CursorResult(rowProvider, rows);
 		
 		return r;
 	}
@@ -365,7 +365,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	private <T> AbstractCursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new IterableColumnSlice<T>(l, isComposite, bListener, batchSize);
+		return new CursorColumnSlice<T>(l, isComposite, bListener, batchSize);
 	}
 
 	public interface CreateColumnSliceCallback {
