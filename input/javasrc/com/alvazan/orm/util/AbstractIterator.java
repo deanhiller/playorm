@@ -22,7 +22,17 @@ public abstract class AbstractIterator<T> implements Iterator<T>{
 		return true;
 	}
 
-	public abstract IterHolder<T> nextImpl();
+	public final IterHolder<T> nextImpl() {
+		//check for cached value first to make sure(we had a case where one piece called hasNext and down below
+		//someone called nextImpl which skipped the cached value
+		if(nextValue == null)
+			return nextImpl2();
+		IterHolder<T> temp = nextValue;
+		nextValue = null;
+		return temp;
+	}
+	
+	protected abstract IterHolder<T> nextImpl2();
 
 	@Override
 	public final T next() {

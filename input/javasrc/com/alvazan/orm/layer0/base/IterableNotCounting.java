@@ -28,7 +28,7 @@ public class IterableNotCounting extends AbstractIterable<byte[]> {
 			this.keysIterator = keysIterator2;
 		}
 		@Override
-		public IterHolder<byte[]> nextImpl() {
+		public IterHolder<byte[]> nextImpl2() {
 			if(!keysIterator.hasNext())
 				return null;
 			byte[] data = keysIterator.next();
