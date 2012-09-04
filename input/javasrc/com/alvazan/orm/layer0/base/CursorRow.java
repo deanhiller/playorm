@@ -18,7 +18,6 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	
 	private Iterable<byte[]> noSqlKeys;
 	private Iterator<byte[]> keysIterator;
-	//TODO: lastCachedRows SHOULD be Cursor I believe....
 	private AbstractCursor<KeyValue<Row>> lastCachedRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
@@ -37,22 +36,23 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	
 	@Override
 	public Holder<KeyValue<T>> nextImpl() {
-		fetchMoreResults();
-		if(lastCachedRows == null)
+		KeyValue<T> nextResult = fetchNextResult();
+		if(nextResult == null)
 			return null;
 		
-		KeyValue<T> row = fetchRow();
-		return new Holder<KeyValue<T>>(row);
+		return new Holder<KeyValue<T>>(nextResult);
 	}
 	
-	private void fetchMoreResults() {
-		if(lastCachedRows != null && lastCachedRows.hasNext())
-			return; //We have rows left so do NOT fetch results
-		else if(!keysIterator.hasNext()) {
-			//we know we have NO rows left in cache at this point but there are als NO 
-			//keys left!!! so return and set the lastCachedRows to null
-			lastCachedRows = null;
-			return;
+	private KeyValue<T> fetchNextResult() {
+		if(lastCachedRows != null) {
+			Holder<KeyValue<Row>> holder = lastCachedRows.nextImpl();
+			if(holder != null)
+				return translateRow(holder.getValue());
+			//we need to fetch more
+		}
+		
+		if(!keysIterator.hasNext()) {
+			return null;
 		}
 		
 		
@@ -66,10 +66,13 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		}
 		boolean skipCache = query != null; //if someone is querying into, we need to skip the cache!!!
 		lastCachedRows = session.findAll(cf, proxyCounting, skipCache);
+		Holder<KeyValue<Row>> nextImpl = lastCachedRows.nextImpl();
+		if(nextImpl == null)
+			return null;
+		return translateRow(nextImpl.getValue());
 	}
 
-	private KeyValue<T> fetchRow() {
-		KeyValue<Row> kv = lastCachedRows.next();
+	private KeyValue<T> translateRow(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		Object key = kv.getKey();
 		
