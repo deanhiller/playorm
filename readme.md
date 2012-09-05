@@ -36,15 +36,16 @@ We believe TDD to be very important and believe in more component testing than F
 
 ### Virtual Databases and Index Partitioning
 
-nosqlORM wants to be the first ORM layer with full indexing AND joins in a noSQL environment.  What has not caught on yet in the nosql world is that you CAN do joins with select statements but need to do so in virtual databases(which I will explain below).  The problem with scalability on old RDBMS systems is really the indexing is not broken up.  If you want to scale, you want to be able to grow a table to 1 trillion rows BUT you can't have one index for that table.  You can however have 1 billion indexes and scale just fine.  Within this indexing framework, you can do joins.  Or within these virtual datbase views you can do joins(and sometimes across the virtual views as well)
+nosqlORM wants to be the first ORM layer with full indexing AND joins in a noSQL environment.  What has not caught on yet in the nosql world is that you CAN do joins with select statements but need to do so in virtual databases(which I will explain below).  The problem with scalability on old RDBMS systems is really the indexing is not broken up.  If you want to scale, you want to be able to grow a table to 1 trillion rows BUT you can't have one index for that table.  You can however have 1 billion indexes and scale just fine.  Within this indexing framework, you can do joins.  Or within these virtual database views you can do joins(and sometimes across the virtual views as well)
 
-Basically, it is sort of like having virtual databases.  We explored this concept and succeeded in two spaces already which is why we are developing this solution.  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your RDBMS and those activities also have securities.  In this model there are two views of the virtual datbase.
+We explored this concept and succeeded in two spaces already which is why we are developing this solution(this solution is live in production with our first client as well).  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your RDBMS.
 
-The first one is that we had 1 billion rows in the activity table and 1 million accounts so we created one million indexes.  Let's say we also have a small 50 row table of securityType.  We can get the index we want to query like so
+Now, let's say we had 1 billion rows in the activity table and 100k accounts and we decide to partition our activity table by the account.  This means we end up with 100k partitions(This means on average 10000 activities in each partition ).  With that design in mind, let's code....
 
 ```
 //First, on the Activity.java, you will have a NoSqlQuery like so
-@NoSqlQuery(name="queryByValue", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
+@NoSqlQuery(name="queryByValue", query="PARTITIONS a(:partId) SELECT a FROM TABLE as a "+
+                        "WHERE a.price > :value and a.numShares < 10")
 
 //Next, on one of the fields of Activity.java, you will have a field you use to partition by like so
 
@@ -52,19 +53,21 @@ The first one is that we had 1 billion rows in the activity table and 1 million 
    @ManyToOne
    private Account account; //NOTE: This can be primitive or whatever you like
 
-//After, that, just save your entities, remove your entites, we do the heavy lifting
+//After, that, just save your entities, remove your entites, we do the 
+//heavy lifting of adding and removing from indexes(when you update, we remove 
+//the old value from the index AND save the new value to the index
 
    entityMgr.put(activity1); //automatically saved to it's partition
    entityMgr.put(activity2); //automatically saved to it's partition
 
 //NEXT, we want to query so we setParameter and give it the partition id
-Account partitionId = someAccount;
-Query query = entityManager.createNamedQuery("queryByValue");
-query.setParameter("value", value);
-query.setParameter("partId", partitionId);
-query.setMaxResults(100);
-query.setPageNumber(0);
-List<Activity> activities = query.getResultList();
+   Account partitionId = someAccount;
+   Query query = entityManager.createNamedQuery("queryByValue");
+   query.setParameter("value", value);
+   query.setParameter("partId", partitionId);
+   query.setMaxResults(100);
+   query.setPageNumber(0);
+   List<Activity> activities = query.getResultList();
 ```
 Notice that this scales just fine BUT leaves us in the old school convenience of RDBMS solutions making RDBMS solutions MUCH MUCH easier to scale to infinite nodes.  That is one virtual view of the data.  You can partition by more than one field but we leave that for later tutorials.
 
@@ -74,15 +77,20 @@ So what about the denormalization hype in noSQL?  Well, be careful.  I was on on
 
 As of 9/1/12 we only support INNER JOIN and will add LEFT OUTER soon.
 
-Taking our previous example of the million indexes we have by acount or the huge amount of indexes we have by security, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those million indexes by account or and of the security indexes like so
+Taking our previous example of the 100k partitions, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those 100k partitions
 
 ```
-PartitionInfo info = new PartitionInfo(ActivityTypeInfo.class); //This table is so small, it only has one partition
-//NOTE: mgr.getPartition takes the primary index first!!! and then a varargs of the indexes we need to join with after that
-Partition partition = mgr.getPartition(Activity.class, "/activity/bysecurity/"+security.getId(), info);
-Query query = partition.getNamedQuery("findWithJoinQuery");
-query.setParameter("activityValue", 5); //This is a value in our Activity table
-query.setParameter("vendor", "companyX"); //This is a value in our ActivityTypeInfo table
+//First, our NoSqlQuery again that would be on our Activity.java class
+
+@NoSqlQuery(name="findWithJoinQuery", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t "+
+"INNER JOIN t.activityTypeInfo as i WHERE i.type = :type and t.numShares < :shares"),
+
+//NOW, we run the simple query
+Query query = entityMgr.getNamedQuery("findWithJoinQuery");
+query.setParameter("type", 5); 
+query.setParameter("shares", 28); 
+query.setParameter("partId", null);  //Here we are saying to use the 'null' partition
+                                     //Where any activities with no account will end up
 List<Activity> activity = query.getResultList();
 ```
 
