@@ -27,6 +27,7 @@
 * Left outer Join support coming soon
 * More work around solid ad-hoc tool 
 * Map/Reduce tasks for re-indexing, or creating new indexes from existing data
+* MANY MANY optimizations can be made to increase performance like a nested lookahead loop join and other tricks that only work in noSQL
 
 
 ### Flush
