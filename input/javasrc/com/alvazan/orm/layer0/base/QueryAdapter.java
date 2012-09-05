@@ -28,6 +28,7 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.layer3.typed.IterableIndex;
+import com.alvazan.orm.layer3.typed.IterableProxy;
 
 public class QueryAdapter<T> implements Query<T> {
 
@@ -162,6 +163,13 @@ public class QueryAdapter<T> implements Query<T> {
 	public void setBatchSize(int batchSize) {
 		this.batchSize = batchSize;
 		this.indexQuery.setBatchSize(batchSize);
+	}
+
+	@Override
+	public Iterable<KeyValue<T>> getResultsIter() {
+		Cursor<KeyValue<T>> cursor = getResults();
+		Iterable<KeyValue<T>> proxy = new IterableProxy<T>(cursor);
+		return proxy;
 	}
 
 }

@@ -24,7 +24,6 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
-import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.test.db.Account;
@@ -180,11 +179,10 @@ public class TestIndexes {
 		
 		mgr.flush();
 		
-		Cursor<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
+		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
 		
 		KeyValue<PartAccount> kVal = null;
-		while(all.next()) {
-			KeyValue<PartAccount> k = all.getCurrent();
+		for(KeyValue<PartAccount> k : all) {
 			if(k.getKey().equals(key))
 				kVal = k;
 		}

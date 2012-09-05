@@ -2,6 +2,7 @@ package com.alvazan.test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.After;
@@ -92,9 +93,9 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Cursor<KeyValue<TypedRow>> rows = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", mgr);
-		rows.next();
-		KeyValue<TypedRow> keyValue = rows.getCurrent();
+		Iterable<KeyValue<TypedRow>> rowsIter = s.runQueryIter("select s FROM TimeSeriesData as s where s.key = 25", mgr);
+		Iterator<KeyValue<TypedRow>> rows = rowsIter.iterator();
+		KeyValue<TypedRow> keyValue = rows.next();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());

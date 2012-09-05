@@ -9,12 +9,10 @@ import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 public class CursorSimpleTranslator extends AbstractCursor<IndexColumnInfo> {
 
 	private AbstractCursor<IndexColumn> cursor;
-	private DboColumnMeta info;
 	private ViewInfo viewInfo;
 
 	public CursorSimpleTranslator(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
 		this.viewInfo = viewInfo;
-		this.info = info;
 		this.cursor = scan;
 	}
 

@@ -21,6 +21,12 @@ public interface Query<T> {
 	 */
 	public Cursor<KeyValue<T>> getResults();
 	
+	/**
+	 * Wraps the cursor in a nice hasNext/next Iterable
+	 * @return
+	 */
+	public Iterable<KeyValue<T>> getResultsIter();
+	
 	public T getSingleObject();
 	
 	/**
