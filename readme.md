@@ -43,37 +43,37 @@ Basically, it is sort of like having virtual databases.  We explored this concep
 The first one is that we had 1 billion rows in the activity table and 1 million accounts so we created one million indexes.  Let's say we also have a small 50 row table of securityType.  We can get the index we want to query like so
 
 ```
-//NOTE "account" refers to the field that we partitioned by and account1 IS the partition we
-//are interested in so it will only give us trades that have account1 as their account field.
-Partition partition = mgr.createPartition(Activity.class, "account", account1);
-Query query = partition.getNamedQuery("queryByValue");
+//First, on the Activity.java, you will have a NoSqlQuery like so
+@NoSqlQuery(name="queryByValue", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
+
+//Next, on one of the fields of Activity.java, you will have a field you use to partition by like so
+
+   @NoSqlPartitionByThisField
+   @ManyToOne
+   private Account account; //NOTE: This can be primitive or whatever you like
+
+//After, that, just save your entities, remove your entites, we do the heavy lifting
+
+   entityMgr.put(activity1); //automatically saved to it's partition
+   entityMgr.put(activity2); //automatically saved to it's partition
+
+//NEXT, we want to query so we setParameter and give it the partition id
+Account partitionId = someAccount;
+Query query = entityManager.createNamedQuery("queryByValue");
 query.setParameter("value", value);
+query.setParameter("partId", partitionId);
 query.setMaxResults(100);
 query.setPageNumber(0);
 List<Activity> activities = query.getResultList();
 ```
-Notice that this scales just fine BUT leaves us in the old school convenience of RDBMS solutions making RDBMS solutions MUCH MUCH easier to scale to infinite nodes.  That is one virtual view of the data. Another virtual view of the data would be by security like so
-
-```
-//NOTE: here, we also had a view that was partitioned by security and are interested in the
-//security1 partition(ie. all Activities that have security1 in their security field
-Partition partition = mgr.getIndex(Activity.class, "security", security1);
-Query query = partition.createNamedQuery("queryByValue");
-query.setParameter("value", value);
-query.setMaxResults(100);
-query.setPageNumber(0);
-List<Activity> activities = query.getResultList();
-```
-
-This is another virtual view like looking into an RDBMS.
+Notice that this scales just fine BUT leaves us in the old school convenience of RDBMS solutions making RDBMS solutions MUCH MUCH easier to scale to infinite nodes.  That is one virtual view of the data.  You can partition by more than one field but we leave that for later tutorials.
 
 So what about the denormalization hype in noSQL?  Well, be careful.  I was on one project where one request was taking 80 seconds and by re-normalizing all their data and not repeating so much of it, I brought the query down to 200ms.  Behind the scenes the denormalization was causing 1 megabyte of data to be written on the request which normalization avoided.  Denormalization can be good but partitioning of your indexes and normalizing the data is yet another way to solve similar issues.  I do NOT encourage you to always normalize, just sometimes.  Do be careful of having one small table that can be a hotspot though.  Like anything, this is a tool and needs to be used correctly.  Like hibernate, it can be used wrong.
 
-## What Joins would look like
+### Now, Joins
 
-Currently working on joins 8/18/12
+As of 9/1/12 we only support INNER JOIN and will add LEFT OUTER soon.
 
-(We currently don't support joins but are in the process of adding them)
 Taking our previous example of the million indexes we have by acount or the huge amount of indexes we have by security, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those million indexes by account or and of the security indexes like so
 
 ```
