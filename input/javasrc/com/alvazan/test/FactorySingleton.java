@@ -9,13 +9,6 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.netflix.astyanax.AstyanaxContext;
-import com.netflix.astyanax.AstyanaxContext.Builder;
-import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
-import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
-import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
-import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
-import com.netflix.astyanax.model.ConsistencyLevel;
 
 public class FactorySingleton {
 
@@ -49,8 +42,7 @@ public class FactorySingleton {
 			//nothing to do
 			break;
 		case CASSANDRA:
-			Builder builder = buildBuilder(clusterName, seeds);
-			props.put(Bootstrap.CASSANDRA_BUILDER, builder);
+			Bootstrap.createAndAddBestCassandraConfiguration(props, clusterName, "PlayOrmKeyspace", seeds);
 			break;
 		default:
 			throw new UnsupportedOperationException("not supported yet, server type="+server);
@@ -59,29 +51,4 @@ public class FactorySingleton {
 		factory = Bootstrap.create(server, props, null, null);
 	}
 	
-	public static Builder buildBuilder(String clusterName, String seeds) {
-		Builder builder = new AstyanaxContext.Builder()
-	    .forCluster(clusterName)
-	    .forKeyspace("PlayKeyspace")
-	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
-	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
-	    )
-	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setMaxConnsPerHost(2)
-	        .setInitConnsPerHost(2)
-	        .setSeeds(seeds)
-	    )
-	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());		
-		
-		if(!"localhost:9160".equals(seeds)) {
-			//for a multi-node cluster, we want the test suite using quorum on writes and
-			//reads so we have no issues...
-			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
-			config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
-			config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
-			builder = builder.withAstyanaxConfiguration(config);
-		}
-		
-		return builder;
-	}
 }

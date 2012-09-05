@@ -74,9 +74,7 @@ public class PerformanceWriteTest {
 		//BEFORE Timer, let's get setup first
 		Map<String, Object> props = new HashMap<String, Object>();
 		props.put(Bootstrap.AUTO_CREATE_KEY, "create");
-		props.put(Bootstrap.SEEDS, host+":9160");
-		props.put(Bootstrap.KEYSPACE, "SDIKeyspace");
-		props.put(Bootstrap.CLUSTER_NAME, clusterName);
+		Bootstrap.createAndAddBestCassandraConfiguration(props, clusterName, "PlayOrmPerfTest", host);
 		NoSqlEntityManagerFactory factory = Bootstrap.create(DbTypeEnum.CASSANDRA, props, null, null);
 		DboTableMeta table = setupMetaData(numColumns, factory);
 		

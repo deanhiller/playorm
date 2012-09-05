@@ -13,6 +13,13 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import com.netflix.astyanax.AstyanaxContext;
+import com.netflix.astyanax.AstyanaxContext.Builder;
+import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
+import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
+import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
+import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
+import com.netflix.astyanax.model.ConsistencyLevel;
 
 public class BootstrapImpl extends Bootstrap {
 
@@ -39,5 +46,36 @@ public class BootstrapImpl extends Bootstrap {
 		
 		return impl;
 	}
+	@Override
+	protected void createBestCassandraConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2) {
+		Builder builder = new AstyanaxContext.Builder()
+	    .forCluster(clusterName)
+	    .forKeyspace(keyspace2)
+	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
+	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
+	    )
+	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
+	        .setMaxConnsPerHost(2)
+	        .setInitConnsPerHost(2)
+	        .setSeeds(seeds2)
+	    )
+	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
+		
+		
+		if(!"localhost:9160".equals(seeds2)) {
+			//for a multi-node cluster, we want the test suite using quorum on writes and
+			//reads so we have no issues...
+			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
+			config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			builder = builder.withAstyanaxConfiguration(config);
+		} else if(!seeds2.contains(",")) {
+			throw new IllegalArgumentException("You must specify a comma delimited list of seeds OR 'localhost:9160' as the seed");
+		}
+		
+		properties.put(Bootstrap.CASSANDRA_BUILDER, builder);
+	}
+
 
 }
