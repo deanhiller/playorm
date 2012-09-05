@@ -4,11 +4,11 @@
 
 ## PlayOrm Feature List
 
-* Scalabla JQL(SJQL) supported which is modified JQL that scales(SQL doesn't scale well)
-* Partitioning so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
+* [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
+* [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
 * Typical query support of <=, <, >, >= and = and no limitations here
 * Typical query support of AND and OR as well as parenthesis 
-* Inner Join support (Must keep your very very large tables partitioned so you get very fast access times here)
+* [Inner Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * Inheritance class heirarchy in one table is supported like hibernate
