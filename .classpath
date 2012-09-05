@@ -22,8 +22,6 @@
 	<classpathentry kind="lib" path="input/libinclude/logback-classic-1.0.1.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/logback-core-1.0.1-sources.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/logback-core-1.0.1.jar"/>
-	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0-javadoc.jar"/>
-	<classpathentry kind="lib" path="input/libinclude/lucene-core-3.6.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/antlr-3.4-complete-no-antlrv2.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/astyanax/astyanax-1.0.4.jar" sourcepath="/Users/dhiller2/AAROOT/area1/Netflix-astyanax-5c05d11/src/main/java"/>

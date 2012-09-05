@@ -164,4 +164,11 @@ public class QueryAdapter<T> implements Query<T> {
 		this.indexQuery.setBatchSize(batchSize);
 	}
 
+	@Override
+	public Iterable<KeyValue<T>> getResultsIter() {
+		Cursor<KeyValue<T>> cursor = getResults();
+		Iterable<KeyValue<T>> proxy = new IterableProxy<T>(cursor);
+		return proxy;
+	}
+
 }
