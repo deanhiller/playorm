@@ -130,6 +130,13 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		session.flush();
 	}
 
+	@Override
+	public Iterable<KeyValue<TypedRow>> runQueryIter(String query,
+			Object noSqlEntityMgr) {
+		Cursor<KeyValue<TypedRow>> cursor = runQuery(query, noSqlEntityMgr);
+		return new IterableProxy<TypedRow>(cursor);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr) {

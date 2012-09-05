@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer0.base;
+package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
