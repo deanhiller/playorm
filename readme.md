@@ -26,6 +26,8 @@
 * TONS of documentation is in the works due out 9/16/12
 * Left outer Join support coming soon
 * More work around solid ad-hoc tool 
+* Map/Reduce tasks for re-indexing, or creating new indexes from existing data
+
 
 ### Flush
 A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations to be done at the end of processing so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt noSql database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work(NOT a transaction).  If there is an exception before the flush, nothing gets written to the nosql store.
