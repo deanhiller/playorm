@@ -16,7 +16,7 @@
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
 * Includes it's own in-memory database for TDD in your unit tests!!!!!
-* [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
+* [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)t
 * logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
@@ -27,7 +27,7 @@
 * Left outer Join support coming soon
 * More work around solid ad-hoc tool 
 
-### Flush - 
+### Flush
 A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations for the end of the transation so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work(NOT a transation).  If there is an exception before the flush, nothing gets written to the nosql store.
 
 ### Note on Test Driven Development
