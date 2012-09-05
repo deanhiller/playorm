@@ -4,18 +4,18 @@
 
 ## PlayOrm Feature List
 
-* JQL+ supported which is modified JQL that scales to infinity
-* Partitioning so you can query a one trillion row table in just ms with JQL+(Java Query Language)
-* Typical query support of <=, <, >, >= and = 
-* Typical query support of AND and OR as well as parenthesis (join support not far off for partitioned tables - must be partitioned as need to keep size small for joins)
->>>>>>> ca1151de15e5870a50720684a07f91314dcb4cfc:readme.md
+* Scalabla JQL(SJQL) supported which is modified JQL that scales(SQL doesn't scale well)
+* Partitioning so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
+* Typical query support of <=, <, >, >= and = and no limitations here
+* Typical query support of AND and OR as well as parenthesis 
+* Inner Join support (Must keep your very very large tables partitioned so you get very fast access times here)
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
-* Inhertance class heirarchy in one table is supported like hibernate
+* Inheritance class heirarchy in one table is supported like hibernate
 * flush() If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
-* Support for in-memory database for TDD in your unit tests!!!!!
+* Includes it's own in-memory database for TDD in your unit tests!!!!!
 * All primitive types converterd to stored as smallest possibly unit so long is stored with only one byte IF that long is between -128 and 127 so using playorm, you automatically store everything as the smallest possibly units and all your indexes and queries still work
 * logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
@@ -24,8 +24,8 @@
 ### Features soon to be added
 * WAY better support for @Embedded and putting Map<String, Type> in your entities for wide row support
 * TONS of documentation is in the works due out 9/16/12
-* Joins
-* More query sytax for ad-hoc tool 
+* Left outer Join support coming soon
+* More work around solid ad-hoc tool 
 
 ### Flush - 
 A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations for the end of the transation so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work(NOT a transation).  If there is an exception before the flush, nothing gets written to the nosql store.

@@ -15,7 +15,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS p('account', :partId) select p FROM TABLE as p INNER JOIN p.security as s where s.securityType = :type and p.numShares = :shares"),
+	@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
 	@NoSqlQuery(name="findSecurity", query="PARTITIONS e('account', :acc) select *  FROM TABLE as e WHERE e.securityName = :security"),
 	@NoSqlQuery(name="findAccount", query="PARTITIONS e('securityName', :secName) select *  FROM TABLE as e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="PARTITIONS e('account', :acc) select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
