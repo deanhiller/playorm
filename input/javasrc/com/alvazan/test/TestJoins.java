@@ -39,7 +39,7 @@ public class TestJoins {
 	}
 	
 	@Test
-	public void testJoin() {
+	public void testInnerJoin() {
 		putEntities();
 		
 		long start = System.currentTimeMillis();
@@ -47,6 +47,14 @@ public class TestJoins {
 		long total = System.currentTimeMillis()-start;
 		log.info("TOTAL time="+total+" ms");
 		Assert.assertEquals(2, trades.size());
+	}
+	
+	@Test
+	public void testLeftOuterJoin() {
+		putEntities();
+		
+		List<AAPartitionedTrade> trades = AAPartitionedTrade.findLeftOuter(mgr, 5, "one", null);
+		Assert.assertEquals(3, trades.size());
 	}
 	
 	private void putEntities() {

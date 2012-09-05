@@ -121,7 +121,8 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		JoinMeta joinMeta2 = right.getJoinMeta();
 		ViewInfo rightView = joinMeta2.getPrimaryJoinInfo().getPrimaryTable();
 		
-		if(root.getJoinMeta().getJoinType() == JoinType.INNER) {
+		JoinType joinType = root.getJoinMeta().getJoinType();
+		if(joinType == JoinType.INNER || joinType == JoinType.LEFT_OUTER) {
 			//We need to proxy the right results to translate to the same primary key as the
 			//left results and our And and Or Cursor can then take care of the rest
 			JoinInfo joinInfo = root.getJoinMeta().getPrimaryJoinInfo();
@@ -130,11 +131,13 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			ScanInfo scanInfo = createScanInfo(newView, col);
 			//FROM an ORM perspective, we join to smaller tables in general as we don't want to blow out memory so do the
 			//join first(ie. we process left sides first in and and or cursors)
-			leftResults = new CursorForInnerJoin(newView, leftView, leftResults, scanInfo, session, batchSize);
+			CursorForJoin temp = new CursorForJoin(newView, leftView, leftResults, joinType);
+			temp.setScanInfo(scanInfo);
+			temp.setSession(session);
+			temp.setBatchSize(batchSize);
+			leftResults = temp;
 			leftView = newView;
 		}
-		
-
 		
 		if(root.getType() == NoSqlLexer.AND) {
 			return new CursorForAnd(leftView, leftResults, rightView, rightResults);
