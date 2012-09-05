@@ -36,11 +36,9 @@ We believe TDD to be very important and believe in more component testing than F
 
 ### Virtual Databases and Index Partitioning
 
-nosqlORM wants to be the first ORM layer with full indexing AND joins in a noSQL environment.  What has not caught on yet in the nosql world is that you CAN do joins with select statements but need to do so in virtual databases(which I will explain below).  The problem with scalability on old RDBMS systems is really the indexing is not broken up.  If you want to scale, you want to be able to grow a table to 1 trillion rows BUT you can't have one index for that table.  You can however have 1 billion indexes and scale just fine.  Within this indexing framework, you can do joins.  Or within these virtual database views you can do joins(and sometimes across the virtual views as well)
+If a DBMS could be on multiple nodes, what is the one major issue with scalability for the DBMS?  Think about it.  As a table reaches 1 trillion rows, what is the issue?  The issue is your index size has grown to a point that inserts and removes and queries take too long.  We want SMALLER indices.  This is where partitioning comes in.  Most OLTP shops have many customers and want to keep adding customers.  That customer id is a great way to partition your data and still be able to do joins in what we call Scalable SQL or Scalable JQL
 
-We explored this concept and succeeded in two spaces already which is why we are developing this solution(this solution is live in production with our first client as well).  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your RDBMS.
-
-Now, let's say we had 1 billion rows in the activity table and 100k accounts and we decide to partition our activity table by the account.  This means we end up with 100k partitions(This means on average 10000 activities in each partition ).  With that design in mind, let's code....
+We explored this concept and succeeded in two spaces already which is why we are developing this solution(this solution is live in production with our first client as well).  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your RDBMS.  Now, let's say we had 1 billion rows in the activity table and 100k accounts and we decide to partition our activity table by the account.  This means we end up with 100k partitions(This means on average 10000 activities in each partition ).  With that design in mind, let's code....
 
 ```
 //First, on the Activity.java, you will have a NoSqlQuery like so
