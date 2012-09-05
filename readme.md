@@ -12,11 +12,11 @@
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * Inheritance class heirarchy in one table is supported like hibernate
-* flush() If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
+* [flush() support](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage) - If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
 * Includes it's own in-memory database for TDD in your unit tests!!!!!
-* All primitive types converterd to stored as smallest possibly unit so long is stored with only one byte IF that long is between -128 and 127 so using playorm, you automatically store everything as the smallest possibly units and all your indexes and queries still work
+* [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
 * logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
