@@ -119,7 +119,7 @@ public class ScannerSql {
 		for(CommonTree child : children) {
 			int type = child.getType();
 			if(type == NoSqlLexer.LEFT_OUTER_JOIN) {
-				throw new UnsupportedOperationException("do not yet support left out join, please let me know and I can implement quickly");
+				compileJoin(child, wiring, facade, JoinType.LEFT_OUTER);
 			} else if(type == NoSqlLexer.INNER_JOIN) {
 				compileJoin(child, wiring, facade, JoinType.INNER);
 			} else

@@ -111,6 +111,8 @@ public class ExpressionNode implements ParsedNode {
 		if(joinMeta != null) {
 			if(joinMeta.getJoinType() == JoinType.INNER)
 				return "(innerjoin)";
+			else if(joinMeta.getJoinType() == JoinType.LEFT_OUTER)
+				return "(leftjoin)";
 		}
 		return "";
 	}

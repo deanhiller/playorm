@@ -16,6 +16,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 @NoSqlEntity
 @NoSqlQueries({
 	@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
+	@NoSqlQuery(name="findLeftOuter", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t LEFT JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
 	@NoSqlQuery(name="findSecurity", query="PARTITIONS e('account', :acc) select *  FROM TABLE as e WHERE e.securityName = :security"),
 	@NoSqlQuery(name="findAccount", query="PARTITIONS e('securityName', :secName) select *  FROM TABLE as e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="PARTITIONS e('account', :acc) select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
@@ -101,6 +102,14 @@ public class AAPartitionedTrade {
 		return query.getResultList(0, null);
 	}
 
+	public static List<AAPartitionedTrade> findLeftOuter(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
+		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findLeftOuter");
+		query.setParameter("shares", shares);
+		query.setParameter("type", type);
+		query.setParameter("partId", partitionId);
+		return query.getResultList(0, null);
+	}
+	
 	public static List<AAPartitionedTrade> findByUnique(NoSqlEntityManager mgr,
 			String uniqueColumn2, PartAccount acc) {
 		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findByUnique");

@@ -9,6 +9,8 @@
 * Typical query support of <=, <, >, >= and = and no limitations here
 * Typical query support of AND and OR as well as parenthesis 
 * Inner Join support (Must keep your very very large tables partitioned so you get very fast access times here)
+* Left Outer Join support
+* Return Database cursor on query
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * Inheritance class heirarchy in one table is supported like hibernate

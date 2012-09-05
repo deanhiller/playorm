@@ -8,6 +8,6 @@ public enum JoinType {
 	 * such that we don't care as the primary table is put in the primary so it could be left or right join
 	 * but we get to treat them the same.
 	 */
-	SIDE_OUTER, OUTER, INNER;
+	LEFT_OUTER, OUTER, INNER;
 	
 }
