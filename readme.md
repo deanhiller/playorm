@@ -12,7 +12,7 @@
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * Inheritance class heirarchy in one table is supported like hibernate
-* [flush() support](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage) - If any failures in your thread happen, nothing is written to cassandra as it all is written on flush
+* [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
 * Includes it's own in-memory database for TDD in your unit tests!!!!!
@@ -28,7 +28,7 @@
 * More work around solid ad-hoc tool 
 
 ### Flush
-A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations for the end of the transation so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work(NOT a transation).  If there is an exception before the flush, nothing gets written to the nosql store.
+A major problem with people using Hector and Astyanax is they do not queue up all their writes/mutations to be done at the end of processing so if something fails in the middle, ONLY HALF of the data is written and you end up with a corrupt noSql database.  The flush method on PlayOrm is what pushes all your persists down in one shot so it sort of sends it as a unit of work(NOT a transaction).  If there is an exception before the flush, nothing gets written to the nosql store.
 
 ### Note on Test Driven Development
 
