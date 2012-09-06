@@ -39,7 +39,7 @@ public class QueryAdapter<T> implements Query<T> {
 	private SpiMetaQuery meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
-	private Integer batchSize;
+	private Integer batchSize = 500;
 	private MetaClass<T> mainMetaClass;
 	private ViewInfo mainView;
 

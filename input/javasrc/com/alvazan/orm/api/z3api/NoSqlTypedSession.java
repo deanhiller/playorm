@@ -44,8 +44,8 @@ public interface NoSqlTypedSession {
 	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> rowKeys);
 	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
 	
-	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr);
-	public Iterable<KeyValue<TypedRow>> runQueryIter(String query, Object noSqlEntityMgr);
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object noSqlEntityMgr, int batchSize);
+	public Iterable<KeyValue<TypedRow>> runQueryIter(String query, Object noSqlEntityMgr, int batchSize);
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr);
 	
 	public void flush();

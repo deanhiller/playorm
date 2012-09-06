@@ -93,7 +93,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Iterable<KeyValue<TypedRow>> rowsIter = s.runQueryIter("select s FROM TimeSeriesData as s where s.key = 25", mgr);
+		Iterable<KeyValue<TypedRow>> rowsIter = s.runQueryIter("select s FROM TimeSeriesData as s where s.key = 25", mgr, 500);
 		Iterator<KeyValue<TypedRow>> rows = rowsIter.iterator();
 		KeyValue<TypedRow> keyValue = rows.next();
 		TypedRow theRow = keyValue.getValue();
@@ -101,7 +101,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
-		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr);
+		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr, 500);
 		rows2.next();
 		KeyValue<TypedRow> keyValue2 = rows2.getCurrent();
 		TypedRow theRow2 = keyValue2.getValue();
