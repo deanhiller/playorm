@@ -12,6 +12,7 @@ public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 	private Iterator<byte[]> keys;
 	public CursorReturnsEmptyRows(Iterable<byte[]> keys) {
 		this.keysIterable = keys;
+		beforeFirst();
 	}
 
 	@Override
