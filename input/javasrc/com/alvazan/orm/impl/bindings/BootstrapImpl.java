@@ -64,16 +64,15 @@ public class BootstrapImpl extends Bootstrap {
 		
 		
 		if(!"localhost:9160".equals(seeds2)) {
+			if(!seeds2.contains(","))
+				throw new IllegalArgumentException("You must specify a comma delimited list of seeds OR 'localhost:9160' as the seed");
 			//for a multi-node cluster, we want the test suite using quorum on writes and
 			//reads so we have no issues...
 			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
 			config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 			config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
 			builder = builder.withAstyanaxConfiguration(config);
-		} else if(!seeds2.contains(",")) {
-			throw new IllegalArgumentException("You must specify a comma delimited list of seeds OR 'localhost:9160' as the seed");
-		}
-		
+		}		
 		properties.put(Bootstrap.CASSANDRA_BUILDER, builder);
 	}
 
