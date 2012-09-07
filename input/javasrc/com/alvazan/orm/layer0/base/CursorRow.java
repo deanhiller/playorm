@@ -20,6 +20,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	private Iterable<byte[]> noSqlKeys;
 	private AbstractIterator<byte[]> keysIterator;
 	private AbstractCursor<KeyValue<Row>> lastCachedRows;
+	private int numberOfRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
 		this.meta = meta;
@@ -53,6 +54,10 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 			Holder<KeyValue<Row>> holder = lastCachedRows.nextImpl();
 			if(holder != null)
 				return translateRow(holder.getValue());
+			else if(batchSize == null) //If batchSize was null, we fetched them all already
+				return null;
+			else if(numberOfRows < batchSize) //If we did not read in a full batch last time, we are done
+				return null;
 			//we need to fetch more
 		}
 		
@@ -66,6 +71,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		}
 		boolean skipCache = query != null; //if someone is querying into, we need to skip the cache!!!
 		lastCachedRows = session.findAll(cf, proxyCounting, skipCache);
+		numberOfRows = 0;
 		Holder<KeyValue<Row>> nextImpl = lastCachedRows.nextImpl();
 		if(nextImpl == null)
 			return null;
@@ -73,6 +79,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	}
 
 	private KeyValue<T> translateRow(KeyValue<Row> kv) {
+		numberOfRows++;
 		Row row = kv.getValue();
 		Object key = kv.getKey();
 		

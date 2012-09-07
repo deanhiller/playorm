@@ -30,5 +30,13 @@ public class IndexColumnInfo {
 			putIndexNode(entry.getKey(), entry.getValue());
 		}
 	}
+
+	public IndexColumnInfo copy() {
+		IndexColumnInfo info = new IndexColumnInfo();
+		for (Entry<ViewInfo, IndexColumn> entry : colNameToValue.entrySet()) {
+			info.colNameToValue.put(entry.getKey(), entry.getValue());
+		}
+		return info;
+	}
 	
 }
