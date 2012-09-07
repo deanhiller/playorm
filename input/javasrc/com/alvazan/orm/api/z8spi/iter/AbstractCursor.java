@@ -1,7 +1,7 @@
 package com.alvazan.orm.api.z8spi.iter;
 
 
-public abstract class AbstractCursor<T> implements Cursor<T>{
+public abstract class AbstractCursor<T> implements DirectCursor<T>,Cursor<T> {
 
 	private Holder<T> currentValue;
 

@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
@@ -145,7 +146,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
 		spiQueryAdapter.setBatchSize(batchSize);
-		AbstractCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		ViewInfo mainView = metaQuery.getMainViewMeta();
 		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
 

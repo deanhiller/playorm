@@ -3,10 +3,12 @@ package com.alvazan.orm.layer5.query;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
-public class CursorSimpleTranslator extends AbstractCursor<IndexColumnInfo> {
+public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 
 	private AbstractCursor<IndexColumn> cursor;
 	private ViewInfo viewInfo;

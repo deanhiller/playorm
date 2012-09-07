@@ -2,18 +2,19 @@ package com.alvazan.orm.layer5.query;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
-public class CursorForAnd extends AbstractCursor<IndexColumnInfo> {
+public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 
-	private AbstractCursor<IndexColumnInfo> leftResults;
-	private AbstractCursor<IndexColumnInfo> rightResults;
+	private DirectCursor<IndexColumnInfo> leftResults;
+	private DirectCursor<IndexColumnInfo> rightResults;
 	private ViewInfo leftView;
 	private ViewInfo rightView;
 	
-	public CursorForAnd(ViewInfo leftView2, AbstractCursor<IndexColumnInfo> leftResults,
-			ViewInfo rightView2, AbstractCursor<IndexColumnInfo> rightResults) {
+	public CursorForAnd(ViewInfo leftView2, DirectCursor<IndexColumnInfo> leftResults,
+			ViewInfo rightView2, DirectCursor<IndexColumnInfo> rightResults) {
 		this.leftView = leftView2;
 		this.rightView = rightView2;
 		this.leftResults = leftResults;
