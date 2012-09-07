@@ -16,6 +16,7 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 	private ViewInfo leftView;
 	private ViewInfo rightView;
 	private Map<ByteArray, IndexColumnInfo> cachedMap;
+	private boolean ranFullInnerLoopTo500Once = false;
 	
 	public CursorForAnd(ViewInfo leftView2, DirectCursor<IndexColumnInfo> leftResults,
 			ViewInfo rightView2, DirectCursor<IndexColumnInfo> rightResults) {
@@ -37,6 +38,11 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 				Holder<IndexColumnInfo> result = quickHashLookup(next);
 				if(result != null)
 					return result;
+			} else if(!ranFullInnerLoopTo500Once) {
+				rightResults.beforeFirst();
+				Holder<IndexColumnInfo> result = runFullInnerLoopOnce(next);
+				if(result != null)
+					return result;				
 			} else {
 				//Need to change to lookahead joining here as well as switch join types on the fly
 				//This stinks as we have to re-read from the database every 1000 rows!!!! We should find out if
@@ -50,6 +56,29 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 		return null;
 	}
 
+	private Holder<IndexColumnInfo> runFullInnerLoopOnce(IndexColumnInfo next) {
+		Map<ByteArray, IndexColumnInfo> pkToRightSide = new HashMap<ByteArray, IndexColumnInfo>();
+		Holder<IndexColumnInfo> matchedResult = null;
+		while(true) {
+			Holder<IndexColumnInfo> nextFromCursor = rightResults.nextImpl();
+			if(nextFromCursor == null)
+				break;
+			IndexColumnInfo andedInfo = nextFromCursor.getValue();
+			ByteArray key1 = next.getPrimaryKey(leftView);
+			ByteArray key2 = andedInfo.getPrimaryKey(rightView);
+			if(pkToRightSide.size() < 500)
+				pkToRightSide.put(key2, andedInfo);
+			if(matchedResult == null && key1.equals(key2)) {
+				next.mergeResults(andedInfo);
+				matchedResult = new Holder<IndexColumnInfo>(next);
+			}
+		}
+		
+		if(pkToRightSide.size() < 500)
+			cachedMap = pkToRightSide;
+		return matchedResult;
+	}
+
 	private Holder<IndexColumnInfo> quickHashLookup(IndexColumnInfo next) {
 		ByteArray key1 = next.getPrimaryKey(leftView);
 		IndexColumnInfo andedInfo = cachedMap.get(key1);
@@ -60,7 +89,6 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 	}
 
 	private Holder<IndexColumnInfo> runInnerLoop(IndexColumnInfo next) {
-		Map<ByteArray, IndexColumnInfo> pkToRightSide = new HashMap<ByteArray, IndexColumnInfo>();
 		while(true) {
 			Holder<IndexColumnInfo> nextFromCursor = rightResults.nextImpl();
 			if(nextFromCursor == null)
@@ -68,16 +96,12 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 			IndexColumnInfo andedInfo = nextFromCursor.getValue();
 			ByteArray key1 = next.getPrimaryKey(leftView);
 			ByteArray key2 = andedInfo.getPrimaryKey(rightView);
-			if(pkToRightSide.size() < 500)
-				pkToRightSide.put(key2, andedInfo);
 			if(key1.equals(key2)) {
 				next.mergeResults(andedInfo);
 				return new Holder<IndexColumnInfo>(next);
 			}
 		}
 		
-		if(pkToRightSide.size() < 500)
-			cachedMap = pkToRightSide;
 		return null;
 	}
 
