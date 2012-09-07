@@ -316,7 +316,12 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		List<byte[]> allKeys = new ArrayList<byte[]>();
 		List<String> realKeys = new ArrayList<String>();
+		//This is where the cursor is read from causing queries to hit the database
+		long start = System.currentTimeMillis();
 		addToLists(rKeys, meta, allKeys, realKeys);
+		long totalTime = System.currentTimeMillis() - start;
+		if(log.isInfoEnabled())
+			log.info("[rawlogger] Reading index information took="+totalTime+" ms");
 		
 		AbstractCursor<KeyValue<Row>> ret;
 		if(log.isInfoEnabled()) {
