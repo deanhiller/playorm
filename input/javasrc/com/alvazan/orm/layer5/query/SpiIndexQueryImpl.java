@@ -140,13 +140,17 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			leftView = newView;
 		}
 		
-		DirectCursor<IndexColumnInfo> cursor;
 		if(root.getType() == NoSqlLexer.AND) {
-			cursor = new CursorForAnd(leftView, leftResults, rightView, rightResults);
+			CursorForAnd cursor = new CursorForAnd(leftView, leftResults, rightView, rightResults);
+			//AND always returns LESS results(or same) than the left or right sides, 
+			//sooooo, we cache results if there is less than 500 results
+			return new CachingCursor<IndexColumnInfo>(cursor);
 		} else {
-			cursor = new CursorForOr(leftView, leftResults, rightView, rightResults);
+			//Since OR always returns MORE results(or the same) as the left or right views
+			//There is no need to use a caching cursor as the people below us have a caching
+			//cursor AND there would be no performance benefit
+			return new CursorForOr(leftView, leftResults, rightView, rightResults);
 		}
-		return new CachingCursor<IndexColumnInfo>(cursor);
 	}
 	
 	private DirectCursor<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
