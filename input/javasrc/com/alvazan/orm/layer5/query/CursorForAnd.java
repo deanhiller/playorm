@@ -72,6 +72,11 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 				next.mergeResults(andedInfo);
 				matchedResult = new Holder<IndexColumnInfo>(next);
 			}
+			
+			if(matchedResult != null && pkToRightSide.size()>=500) {
+				//we have exceeded cache size so we can't switch to a Hash join :(
+				return matchedResult;
+			}
 		}
 		
 		if(pkToRightSide.size() < 500)
