@@ -4,6 +4,8 @@
 
 ## PlayOrm Feature List
 
+* Due to many requests, we will be adding a server with a REST/json api to issue S-SQL commands from any language with the ability to hold a cursor in the session as well when necessary
+
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
