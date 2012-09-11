@@ -33,10 +33,12 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 			return null;
 		Future<OperationResult<ColumnList<byte[]>>> future = theOneBatch.next();
 		
-		batchListener.beforeFetchingNextBatch();
+		if(batchListener != null)
+			batchListener.beforeFetchingNextBatch();
 		OperationResult<ColumnList<byte[]>> results = get(future);
 		ColumnList<byte[]> columnList = results.getResult();
-		batchListener.afterFetchingNextBatch(columnList.size());
+		if(batchListener != null)
+			batchListener.afterFetchingNextBatch(columnList.size());
 		
 		com.netflix.astyanax.model.Column<byte[]> col = columnList.iterator().next();
 		IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);

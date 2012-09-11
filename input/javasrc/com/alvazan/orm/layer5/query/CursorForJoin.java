@@ -10,16 +10,17 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.JoinType;
 
 public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 
-	private AbstractCursor<IndexColumnInfo> rightResults;
+	private DirectCursor<IndexColumnInfo> rightResults;
 	private ScanInfo scanInfo;
 	private NoSqlSession session;
 	private Integer batchSize;
-	private AbstractCursor<IndexColumn> cachedFromNewView;
+	private DirectCursor<IndexColumn> cachedFromNewView;
 	private ViewInfo newView;
 	private ViewInfo rightView;
 	private Iterator<IndexColumnInfo> cachedFromRightResults;
@@ -27,7 +28,7 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 	private JoinType joinType;
 	private boolean alreadyRan;
 
-	public CursorForJoin(ViewInfo view, ViewInfo rightView, AbstractCursor<IndexColumnInfo> rightResults,
+	public CursorForJoin(ViewInfo view, ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults,
 			JoinType joinType) {
 		this.newView = view;
 		this.rightView = rightView;

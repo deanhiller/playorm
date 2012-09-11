@@ -4,17 +4,17 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IterableIndex implements Iterable<byte[]> {
 
-	private AbstractCursor<IndexColumnInfo> cursor;
+	private DirectCursor<IndexColumnInfo> cursor;
 	private ViewInfo view;
 	
-	public IterableIndex(ViewInfo view, AbstractCursor<IndexColumnInfo> indice) {
+	public IterableIndex(ViewInfo view, DirectCursor<IndexColumnInfo> indice) {
 		this.cursor = indice;
 		this.view = view;
 	}
@@ -27,12 +27,12 @@ public class IterableIndex implements Iterable<byte[]> {
 	
 	private static class IndexIterator extends AbstractIterator<byte[]> {
 
-		private AbstractCursor<IndexColumnInfo> cursor;
+		private DirectCursor<IndexColumnInfo> cursor;
 		private ViewInfo view;
 
-		public IndexIterator(ViewInfo view, AbstractCursor<IndexColumnInfo> cursor) {
+		public IndexIterator(ViewInfo view, DirectCursor<IndexColumnInfo> cursor2) {
 			this.view = view;
-			this.cursor = cursor;
+			this.cursor = cursor2;
 		}
 
 		@Override

@@ -14,6 +14,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -56,7 +57,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 	
 	@Override
-	public AbstractCursor<IndexColumnInfo> getResultList() {
+	public DirectCursor<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getMainViewMeta();
@@ -90,7 +91,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		return scanInfo;
 	}
 
-	private AbstractCursor<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
+	private DirectCursor<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
 		int type = parent.getType();
 		switch (type) {
 		case NoSqlLexer.AND:
@@ -109,12 +110,12 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 	}
 
-	private AbstractCursor<IndexColumnInfo> processAndOr(ExpressionNode root) {
+	private DirectCursor<IndexColumnInfo> processAndOr(ExpressionNode root) {
 		ExpressionNode left = root.getChild(ChildSide.LEFT);
 		ExpressionNode right = root.getChild(ChildSide.RIGHT);
 		
-		AbstractCursor<IndexColumnInfo> leftResults = processExpressionTree(left);
-		AbstractCursor<IndexColumnInfo> rightResults = processExpressionTree(right);
+		DirectCursor<IndexColumnInfo> leftResults = processExpressionTree(left);
+		DirectCursor<IndexColumnInfo> rightResults = processExpressionTree(right);
 		
 		JoinMeta joinMeta = left.getJoinMeta();
 		ViewInfo leftView = joinMeta.getPrimaryJoinInfo().getPrimaryTable();
@@ -140,13 +141,19 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 		
 		if(root.getType() == NoSqlLexer.AND) {
-			return new CursorForAnd(leftView, leftResults, rightView, rightResults);
+			CursorForAnd cursor = new CursorForAnd(leftView, leftResults, rightView, rightResults);
+			//AND always returns LESS results(or same) than the left or right sides, 
+			//sooooo, we cache results if there is less than 500 results
+			return new CachingCursor<IndexColumnInfo>(cursor);
 		} else {
+			//Since OR always returns MORE results(or the same) as the left or right views
+			//There is no need to use a caching cursor as the people below us have a caching
+			//cursor AND there would be no performance benefit
 			return new CursorForOr(leftView, leftResults, rightView, rightResults);
 		}
 	}
 	
-	private AbstractCursor<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
+	private DirectCursor<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
 		StateAttribute attr;
 		if(root.getType() == NoSqlLexer.BETWEEN) {
 			ExpressionNode grandChild = root.getChild(ChildSide.LEFT).getChild(ChildSide.LEFT);
@@ -189,7 +196,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else 
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 
-		AbstractCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
+		DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
 		return processKeys;
 	}
 
@@ -213,8 +220,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new RuntimeException("bug, should never happen, but should be easy to fix this one. type="+node.getType());	
 	}
 
-	private AbstractCursor<IndexColumnInfo> processKeys(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
-		return new CursorSimpleTranslator(viewInfo, info, scan);
+	private DirectCursor<IndexColumnInfo> processKeys(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
+		DirectCursor<IndexColumnInfo> cursor = new CursorSimpleTranslator(viewInfo, info, scan);
+		return new CachingCursor<IndexColumnInfo>(cursor);
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {

@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
@@ -131,21 +132,21 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<TypedRow>> runQueryIter(String query,
-			Object noSqlEntityMgr) {
-		Cursor<KeyValue<TypedRow>> cursor = runQuery(query, noSqlEntityMgr);
+	public Iterable<KeyValue<TypedRow>> runQueryIter(String query, Object noSqlEntityMgr, int batchSize) {
+		Cursor<KeyValue<TypedRow>> cursor = runQuery(query, noSqlEntityMgr, batchSize);
 		return new IterableProxy<TypedRow>(cursor);
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr) {
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr, int batchSize) {
 		//TODO: switch Iterable to Cursor above
 		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
-		AbstractCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		spiQueryAdapter.setBatchSize(batchSize);
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		ViewInfo mainView = metaQuery.getMainViewMeta();
 		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
 
@@ -163,7 +164,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
-		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr);
+		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr, 500);
 		while(iter.next()) {
 			KeyValue<TypedRow> keyValue = iter.getCurrent();
 			rows.add(keyValue);

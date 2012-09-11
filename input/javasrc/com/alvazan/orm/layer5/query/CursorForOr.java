@@ -5,19 +5,20 @@ import java.util.Map;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
-public class CursorForOr extends AbstractCursor<IndexColumnInfo> {
+public class CursorForOr implements DirectCursor<IndexColumnInfo> {
 
-	private AbstractCursor<IndexColumnInfo> leftResults;
-	private AbstractCursor<IndexColumnInfo> rightResults;
+	private DirectCursor<IndexColumnInfo> leftResults;
+	private DirectCursor<IndexColumnInfo> rightResults;
 	private Map<ByteArray, IndexColumnInfo> pksToAlreadyFound = new HashMap<ByteArray, IndexColumnInfo>();
 	private ViewInfo leftView;
 	private ViewInfo rightView;
 	
-	public CursorForOr(ViewInfo leftView, AbstractCursor<IndexColumnInfo> leftResults2,
-			ViewInfo rightView, AbstractCursor<IndexColumnInfo> rightResults2) {
+	public CursorForOr(ViewInfo leftView, DirectCursor<IndexColumnInfo> leftResults2,
+			ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults2) {
 		this.leftView = leftView;
 		this.rightView = rightView;
 		this.leftResults = leftResults2;

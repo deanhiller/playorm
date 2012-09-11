@@ -96,7 +96,8 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		}
 		
 		count = 0;
-		batchListener.beforeFetchingNextBatch();
+		if(batchListener != null)
+			batchListener.beforeFetchingNextBatch();
 		OperationResult<ColumnList<byte[]>> opResult = query.execute();
 		ColumnList<byte[]> columns = opResult.getResult();
 
@@ -105,7 +106,8 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		else 
 			subIterator = columns.iterator();
 		
-		batchListener.afterFetchingNextBatch(columns.size());
+		if(batchListener != null)
+			batchListener.afterFetchingNextBatch(columns.size());
 		return subIterator;
 	}
 

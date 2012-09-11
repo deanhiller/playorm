@@ -21,6 +21,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -39,7 +40,7 @@ public class QueryAdapter<T> implements Query<T> {
 	private SpiMetaQuery meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
-	private Integer batchSize;
+	private Integer batchSize = 500;
 	private MetaClass<T> mainMetaClass;
 	private ViewInfo mainView;
 
@@ -102,7 +103,7 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
-		AbstractCursor<IndexColumnInfo> indice = indexQuery.getResultList();
+		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList();
 		
 		//BIG NOTE: Here, we could return all the keys from the join so we can eagerly fetch other entities as well
 		//instead of waiting for the user to loop through those entities AND if user accesses those entites, we could block
