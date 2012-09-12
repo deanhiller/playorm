@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
+import org.joda.time.LocalDateTime;
+
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
@@ -15,6 +17,7 @@ import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converters.BaseConverter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
 @NoSqlEntity
@@ -170,33 +173,7 @@ public abstract class DboColumnMeta {
 	}
 	
 	public static StorageTypeEnum getStorageType(Class fieldType) {
-		StorageTypeEnum type = null;
-		if(byte[].class.equals(fieldType))
-			type = StorageTypeEnum.BYTES;
-		else if(Long.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		else if(Integer.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		else if(Short.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		else if(Byte.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		else if(Double.class.equals(fieldType))
-			type = StorageTypeEnum.DECIMAL;
-		else if(Float.class.equals(fieldType))
-			type = StorageTypeEnum.DECIMAL;
-		else if(Boolean.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		else if(Character.class.equals(fieldType))
-			type = StorageTypeEnum.STRING;
-		else if(String.class.equals(fieldType))
-			type = StorageTypeEnum.STRING;
-		else if(BigDecimal.class.equals(fieldType))
-			type = StorageTypeEnum.DECIMAL;
-		else if(BigInteger.class.equals(fieldType))
-			type = StorageTypeEnum.INTEGER;
-		
-		return type;
+		return StandardConverters.getStorageType(fieldType);
 	}
 	
 	protected static Class classForName(String columnType) {

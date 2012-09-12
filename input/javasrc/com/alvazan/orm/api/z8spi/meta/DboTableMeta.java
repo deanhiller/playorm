@@ -18,6 +18,7 @@ import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
 @NoSqlEntity

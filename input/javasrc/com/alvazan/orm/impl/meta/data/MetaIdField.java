@@ -10,6 +10,7 @@ import com.alvazan.orm.api.base.spi.KeyGenerator;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -17,7 +18,6 @@ import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
-import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 //NOTE: T is the entity type NOT the type of the id!!!

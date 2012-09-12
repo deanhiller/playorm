@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.conv.Converters.BaseConverter;
 public class StandardConverters {
 
 	private static Map<Class, BaseConverter> stdConverters = new HashMap<Class, BaseConverter>();
+	private static Map<Class, StorageTypeEnum> storageTypes = new HashMap<Class, StorageTypeEnum>();
 	
 	static {
 		stdConverters.put(short.class, Converters.SHORT_CONVERTER);
@@ -40,6 +41,22 @@ public class StandardConverters {
 		stdConverters.put(LocalDateTime.class, Converters.LOCAL_DATE_TIME);
 		stdConverters.put(LocalDate.class, Converters.LOCAL_DATE);
 		stdConverters.put(LocalTime.class, Converters.LOCAL_TIME);
+		
+		storageTypes.put(byte[].class, StorageTypeEnum.BYTES);
+		storageTypes.put(Long.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Integer.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Short.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Byte.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Double.class, StorageTypeEnum.DECIMAL);
+		storageTypes.put(Float.class, StorageTypeEnum.DECIMAL);
+		storageTypes.put(Boolean.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Character.class, StorageTypeEnum.STRING);
+		storageTypes.put(String.class, StorageTypeEnum.STRING);
+		storageTypes.put(BigDecimal.class, StorageTypeEnum.DECIMAL);
+		storageTypes.put(BigInteger.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(LocalDateTime.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(LocalTime.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(LocalDate.class, StorageTypeEnum.INTEGER);
 	}
 
 	public static BaseConverter get(Class type) {
@@ -126,6 +143,10 @@ public class StandardConverters {
 		if(converter == null)
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
 		return (T) converter.convertFromNoSql(data);
+	}
+
+	public static StorageTypeEnum getStorageType(Class fieldType) {
+		return storageTypes.get(fieldType);
 	}
 
 }

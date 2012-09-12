@@ -5,6 +5,7 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
 @NoSqlDiscriminatorColumn(value="fk")

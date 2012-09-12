@@ -368,6 +368,8 @@ public class Converters {
 		
 		@Override
 		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
 			LocalDateTime dt = (LocalDateTime) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
@@ -375,6 +377,8 @@ public class Converters {
 
 		@Override
 		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalDateTime dt = new LocalDateTime(time);
 			return dt;
@@ -398,6 +402,8 @@ public class Converters {
 		
 		@Override
 		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
 			LocalDate dt = (LocalDate) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
@@ -405,6 +411,8 @@ public class Converters {
 
 		@Override
 		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalDate dt = new LocalDate(time);
 			return dt;
@@ -428,6 +436,8 @@ public class Converters {
 		
 		@Override
 		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
 			LocalTime dt = (LocalTime) value;
 			long milliseconds = dt.getMillisOfDay();
 			return StandardConverters.convertToBytes(milliseconds);
@@ -435,6 +445,8 @@ public class Converters {
 
 		@Override
 		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalTime dt = LocalTime.fromMillisOfDay(time);
 			return dt;
@@ -458,6 +470,8 @@ public class Converters {
 		
 		@Override
 		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
 			DateTime dt = (DateTime) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
@@ -465,6 +479,8 @@ public class Converters {
 
 		@Override
 		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			DateTime dt = new DateTime(time);
 			return dt;
