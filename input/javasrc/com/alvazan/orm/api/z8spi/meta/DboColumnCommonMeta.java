@@ -3,6 +3,7 @@ package com.alvazan.orm.api.z8spi.meta;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
 @NoSqlDiscriminatorColumn(value="generic")
@@ -24,6 +25,9 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 	
 	@Override
 	public String getIndexTableName() {
+		StorageTypeEnum type = getStorageType();
+		if(type == null)
+			throw new IllegalArgumentException(getClassType()+" is not supported at this time");
 		return getStorageType().getIndexTableName();
 	}
 

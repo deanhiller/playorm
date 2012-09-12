@@ -14,12 +14,12 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 
 public class ScannerSql {

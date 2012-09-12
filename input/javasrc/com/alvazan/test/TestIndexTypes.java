@@ -4,6 +4,7 @@ import java.util.List;
 
 import junit.framework.Assert;
 
+import org.joda.time.LocalDateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,6 +18,7 @@ public class TestIndexTypes {
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
+	private LocalDateTime time;
 
 	@BeforeClass
 	public static void setup() {
@@ -62,6 +64,16 @@ public class TestIndexTypes {
 	}
 
 	@Test
+	public void testBasicLocalTime() {
+		List<Activity> list = Activity.findByLocalDateTime(mgr, time);
+		Assert.assertEquals(1, list.size());
+		
+		LocalDateTime t = LocalDateTime.now();
+		List<Activity> zero = Activity.findByLocalDateTime(mgr, t);
+		Assert.assertEquals(0, zero.size());
+	}
+	
+	@Test
 	public void testBasicFloat() {
 		List<Activity> list = Activity.findByFloat(mgr, 5.65f);
 		Assert.assertEquals(1, list.size());
@@ -77,6 +89,8 @@ public class TestIndexTypes {
 		act.setUniqueColumn("notunique");
 		act.setNumTimes(5);
 		act.setIsCool(true);
+		time = LocalDateTime.now();
+		act.setDate(time);
 		mgr.put(act);
 		
 		//Everything is null for this activity so queries above should not find him...

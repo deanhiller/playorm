@@ -8,6 +8,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -15,7 +16,6 @@ import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
-import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 
 public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	

@@ -26,11 +26,11 @@ import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.alvazan.orm.api.z8spi.meta.StorageTypeEnum;
 
 public class InMemorySession implements NoSqlRawSession {
 

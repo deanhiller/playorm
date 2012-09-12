@@ -2,6 +2,8 @@ package com.alvazan.test.db;
 
 import java.util.List;
 
+import org.joda.time.LocalDateTime;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -29,7 +31,8 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE as e WHERE e.numTimes=:numTimes"),
 	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE as e WHERE e.myFloat=:myFloat"),
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
-	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e")
+	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
+	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date")
 	
 })
 public class Activity {
@@ -45,6 +48,9 @@ public class Activity {
 
 	@NoSqlIndexed
 	private String name;
+	
+	@NoSqlIndexed
+	private LocalDateTime date;
 	
 	@NoSqlIndexed
 	private long numTimes;
@@ -70,6 +76,14 @@ public class Activity {
 
 	public void setAccount(Account account) {
 		this.account = account;
+	}
+
+	public LocalDateTime getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDateTime date) {
+		this.date = date;
 	}
 
 	public String getName() {
@@ -215,4 +229,10 @@ public class Activity {
 		return query.getResultList(0, null);
 	}
 
+	public static List<Activity> findByLocalDateTime(NoSqlEntityManager mgr,
+			LocalDateTime time) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByLocalDateTime");
+		query.setParameter("date", time);
+		return query.getResultList(0, null);
+	}
 }

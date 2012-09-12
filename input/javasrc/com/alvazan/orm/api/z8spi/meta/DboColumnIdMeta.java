@@ -2,6 +2,7 @@ package com.alvazan.orm.api.z8spi.meta;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @NoSqlDiscriminatorColumn(value="id")

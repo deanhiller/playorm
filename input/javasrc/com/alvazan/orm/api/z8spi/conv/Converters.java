@@ -11,6 +11,12 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Hex;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 
 public class Converters {
@@ -26,6 +32,10 @@ public class Converters {
 	public static final ByteArrayConverter BYTE_ARRAY_CONVERTER = new ByteArrayConverter();
 	public static final BaseConverter BIGINTEGER_CONVERTER = new BigIntegerConverter();
 	public static final BaseConverter BIGDECIMAL_CONVERTER = new BigDecimalConverter();
+	public static final BaseConverter LOCAL_DATE_TIME = new LocalDateTimeConverter();
+	public static final BaseConverter DATE_TIME = new DateTimeConverter();
+	public static final BaseConverter LOCAL_DATE = new LocalDateConverter();
+	public static final BaseConverter LOCAL_TIME = new LocalTimeConverter();
 
 	private static byte[] intToBytes(int val) {
 		try {
@@ -350,6 +360,142 @@ public class Converters {
 		@Override
 		protected Object convertToType(String value) {
 			return Boolean.parseBoolean(value);
+		}
+	}
+	
+	public static class LocalDateTimeConverter extends BaseConverter {
+		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
+			LocalDateTime dt = (LocalDateTime) value;
+			long milliseconds = dt.toDate().getTime();
+			return StandardConverters.convertToBytes(milliseconds);
+		}
+
+		@Override
+		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
+			Long time = StandardConverters.convertFromBytes(Long.class, value);
+			LocalDateTime dt = new LocalDateTime(time);
+			return dt;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			LocalDateTime dt = fmt.parseLocalDateTime(value);
+			return dt;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			LocalDateTime dt = (LocalDateTime) value;
+			return fmt.print(dt);
+		}
+	}
+
+	public static class LocalDateConverter extends BaseConverter {
+		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
+			LocalDate dt = (LocalDate) value;
+			long milliseconds = dt.toDate().getTime();
+			return StandardConverters.convertToBytes(milliseconds);
+		}
+
+		@Override
+		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
+			Long time = StandardConverters.convertFromBytes(Long.class, value);
+			LocalDate dt = new LocalDate(time);
+			return dt;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			LocalDate dt = fmt.parseLocalDate(value);
+			return dt;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			LocalDate dt = (LocalDate) value;
+			return fmt.print(dt);
+		}
+	}
+	
+	public static class LocalTimeConverter extends BaseConverter {
+		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
+			LocalTime dt = (LocalTime) value;
+			long milliseconds = dt.getMillisOfDay();
+			return StandardConverters.convertToBytes(milliseconds);
+		}
+
+		@Override
+		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
+			Long time = StandardConverters.convertFromBytes(Long.class, value);
+			LocalTime dt = LocalTime.fromMillisOfDay(time);
+			return dt;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			LocalTime dt = fmt.parseLocalTime(value);
+			return dt;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			LocalTime dt = (LocalTime) value;
+			return fmt.print(dt);
+		}
+	}
+	
+	public static class DateTimeConverter extends BaseConverter {
+		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		
+		@Override
+		public byte[] convertToNoSql(Object value) {
+			if(value == null)
+				return null;
+			DateTime dt = (DateTime) value;
+			long milliseconds = dt.toDate().getTime();
+			return StandardConverters.convertToBytes(milliseconds);
+		}
+
+		@Override
+		public Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
+			Long time = StandardConverters.convertFromBytes(Long.class, value);
+			DateTime dt = new DateTime(time);
+			return dt;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			DateTime dt = fmt.parseDateTime(value);
+			return dt;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			DateTime dt = (DateTime) value;
+			return fmt.print(dt);
 		}
 	}
 }

@@ -1,11 +1,10 @@
-package com.alvazan.orm.api.z8spi.meta;
+package com.alvazan.orm.api.z8spi.conv;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.z8spi.ColumnType;
-import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 
 public enum StorageTypeEnum {
 
