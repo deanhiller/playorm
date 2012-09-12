@@ -9,6 +9,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -30,6 +31,10 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 
 	public CursorForJoin(ViewInfo view, ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults,
 			JoinType joinType) {
+		Precondition.check(view, "view");
+		Precondition.check(rightView, "rightView");
+		Precondition.check(rightResults, "rightResults");
+		Precondition.check(joinType, "joinType");
 		this.newView = view;
 		this.rightView = rightView;
 		this.rightResults = rightResults;

@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
@@ -15,6 +16,8 @@ public class IterableIndex implements Iterable<byte[]> {
 	private ViewInfo view;
 	
 	public IterableIndex(ViewInfo view, DirectCursor<IndexColumnInfo> indice) {
+		Precondition.check(view, "view");
+		Precondition.check(indice, "indice");
 		this.cursor = indice;
 		this.view = view;
 	}

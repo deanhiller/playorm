@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class CursorCacheProxy extends AbstractCursor<KeyValue<Row>> {
@@ -17,6 +18,8 @@ public class CursorCacheProxy extends AbstractCursor<KeyValue<Row>> {
 	private String colFamily;
 
 	public CursorCacheProxy(NoSqlReadCacheImpl cache, String colFamily, List<RowHolder<Row>> rows, AbstractCursor<KeyValue<Row>> rowsFromDb) {
+		Precondition.check(rows, "rows");
+		Precondition.check(rowsFromDb, "rowsFromDb");
 		this.cache = cache;
 		this.colFamily = colFamily;
 		rowsFromCacheIterable = rows;

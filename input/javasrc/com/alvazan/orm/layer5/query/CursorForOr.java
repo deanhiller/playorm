@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -19,6 +20,10 @@ public class CursorForOr implements DirectCursor<IndexColumnInfo> {
 	
 	public CursorForOr(ViewInfo leftView, DirectCursor<IndexColumnInfo> leftResults2,
 			ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults2) {
+		Precondition.check(leftView, "leftView");
+		Precondition.check(leftResults2, "leftResults2");
+		Precondition.check(rightView, "rightView");
+		Precondition.check(rightResults2, "rightResults2");
 		this.leftView = leftView;
 		this.rightView = rightView;
 		this.leftResults = leftResults2;

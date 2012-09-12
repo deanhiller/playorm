@@ -11,6 +11,8 @@ public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 	private Iterable<byte[]> keysIterable;
 	private Iterator<byte[]> keys;
 	public CursorReturnsEmptyRows(Iterable<byte[]> keys) {
+		if(keys == null)
+			throw new IllegalArgumentException("keys cannot be null");
 		this.keysIterable = keys;
 		beforeFirst();
 	}

@@ -3,6 +3,7 @@ package com.alvazan.orm.layer3.typed;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public class IterableProxy<T> implements
@@ -11,6 +12,7 @@ public class IterableProxy<T> implements
 	private Cursor<KeyValue<T>> cursor;
 
 	public IterableProxy(Cursor<KeyValue<T>> cursor) {
+		Precondition.check(cursor, "cursor");
 		this.cursor = cursor;
 	}
 

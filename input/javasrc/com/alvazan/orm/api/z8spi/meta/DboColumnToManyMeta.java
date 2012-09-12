@@ -52,7 +52,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		List<Object> pks = translateFromColumnList(row, entity);
 
 		TypedColumn typedCol = new TypedColumn();
-		typedCol.setName(columnName);
+		typedCol.setName(getColumnName());
 		typedCol.setValue(pks);
 		entity.addColumn(typedCol);
 	}
@@ -104,10 +104,10 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 
 	@SuppressWarnings({ "unchecked" })
 	private void translateToColumnList(TypedRow entity, RowToPersist row) {
-		TypedColumn column = entity.getColumn(columnName);
+		TypedColumn column = entity.getColumn(getColumnName());
 		Object valueObj = column.getValue();
 		if(!(valueObj instanceof Collection))
-			throw new IllegalArgumentException("For column family="+this.owner.getColumnFamily()+" you passed in a row and column value for column="+columnName+" must inherit from Collection and does not(for this column as it is a ToMany column)");
+			throw new IllegalArgumentException("For column family="+this.owner.getColumnFamily()+" you passed in a row and column value for column="+getColumnName()+" must inherit from Collection and does not(for this column as it is a ToMany column)");
 		Collection fks = (Collection) valueObj;
 		
 		Collection<Object> toBeAdded = fks; //all values in the list get added if not an OurAbstractCollection

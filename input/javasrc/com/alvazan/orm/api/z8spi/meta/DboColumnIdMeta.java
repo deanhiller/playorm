@@ -29,11 +29,11 @@ public class DboColumnIdMeta extends DboColumnMeta {
 		else if(colName == null)
 			throw new IllegalStateException("colName parameter must not be null");
 		this.owner = owner;
-		this.columnName = colName;
+		setColumnName(colName);
 		//NOTE: We don't call super.setup here BECAUSE super.setup calls owner.addColumn and this is the row key
 		//and so we call owner.setRowKeyMeta here instead
 		owner.setRowKeyMeta(this);
-		id = owner.getColumnFamily()+":"+columnName;
+		id = owner.getColumnFamily()+":"+getColumnName();
 		
 		Class newType = translateType(valuesType);
 		this.columnValueType = newType.getName();

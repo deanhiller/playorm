@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 
 public class IterCacheKeysProxy implements Iterable<byte[]> {
 
@@ -19,6 +20,7 @@ public class IterCacheKeysProxy implements Iterable<byte[]> {
 	private List<RowHolder<Row>> rowsFromCache = new ArrayList<RowHolder<Row>>();
 	
 	public IterCacheKeysProxy(NoSqlReadCacheImpl cache, String colFamily, Iterable<byte[]> rowKeys) {
+		Precondition.check(rowKeys, "rowKeys");
 		this.cache = cache;
 		this.colFamily = colFamily;
 		this.rowKeys = rowKeys;

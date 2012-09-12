@@ -5,6 +5,7 @@ import java.util.Iterator;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -20,6 +21,8 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 
 	public CursorTypedResp(DboTableMeta meta, Iterable<T> keys,
 			AbstractCursor<KeyValue<Row>> rows) {
+		Precondition.check(meta, "meta");
+		Precondition.check(rows, "rows");
 		this.meta = meta;
 		this.keysIterable = keys;
 		this.rowsIterable = rows;

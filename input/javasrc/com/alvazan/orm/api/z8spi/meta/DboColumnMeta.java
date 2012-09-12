@@ -25,7 +25,7 @@ public abstract class DboColumnMeta {
 	@NoSqlId
 	protected String id;
 	
-	protected String columnName;
+	private String columnName;
 
 	protected boolean isIndexed;
 	
@@ -60,10 +60,16 @@ public abstract class DboColumnMeta {
 		else if(colName == null)
 			throw new IllegalStateException("colName parameter must not be null");
 		this.owner = owner2;
-		this.columnName = colName;
+		setColumnName(colName);
 		owner2.addColumnMeta(this);
 		id = owner.getColumnFamily()+":"+columnName;
 		this.isIndexed = isIndexed;
+	}
+	
+	protected void setColumnName(String colName) {
+		if(!DboTableMeta.NAME_PATTERN.matcher(colName).matches())
+			throw new IllegalArgumentException("Column name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");	
+		this.columnName = colName;
 	}
 	
 	public abstract boolean isPartitionedByThisColumn();

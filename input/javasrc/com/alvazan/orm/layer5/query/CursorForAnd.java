@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -20,6 +21,10 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 	
 	public CursorForAnd(ViewInfo leftView2, DirectCursor<IndexColumnInfo> leftResults,
 			ViewInfo rightView2, DirectCursor<IndexColumnInfo> rightResults) {
+		Precondition.check(leftView2, "leftView2");
+		Precondition.check(leftResults, "leftResults");
+		Precondition.check(rightView2, "rightView2");
+		Precondition.check(rightResults, "rightResults");
 		this.leftView = leftView2;
 		this.rightView = rightView2;
 		this.leftResults = leftResults;

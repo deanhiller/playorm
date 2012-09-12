@@ -2,6 +2,7 @@ package com.alvazan.orm.layer5.query;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
@@ -14,6 +15,8 @@ public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 	private ViewInfo viewInfo;
 
 	public CursorSimpleTranslator(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
+		Precondition.check(viewInfo, "viewInfo");
+		Precondition.check(scan, "scan");
 		this.viewInfo = viewInfo;
 		this.cursor = scan;
 	}

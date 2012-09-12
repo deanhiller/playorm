@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
@@ -51,6 +52,8 @@ public class DboTableMeta {
 	private transient Random r = new Random();
 	
 	private static Class typedRowProxyClass;
+
+	static final Pattern NAME_PATTERN;
 	
 	static {
 		ProxyFactory f = new ProxyFactory();
@@ -72,6 +75,8 @@ public class DboTableMeta {
 		testInstanceCreation(clazz);
 		
 		typedRowProxyClass = clazz;
+		
+		NAME_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9\\-]*");
 	}
 	
 	private static Proxy testInstanceCreation(Class<?> clazz) {
@@ -91,6 +96,8 @@ public class DboTableMeta {
 	}
 
 	public void setColumnFamily(String columnFamily) {
+		if(!NAME_PATTERN.matcher(columnFamily).matches())
+			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");
 		this.columnFamily = columnFamily;
 	}
 	

@@ -6,6 +6,7 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.netflix.astyanax.model.Rows;
 
@@ -17,6 +18,8 @@ public class CursorResult extends AbstractCursor<KeyValue<Row>> {
 	private Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> rows;
 	
 	public CursorResult(Provider<Row> rowProvider, Rows<byte[], byte[]> rows) {
+		Precondition.check(rowProvider, "rowProvider");
+		Precondition.check(rows, "rows");
 		this.rowProvider = rowProvider;
 		this.rowsIterable = rows;
 		beforeFirst();

@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 
@@ -23,6 +24,7 @@ public class CachingCursor<T> implements DirectCursor<IndexColumnInfo> {
 	private boolean cacheEnabled = false;
 	
 	public CachingCursor(DirectCursor<IndexColumnInfo> cursor) {
+		Precondition.check(cursor, "cursor");
 		this.cursor = cursor;
 	}
 

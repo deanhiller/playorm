@@ -2,6 +2,7 @@ package com.alvazan.orm.layer0.base;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 
 public class IterableKey<T> implements Iterable<byte[]> {
@@ -10,6 +11,8 @@ public class IterableKey<T> implements Iterable<byte[]> {
 	private Iterable<? extends Object> keys;
 
 	public IterableKey(MetaClass<T> meta, Iterable<? extends Object> keys) {
+		Precondition.check(meta,"meta");
+		Precondition.check(keys,"keys");
 		this.meta = meta;
 		this.keys = keys;
 	}

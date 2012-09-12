@@ -6,6 +6,7 @@ import java.util.concurrent.Future;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.model.ColumnList;
@@ -17,6 +18,7 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 	private Iterator<Future<OperationResult<ColumnList<byte[]>>>> theOneBatch;
 	
 	public CursorOfFutures(StartQueryListener l, BatchListener listener) {
+		Precondition.check(l,"l");
 		this.columnSliceCb = l;
 		this.batchListener = listener;
 		beforeFirst();

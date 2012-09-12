@@ -2,6 +2,7 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
 public class IterableTypedProxy<T> implements Iterable<byte[]> {
@@ -10,6 +11,7 @@ public class IterableTypedProxy<T> implements Iterable<byte[]> {
 	private Iterable<T> keys;
 	
 	public IterableTypedProxy(DboColumnMeta idMeta, Iterable<T> keys2) {
+		Precondition.check(keys2, "keys");
 		this.idMeta = idMeta;
 		this.keys = keys2;
 	}

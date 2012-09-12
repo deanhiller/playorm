@@ -6,6 +6,7 @@ import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.impl.meta.data.MetaClass;
@@ -23,6 +24,8 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 	private int numberOfRows;
 	
 	public CursorRow(MetaClass<T> meta, Iterable<byte[]> noSqlKeys, NoSqlSession s, String query2, Integer batchSize) {
+		Precondition.check(noSqlKeys, "noSqlKeys");
+		Precondition.check(meta, "meta");
 		this.meta = meta;
 		this.noSqlKeys = noSqlKeys;
 		this.session = s;

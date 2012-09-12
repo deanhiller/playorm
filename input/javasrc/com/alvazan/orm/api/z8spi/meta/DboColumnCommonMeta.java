@@ -44,7 +44,7 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 
 		Object value = convertFromStorage2(column.getValue());
 		TypedColumn typedCol = new TypedColumn();
-		typedCol.setName(columnName);
+		typedCol.setName(getColumnName());
 		typedCol.setValue(value);
 		typedCol.setTimestamp(column.getTimestamp());
 		entity.addColumn(typedCol);
@@ -57,7 +57,7 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		Column col = new Column();
 		row.getColumns().add(col);
 
-		TypedColumn typedCol = typedRow.getColumn(columnName);
+		TypedColumn typedCol = typedRow.getColumn(getColumnName());
 		Object value = null;
 		if(typedCol != null)
 			value = typedCol.getValue();
@@ -72,7 +72,7 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 
 	@Override
 	public String fetchColumnValueAsString(TypedRow row) {
-		TypedColumn typedCol = row.getColumn(columnName);
+		TypedColumn typedCol = row.getColumn(getColumnName());
 		Object value = typedCol.getValue();
 		return convertTypeToString(value);
 	}
