@@ -5,6 +5,11 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+
 import com.alvazan.orm.api.z8spi.conv.Converters.BaseConverter;
 
 @SuppressWarnings("rawtypes")
@@ -31,6 +36,10 @@ public class StandardConverters {
 		stdConverters.put(byte[].class, Converters.BYTE_ARRAY_CONVERTER);
 		stdConverters.put(BigInteger.class, Converters.BIGINTEGER_CONVERTER);
 		stdConverters.put(BigDecimal.class, Converters.BIGDECIMAL_CONVERTER);
+		stdConverters.put(DateTime.class, Converters.DATE_TIME);
+		stdConverters.put(LocalDateTime.class, Converters.LOCAL_DATE_TIME);
+		stdConverters.put(LocalDate.class, Converters.LOCAL_DATE);
+		stdConverters.put(LocalTime.class, Converters.LOCAL_TIME);
 	}
 
 	public static BaseConverter get(Class type) {
