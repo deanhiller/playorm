@@ -6,8 +6,6 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
-import org.joda.time.LocalDateTime;
-
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
