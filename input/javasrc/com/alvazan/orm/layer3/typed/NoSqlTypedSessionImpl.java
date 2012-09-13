@@ -94,7 +94,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
-	public <T> Cursor<KeyValue<TypedRow>> findAll2(String colFamily, Iterable<T> keys) {
+	public <T> Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<T> keys, int batchSize) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
@@ -102,14 +102,14 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
 		DboColumnMeta idMeta = meta.getIdColumnMeta();
 		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<T>(idMeta, keys);
-		return findAllImpl2(meta, keys, noSqlKeys, null);
+		return findAllImpl2(meta, keys, noSqlKeys, null, batchSize);
 	}
 
-	<T> Cursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
+	<T> Cursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName, int batchSize) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows2 = session.findAll(cf, noSqlKeys, true);
+		AbstractCursor<KeyValue<Row>> rows2 = session.createFindCursor(cf, noSqlKeys, true, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else
@@ -119,7 +119,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Override
 	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> keys) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
-		Cursor<KeyValue<TypedRow>> iter = findAll2(colFamily, keys);
+		Cursor<KeyValue<TypedRow>> iter = createFindCursor(colFamily, keys, 500);
 		while(iter.next()) {
 			KeyValue<TypedRow> keyValue = iter.getCurrent();
 			rows.add(keyValue);

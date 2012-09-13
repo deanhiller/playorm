@@ -57,4 +57,11 @@ public class HadoopSession implements NoSqlRawSession {
 		return null;
 	}
 
+	@Override
+	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

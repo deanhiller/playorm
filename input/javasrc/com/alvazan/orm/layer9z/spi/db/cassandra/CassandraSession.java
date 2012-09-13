@@ -67,6 +67,19 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	@Override
+	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
+		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		ColumnType type = info.getColumnType();
+		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
+			throw new UnsupportedOperationException("Finding on composite type="+colFamily+" not allowed here, you should be using column slice as these rows are HUGE!!!!");
+		}
+		
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		return new FindRowsCursor(info, rowKeys, batchSize, list, keyspace, rowProvider);
+	}
+	
+	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
 		try {
 			return findImpl2(colFamily, rowKeys);

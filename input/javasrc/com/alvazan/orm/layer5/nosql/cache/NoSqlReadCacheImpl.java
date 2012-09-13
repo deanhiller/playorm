@@ -91,6 +91,22 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
+	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+			Iterable<byte[]> rowKeys, boolean skipCache, int batchSize) {
+		if(skipCache) {
+			return session.findAll(colFamily, rowKeys, skipCache);
+		}
+		
+		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
+		AbstractCursor<KeyValue<Row>> rowsFromDb = session.createFindCursor(colFamily, rowKeys, skipCache, batchSize);
+		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
+		//existing rows
+		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
+		AbstractCursor<KeyValue<Row>> theRows = new CursorCacheProxy(this, colFamily, inCache, rowsFromDb);
+		return theRows;
+	}
+	
+	@Override
 	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
 		if(skipCache) {
 			return session.findAll(colFamily, rowKeys, skipCache);

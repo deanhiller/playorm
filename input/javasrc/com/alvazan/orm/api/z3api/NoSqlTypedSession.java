@@ -43,7 +43,7 @@ public interface NoSqlTypedSession {
 	public <T> TypedRow find(String cf, T id);
 	
 	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> rowKeys);
-	public <T> Cursor<KeyValue<TypedRow>> findAll2(String colFamily, Iterable<T> rowKeys);
+	public <T> Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<T> rowKeys, int batchSize);
 
 	/**
 	 * This creates a query cursor that will query into the database AS you iterate over the cursor.  You

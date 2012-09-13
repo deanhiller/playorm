@@ -81,6 +81,12 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		remove.setColumn(c);
 		actions.add(remove);
 	}
+
+	@Override
+	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+			Iterable<byte[]> rowKeys, boolean skipCache, int batchSize) {
+		return rawSession.createFindCursor(colFamily, rowKeys, batchSize, null);
+	}
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {

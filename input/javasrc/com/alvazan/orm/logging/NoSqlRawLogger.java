@@ -304,6 +304,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
+	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+			Iterable<byte[]> rowKeys, int batchSize, BatchListener l) {
+		BatchListener list = l;
+		if(log.isInfoEnabled()) {
+			list = new LogBatchFetch(colFamily, l, batchSize);
+		}
+		return createFindCursor(colFamily, rowKeys, batchSize, list);
+	}
+	
+	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rKeys) {
 		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation

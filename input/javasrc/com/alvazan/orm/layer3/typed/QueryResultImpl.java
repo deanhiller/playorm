@@ -57,7 +57,7 @@ public class QueryResultImpl implements QueryResult {
 		Iterable<byte[]> indexIterable = new IterableIndex(mainView, directCursor);
 
 		DboTableMeta meta = mainView.getTableMeta();
-		Cursor<KeyValue<TypedRow>> results = session.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+		Cursor<KeyValue<TypedRow>> results = session.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery(), batchSize);
 		
 		return results;
 	}
