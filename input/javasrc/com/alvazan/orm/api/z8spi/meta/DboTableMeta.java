@@ -137,7 +137,9 @@ public class DboTableMeta {
 			this.colNamePrefixType = null;
 			return;
 		}
-		this.colNamePrefixType = colNamePrefixType.getDbValue();
+		
+		StorageTypeEnum storedType = colNamePrefixType.getStoredType();
+		this.colNamePrefixType = storedType.getDbValue();
 	}
 
 	@Override

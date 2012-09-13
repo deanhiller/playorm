@@ -1,11 +1,13 @@
 package com.alvazan.orm.parser.antlr;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class InfoForWiring {
 
@@ -16,9 +18,10 @@ public class InfoForWiring {
 	private String query;
 	private String targetTable;
 	private ExpressionNode astTree;
-	private ViewInfoImpl firstTable;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private DboTableMeta metaQueryTargetTable;
+	private List<ViewInfo> targetTables = new ArrayList<ViewInfo>();
+	private List<ViewInfo> aliases = new ArrayList<ViewInfo>();
 	
 	public InfoForWiring(String query, String targetTable) {
 		this.query = query;
@@ -34,6 +37,7 @@ public class InfoForWiring {
 	}
 
 	public void putAliasTable(String alias, ViewInfoImpl metaClass) {
+		aliases.add(metaClass);
 		aliasToMeta.put(alias, metaClass);
 	}
 
@@ -65,13 +69,6 @@ public class InfoForWiring {
 		return astTree;
 	}
 
-	public ViewInfoImpl getFirstTable() {
-		return firstTable;
-	}
-	public void setFirstTable(ViewInfoImpl t) {
-		this.firstTable = t;
-	}
-
 	public void incrementAttributesCount(String attributeName) {
 		int count = 0;
 		Integer counter = attributeUsedCount.get(attributeName);
@@ -86,8 +83,8 @@ public class InfoForWiring {
 		return attributeUsedCount;
 	}
 
-	public Collection<String> getAllAliases() {
-		return this.aliasToMeta.keySet();
+	public List<ViewInfo> getAllViews() {
+		return aliases;
 	}
 
 	public void setMetaQueryTargetTable(DboTableMeta metaClass) {
@@ -101,4 +98,13 @@ public class InfoForWiring {
 	public Map<String,TypeInfo> getParameterFieldMap() {
 		return this.parameterFieldMap;
 	}
+
+	public List<ViewInfo> getTargetTables() {
+		return targetTables;
+	}
+
+	public void addTargetTable(ViewInfoImpl info) {
+		this.targetTables.add(info);
+	}
+
 }

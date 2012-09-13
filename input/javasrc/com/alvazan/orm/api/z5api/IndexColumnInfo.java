@@ -26,7 +26,7 @@ public class IndexColumnInfo {
 	}
 
 	public void mergeResults(IndexColumnInfo info) {
-		for (Entry<ViewInfo, IndexColumn> entry : colNameToValue.entrySet()) {
+		for (Entry<ViewInfo, IndexColumn> entry : info.colNameToValue.entrySet()) {
 			putIndexNode(entry.getKey(), entry.getValue());
 		}
 	}
@@ -39,4 +39,8 @@ public class IndexColumnInfo {
 		return info;
 	}
 	
+	public RowKey getKeyForView(ViewInfo view) {
+		IndexColumn col = colNameToValue.get(view);
+		return new RowKey(view, col);
+	}
 }

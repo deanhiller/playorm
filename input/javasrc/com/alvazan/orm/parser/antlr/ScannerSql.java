@@ -2,7 +2,6 @@ package com.alvazan.orm.parser.antlr;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,6 +20,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class ScannerSql {
 
@@ -49,12 +49,12 @@ public class ScannerSql {
 						"(ie. no 'as p' part) and your table is partitioned so you " +
 						"need to alias and then define PARTITIONS p(:partitionid) SELECT etc. etc.");
 		}		
-		Collection<String> aliases = wiring.getAllAliases();
-		for(String alias : aliases) {
-			ViewInfoImpl t = wiring.getInfoFromAlias(alias);
+		
+		for(ViewInfo view : wiring.getAllViews()) {
+			ViewInfoImpl t = (ViewInfoImpl) view;
 			DboTableMeta meta = t.getTableMeta();
 			if(meta.getPartitionedColumns().size() > 0 && t.getPartition() == null)
-				throw new IllegalArgumentException("You are missing a definition of a partition for alias='"+alias+"' since table="
+				throw new IllegalArgumentException("You are missing a definition of a partition for alias='"+view.getAlias()+"' since table="
 			+meta.getColumnFamily()+" IS a partitioned table.  For example, you should have PARTITIONS e(:partitionId) SELECT e FROM TABLE as e....");
 		}
 	}
@@ -247,10 +247,9 @@ public class ScannerSql {
 			metaClass = findTable(facade, targetTable);
 		} else if(metaClass == null)
 			throw new IllegalArgumentException("Meta data(or Entity)="+tableName+" cannot be found");
-			
+
 		ViewInfoImpl info = new ViewInfoImpl(null, metaClass);
-		if(wiring.getFirstTable() == null)
-			wiring.setFirstTable(info);
+		wiring.addTargetTable(info);
 		
 		if(tableNode.getChildCount() == 0) {
 			if(wiring.getNoAliasTable() != null)
@@ -441,10 +440,9 @@ public class ScannerSql {
 	private static TypeInfo processSide(ExpressionNode node, InfoForWiring wiring, TypeInfo typeInfo, MetaFacade facade) {
 		if(node.getType() == NoSqlLexer.ATTR_NAME) {
 			return processColumnName(node, wiring, typeInfo, facade);
-		} else if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
+		} else if(node.isParameter()) {
 			return processParam(node, wiring, typeInfo);
-		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
-				|| node.getType() == NoSqlLexer.INT_VAL) {
+		} else if(node.isConstant()) {
 			return processConstant(node, wiring, typeInfo);
 		} else 
 			throw new RuntimeException("bug, type not supported yet="+node.getType());
@@ -468,6 +466,10 @@ public class ScannerSql {
 			ourType = StorageTypeEnum.INTEGER;
 			BigInteger bigInt = new BigInteger(constant);
 			node.setState(bigInt, constant);
+		} else if(node.getType() == NoSqlLexer.BOOL_VAL) {
+			ourType = StorageTypeEnum.BOOLEAN;
+			boolean boolVal = Boolean.parseBoolean(constant);
+			node.setState(boolVal, constant);
 		}
 			
 		else 

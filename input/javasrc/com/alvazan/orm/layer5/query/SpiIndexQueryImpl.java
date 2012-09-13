@@ -60,7 +60,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	public DirectCursor<IndexColumnInfo> getResultList() {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
-			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getMainViewMeta();
+			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
@@ -226,10 +226,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
-		if(node.getType() == NoSqlLexer.PARAMETER_NAME) {
+		if(node.isParameter()) {
 			return processParam(info, node);
-		} else if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.STR_VAL
-				|| node.getType() == NoSqlLexer.INT_VAL) {
+		} else if(node.isConstant()) {
 			return processConstant(info, node);
 		} else 
 			throw new UnsupportedOperationException("type not supported="+node.getType());

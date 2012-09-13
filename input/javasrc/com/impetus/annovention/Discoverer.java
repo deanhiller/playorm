@@ -28,8 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.mortbay.log.Log;
-
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.FieldInfo;
@@ -301,7 +299,6 @@ public abstract class Discoverer {
         	String path = url.getPath();
         	String newPath = path.replace((CharSequence)"%2520", " ");
         	File f = new File(newPath);
-        	Log.info("absolute path="+f.getAbsolutePath());
             if (f.isDirectory()) {
                 return new ClassFileIterator(f, filter);
             } else {

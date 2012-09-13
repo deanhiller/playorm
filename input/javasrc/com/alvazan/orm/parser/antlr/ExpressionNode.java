@@ -171,7 +171,8 @@ public class ExpressionNode implements ParsedNode {
 	@Override
 	public boolean isConstant() {
 		if(getType() == NoSqlLexer.DEC_VAL || getType() == NoSqlLexer.INT_VAL
-				|| getType() == NoSqlLexer.STR_VAL)
+				|| getType() == NoSqlLexer.STR_VAL || getType() == NoSqlLexer.BOOL_VAL
+				|| getType() == NoSqlLexer.NULL)
 			return true;
 		return false;
 	}

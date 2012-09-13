@@ -117,6 +117,8 @@ public abstract class DboColumnMeta {
 			return BigInteger.class;
 		case DECIMAL:
 			return BigDecimal.class;
+		case BOOLEAN:
+			return Boolean.class;
 		case BYTES:
 			return byte[].class;
 		default:

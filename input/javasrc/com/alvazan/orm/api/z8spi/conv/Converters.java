@@ -1,8 +1,6 @@
 package com.alvazan.orm.api.z8spi.conv;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -332,29 +330,22 @@ public class Converters {
 	public static class BooleanConverter extends BaseConverter {
 		@Override
 		public byte[] convertToNoSql(Object value) {
-			try {
-				if(value == null)
-					return null;
-				ByteArrayOutputStream outBytes = new ByteArrayOutputStream();
-				DataOutputStream out = new DataOutputStream(outBytes);
-				out.writeBoolean((Boolean) value);
-				return outBytes.toByteArray();
-			} catch(IOException e) {
-				throw new RuntimeException(e);
-			}
+			if(value == null)
+				return null;
+			Boolean b = (Boolean) value;
+			if(b)
+				return StandardConverters.convertToBytes(1);
+			return StandardConverters.convertToBytes(0);
 		}
 		
 		@Override
 		public Object convertFromNoSql(byte[] bytes) {
-			try {
-				if(bytes == null)
-					return null;
-				ByteArrayInputStream byteIn = new ByteArrayInputStream(bytes);
-				DataInputStream in = new DataInputStream(byteIn);
-				return in.readBoolean();
-			} catch(IOException e) {
-				throw new RuntimeException(e);
-			}
+			if(bytes == null)
+				return null;
+			Integer value = StandardConverters.convertFromBytes(Integer.class, bytes);
+			if(value == 1)
+				return true;
+			return false;
 		}
 		
 		@Override

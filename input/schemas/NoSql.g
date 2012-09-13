@@ -25,6 +25,7 @@ tokens {
 	INT_VAL;
 	DEC_VAL;
 	STR_VAL;
+	BOOL_VAL;
 	SELECT_CLAUSE;
 	FROM_CLAUSE;
 	JOIN_CLAUSE;
@@ -150,7 +151,10 @@ newAlias: ID;
 parameter: COLON parameterName -> PARAMETER_NAME[$parameterName.text];
 
 valueList: LPAREN value (COMMA value)* RPAREN -> ^(VALUE_LIST value (value)*);
-value: intVal | doubleVal | strVal | NULL;
+value: intVal | doubleVal | strVal | booleanVal | NULL;
+
+booleanVal: booleanAtom -> BOOL_VAL[$booleanAtom.text];
+booleanAtom: TRUE | FALSE;
 
 intVal	 :	(MINUS)?INTEGER 
                   -> {$MINUS.text == null}? INT_VAL[$INTEGER.text]
@@ -171,6 +175,8 @@ FROM	:	('F'|'f')('R'|'r')('O'|'o')('M'|'m');
 WHERE	:	('W'|'w')('H'|'h')('E'|'e')('R'|'r')('E'|'e');
 NULL    :   ('N'|'n')('U'|'u')('L'|'l')('L'|'l');
 BETWEEN :   ('B'|'b')('E'|'e')('T'|'t')('W'|'w')('E'|'e')('E'|'e')('N'|'n');
+FALSE   :   ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
+TRUE    :   ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
 
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;

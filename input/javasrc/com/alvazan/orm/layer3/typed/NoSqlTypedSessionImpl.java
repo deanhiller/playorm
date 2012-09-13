@@ -6,12 +6,14 @@ import java.util.List;
 import javax.inject.Inject;
 
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
@@ -32,6 +34,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	@Inject
 	private CachedMeta cachedMeta;
 	
+	private MetaLoader mgr;
 	private NoSqlSession session;
 	
 	/**
@@ -40,8 +43,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	 * To be removed eventually
 	 * @param s
 	 */
-	public void setInformation(NoSqlSession s) {
+	public void setInformation(NoSqlSession s, MetaLoader mgr) {
 		this.session = s;
+		this.mgr = mgr;
 	}
 	
 	@Override
@@ -132,22 +136,36 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	@Override
-	public Iterable<KeyValue<TypedRow>> runQueryIter(String query, Object noSqlEntityMgr, int batchSize) {
-		Cursor<KeyValue<TypedRow>> cursor = runQuery(query, noSqlEntityMgr, batchSize);
-		return new IterableProxy<TypedRow>(cursor);
+	public Cursor<List<TypedRow>> runQueryForData(String query, int batchSize) {
+		throw new UnsupportedOperationException("need to support this one soon");
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public Cursor<KeyValue<TypedRow>> runQuery(String query, Object mgr, int batchSize) {
-		//TODO: switch Iterable to Cursor above
+	public QueryResult runQueryForKeys(String query, int batchSize) {
 		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
 		spiQueryAdapter.setBatchSize(batchSize);
 		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
-		ViewInfo mainView = metaQuery.getMainViewMeta();
+		
+		Cursor<IndexColumnInfo> cursor = new CursorProxyDirect(iter);
+		
+		QueryResultImpl impl = new QueryResultImpl(cursor, metaQuery.getAliases());
+		
+		return impl;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize) {
+		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
+		
+		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
+		
+		spiQueryAdapter.setBatchSize(batchSize);
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		ViewInfo mainView = metaQuery.getTargetViews().get(0);
 		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
 
 		DboTableMeta meta = mainView.getTableMeta();
@@ -161,14 +179,4 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return results;
 	}
 
-	@Override
-	public List<KeyValue<TypedRow>> runQueryList(String query, Object noSqlEntityMgr) {
-		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
-		Cursor<KeyValue<TypedRow>> iter = runQuery(query, noSqlEntityMgr, 500);
-		while(iter.next()) {
-			KeyValue<TypedRow> keyValue = iter.getCurrent();
-			rows.add(keyValue);
-		}
-		return rows;
-	}
 }

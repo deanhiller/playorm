@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.z5api;
 
+import java.util.List;
+
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
@@ -25,6 +27,8 @@ public interface SpiMetaQuery {
 
 	public String getQuery();
 
-	ViewInfo getMainViewMeta();
+	List<ViewInfo> getTargetViews();
+
+	List<ViewInfo> getAliases();
 	
 }

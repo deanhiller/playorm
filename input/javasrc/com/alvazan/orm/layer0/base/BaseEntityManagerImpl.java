@@ -14,6 +14,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
@@ -31,7 +32,7 @@ import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
-public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
+public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, MetaLoader {
 
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
@@ -269,7 +270,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup {
 	@Override
 	public NoSqlTypedSession getTypedSession() {
 		if(!isTypedSessionInitialized) {
-			typedSession.setInformation(session);
+			typedSession.setInformation(session, this);
 		}
 		return typedSession;
 	}

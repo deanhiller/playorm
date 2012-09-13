@@ -4,10 +4,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
-import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
+import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
@@ -29,7 +29,7 @@ public class ScannerForQuery implements QueryParser {
 	private ScannerSql compiler;
 	
 	@Override
-	public SpiMetaQuery parseQueryForAdHoc(String query, Object mgr) {		
+	public SpiMetaQuery parseQueryForAdHoc(String query, MetaLoader mgr) {		
 		SpiMetaQuery metaQuery = newsetupByVisitingTree(query, null, mgr, "Query="+query+". ");
 		return metaQuery;
 	}
@@ -39,7 +39,7 @@ public class ScannerForQuery implements QueryParser {
 		return newsetupByVisitingTree(query, targetTable, null, errorMsg);
 	}
 
-	private SpiMetaQuery newsetupByVisitingTree(String query, String targetTable, Object mgr, String errorMsg) {
+	private SpiMetaQuery newsetupByVisitingTree(String query, String targetTable, MetaLoader mgr, String errorMsg) {
 		try {
 			return newsetupByVisitingTreeImpl(query, targetTable, mgr, errorMsg);
 		} catch(ParseQueryException e) {
@@ -50,14 +50,14 @@ public class ScannerForQuery implements QueryParser {
 		}
 	}
 	
-	private SpiMetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, Object mgr, String errorMsg) {
+	private SpiMetaQuery newsetupByVisitingTreeImpl(String query, String targetTable, MetaLoader mgr, String errorMsg) {
 		SpiMetaQueryImpl spiMetaQuery = factory.get(); 
 
 		InfoForWiring wiring = new InfoForWiring(query, targetTable);
-		MetaFacade facade = new MetaFacadeImpl((NoSqlEntityManager)mgr, metaInfo);
+		MetaFacade facade = new MetaFacadeImpl(mgr, metaInfo);
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		
-		spiMetaQuery.setASTTree(newTree, wiring.getFirstTable());
+		spiMetaQuery.setASTTree(newTree, wiring.getTargetTables(), wiring.getAllViews());
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
 		

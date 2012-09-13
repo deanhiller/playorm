@@ -9,7 +9,7 @@ import com.alvazan.orm.api.z8spi.ColumnType;
 public enum StorageTypeEnum {
 
 	STRING("String", String.class), DECIMAL("Decimal", BigDecimal.class), INTEGER("Integer", Integer.class), 
-	BYTES("Bytes", byte[].class);
+	BYTES("Bytes", byte[].class), BOOLEAN("Boolean", Boolean.class);
 	
 	private static Map<String, StorageTypeEnum> dbCodeToVal = new HashMap<String, StorageTypeEnum>();
 	static {
@@ -48,6 +48,8 @@ public enum StorageTypeEnum {
 			return ColumnType.COMPOSITE_INTEGERPREFIX;
 		case STRING:
 			return ColumnType.COMPOSITE_STRINGPREFIX;
+		case BOOLEAN:
+			return ColumnType.COMPOSITE_INTEGERPREFIX;
 		case BYTES:
 			throw new UnsupportedOperationException("not sure if we need this one or not yet");
 		default:
@@ -66,5 +68,11 @@ public enum StorageTypeEnum {
 	}
 	public byte[] convertToNoSql(Object o) {
 		return StandardConverters.convertToBytes(o);
+	}
+
+	public StorageTypeEnum getStoredType() {
+		if(this == StorageTypeEnum.BOOLEAN)
+			return StorageTypeEnum.INTEGER;
+		return this;
 	}
 }

@@ -4,4 +4,5 @@ public interface ViewInfo {
 
 	DboTableMeta getTableMeta();
 
+	String getAlias();
 }

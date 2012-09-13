@@ -2,8 +2,6 @@ package com.alvazan.test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Iterator;
-import java.util.List;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -93,15 +91,15 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Iterable<KeyValue<TypedRow>> rowsIter = s.runQueryIter("select s FROM TimeSeriesData as s where s.key = 25", mgr, 500);
-		Iterator<KeyValue<TypedRow>> rows = rowsIter.iterator();
-		KeyValue<TypedRow> keyValue = rows.next();
+		Cursor<KeyValue<TypedRow>> rowsIter = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", 500);
+		rowsIter.next();
+		KeyValue<TypedRow> keyValue = rowsIter.getCurrent();
 		TypedRow theRow = keyValue.getValue();
 		Assert.assertEquals(row.getRowKey(), theRow.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
-		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", mgr, 500);
+		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", 500);
 		rows2.next();
 		KeyValue<TypedRow> keyValue2 = rows2.getCurrent();
 		TypedRow theRow2 = keyValue2.getValue();
@@ -154,8 +152,12 @@ public class TestNewRawLayer {
 		
 		session.flush();
 		
-		List<KeyValue<TypedRow>> rows = session.runQueryList(sql, mgr);
-		Assert.assertEquals(1, rows.size());
+		Cursor<KeyValue<TypedRow>> rows = session.runQuery(sql, 50);
+		int counter = 0;
+		while(rows.next()) {
+			counter++;
+		}
+		Assert.assertEquals(1, counter);
 	}
 
 	private DboTableMeta addMetaClassDbo(DboDatabaseMeta map, String entityName, String idField, String ... fields) {

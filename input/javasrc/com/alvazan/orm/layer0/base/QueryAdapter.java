@@ -49,7 +49,7 @@ public class QueryAdapter<T> implements Query<T> {
 		this.meta = metaQuery;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
-		this.mainView = metaQuery.getMainViewMeta();
+		this.mainView = metaQuery.getTargetViews().get(0);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })

@@ -49,7 +49,7 @@ public class StandardConverters {
 		storageTypes.put(Byte.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(Double.class, StorageTypeEnum.DECIMAL);
 		storageTypes.put(Float.class, StorageTypeEnum.DECIMAL);
-		storageTypes.put(Boolean.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(Boolean.class, StorageTypeEnum.BOOLEAN);
 		storageTypes.put(Character.class, StorageTypeEnum.STRING);
 		storageTypes.put(String.class, StorageTypeEnum.STRING);
 		storageTypes.put(BigDecimal.class, StorageTypeEnum.DECIMAL);

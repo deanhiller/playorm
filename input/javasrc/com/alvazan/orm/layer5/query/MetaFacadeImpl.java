@@ -2,7 +2,7 @@ package com.alvazan.orm.layer5.query;
 
 import java.util.Map;
 
-import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -12,11 +12,11 @@ import com.alvazan.orm.parser.antlr.ParsedNode;
 
 public class MetaFacadeImpl implements MetaFacade {
 
-	private NoSqlEntityManager mgr;
+	private MetaLoader mgr;
 	private DboDatabaseMeta metaInfo;
 	private Map<String, Integer> attributeUsedCnt;
 	
-	public MetaFacadeImpl(NoSqlEntityManager mgr, DboDatabaseMeta metaInfo2) {
+	public MetaFacadeImpl(MetaLoader mgr, DboDatabaseMeta metaInfo2) {
 		this.mgr = mgr;
 		this.metaInfo = metaInfo2;
 	}

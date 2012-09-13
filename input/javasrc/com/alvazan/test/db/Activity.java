@@ -41,6 +41,7 @@ public class Activity {
 	private String id;
 	
 	@NoSqlManyToOne
+	@NoSqlIndexed
 	private Account account;
 	
 	@NoSqlIndexed
