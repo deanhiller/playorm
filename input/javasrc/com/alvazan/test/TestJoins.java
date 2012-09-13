@@ -15,6 +15,7 @@ import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.RowKey;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
@@ -45,7 +46,7 @@ public class TestJoins {
 	public void testInnerJoin() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
 
-		QueryResult result = s.runQueryForKeys("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
 		List<ViewInfo> views = result.getViews();
 		Cursor<IndexColumnInfo> cursor = result.getCursor();
 
@@ -61,6 +62,10 @@ public class TestJoins {
 		Assert.assertTrue(cursor.next());
 		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
 		Assert.assertFalse(cursor.next());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		
+		
 	}
 
 	

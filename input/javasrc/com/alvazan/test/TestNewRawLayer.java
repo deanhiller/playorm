@@ -90,7 +90,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
 		
-		Cursor<KeyValue<TypedRow>> rowsIter = s.runQuery("select s FROM TimeSeriesData as s where s.key = 25", 500);
+		Cursor<KeyValue<TypedRow>> rowsIter = s.createQueryCursor("select s FROM TimeSeriesData as s where s.key = 25", 500).getPrimaryViewCursor();
 		rowsIter.next();
 		KeyValue<TypedRow> keyValue = rowsIter.getCurrent();
 		TypedRow theRow = keyValue.getValue();
@@ -98,7 +98,7 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow.getColumn("temp").getValue());
 
 		//Testing a negative value in the SQL here
-		Cursor<KeyValue<TypedRow>> rows2 = s.runQuery("select s FROM TimeSeriesData as s where s.key > -25", 500);
+		Cursor<KeyValue<TypedRow>> rows2 = s.createQueryCursor("select s FROM TimeSeriesData as s where s.key > -25", 500).getPrimaryViewCursor();
 		rows2.next();
 		KeyValue<TypedRow> keyValue2 = rows2.getCurrent();
 		TypedRow theRow2 = keyValue2.getValue();
@@ -148,7 +148,7 @@ public class TestNewRawLayer {
 		
 		session.flush();
 		
-		Cursor<KeyValue<TypedRow>> rows = session.runQuery(sql, 50);
+		Cursor<KeyValue<TypedRow>> rows = session.createQueryCursor(sql, 50).getPrimaryViewCursor();
 		int counter = 0;
 		while(rows.next()) {
 			counter++;

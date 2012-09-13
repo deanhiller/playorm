@@ -45,10 +45,15 @@ public interface NoSqlTypedSession {
 	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> rowKeys);
 	public <T> Cursor<KeyValue<TypedRow>> findAll2(String colFamily, Iterable<T> rowKeys);
 
-	public Cursor<List<TypedRow>> runQueryForData(String query, int batchSize);
-	public QueryResult runQueryForKeys(String query, int batchSize);
-	
-	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize);
+	/**
+	 * This creates a query cursor that will query into the database AS you iterate over the cursor.  You
+	 * can also save the cursor to pick up where you left off.  
+	 * 
+	 * @param query
+	 * @param batchSize
+	 * @return
+	 */
+	public QueryResult createQueryCursor(String query, int batchSize);
 	
 	public void flush();
 

@@ -24,9 +24,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
-import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
-@SuppressWarnings("rawtypes")
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 	@Inject
@@ -136,12 +134,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	@Override
-	public Cursor<List<TypedRow>> runQueryForData(String query, int batchSize) {
-		throw new UnsupportedOperationException("need to support this one soon");
-	}
-	
-	@Override
-	public QueryResult runQueryForKeys(String query, int batchSize) {
+	public QueryResult createQueryCursor(String query, int batchSize) {
 		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
@@ -149,35 +142,33 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		spiQueryAdapter.setBatchSize(batchSize);
 		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
 		
-		Cursor<IndexColumnInfo> cursor = new CursorProxyDirect(iter);
-		
-		QueryResultImpl impl = new QueryResultImpl(cursor, metaQuery.getAliases());
+		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize);
 		
 		return impl;
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize) {
-		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
-		
-		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
-		
-		spiQueryAdapter.setBatchSize(batchSize);
-		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
-		ViewInfo mainView = metaQuery.getTargetViews().get(0);
-		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
-
-		DboTableMeta meta = mainView.getTableMeta();
-		Cursor results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
-		
-		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
-		//skips false positives so as the client loops, we skip some of the results based on that they are false
-		//AND we could then trigger index rebuilds as we see there are false columns
-		
-		
-		return results;
-	}
+//	@SuppressWarnings("unchecked")
+//	@Override
+//	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize) {
+//		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
+//		
+//		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
+//		
+//		spiQueryAdapter.setBatchSize(batchSize);
+//		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+//		ViewInfo mainView = metaQuery.getTargetViews().get(0);
+//		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
+//
+//		DboTableMeta meta = mainView.getTableMeta();
+//		Cursor<KeyValue<TypedRow>> results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
+//		
+//		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
+//		//skips false positives so as the client loops, we skip some of the results based on that they are false
+//		//AND we could then trigger index rebuilds as we see there are false columns
+//		
+//		
+//		return results;
+//	}
 
 	@Override
 	public TypedRow createTypedRow(String colFamily) {
