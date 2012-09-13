@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mortbay.log.Log;
+
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
 import javassist.bytecode.FieldInfo;
@@ -286,31 +288,27 @@ public abstract class Discoverer {
      * @return
      * @throws IOException
      */
-    private ResourceIterator getResourceIterator(URL url2, Filter filter) throws IOException {
-    	URL url = url2;
-        String urlString = url.toString();
-        //I wonder why he had this in here, looks like he i forming a new url with jar prefix and
-        //strips off the !/ as well which seems odd to me...need to figure out and document
+    private ResourceIterator getResourceIterator(URL resource, Filter filter) throws IOException {
+    	URL url = resource;
+    	String urlString = url.toString();
         if (urlString.endsWith("!/")) {
+        	//It must be a jar file since it has the !/
             urlString = urlString.substring(4);
             urlString = urlString.substring(0, urlString.length() - 2);
             url = new URL(urlString);
-        }
-
-        if (!urlString.endsWith("/")) {
             return new JarFileIterator(url.openStream(), filter);
-        } else {
-
-            if (!url.getProtocol().equals("file")) {
-                throw new IOException("Unable to understand protocol: " + url.getProtocol());
-            }
-
-            File f = new File(url.getPath());
+        } else if (url.getProtocol().equals("file")) {
+        	String path = url.getPath();
+        	String newPath = path.replace((CharSequence)"%2520", " ");
+        	File f = new File(newPath);
+        	Log.info("absolute path="+f.getAbsolutePath());
             if (f.isDirectory()) {
                 return new ClassFileIterator(f, filter);
             } else {
-                return new JarFileIterator(url.openStream(), filter);
+            	throw new RuntimeException("bug, how is this not a directory="+f.getAbsolutePath());
             }
+        } else {
+            throw new IOException("Unable to understand protocol: " + resource.getProtocol());
         }
     }
 }
