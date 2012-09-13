@@ -8,12 +8,18 @@ public class TypedColumn {
 	private String name;
 	private Object value;
 	private Long timestamp;
+	private DboColumnMeta columnMeta;
 	
-	public TypedColumn() {}
-	public TypedColumn(String name, Object value) {
+	public TypedColumn(DboColumnMeta colMeta, String name, Object value, Long timestamp2) {
+		this.columnMeta = colMeta;
 		this.name = name;
 		this.value = value;
+		this.timestamp = timestamp2;
 	}
+	public TypedColumn(DboColumnMeta colMeta) {
+		this.columnMeta = colMeta;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -21,7 +27,7 @@ public class TypedColumn {
 		this.name = name;
 	}
 	public String getValueAsString() {
-		return (String) value;
+		return columnMeta.convertTypeToString(value);
 	}
 	public BigDecimal getValueAsBigDecimal() {
 		return (BigDecimal) value;
@@ -33,9 +39,11 @@ public class TypedColumn {
 	public List getValueAsList() {
 		return (List) value;
 	}
-	
 	public void setValue(Object value) {
 		this.value = value;
+	}
+	public void setValueStr(String val) {
+		this.value = columnMeta.convertStringToType(val);
 	}
 	public Long getTimestamp() {
 		return timestamp;

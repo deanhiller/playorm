@@ -51,11 +51,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	@Override
 	public void translateFromColumn(Row row, TypedRow entity) {
 		List<Object> pks = translateFromColumnList(row, entity);
-
-		TypedColumn typedCol = new TypedColumn();
-		typedCol.setName(getColumnName());
-		typedCol.setValue(pks);
-		entity.addColumn(typedCol);
+		entity.addColumn(getColumnName(), pks);
 	}
 
 	private List<Object> translateFromColumnList(Row row, TypedRow entity) {

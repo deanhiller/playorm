@@ -30,7 +30,6 @@ public class NoSqlTypedRowProxyImpl implements MethodHandler {
 	 * @param superClassMethod - The method that is on the superclass like Account.java
 	 * @param subclassProxyMethod - The method that is on the proxy like Account_$$_javassist_0
 	 */
-	@SuppressWarnings("rawtypes")
 	@Override
 	public Object invoke(Object selfArg, Method superClassMethod, Method subclassProxyMethod, Object[] args)
 			throws Throwable {
@@ -56,7 +55,6 @@ public class NoSqlTypedRowProxyImpl implements MethodHandler {
 		return indexFieldToOriginalValue;
 	}
 
-	@SuppressWarnings("rawtypes")
 	private void cacheIndexedValues(TypedRow self) {
 		List<DboColumnMeta> cols = classMeta.getIndexedColumns();
 		for(DboColumnMeta f : cols) {

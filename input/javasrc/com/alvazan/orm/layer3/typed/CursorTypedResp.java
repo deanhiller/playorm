@@ -11,7 +11,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
-public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
+public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow>> {
 
 	private DboTableMeta meta;
 	private Iterable<T> keysIterable;
@@ -45,16 +45,16 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 	}
 
 	@Override
-	public Holder<KeyValue<TypedRow<T>>> nextImpl() {
+	public Holder<KeyValue<TypedRow>> nextImpl() {
 		Holder<KeyValue<Row>> nextImpl = rowsIterable.nextImpl();
 		if(nextImpl == null)
 			return null;
 		
-		KeyValue<TypedRow<T>> val = nextChunk(nextImpl.getValue());
-		return new Holder<KeyValue<TypedRow<T>>>(val);
+		KeyValue<TypedRow> val = nextChunk(nextImpl.getValue());
+		return new Holder<KeyValue<TypedRow>>(val);
 	}
 	
-	private KeyValue<TypedRow<T>> nextChunk(KeyValue<Row> keyValue) {
+	private KeyValue<TypedRow> nextChunk(KeyValue<Row> keyValue) {
 		if(query == null) {
 			return nextVal(keyValue);
 		}
@@ -62,15 +62,15 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private KeyValue<TypedRow<T>> nextForQuery(KeyValue<Row> kv) {
+	private KeyValue<TypedRow> nextForQuery(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		byte[] rowKey = (byte[]) kv.getKey();
 		DboColumnIdMeta idField = meta.getIdColumnMeta();
 		T key = (T) idField.convertFromStorage2(rowKey);
 		
-		KeyValue<TypedRow<T>> keyVal;
+		KeyValue<TypedRow> keyVal;
 		if(row == null) {
-			keyVal = new KeyValue<TypedRow<T>>();
+			keyVal = new KeyValue<TypedRow>();
 			keyVal.setKey(key);
 			RowNotFoundException exc = new RowNotFoundException("Your query="+query+" contained a value with a pk where that entity no longer exists in the nosql store");
 			keyVal.setException(exc);
@@ -81,13 +81,13 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow<T>>> {
 		return keyVal;
 	}
 
-	private KeyValue<TypedRow<T>> nextVal(KeyValue<Row> kv) {
+	private KeyValue<TypedRow> nextVal(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		T key = keys.next();
 		
-		KeyValue<TypedRow<T>> keyVal;
+		KeyValue<TypedRow> keyVal;
 		if(row == null) {
-			keyVal = new KeyValue<TypedRow<T>>();
+			keyVal = new KeyValue<TypedRow>();
 			keyVal.setKey(key);
 		} else {
 			keyVal = meta.translateFromRow(row);

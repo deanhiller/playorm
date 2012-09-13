@@ -22,10 +22,8 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
-@SuppressWarnings("rawtypes")
 public class TestNewRawLayer {
 
 	private static final Logger log = LoggerFactory.getLogger(TestNewRawLayer.class);
@@ -56,12 +54,13 @@ public class TestNewRawLayer {
 		
 		String cf = "User";
 		String id = "someid";
-		TypedRow<String> row = createUser(id, "dean", "hiller");
+		TypedRow row = s.createTypedRow(cf);
+		createUser(row, id, "dean", "hiller");
 		s.put(cf, row);
 		s.flush();
 		
 		//NOW, let's find the row we put
-		TypedRow<String> result = s.find(cf, id);
+		TypedRow result = s.find(cf, id);
 		Assert.assertEquals(id, result.getRowKey());
 		Assert.assertEquals(row.getColumn("name").getValue(), result.getColumn("name").getValue());
 		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
@@ -77,16 +76,16 @@ public class TestNewRawLayer {
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		String cf = "TimeSeriesData";
-		TypedRow<BigInteger> row = new TypedRow<BigInteger>();
+		TypedRow row = s.createTypedRow(cf);
 		row.setRowKey(BigInteger.valueOf(25));
-		row.addColumn(new TypedColumn("temp", new BigDecimal(55.6)));
-		row.addColumn(new TypedColumn("someName", "dean"));
+		row.addColumn("temp", new BigDecimal(55.6));
+		row.addColumn("someName", "dean");
 		
 		s.put(cf, row);
 		s.flush();
 		
 		//NOW, let's find the row we put
-		TypedRow<BigInteger> result = s.find(cf, row.getRowKey());
+		TypedRow result = s.find(cf, row.getRowKey());
 		Assert.assertEquals(row.getRowKey(), result.getRowKey());
 		Assert.assertEquals(row.getColumn("temp").getValue(), result.getColumn("temp").getValue());
 		Assert.assertEquals(row.getColumn("someName").getValue(), result.getColumn("someName").getValue());
@@ -107,11 +106,10 @@ public class TestNewRawLayer {
 		Assert.assertEquals(row.getColumn("temp").getValue(), theRow2.getColumn("temp").getValue());
 	}
 	
-	private TypedRow<String> createUser(String key, String name, String lastname) {
-		TypedRow<String> row = new TypedRow<String>();
+	private TypedRow createUser(TypedRow row, String key, String name, String lastname) {
 		row.setRowKey(key);
-		row.addColumn(new TypedColumn("name", name));
-		row.addColumn(new TypedColumn("lastName", lastname));
+		row.addColumn("name", name);
+		row.addColumn("lastName", lastname);
 		return row;
 	}
 
@@ -141,11 +139,9 @@ public class TestNewRawLayer {
 		
 		String sql = "select * FROM MyEntity as e WHERE e.cat = \"deano\"";
 
-		TypedColumn col1 = new TypedColumn();
-		col1.setName("cat");
-		col1.setValue("deano");
-		TypedRow<String> typedRow = new TypedRow<String>();
-		typedRow.addColumn(col1);
+		TypedRow typedRow = session.createTypedRow("MyEntity");
+
+		typedRow.addColumn("cat", "deano");
 		typedRow.setRowKey("dean1");
 		
 		session.put("MyEntity", typedRow);

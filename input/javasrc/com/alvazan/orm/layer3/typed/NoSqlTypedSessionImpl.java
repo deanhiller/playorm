@@ -88,15 +88,15 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
-	public <T> TypedRow<T> find(String cf, T id) {
+	public <T> TypedRow find(String cf, T id) {
 		List<T> keys = new ArrayList<T>();
 		keys.add(id);
-		List<KeyValue<TypedRow<T>>> rows = findAllList(cf, keys);
+		List<KeyValue<TypedRow>> rows = findAllList(cf, keys);
 		return rows.get(0).getValue();
 	}
 	
 	@Override
-	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> keys) {
+	public <T> Cursor<KeyValue<TypedRow>> findAll2(String colFamily, Iterable<T> keys) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
@@ -107,7 +107,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return findAllImpl2(meta, keys, noSqlKeys, null);
 	}
 
-	<T> Cursor<KeyValue<TypedRow<T>>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
+	<T> Cursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
@@ -119,11 +119,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
-	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> keys) {
-		List<KeyValue<TypedRow<T>>> rows = new ArrayList<KeyValue<TypedRow<T>>>();
-		Cursor<KeyValue<TypedRow<T>>> iter = findAll2(colFamily, keys);
+	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> keys) {
+		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
+		Cursor<KeyValue<TypedRow>> iter = findAll2(colFamily, keys);
 		while(iter.next()) {
-			KeyValue<TypedRow<T>> keyValue = iter.getCurrent();
+			KeyValue<TypedRow> keyValue = iter.getCurrent();
 			rows.add(keyValue);
 		}
 
@@ -177,6 +177,16 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		
 		return results;
+	}
+
+	@Override
+	public TypedRow createTypedRow(String colFamily) {
+		DboTableMeta metaClass = cachedMeta.getMeta(colFamily);
+		if(metaClass == null)
+			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
+		
+		TypedRow r = new TypedRow(metaClass);
+		return r;
 	}
 
 }

@@ -7,8 +7,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -23,7 +21,6 @@ import com.alvazan.test.db.Activity;
 
 public class TestJoins {
 
-	private static final Logger log = LoggerFactory.getLogger(TestJoins.class);
 	
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
@@ -49,7 +46,7 @@ public class TestJoins {
 		NoSqlTypedSession s = mgr.getTypedSession();
 
 		QueryResult result = s.runQueryForKeys("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
-		List<ViewInfo> views = result.getAliases();
+		List<ViewInfo> views = result.getViews();
 		Cursor<IndexColumnInfo> cursor = result.getCursor();
 
 		ViewInfo viewAct = views.get(0);

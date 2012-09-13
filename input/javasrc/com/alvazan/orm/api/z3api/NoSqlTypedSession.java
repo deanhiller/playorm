@@ -10,8 +10,9 @@ import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 import com.google.inject.ImplementedBy;
 
 @ImplementedBy(NoSqlTypedSessionImpl.class)
-@SuppressWarnings("rawtypes")
 public interface NoSqlTypedSession {
+	
+	public TypedRow createTypedRow(String columnFamily);
 	
 	/**
 	 * Retrieves the rawest interface that all the providers implement(in-memory, cassandra, hadoop, etc) BUT
@@ -39,13 +40,14 @@ public interface NoSqlTypedSession {
 	 */
 	public void remove(String colFamily, TypedRow rowKey);
 	
-	public <T> TypedRow<T> find(String cf, T id);
+	public <T> TypedRow find(String cf, T id);
 	
-	public <T> List<KeyValue<TypedRow<T>>> findAllList(String colFamily, Iterable<T> rowKeys);
-	public <T> Cursor<KeyValue<TypedRow<T>>> findAll2(String colFamily, Iterable<T> rowKeys);
+	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> rowKeys);
+	public <T> Cursor<KeyValue<TypedRow>> findAll2(String colFamily, Iterable<T> rowKeys);
 
 	public Cursor<List<TypedRow>> runQueryForData(String query, int batchSize);
 	public QueryResult runQueryForKeys(String query, int batchSize);
+	
 	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize);
 	
 	public void flush();

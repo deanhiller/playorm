@@ -22,7 +22,7 @@ public class QueryResultImpl implements QueryResult {
 		return cursor;
 	}
 
-	public List<ViewInfo> getAliases() {
+	public List<ViewInfo> getViews() {
 		return aliases;
 	}
 	

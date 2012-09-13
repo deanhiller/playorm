@@ -4,7 +4,7 @@ import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
-@SuppressWarnings({ "unchecked", "rawtypes" })
+@SuppressWarnings({ "rawtypes" })
 @NoSqlDiscriminatorColumn(value="id")
 public class DboColumnIdMeta extends DboColumnMeta {
 

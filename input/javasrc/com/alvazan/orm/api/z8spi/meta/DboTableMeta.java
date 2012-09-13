@@ -201,8 +201,7 @@ public class DboTableMeta {
 		return partTypes;
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> KeyValue<TypedRow<T>> translateFromRow(Row row) {
+	public <T> KeyValue<TypedRow> translateFromRow(Row row) {
 		TypedRow typedRow = convertIdToProxy(row, row.getKey(), typedRowProxyClass);
 		fillInInstance(row, typedRow);
 		NoSqlTypedRowProxy temp = (NoSqlTypedRowProxy)typedRow;
@@ -210,7 +209,7 @@ public class DboTableMeta {
 		//values we know we need to update the indexes and such...
 		temp.__cacheIndexedValues();
 		
-		KeyValue<TypedRow<T>> keyVal = new KeyValue<TypedRow<T>>();
+		KeyValue<TypedRow> keyVal = new KeyValue<TypedRow>();
 		keyVal.setKey(typedRow.getRowKey());
 		keyVal.setValue(typedRow);
 		return keyVal;
@@ -220,7 +219,9 @@ public class DboTableMeta {
 	private TypedRow convertIdToProxy(Row row, byte[] key, Class typedRowProxyClass) {
 		Proxy inst = (Proxy) ReflectionUtil.create(typedRowProxyClass);
 		inst.setHandler(new NoSqlTypedRowProxyImpl(this));
-		return (TypedRow) inst;
+		TypedRow r = (TypedRow) inst;
+		r.setMeta(this);
+		return r;
 	}
 	
 	/**

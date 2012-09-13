@@ -10,6 +10,6 @@ public interface QueryResult {
 
 	Cursor<IndexColumnInfo> getCursor();
 
-	List<ViewInfo> getAliases();
+	List<ViewInfo> getViews();
 
 }

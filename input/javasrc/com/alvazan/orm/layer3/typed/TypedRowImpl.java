@@ -3,12 +3,18 @@ package com.alvazan.orm.layer3.typed;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
-public class TypedRowImpl<T> extends TypedRow<T> {
+public class TypedRowImpl extends TypedRow {
+
 	private Map<String, TypedColumn> originalValues = new HashMap<String, TypedColumn>();
 
+	public TypedRowImpl(DboTableMeta metaClass) {
+		super(metaClass);
+	}
+	
 	public Map<String, TypedColumn> getOriginalValues() {
 		return originalValues;
 	}
