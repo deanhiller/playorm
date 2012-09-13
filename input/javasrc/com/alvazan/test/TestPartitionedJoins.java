@@ -59,14 +59,17 @@ public class TestPartitionedJoins {
 	
 	private void putEntities() {
 		PartSecurity sec = new PartSecurity();
+		sec.setId("sec1");
 		sec.setSecurityType("one");
 		mgr.put(sec);
 		
 		PartSecurity sec2 = new PartSecurity();
+		sec2.setId("sec2");
 		sec2.setSecurityType("two");
 		mgr.put(sec2);
 		
 		PartSecurity sec3 = new PartSecurity();
+		sec3.setId("sec3");
 		sec3.setSecurityType("one");
 		mgr.put(sec3);
 		
@@ -74,6 +77,7 @@ public class TestPartitionedJoins {
 
 		//This trade has no account so is in the null partition of accounts
 		AAPartitionedTrade trade1 = new AAPartitionedTrade();
+		trade1.setId("t1");
 		trade1.setSecurity(sec);
 		trade1.setNumShares(5);
 		mgr.put(trade1);
@@ -81,22 +85,26 @@ public class TestPartitionedJoins {
 		mgr.flush();
 		
 		AAPartitionedTrade trade2 = new AAPartitionedTrade();
+		trade2.setId("t2");
 		trade2.setSecurity(sec);
 		trade2.setNumShares(6);
 		mgr.put(trade2);
 
 		AAPartitionedTrade trade3 = new AAPartitionedTrade();
+		trade3.setId("t3");
 		trade3.setSecurity(sec3);
 		trade3.setNumShares(5);
 		mgr.put(trade3);
 
 		//has null security
 		AAPartitionedTrade trade4 = new AAPartitionedTrade();
+		trade4.setId("t4");
 		trade4.setNumShares(5);
 		mgr.put(trade4);
 		
 		//has security 2 not one
 		AAPartitionedTrade trade5 = new AAPartitionedTrade();
+		trade5.setId("t5");
 		trade5.setSecurity(sec2);
 		trade5.setNumShares(5);
 		mgr.put(trade5);

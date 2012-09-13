@@ -9,6 +9,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.netflix.astyanax.connectionpool.OperationResult;
+import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 
 public class CursorOfFutures extends AbstractCursor<IndexColumn> {
@@ -16,6 +17,8 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 	private StartQueryListener columnSliceCb;
 	private BatchListener batchListener;
 	private Iterator<Future<OperationResult<ColumnList<byte[]>>>> theOneBatch;
+	private boolean needToGetBatch;
+	private Iterator<Column<byte[]>> cachedLastCols;
 	
 	public CursorOfFutures(StartQueryListener l, BatchListener listener) {
 		Precondition.check(l,"l");
@@ -26,26 +29,45 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 
 	@Override
 	public void beforeFirst() {
-		theOneBatch = columnSliceCb.start().iterator();
+		needToGetBatch = true;
 	}
 
 	@Override
 	public Holder<IndexColumn> nextImpl() {
-		if(!theOneBatch.hasNext())
-			return null;
-		Future<OperationResult<ColumnList<byte[]>>> future = theOneBatch.next();
-		
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
-		OperationResult<ColumnList<byte[]>> results = get(future);
-		ColumnList<byte[]> columnList = results.getResult();
-		if(batchListener != null)
-			batchListener.afterFetchingNextBatch(columnList.size());
+		loadBatchIfNeeded();
+		if(cachedLastCols != null && cachedLastCols.hasNext()) {
+			Column<byte[]> col = cachedLastCols.next();
+			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col);
+			return new Holder<IndexColumn>(indexedCol);
+		}
 		
-		com.netflix.astyanax.model.Column<byte[]> col = columnList.iterator().next();
-		IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);
-		
-		return new Holder<IndexColumn>(indexCol);
+		while(true) {
+			if(!theOneBatch.hasNext())
+				return null;			
+			Future<OperationResult<ColumnList<byte[]>>> future = theOneBatch.next();
+
+			OperationResult<ColumnList<byte[]>> results = get(future);
+			ColumnList<byte[]> columnList = results.getResult();
+			cachedLastCols = columnList.iterator();
+
+			if(cachedLastCols.hasNext()) {
+				Column<byte[]> col = cachedLastCols.next();
+				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);
+	
+				if(batchListener != null)
+					batchListener.afterFetchingNextBatch(columnList.size());
+				return new Holder<IndexColumn>(indexCol);
+			}
+		}
+	}
+
+	private void loadBatchIfNeeded() {
+		if(needToGetBatch) {
+			theOneBatch = columnSliceCb.start().iterator();
+			needToGetBatch = false;
+		}
 	}
 	
 	private OperationResult<ColumnList<byte[]>> get(Future<OperationResult<ColumnList<byte[]>>> f) {

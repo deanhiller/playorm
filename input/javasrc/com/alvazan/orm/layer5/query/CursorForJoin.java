@@ -70,11 +70,31 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 			//we need to fetch more...
 		}
 		
+		return fetchAnother();
+	}
+
+	private Holder<IndexColumnInfo> fetchAnother() {
 		//HERE we want to batch for performance
 		List<byte[]> values = new ArrayList<byte[]>();
 		List<IndexColumnInfo> rightListResults = new ArrayList<IndexColumnInfo>();
 				
 		//optimize by fetching LOTS of keys at one time up to batchSize
+		buildValuesToFind(values, rightListResults);
+		
+		cachedFromRightResults = rightListResults.iterator();
+		cachedFromNewView = session.scanIndex(scanInfo, values);
+		
+		Holder<IndexColumn> next = cachedFromNewView.nextImpl();
+		if(next == null)
+			return null;
+		else if(lastCachedRightSide == null)
+			lastCachedRightSide = cachedFromRightResults.next();
+		
+		return createResult(next);
+	}
+
+	private void buildValuesToFind(List<byte[]> values,
+			List<IndexColumnInfo> rightListResults) {
 		boolean rightResultsExhausted = false;
 		int counter = 0;
 		while(true) {
@@ -98,17 +118,6 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 			values.add(null);
 			alreadyRan = true;
 		}
-		
-		cachedFromRightResults = rightListResults.iterator();
-		cachedFromNewView = session.scanIndex(scanInfo, values);
-		
-		com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> next = cachedFromNewView.nextImpl();
-		if(next == null)
-			return null;
-		else if(lastCachedRightSide == null)
-			lastCachedRightSide = cachedFromRightResults.next();
-		
-		return createResult(next);
 	}
 
 	private Holder<IndexColumnInfo> createResult(

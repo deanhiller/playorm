@@ -172,12 +172,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String cfAndIndex = logColScan2(scanInfo, values);
 			list = new LogBatchFetch(cfAndIndex, l, null);
 		}
-		long start = System.currentTimeMillis();
+
 		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list);
-		if(log.isInfoEnabled()) {
-			long total = System.currentTimeMillis()-start;
-			log.info("time to SEND find non-contiguous columns on index of keys="+total+" ms");
-		}
 		return cursor;
 	}
 	
