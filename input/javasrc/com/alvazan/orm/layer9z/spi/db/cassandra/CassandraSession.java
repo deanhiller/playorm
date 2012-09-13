@@ -67,7 +67,7 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	@Override
-	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
 		ColumnType type = info.getColumnType();

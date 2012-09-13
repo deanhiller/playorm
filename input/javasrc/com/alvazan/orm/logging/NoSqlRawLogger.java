@@ -300,13 +300,13 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys, int batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch(colFamily, l, batchSize);
 		}
-		return createFindCursor(colFamily, rowKeys, batchSize, list);
+		return find(colFamily, rowKeys, batchSize, list);
 	}
 	
 	@Override

@@ -71,9 +71,9 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> createFindCursor(String cf,
+	public AbstractCursor<KeyValue<Row>> find(String cf,
 			Iterable<byte[]> noSqlKeys, boolean skipCache, int batchSize) {
-		return session.createFindCursor(cf, noSqlKeys, skipCache, batchSize);
+		return session.find(cf, noSqlKeys, skipCache, batchSize);
 	}
 	
 	@Override

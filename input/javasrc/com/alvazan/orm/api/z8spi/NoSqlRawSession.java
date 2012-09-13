@@ -49,7 +49,6 @@ public interface NoSqlRawSession {
 
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list);
 
-	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
-			Iterable<byte[]> rowKeys, int batchSize, BatchListener list);
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys, int batchSize, BatchListener list);
 
 }

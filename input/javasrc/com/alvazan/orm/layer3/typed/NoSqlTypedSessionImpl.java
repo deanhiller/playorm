@@ -109,7 +109,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows2 = session.createFindCursor(cf, noSqlKeys, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows2 = session.find(cf, noSqlKeys, true, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else

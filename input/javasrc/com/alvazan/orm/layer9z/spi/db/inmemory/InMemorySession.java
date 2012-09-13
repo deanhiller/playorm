@@ -42,7 +42,7 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public AbstractCursor<KeyValue<Row>> createFindCursor(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
