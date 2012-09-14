@@ -23,7 +23,7 @@ import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowSliceQuery;
 
-public class FindRowsCursor extends AbstractCursor<KeyValue<Row>> {
+public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
 	private Info info;
 	private Iterable<byte[]> rowKeys;
@@ -36,7 +36,7 @@ public class FindRowsCursor extends AbstractCursor<KeyValue<Row>> {
 	private Provider<Row> rowProvider;
 	private Cache cache;
 
-	public FindRowsCursor(Info info, Iterable<byte[]> rowKeys, Cache cache, int batchSize,
+	public CursorKeysToRows(Info info, Iterable<byte[]> rowKeys, Cache cache, int batchSize,
 			BatchListener list, Keyspace keyspace, Provider<Row> rowProvider) {
 		this.cache = cache;
 		this.rowProvider = rowProvider;

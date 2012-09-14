@@ -6,41 +6,63 @@ import java.util.Map.Entry;
 
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IndexColumnInfo {
 
-	private Map<ViewInfo, IndexColumn> colNameToValue = new HashMap<ViewInfo, IndexColumn>();
+	private Map<ViewInfo, Wrapper> colNameToValue = new HashMap<ViewInfo, Wrapper>();
 	
-	public void putIndexNode(ViewInfo viewInfo, IndexColumn indCol) {
-		this.colNameToValue.put(viewInfo, indCol);
+	public void putIndexNode(ViewInfo viewInfo, IndexColumn indCol, DboColumnMeta colMeta) {
+		this.colNameToValue.put(viewInfo, new Wrapper(indCol, colMeta));
 	}
 
 	public IndexColumn getIndexNode(ViewInfo view) {
-		return colNameToValue.get(view);
+		return colNameToValue.get(view).getCol();
 	}
 
 	public ByteArray getPrimaryKey(ViewInfo leftView) {
-		IndexColumn indexColumn = colNameToValue.get(leftView);
-		return new ByteArray(indexColumn.getPrimaryKey());
+		return new ByteArray(getPrimaryKeyRaw(leftView));
+	}
+	public byte[] getPrimaryKeyRaw(ViewInfo info) {
+		IndexColumn col = colNameToValue.get(info).getCol();
+		return col.getPrimaryKey();
 	}
 
 	public void mergeResults(IndexColumnInfo info) {
-		for (Entry<ViewInfo, IndexColumn> entry : info.colNameToValue.entrySet()) {
-			putIndexNode(entry.getKey(), entry.getValue());
+		for (Entry<ViewInfo, Wrapper> entry : info.colNameToValue.entrySet()) {
+			colNameToValue.put(entry.getKey(), entry.getValue());
 		}
 	}
 
 	public IndexColumnInfo copy() {
 		IndexColumnInfo info = new IndexColumnInfo();
-		for (Entry<ViewInfo, IndexColumn> entry : colNameToValue.entrySet()) {
+		for (Entry<ViewInfo, Wrapper> entry : colNameToValue.entrySet()) {
 			info.colNameToValue.put(entry.getKey(), entry.getValue());
 		}
 		return info;
 	}
 	
-	public RowKey getKeyForView(ViewInfo view) {
-		IndexColumn col = colNameToValue.get(view);
-		return new RowKey(view, col);
+	public IndexPoint getKeyForView(ViewInfo view) {
+		Wrapper col = colNameToValue.get(view);
+		DboColumnIdMeta idMeta = view.getTableMeta().getIdColumnMeta();
+		return new IndexPoint(idMeta, col.getCol(), col.getColMeta());
+	}
+	
+	private static class Wrapper {
+		private IndexColumn col;
+		private DboColumnMeta colMeta;
+		public Wrapper(IndexColumn col, DboColumnMeta colMeta) {
+			super();
+			this.col = col;
+			this.colMeta = colMeta;
+		}
+		public IndexColumn getCol() {
+			return col;
+		}
+		public DboColumnMeta getColMeta() {
+			return colMeta;
+		}
 	}
 }

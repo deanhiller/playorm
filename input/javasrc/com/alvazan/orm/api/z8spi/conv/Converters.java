@@ -49,10 +49,7 @@ public class Converters {
 	
 	public static class BigDecimalConverter extends BaseConverter {
 		@Override
-		public byte[] convertToNoSql(Object input) {
-			if(input == null)
-				return null;
-			
+		public byte[] convertToNoSqlImpl(Object input) {
 			BigDecimal value = (BigDecimal) input;
 			BigInteger bi = value.unscaledValue();
 			Integer scale = value.scale();
@@ -67,7 +64,7 @@ public class Converters {
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
+		public Object convertFromNoSqlImpl(byte[] value) {
 			ByteBuffer buf = ByteBuffer.wrap(value);
 			int scale = buf.getInt();
 			byte[] bibytes = new byte[buf.remaining()];
@@ -85,15 +82,13 @@ public class Converters {
 	
 	public static class BigIntegerConverter extends BaseConverter {
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			BigInteger val = (BigInteger)value;
 			return val.toByteArray();
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
+		public Object convertFromNoSqlImpl(byte[] value) {
 			return new BigInteger(value);
 		}
 
@@ -107,12 +102,12 @@ public class Converters {
 	public static class ByteArrayConverter extends BaseConverter {
 
 		@Override
-		public byte[] convertToNoSql(Object value) {
+		public byte[] convertToNoSqlImpl(Object value) {
 			return (byte[])value;
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
+		public Object convertFromNoSqlImpl(byte[] value) {
 			return value;
 		}
 		
@@ -133,38 +128,49 @@ public class Converters {
 	}
 	
 	public static abstract class BaseConverter implements Converter {
-		public Object convertStringToType(String value) {
+		
+		public final byte[] convertToNoSql(Object value) {
 			if(value == null)
 				return null;
-			
+			return convertToNoSqlImpl(value);
+		}
+
+		public final Object convertFromNoSql(byte[] value) {
+			if(value == null)
+				return null;
+			return convertFromNoSqlImpl(value);
+		}
+
+		public final Object convertStringToType(String value) {
+			if(value == null)
+				return null;
 			return convertToType(value);
 		}
-		
-		public String convertTypeToString(Object dbValue) {
-			if(dbValue == null)
+
+		public final String convertTypeToString(Object value) {
+			if(value == null)
 				return null;
-			return convertToString(dbValue);
+			return convertToString(value);
 		}
 		
 		protected abstract Object convertToType(String value);
+
+		protected abstract byte[] convertToNoSqlImpl(Object value);
+		protected abstract Object convertFromNoSqlImpl(byte[] value);
 		
+		//This is overloaded for stuff like byte[] types which need to convert to Hex
+		//or for LocalDateTime as well to use correct formatter.
 		protected String convertToString(Object value) {
 			return value+"";
 		}
 	}
 	
 	public static abstract class DecimalConverter extends BaseConverter {
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
-			
+		public byte[] convertToNoSqlImpl(Object value) {
 			BigDecimal dec = convertToForSmallStorage(value);
 			return BIGDECIMAL_CONVERTER.convertToNoSql(dec);
 		}
-		public Object convertFromNoSql(byte[] data) {
-			if(data == null)
-				return null;
-			
+		public Object convertFromNoSqlImpl(byte[] data) {
 			BigDecimal bigD = (BigDecimal) BIGDECIMAL_CONVERTER.convertFromNoSql(data);
 			return convertFromForSmallStorage(bigD);
 		}
@@ -173,17 +179,11 @@ public class Converters {
 	}
 
 	public static abstract class IntegerConverter extends BaseConverter {
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
-			
+		public byte[] convertToNoSqlImpl(Object value) {
 			BigInteger dec = convertToForSmallStorage(value);
 			return BIGINTEGER_CONVERTER.convertToNoSql(dec);
 		}
-		public Object convertFromNoSql(byte[] data) {
-			if(data == null)
-				return null;
-			
+		public Object convertFromNoSqlImpl(byte[] data) {
 			BigInteger bigD = (BigInteger) BIGINTEGER_CONVERTER.convertFromNoSql(data);
 			return convertFromForSmallStorage(bigD);
 		}
@@ -194,10 +194,8 @@ public class Converters {
 	public static class StringConverter extends BaseConverter {
 		
 		@Override
-		public byte[] convertToNoSql(Object value) {
+		public byte[] convertToNoSqlImpl(Object value) {
 			try {
-				if(value == null)
-					return null;
 				String temp = (String) value;
 				return temp.getBytes("UTF8");
 			} catch(IOException e) {
@@ -206,10 +204,8 @@ public class Converters {
 		}
 		
 		@Override
-		public Object convertFromNoSql(byte[] bytes) {
+		public Object convertFromNoSqlImpl(byte[] bytes) {
 			try {
-				if(bytes == null)
-					return null;
 				return new String(bytes, "UTF8");
 			} catch(IOException e) {
 				throw new RuntimeException(e);
@@ -329,9 +325,7 @@ public class Converters {
 	
 	public static class BooleanConverter extends BaseConverter {
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			Boolean b = (Boolean) value;
 			if(b)
 				return StandardConverters.convertToBytes(1);
@@ -339,9 +333,7 @@ public class Converters {
 		}
 		
 		@Override
-		public Object convertFromNoSql(byte[] bytes) {
-			if(bytes == null)
-				return null;
+		public Object convertFromNoSqlImpl(byte[] bytes) {
 			Integer value = StandardConverters.convertFromBytes(Integer.class, bytes);
 			if(value == 1)
 				return true;
@@ -358,18 +350,14 @@ public class Converters {
 		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			LocalDateTime dt = (LocalDateTime) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
-			if(value == null)
-				return null;
+		public Object convertFromNoSqlImpl(byte[] value) {
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalDateTime dt = new LocalDateTime(time);
 			return dt;
@@ -392,18 +380,14 @@ public class Converters {
 		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			LocalDate dt = (LocalDate) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
-			if(value == null)
-				return null;
+		public Object convertFromNoSqlImpl(byte[] value) {
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalDate dt = new LocalDate(time);
 			return dt;
@@ -426,18 +410,14 @@ public class Converters {
 		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			LocalTime dt = (LocalTime) value;
 			long milliseconds = dt.getMillisOfDay();
 			return StandardConverters.convertToBytes(milliseconds);
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
-			if(value == null)
-				return null;
+		public Object convertFromNoSqlImpl(byte[] value) {
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			LocalTime dt = LocalTime.fromMillisOfDay(time);
 			return dt;
@@ -460,18 +440,14 @@ public class Converters {
 		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
 		
 		@Override
-		public byte[] convertToNoSql(Object value) {
-			if(value == null)
-				return null;
+		public byte[] convertToNoSqlImpl(Object value) {
 			DateTime dt = (DateTime) value;
 			long milliseconds = dt.toDate().getTime();
 			return StandardConverters.convertToBytes(milliseconds);
 		}
 
 		@Override
-		public Object convertFromNoSql(byte[] value) {
-			if(value == null)
-				return null;
+		public Object convertFromNoSqlImpl(byte[] value) {
 			Long time = StandardConverters.convertFromBytes(Long.class, value);
 			DateTime dt = new DateTime(time);
 			return dt;

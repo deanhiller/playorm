@@ -10,12 +10,12 @@ import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
-public class IterableIndex implements Iterable<byte[]> {
+public class IterableCursorProxy implements Iterable<byte[]> {
 
 	private DirectCursor<IndexColumnInfo> cursor;
 	private ViewInfo view;
 	
-	public IterableIndex(ViewInfo view, DirectCursor<IndexColumnInfo> indice) {
+	public IterableCursorProxy(ViewInfo view, DirectCursor<IndexColumnInfo> indice) {
 		Precondition.check(view, "view");
 		Precondition.check(indice, "indice");
 		this.cursor = indice;
@@ -25,15 +25,15 @@ public class IterableIndex implements Iterable<byte[]> {
 	@Override
 	public Iterator<byte[]> iterator() {
 		cursor.beforeFirst();
-		return new IndexIterator(view, cursor);
+		return new IteratorCursorProxy(view, cursor);
 	}
 	
-	private static class IndexIterator extends AbstractIterator<byte[]> {
+	private static class IteratorCursorProxy extends AbstractIterator<byte[]> {
 
 		private DirectCursor<IndexColumnInfo> cursor;
 		private ViewInfo view;
 
-		public IndexIterator(ViewInfo view, DirectCursor<IndexColumnInfo> cursor2) {
+		public IteratorCursorProxy(ViewInfo view, DirectCursor<IndexColumnInfo> cursor2) {
 			this.view = view;
 			this.cursor = cursor2;
 		}

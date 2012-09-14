@@ -13,12 +13,14 @@ public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 
 	private AbstractCursor<IndexColumn> cursor;
 	private ViewInfo viewInfo;
+	private DboColumnMeta colMeta;
 
 	public CursorSimpleTranslator(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
 		Precondition.check(viewInfo, "viewInfo");
 		Precondition.check(scan, "scan");
 		this.viewInfo = viewInfo;
 		this.cursor = scan;
+		this.colMeta = info;
 	}
 
 	@Override
@@ -35,7 +37,7 @@ public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 		if(indCol == null)
 			return new Holder<IndexColumnInfo>(null);
 		IndexColumnInfo info = new IndexColumnInfo();
-		info.putIndexNode(viewInfo, indCol);
+		info.putIndexNode(viewInfo, indCol, colMeta);
 		return new Holder<IndexColumnInfo>(info);
 	}
 

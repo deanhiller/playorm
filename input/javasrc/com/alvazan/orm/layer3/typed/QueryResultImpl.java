@@ -6,7 +6,6 @@ import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -30,6 +29,7 @@ public class QueryResultImpl implements QueryResult {
 	}
 
 	public Cursor<IndexColumnInfo> getCursor() {
+		directCursor.beforeFirst();
 		Cursor<IndexColumnInfo> cursor = new CursorProxyDirect(directCursor);
 		cursor.beforeFirst();
 		return cursor;
@@ -41,14 +41,16 @@ public class QueryResultImpl implements QueryResult {
 
 	@Override
 	public Cursor<List<TypedRow>> getAllViewsCursor() {
-		Cursor<List<TypedRow>> cursor = new CursorAllViews(metaQuery.getAliases(), directCursor);
+		directCursor.beforeFirst();
+		Cursor<List<TypedRow>> cursor = new CursorAllViews(session, metaQuery, directCursor, batchSize);
 		return cursor;
 	}
 
 	@Override
 	public Cursor<KeyValue<TypedRow>> getPrimaryViewCursor() {
+		directCursor.beforeFirst();
 		ViewInfo mainView = metaQuery.getTargetViews().get(0);
-		Iterable<byte[]> indexIterable = new IterableIndex(mainView, directCursor);
+		Iterable<byte[]> indexIterable = new IterableCursorProxy(mainView, directCursor);
 
 		DboTableMeta meta = mainView.getTableMeta();
 		Cursor<KeyValue<TypedRow>> results = session.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery(), batchSize);

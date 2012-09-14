@@ -9,6 +9,7 @@ public class TypedRow {
 	private Object rowKey;
 	private Map<String, TypedColumn> columns = new HashMap<String, TypedColumn>();
 	private DboTableMeta metaClass;
+	private ViewInfo view;
 	
 	public TypedRow() {
 		
@@ -63,6 +64,14 @@ public class TypedRow {
 
 	public void setMeta(DboTableMeta dboTableMeta) {
 		this.metaClass = dboTableMeta;
+	}
+
+	public void setView(ViewInfo view) {
+		this.view = view;
+	}
+
+	public ViewInfo getView() {
+		return view;
 	}
 	
 }

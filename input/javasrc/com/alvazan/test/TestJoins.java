@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -7,13 +8,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
-import com.alvazan.orm.api.z5api.RowKey;
+import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -22,6 +25,7 @@ import com.alvazan.test.db.Activity;
 
 public class TestJoins {
 
+	private static final Logger log = LoggerFactory.getLogger(TestJoins.class);
 	
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
@@ -40,6 +44,27 @@ public class TestJoins {
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase(true);
+	}
+	
+	@Test
+	public void testViewIndex() {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		//Here we can pull from a single index to view the index itself. 
+		//Supply the column family(Activity) the column that is indexed(numTimes)
+		//IF a table is partitioned one way, you can add a partitionId
+		//IF a table is partitioned multiple ways, you MUST supply partitionBy and you can supply a partitionId or null for null partition
+		Cursor<IndexPoint> cursor = s.indexView("Activity", "numTimes", null, null);
+		
+		List<IndexPoint> points = new ArrayList<IndexPoint>();
+		while(cursor.next()) {
+			IndexPoint pt = cursor.getCurrent();
+			points.add(pt);
+		}
+		
+		log.info("All index values together are="+points);
+		Assert.assertEquals("10", points.get(0).getIndexedValueAsString());
+		Assert.assertEquals("act1", points.get(0).getKey());
 	}
 	
 	@Test
@@ -65,14 +90,23 @@ public class TestJoins {
 		
 		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
 		
+		rows.next();
+		List<TypedRow> joinedRow = rows.getCurrent();
 		
+		TypedRow typedRow = joinedRow.get(0);
+		TypedRow theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
 	}
 
 	
 	private void compareKeys(Cursor<IndexColumnInfo> cursor, ViewInfo viewAct, ViewInfo viewAcc, String expectedKey, String expectedAccKey) {
 		IndexColumnInfo info = cursor.getCurrent();
-		RowKey keyForActivity = info.getKeyForView(viewAct);
-		RowKey keyForAccount = info.getKeyForView(viewAcc);
+		IndexPoint keyForActivity = info.getKeyForView(viewAct);
+		IndexPoint keyForAccount = info.getKeyForView(viewAcc);
 
 		String key = keyForActivity.getKeyAsString();
 		String keyAcc = keyForAccount.getKeyAsString();

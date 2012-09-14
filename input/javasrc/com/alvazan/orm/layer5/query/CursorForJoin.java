@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.JoinType;
 
@@ -28,6 +29,7 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 	private IndexColumnInfo lastCachedRightSide;
 	private JoinType joinType;
 	private boolean alreadyRan;
+	private DboColumnMeta colMeta;
 
 	public CursorForJoin(ViewInfo view, ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults,
 			JoinType joinType) {
@@ -137,8 +139,12 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 			info.mergeResults(lastCachedRightSide);
 		}
 		
-		info.putIndexNode(newView, indCol);
+		info.putIndexNode(newView, indCol, colMeta);
 		return new Holder<IndexColumnInfo>(info);
+	}
+
+	public void setColMeta(DboColumnMeta col) {
+		this.colMeta = col;
 	}
 
 }

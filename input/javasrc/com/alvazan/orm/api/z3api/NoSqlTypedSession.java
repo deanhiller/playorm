@@ -2,6 +2,7 @@ package com.alvazan.orm.api.z3api;
 
 import java.util.List;
 
+import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
@@ -56,5 +57,7 @@ public interface NoSqlTypedSession {
 	public QueryResult createQueryCursor(String query, int batchSize);
 	
 	public void flush();
+
+	public Cursor<IndexPoint> indexView(String columnFamily, String column, String partitionBy, String partitionId);
 
 }

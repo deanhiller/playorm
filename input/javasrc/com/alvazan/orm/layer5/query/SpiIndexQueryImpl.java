@@ -133,6 +133,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			//FROM an ORM perspective, we join to smaller tables in general as we don't want to blow out memory so do the
 			//join first(ie. we process left sides first in and and or cursors)
 			CursorForJoin temp = new CursorForJoin(newView, leftView, leftResults, joinType);
+			temp.setColMeta(col);
 			temp.setScanInfo(scanInfo);
 			temp.setSession(session);
 			temp.setBatchSize(batchSize);

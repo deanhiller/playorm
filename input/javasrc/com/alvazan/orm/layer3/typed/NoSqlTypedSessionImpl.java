@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
@@ -15,7 +16,9 @@ import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
@@ -105,7 +108,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		return findAllImpl2(meta, keys, noSqlKeys, null, batchSize);
 	}
 
-	<T> Cursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String indexName, int batchSize) {
+	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String query, int batchSize) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		String cf = meta.getColumnFamily();
@@ -113,7 +116,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else
-			return new CursorTypedResp<T>(meta, rows2, indexName);
+			return new CursorTypedResp<T>(meta, rows2, query);
 	}
 	
 	@Override
@@ -134,6 +137,26 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	@Override
+	public Cursor<IndexPoint> indexView(String columnFamily, String column,
+			String partitionBy, String partitionId) {
+		DboTableMeta meta = cachedMeta.getMeta(columnFamily);
+		if(meta == null)
+			throw new IllegalArgumentException("columnFamily="+columnFamily+" not found");
+		DboColumnMeta colMeta = meta.getColumnMeta(column);
+		if(colMeta == null)
+			throw new IllegalArgumentException("Column="+column+" not found on meta info for column family="+columnFamily);
+		else if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("Column="+column+" is not an indexed column");
+		else if(meta.getPartitionedColumns().size() > 1 && partitionBy == null)
+			throw new IllegalArgumentException("Must supply partitionBy parameter BECAUSE this column family="+columnFamily+" is partitioned multiple ways");
+		
+		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
+		AbstractCursor<IndexColumn> indCol = session.scanIndex(info, null, null, null);
+		AbstractCursor<IndexPoint> results = new CursorToIndexPoint(meta.getIdColumnMeta(), colMeta, indCol);
+		return results;
+	}
+	
+	@Override
 	public QueryResult createQueryCursor(String query, int batchSize) {
 		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
 		
@@ -146,29 +169,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		return impl;
 	}
-	
-//	@SuppressWarnings("unchecked")
-//	@Override
-//	public Cursor<KeyValue<TypedRow>> runQuery(String query, int batchSize) {
-//		SpiMetaQuery metaQuery = noSqlSessionFactory.parseQueryForAdHoc(query, mgr);
-//		
-//		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
-//		
-//		spiQueryAdapter.setBatchSize(batchSize);
-//		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
-//		ViewInfo mainView = metaQuery.getTargetViews().get(0);
-//		Iterable<byte[]> indexIterable = new IterableIndex(mainView, iter);
-//
-//		DboTableMeta meta = mainView.getTableMeta();
-//		Cursor<KeyValue<TypedRow>> results = this.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery());
-//		
-//		///Hmmmmmm, this is really where we could strip off false positives from the query, create an iterable that
-//		//skips false positives so as the client loops, we skip some of the results based on that they are false
-//		//AND we could then trigger index rebuilds as we see there are false columns
-//		
-//		
-//		return results;
-//	}
 
 	@Override
 	public TypedRow createTypedRow(String colFamily) {
