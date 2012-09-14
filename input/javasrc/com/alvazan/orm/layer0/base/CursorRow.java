@@ -19,6 +19,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		this.session = session;
 		this.meta = meta2;
 		this.cursor = cursor;
+		this.query = query2;
 	}
 
 	@Override
