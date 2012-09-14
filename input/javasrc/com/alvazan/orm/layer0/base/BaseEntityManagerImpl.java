@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.MetaLookup;
+import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
@@ -108,7 +109,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		return new CursorRow<T>(meta, iter, session, query, batchSize);
+		boolean skipCache = query != null;
+		String cf = meta.getColumnFamily();
+		AbstractCursor<KeyValue<Row>> cursor = session.find(cf, iter, skipCache, batchSize);
+		return new CursorRow<T>(session, meta, cursor, query);
 	}
 
 	@SuppressWarnings("unchecked")

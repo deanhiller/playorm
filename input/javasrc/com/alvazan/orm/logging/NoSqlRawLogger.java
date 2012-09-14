@@ -1,7 +1,6 @@
 package com.alvazan.orm.logging;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.CacheThreadLocal;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -25,11 +26,8 @@ import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
-import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
-import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -301,89 +299,93 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, int batchSize, BatchListener l) {
+			Iterable<byte[]> rowKeys, Cache empty, int batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch(colFamily, l, batchSize);
 		}
-		return find(colFamily, rowKeys, batchSize, list);
+		
+		Cache cache = CacheThreadLocal.getCache();
+		if(cache == null)
+			cache = new EmptyCache();
+		return session.find(colFamily, rowKeys, cache, batchSize, list);
 	}
 	
-	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rKeys) {
-		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
-		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
-		
-		DboTableMeta meta = null;
-		if(log.isInfoEnabled()) {
-			meta = databaseInfo.getMeta(colFamily);
-		}
-		
-		List<byte[]> allKeys = new ArrayList<byte[]>();
-		List<String> realKeys = new ArrayList<String>();
-		//This is where the cursor is read from causing queries to hit the database
-		long start = System.currentTimeMillis();
-		addToLists(rKeys, meta, allKeys, realKeys);
-		long totalTime = System.currentTimeMillis() - start;
-		if(log.isInfoEnabled())
-			log.info("[rawlogger] Reading index information took="+totalTime+" ms");
-		
-		AbstractCursor<KeyValue<Row>> ret;
-		if(log.isInfoEnabled()) {
+//	@Override
+//	public AbstractCursor<KeyValue<Row>> find(String colFamily,
+//			Iterable<byte[]> rKeys) {
+//		//Astyanax will iterate over our iterable twice!!!! so instead we will iterate ONCE so translation
+//		//only happens ONCE and then feed that to the SPI(any other spis then who iterate twice are ok as well then)
+//		
+//		DboTableMeta meta = null;
+//		if(log.isInfoEnabled()) {
+//			meta = databaseInfo.getMeta(colFamily);
+//		}
+//		
+//		List<byte[]> allKeys = new ArrayList<byte[]>();
+//		List<String> realKeys = new ArrayList<String>();
+//		//This is where the cursor is read from causing queries to hit the database
+//		long start = System.currentTimeMillis();
+//		addToLists(rKeys, meta, allKeys, realKeys);
+//		long totalTime = System.currentTimeMillis() - start;
+//		if(log.isInfoEnabled())
+//			log.info("[rawlogger] Reading index information took="+totalTime+" ms");
+//		
+//		AbstractCursor<KeyValue<Row>> ret;
+//		if(log.isInfoEnabled()) {
+//
+//			if(allKeys.size() > 0)
+//				log.info("[rawlogger] Finding keys="+realKeys);
+//			long time = System.currentTimeMillis();
+//			ret = session.find(colFamily, allKeys);
+//			long total = System.currentTimeMillis() - time;
+//			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
+//				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size()+" keys="+realKeys+"="+total+" ms");
+//			else if(log.isTraceEnabled())
+//				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
+//		} else
+//			ret = session.find(colFamily, allKeys);
+//
+//		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here
+//		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
+//		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
+//		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
+//		while(true) {
+//			Holder<KeyValue<Row>> holder = ret.nextImpl();
+//			if(holder == null)
+//				break;
+//			KeyValue<Row> kv = holder.getValue();
+//			byte[] k = (byte[]) kv.getKey();
+//			ByteArray b = new ByteArray(k);
+//			map.put(b, kv);
+//		}
+//		
+//		for(byte[] k : allKeys) {
+//			ByteArray b = new ByteArray(k);
+//			KeyValue<Row> kv = map.get(b);
+//			results.add(kv);
+//		}
+//		
+//		
+//		ProxyTempCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(results);
+//		return proxy;
+//	}
 
-			if(allKeys.size() > 0)
-				log.info("[rawlogger] Finding keys="+realKeys);
-			long time = System.currentTimeMillis();
-			ret = session.find(colFamily, allKeys);
-			long total = System.currentTimeMillis() - time;
-			if(allKeys.size() > 0) //we really only did a find if there were actual keys passed in
-				log.info("[rawlogger] Total find keyset time(including spi plugin)="+total+" for setsize="+allKeys.size()+" keys="+realKeys+"="+total+" ms");
-			else if(log.isTraceEnabled())
-				log.trace("skipped find keyset since no keys(usually caused by cache hit)");
-		} else
-			ret = session.find(colFamily, allKeys);
-
-		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here
-		//into our own List :( :( .  OTHER SPI's may not be ORDERED EITHER so we iterate here for all of them.
-		List<KeyValue<Row>> results = new ArrayList<KeyValue<Row>>();
-		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-		while(true) {
-			Holder<KeyValue<Row>> holder = ret.nextImpl();
-			if(holder == null)
-				break;
-			KeyValue<Row> kv = holder.getValue();
-			byte[] k = (byte[]) kv.getKey();
-			ByteArray b = new ByteArray(k);
-			map.put(b, kv);
-		}
-		
-		for(byte[] k : allKeys) {
-			ByteArray b = new ByteArray(k);
-			KeyValue<Row> kv = map.get(b);
-			results.add(kv);
-		}
-		
-		
-		ProxyTempCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(results);
-		return proxy;
-	}
-
-	private void addToLists(Iterable<byte[]> rKeys, DboTableMeta meta,
-			List<byte[]> allKeys, List<String> realKeys) {
-		for(byte[] k : rKeys) {
-			allKeys.add(k);
-			if(log.isInfoEnabled()) {
-				try {
-					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
-					String str = meta.getIdColumnMeta().convertTypeToString(obj);
-					realKeys.add(str);
-				} catch(Exception e) {
-					log.trace("Exception occurred", e);
-					realKeys.add("[exception, turn on trace logging]");
-				}
-			}
-		}
-	}
+//	private void addToLists(Iterable<byte[]> rKeys, DboTableMeta meta,
+//			List<byte[]> allKeys, List<String> realKeys) {
+//		for(byte[] k : rKeys) {
+//			allKeys.add(k);
+//			if(log.isInfoEnabled()) {
+//				try {
+//					Object obj = meta.getIdColumnMeta().convertFromStorage2(k);
+//					String str = meta.getIdColumnMeta().convertTypeToString(obj);
+//					realKeys.add(str);
+//				} catch(Exception e) {
+//					log.trace("Exception occurred", e);
+//					realKeys.add("[exception, turn on trace logging]");
+//				}
+//			}
+//		}
+//	}
 
 }

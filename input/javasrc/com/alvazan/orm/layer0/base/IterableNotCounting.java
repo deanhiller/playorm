@@ -20,12 +20,12 @@ public class IterableNotCounting implements Iterable<byte[]> {
 		if(alreadyRun)
 			throw new IllegalStateException("BUG, This iterable can only be run once as it is proxy to an Iterator that CAN ONLY be run once");
 		alreadyRun = true;
-		return new EmptyIterator(keysIterator);
+		return new IteratorNotCounting(keysIterator);
 	}
-	private static class EmptyIterator extends AbstractIterator<byte[]> {
+	private static class IteratorNotCounting extends AbstractIterator<byte[]> {
 		private AbstractIterator<byte[]> keysIterator;
 
-		public EmptyIterator(AbstractIterator<byte[]> keysIterator2) {
+		public IteratorNotCounting(AbstractIterator<byte[]> keysIterator2) {
 			this.keysIterator = keysIterator2;
 		}
 		@Override

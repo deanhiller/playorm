@@ -10,6 +10,8 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.CacheThreadLocal;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -21,7 +23,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
-public class NoSqlReadCacheImpl implements NoSqlSession {
+public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
@@ -92,36 +94,20 @@ public class NoSqlReadCacheImpl implements NoSqlSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, boolean skipCache, int batchSize) {
+			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
 		if(skipCache) {
-			return session.findAll(colFamily, rowKeys, skipCache);
+			CacheThreadLocal.setCache(null);
+			return session.find(colFamily, rowKeys, skipCache, batchSize);
 		}
 		
-		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
+		//A layer below will read the thread local and pass it to lowest layer to use
+		CacheThreadLocal.setCache(this);
 		AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
-		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
-		//existing rows
-		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
-		AbstractCursor<KeyValue<Row>> theRows = new CursorCacheProxy(this, colFamily, inCache, rowsFromDb);
-		return theRows;
+		CacheThreadLocal.setCache(null);
+		return rowsFromDb;
 	}
 	
-	@Override
-	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
-		if(skipCache) {
-			return session.findAll(colFamily, rowKeys, skipCache);
-		}
-		
-		IterCacheKeysProxy proxy = new IterCacheKeysProxy(this, colFamily, rowKeys);
-		AbstractCursor<KeyValue<Row>> rowsFromDb = session.findAll(colFamily, proxy, skipCache);
-		//NOW we must MERGE both Iterables back together!!! as IterCacheKeysProxy looked up
-		//existing rows
-		List<RowHolder<Row>> inCache = proxy.getFoundInCache();
-		AbstractCursor<KeyValue<Row>> theRows = new CursorCacheProxy(this, colFamily, inCache, rowsFromDb);
-		return theRows;
-	}
-	
-	RowHolder<Row> fromCache(String colFamily, byte[] key) {
+	public RowHolder<Row> fromCache(String colFamily, byte[] key) {
 		TheKey k = new TheKey(colFamily, key);
 		return cache.get(k);
 	}

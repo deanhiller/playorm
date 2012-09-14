@@ -54,7 +54,8 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		if(cacheLoaded)
 			return;
 
-		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
+		String cf = classMeta.getColumnFamily();
+		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keys, false, null);
 		log.info("loading key list="+keys+" results="+rows);
 		while(true) {
 			Holder<KeyValue<Row>> holder = rows.nextImpl();

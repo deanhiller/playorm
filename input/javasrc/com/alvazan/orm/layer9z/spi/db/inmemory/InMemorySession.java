@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -43,26 +44,7 @@ public class InMemorySession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
-		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
-		for(byte[] key : rowKeys) {
-			Row row = findRow(colFamily, key);
-			Row newRow = null;
-			if(row != null)
-				newRow = row.deepCopy();
-			KeyValue<Row> kv = new KeyValue<Row>();
-			kv.setKey(key);
-			kv.setValue(newRow);
-			//This add null if there is no row to the list on purpose
-			rows.add(kv);
-		}
-		
-		AbstractCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(rows);
-		return proxy;
-	}
-	
-	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		for(byte[] key : rowKeys) {
 			Row row = findRow(colFamily, key);

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -35,12 +36,6 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys) {
-		return null;
-	}
-
-	@Override
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		return null;
@@ -59,8 +54,7 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
-		// TODO Auto-generated method stub
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
 		return null;
 	}
 

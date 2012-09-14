@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.ScanInfo;
-import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
@@ -41,8 +40,6 @@ public class StartQueryManyKeys implements StartQueryListener {
 			Key from = new Key(val, true);
 			Key to = new Key(val, true);
 			byte[] rowKey = scanInfo.getRowKey();
-			ByteArray valB = new ByteArray(val);
-			ByteArray forRow = new ByteArray(rowKey);
 			
 			CompositeRangeBuilder range = CassandraSession.setupRangeBuilder(from, to, info1);
 			ColumnFamilyQuery query = keyspace.prepareQuery(cf);

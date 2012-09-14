@@ -47,7 +47,8 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		AbstractCursor<KeyValue<Row>> rows = session.findAll(classMeta.getColumnFamily(), keys, false);
+		String cf = classMeta.getColumnFamily();
+		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keys, false, null);
 		int counter = 0;
 		while(true) {
 			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();

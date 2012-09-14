@@ -72,15 +72,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String cf,
-			Iterable<byte[]> noSqlKeys, boolean skipCache, int batchSize) {
+			Iterable<byte[]> noSqlKeys, boolean skipCache, Integer batchSize) {
 		return session.find(cf, noSqlKeys, skipCache, batchSize);
-	}
-	
-	@Override
-	public AbstractCursor<KeyValue<Row>> findAll(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache) {
-		log.warn("CAN't use this method as it would cause the iterable to loop and we only want to loop ONCE so need a proxy iterable to pass down!!!!");
-		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, rowKeys);
-		return session.findAll(colFamily, rowKeys, skipCache);
 	}
 	
 	@Override

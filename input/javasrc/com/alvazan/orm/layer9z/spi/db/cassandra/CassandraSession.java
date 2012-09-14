@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.ColumnType;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -29,15 +30,12 @@ import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.MutationBatch;
-import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
-import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowQuery;
-import com.netflix.astyanax.query.RowSliceQuery;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
 import com.netflix.astyanax.serializers.CompositeRangeBuilder;
 import com.netflix.astyanax.util.RangeBuilder;
@@ -68,62 +66,20 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, int batchSize, BatchListener list) {
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		if(info == null) {
+			//If there is no column family in cassandra, then we need to return no rows to the user...
+			return new CursorReturnsEmptyRows(rowKeys);
+		}
+		
 		ColumnType type = info.getColumnType();
 		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
 			throw new UnsupportedOperationException("Finding on composite type="+colFamily+" not allowed here, you should be using column slice as these rows are HUGE!!!!");
 		}
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		return new FindRowsCursor(info, rowKeys, batchSize, list, keyspace, rowProvider);
-	}
-	
-	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys) {
-		try {
-			return findImpl2(colFamily, rowKeys);
-		} catch (ConnectionException e) {
-			throw new RuntimeException(e);
-		}		
-	}
-	
-	private AbstractCursor<KeyValue<Row>> findImpl2(String colFamily, Iterable<byte[]> keys) throws ConnectionException {
-		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
-		if(info == null) {
-			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
-			//WE MUST force a call up the iterator stream or the cache layer breaks here...
-			for(@SuppressWarnings("unused") byte[] k : keys) {
-				log.trace("iterating over keys to find for empty list");
-				//do nothing
-			}
-			return new CursorReturnsEmptyRows(keys);
-		}
-
-		ColumnFamily cf = info.getColumnFamilyObj();
-		ColumnType type = info.getColumnType();
-		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
-			throw new UnsupportedOperationException("Finding on composite type not allowed here, you should be using column slice as these rows are HUGE!!!!");
-		}
-		
-		Keyspace keyspace = columnFamilies.getKeyspace();
-		ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
-		//ColumnFamilyQuery<byte[], byte[]> q2 = query1.setConsistencyLevel(ConsistencyLevel.CL_QUORUM);
-		RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keys);
-		
-		long time = System.currentTimeMillis();
-		OperationResult<Rows<byte[], byte[]>> result = slice.execute();
-		if(log.isTraceEnabled()) {
-			long total = System.currentTimeMillis()-time;
-			log.trace("astyanx find took="+total+" ms");
-		}
-		
-		Rows rows = result.getResult();
-		
-		CursorResult r = new CursorResult(rowProvider, rows);
-		
-		return r;
+		return new FindRowsCursor(info, rowKeys, cache, batchSize, list, keyspace, rowProvider);
 	}
 
 	static void processColumns(
