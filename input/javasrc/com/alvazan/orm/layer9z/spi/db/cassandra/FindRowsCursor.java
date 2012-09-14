@@ -31,7 +31,7 @@ public class FindRowsCursor extends AbstractCursor<KeyValue<Row>> {
 	private BatchListener list;
 	private Keyspace keyspace;
 	private Iterator<byte[]> theKeys;
-	private int lastRowCount;
+	private Integer lastRowCount;
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;
 	private Cache cache;
@@ -57,7 +57,7 @@ public class FindRowsCursor extends AbstractCursor<KeyValue<Row>> {
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> nextImpl() {
 		loadCache();
-		if(!cachedRows.hasNext())
+		if(cachedRows == null || !cachedRows.hasNext())
 			return null;
 		
 		return new Holder<KeyValue<Row>>(cachedRows.next());
@@ -67,8 +67,6 @@ public class FindRowsCursor extends AbstractCursor<KeyValue<Row>> {
 	private void loadCache() {
 		if(cachedRows != null && cachedRows.hasNext())
 			return; //There are more rows so return and the code will return the next result from cache
-		else if(lastRowCount >= batchSize)
-			return; //There will be now rows so don't waste time querying!!!!
 		else if(!theKeys.hasNext())
 			return;
 		
