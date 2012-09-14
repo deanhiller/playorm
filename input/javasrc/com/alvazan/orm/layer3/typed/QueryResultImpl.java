@@ -41,14 +41,8 @@ public class QueryResultImpl implements QueryResult {
 
 	@Override
 	public Cursor<List<TypedRow>> getAllViewsCursor() {
-		
-		while(true) {
-			Holder<IndexColumnInfo> holder = directCursor.nextImpl();
-			if(holder == null)
-				break; //we are out of results
-		}
-		
-		return null;
+		Cursor<List<TypedRow>> cursor = new CursorAllViews(metaQuery.getAliases(), directCursor);
+		return cursor;
 	}
 
 	@Override
