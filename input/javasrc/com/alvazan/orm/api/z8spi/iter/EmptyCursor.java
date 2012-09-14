@@ -1,6 +1,5 @@
-package com.alvazan.orm.layer9z.spi.db.cassandra;
+package com.alvazan.orm.api.z8spi.iter;
 
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class EmptyCursor<T> extends AbstractCursor<T> {
 

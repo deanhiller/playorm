@@ -7,9 +7,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -30,8 +27,6 @@ import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
  */
 public class NoSqlDevLogger implements NoSqlSession {
 
-	private static final Logger log = LoggerFactory.getLogger(NoSqlDevLogger.class);
-	
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
 	@Inject

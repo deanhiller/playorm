@@ -31,7 +31,6 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private BatchListener list;
 	private Keyspace keyspace;
 	private Iterator<byte[]> theKeys;
-	private Integer lastRowCount;
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;
 	private Cache cache;
@@ -92,7 +91,6 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		
 		Rows<byte[], byte[]> rows = result.getResult();		
 		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = rows.iterator();
-		lastRowCount = rows.size();
 		list.afterFetchingNextBatch(rows.size());
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();

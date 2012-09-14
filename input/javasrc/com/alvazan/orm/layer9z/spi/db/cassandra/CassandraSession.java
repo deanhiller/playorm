@@ -26,6 +26,7 @@ import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
