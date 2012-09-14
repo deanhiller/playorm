@@ -105,12 +105,12 @@ public class QueryAdapter<T> implements Query<T> {
 	public Cursor<KeyValue<T>> getResults() {
 		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList();
 		
-		DirectCursor<IndexColumnInfo> debugCursor = new DebugCursor(indice);
+		//DirectCursor<IndexColumnInfo> debugCursor = new DebugCursor(indice);
 		
 		//BIG NOTE: Here, we could return all the keys from the join so we can eagerly fetch other entities as well
 		//instead of waiting for the user to loop through those entities AND if user accesses those entites, we could block
 		//while the load is happening too in the background
-		Iterable<byte[]> keys = new IterableIndex(mainView, debugCursor);
+		Iterable<byte[]> keys = new IterableIndex(mainView, indice);
 		
 		String query = meta.getQuery();
 		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, batchSize);
