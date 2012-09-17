@@ -102,14 +102,135 @@ public class TestJoins {
 		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
 	}
 
+	//Well, we fail here as postgres returns just two results and does NOT return the results where e.account= null do to the inner join WHERE we do return the
+	//results for e.account=null as that is what the user "would" expect since he declared it.
+	
+//	/**
+//	 * This is setup to match postgres result we saw
+//	 * @throws InterruptedException
+//	 */
+//	@Test
+//	public void testInnerJoinWithNullClause() throws InterruptedException {
+//		NoSqlTypedSession s = mgr.getTypedSession();
+//												 "select * FROM Activity as e INNER JOIN e.account as a WHERE e.numTimes < 15 and a.isActive = false"
+//		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account as a WHERE e.numTimes < 15 and (e.account = null or a.isActive = false)", 50);
+//		List<ViewInfo> views = result.getViews();
+//		Cursor<IndexColumnInfo> cursor = result.getCursor();
+//
+//		ViewInfo viewAct = views.get(0);
+//		ViewInfo viewAcc = views.get(1);
+//		String alias1 = viewAct.getAlias();
+//		String alias2 = viewAcc.getAlias();
+//		Assert.assertEquals("e", alias1);
+//		Assert.assertEquals("a", alias2);
+//		
+//		Assert.assertTrue(cursor.next());
+//		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+//		Assert.assertTrue(cursor.next());
+//		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+//		Assert.assertFalse(cursor.next());
+//		
+//		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+//		
+//		rows.next();
+//		List<TypedRow> joinedRow = rows.getCurrent();
+//		
+//		TypedRow typedRow = joinedRow.get(0);
+//		TypedRow theJoinedRow = joinedRow.get(1);
+//		
+//		log.info("joinedRow="+joinedRow);
+//		Assert.assertEquals("e", typedRow.getView().getAlias());
+//		Assert.assertEquals("act1", typedRow.getRowKeyString());
+//		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+//	}
+	
+	@Test
+	public void testOuterJoin() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e LEFT JOIN e.account as a WHERE e.numTimes < 15 and a.isActive = false", 50);
+		List<ViewInfo> views = result.getViews();
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+
+		ViewInfo viewAct = views.get(0);
+		ViewInfo viewAcc = views.get(1);
+		String alias1 = viewAct.getAlias();
+		String alias2 = viewAcc.getAlias();
+		Assert.assertEquals("e", alias1);
+		Assert.assertEquals("a", alias2);
+		
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+		Assert.assertFalse(cursor.next());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		
+		rows.next();
+		List<TypedRow> joinedRow = rows.getCurrent();
+		
+		TypedRow typedRow = joinedRow.get(0);
+		TypedRow theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+	}
+	
+	/**
+	 * This is setup to match postgres result we saw
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testOuterJoinWithNullClause() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account as a WHERE e.numTimes < 15 and (e.account = null or a.isActive = false)", 50);
+		List<ViewInfo> views = result.getViews();
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+
+		ViewInfo viewAct = views.get(0);
+		ViewInfo viewAcc = views.get(1);
+		String alias1 = viewAct.getAlias();
+		String alias2 = viewAcc.getAlias();
+		Assert.assertEquals("e", alias1);
+		Assert.assertEquals("a", alias2);
+		
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, viewAcc, "act5", null);
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+		Assert.assertFalse(cursor.next());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		
+		rows.next();
+		List<TypedRow> joinedRow = rows.getCurrent();
+		
+		TypedRow typedRow = joinedRow.get(0);
+		TypedRow theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+	}
 	
 	private void compareKeys(Cursor<IndexColumnInfo> cursor, ViewInfo viewAct, ViewInfo viewAcc, String expectedKey, String expectedAccKey) {
 		IndexColumnInfo info = cursor.getCurrent();
 		IndexPoint keyForActivity = info.getKeyForView(viewAct);
-		IndexPoint keyForAccount = info.getKeyForView(viewAcc);
-
 		String key = keyForActivity.getKeyAsString();
-		String keyAcc = keyForAccount.getKeyAsString();
+		
+		String keyAcc = null;
+		if(expectedAccKey != null) {
+			IndexPoint keyForAccount = info.getKeyForView(viewAcc);
+			keyAcc = keyForAccount.getKeyAsString();
+		}
+		
 		Assert.assertEquals(expectedKey, key);
 		Assert.assertEquals(expectedAccKey, keyAcc);
 	}

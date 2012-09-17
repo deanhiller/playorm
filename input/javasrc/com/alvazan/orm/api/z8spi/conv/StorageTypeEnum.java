@@ -9,7 +9,7 @@ import com.alvazan.orm.api.z8spi.ColumnType;
 public enum StorageTypeEnum {
 
 	STRING("String", String.class), DECIMAL("Decimal", BigDecimal.class), INTEGER("Integer", Integer.class), 
-	BYTES("Bytes", byte[].class), BOOLEAN("Boolean", Boolean.class);
+	BYTES("Bytes", byte[].class), BOOLEAN("Boolean", Boolean.class), NULL("Null", void.class);
 	
 	private static Map<String, StorageTypeEnum> dbCodeToVal = new HashMap<String, StorageTypeEnum>();
 	static {

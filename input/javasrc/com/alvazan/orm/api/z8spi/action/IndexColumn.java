@@ -1,11 +1,16 @@
 package com.alvazan.orm.api.z8spi.action;
 
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
+
 
 public class IndexColumn {
 	private byte[] indexedValue;
 	private byte[] primaryKey;
 	private Long timestamp;
 	private byte[] value;
+	
+	private ByteArray indexedVal;
+	private ByteArray rowKey;
 	
 	//NOTE: columnName is set and used for logging purposes only when writing out
 	//index columns
@@ -17,6 +22,8 @@ public class IndexColumn {
 		IndexColumn c = new IndexColumn();
 		c.indexedValue = indexedValue;
 		c.primaryKey = primaryKey;
+		c.rowKey = rowKey;
+		c.indexedVal = indexedVal;
 		c.timestamp = timestamp;
 		c.value = value;
 		c.columnName = columnName;
@@ -36,6 +43,7 @@ public class IndexColumn {
 
 	public void setIndexedValue(byte[] indexedValue) {
 		this.indexedValue = indexedValue;
+		indexedVal = new ByteArray(indexedValue);
 	}
 
 	public byte[] getPrimaryKey() {
@@ -44,6 +52,7 @@ public class IndexColumn {
 
 	public void setPrimaryKey(byte[] primaryKey) {
 		this.primaryKey = primaryKey;
+		rowKey = new ByteArray(primaryKey);
 	}
 	
 	public byte[] getValue() {

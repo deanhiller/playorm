@@ -26,6 +26,9 @@ public class IndexColumnInfo {
 		return new ByteArray(getPrimaryKeyRaw(leftView));
 	}
 	public byte[] getPrimaryKeyRaw(ViewInfo info) {
+		Wrapper wrapper = colNameToValue.get(info);
+		if(wrapper == null)
+			return null;
 		IndexColumn col = colNameToValue.get(info).getCol();
 		return col.getPrimaryKey();
 	}
@@ -47,6 +50,8 @@ public class IndexColumnInfo {
 	public IndexPoint getKeyForView(ViewInfo view) {
 		Wrapper col = colNameToValue.get(view);
 		DboColumnIdMeta idMeta = view.getTableMeta().getIdColumnMeta();
+		if(col == null) 
+			return new IndexPoint(idMeta, null, null);
 		return new IndexPoint(idMeta, col.getCol(), col.getColMeta());
 	}
 	

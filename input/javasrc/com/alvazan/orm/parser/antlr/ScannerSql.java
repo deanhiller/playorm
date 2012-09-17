@@ -456,13 +456,11 @@ public class ScannerSql {
 			ourType = StorageTypeEnum.DECIMAL;
 			BigDecimal dec = new BigDecimal(constant);
 			node.setState(dec, constant); 
-		}
-		else if(node.getType() == NoSqlLexer.STR_VAL){
+		} else if(node.getType() == NoSqlLexer.STR_VAL){
 			String withoutQuotes = constant.substring(1, constant.length()-1);		
 			ourType = StorageTypeEnum.STRING;
 			node.setState(withoutQuotes, constant);
-		}
-		else if(node.getType() == NoSqlLexer.INT_VAL){
+		} else if(node.getType() == NoSqlLexer.INT_VAL){
 			ourType = StorageTypeEnum.INTEGER;
 			BigInteger bigInt = new BigInteger(constant);
 			node.setState(bigInt, constant);
@@ -470,6 +468,9 @@ public class ScannerSql {
 			ourType = StorageTypeEnum.BOOLEAN;
 			boolean boolVal = Boolean.parseBoolean(constant);
 			node.setState(boolVal, constant);
+		} else if(node.getType() == NoSqlLexer.NULL) {
+			ourType = StorageTypeEnum.NULL;
+			node.setState(null, constant);
 		}
 			
 		else 
@@ -493,6 +494,8 @@ public class ScannerSql {
 		DboColumnMeta info = typeInfo.getColumnInfo();
 		if(info instanceof DboColumnToManyMeta)
 			throw new IllegalArgumentException("Cannot use column="+info.getColumnName()+" since that is a toMany relationship");
+		else if(constantType == StorageTypeEnum.NULL)
+			return; //null is any type so no need to match
 		else if(constantType != info.getStorageType())
 			throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery()+" for column="+info.getColumnName()+" type1="+constantType+" type2="+info.getStorageType());
 	}

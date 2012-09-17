@@ -82,8 +82,10 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			IndexColumnInfo index = next.getValue();
 			for(ViewInfo info : views) {
 				byte[] pk = index.getPrimaryKeyRaw(info);
-				List<byte[]> list = map.get(info);
-				list.add(pk);
+				if(pk != null) {
+					List<byte[]> list = map.get(info);
+					list.add(pk);
+				}
 			}
 		}
 		return map;

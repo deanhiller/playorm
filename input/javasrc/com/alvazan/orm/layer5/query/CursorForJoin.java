@@ -97,12 +97,12 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 
 	private void buildValuesToFind(List<byte[]> values,
 			List<IndexColumnInfo> rightListResults) {
-		boolean rightResultsExhausted = false;
+		//boolean rightResultsExhausted = false;
 		int counter = 0;
 		while(true) {
 			Holder<IndexColumnInfo> rightHolder = rightResults.nextImpl();
 			if(rightHolder == null) {
-				rightResultsExhausted = true;
+			//	rightResultsExhausted = true;
 				break;
 			} else if(batchSize != null && batchSize.intValue() < counter)
 				break;
@@ -115,11 +115,11 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		}
 		
 		//When we do the VERY last batch, tack on the null for outer joins as well to find pks that had null right sides
-		if(rightResultsExhausted && joinType == JoinType.LEFT_OUTER && !alreadyRan) {
-			//we need to add null to the query type to find in the index the values where it has no right side
-			values.add(null);
-			alreadyRan = true;
-		}
+//		if(rightResultsExhausted && joinType == JoinType.LEFT_OUTER && !alreadyRan) {
+//			//we need to add null to the query type to find in the index the values where it has no right side
+//			values.add(null);
+//			alreadyRan = true;
+//		}
 	}
 
 	private Holder<IndexColumnInfo> createResult(
