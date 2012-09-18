@@ -40,6 +40,7 @@ public class QueryAdapter<T> implements Query<T> {
 	private SpiMetaQuery meta;
 	private SpiQueryAdapter indexQuery;
 	private BaseEntityManagerImpl mgr;
+	private boolean batchSizeSetByUser = false;
 	private Integer batchSize = 500;
 	private MetaClass<T> mainMetaClass;
 	private ViewInfo mainView;
@@ -120,6 +121,12 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public List<T> getResultList(int firstResult, Integer maxResults) {
+		//IF batch size was not set, let's set it to max results here for the case where firstResult=0,
+		//this will make it very very fast.  For a case of maxResults=2 and firstResult=500, this will be slow sooooo
+		//make sure you set the batchSize yourself if you want maxResults=<low number>
+		if(maxResults != null && !batchSizeSetByUser)
+			setBatchSize(maxResults);
+		
 		AbstractCursor<KeyValue<T>> all = (AbstractCursor<KeyValue<T>>) getResults();
 		List<T> foundElements = new ArrayList<T>();
 		try {
@@ -164,6 +171,7 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public void setBatchSize(int batchSize) {
+		batchSizeSetByUser = true;
 		this.batchSize = batchSize;
 		this.indexQuery.setBatchSize(batchSize);
 	}

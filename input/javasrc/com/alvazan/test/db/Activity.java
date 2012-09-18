@@ -229,6 +229,11 @@ public class Activity {
 		query.setBatchSize(batchSize);
 		return query.getResultList(0, null);
 	}
+	
+	public static List<Activity> findAll2(NoSqlEntityManager mgr, int maxResults) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findAll");
+		return query.getResultList(0, maxResults);		
+	}
 
 	public static List<Activity> findByLocalDateTime(NoSqlEntityManager mgr,
 			LocalDateTime time) {

@@ -46,6 +46,9 @@ public class TestIndexGtLtRanges {
 		//should retrieve from the cache...
 		Activity act = mgr.find(Activity.class, all.get(0).getId());
 		
+		List<Activity> all2 = Activity.findAll2(mgr, 3);
+		Assert.assertEquals(3, all2.size());
+		
 		List<Activity> list = Activity.findBetween(mgr, 4, 7);
 		Assert.assertEquals(2, list.size());
 		if(list.get(0).getNumTimes() != 4) {
