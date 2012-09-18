@@ -148,9 +148,9 @@ public class TestNewRawLayer {
 		
 		session.flush();
 		
-		Cursor<KeyValue<TypedRow>> rows = session.createQueryCursor(sql, 50).getPrimaryViewCursor();
+		Iterable<KeyValue<TypedRow>> rowsIterable = session.createQueryCursor(sql, 50).getPrimaryViewIter();
 		int counter = 0;
-		while(rows.next()) {
+		for(@SuppressWarnings("unused") KeyValue<TypedRow> k : rowsIterable) {
 			counter++;
 		}
 		Assert.assertEquals(1, counter);

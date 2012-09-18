@@ -34,7 +34,7 @@ public class LogBatchFetch implements BatchListener {
 			if(batchSize != null)
 				bSize = batchSize+"";
 			long total = System.currentTimeMillis() - startTime;
-			log.info(cfAndIndex+" Fetching batch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			log.info("[rawlogger]"+cfAndIndex+" Fetching batch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
 		}
 		if(listener != null)
 			listener.afterFetchingNextBatch(numFetched);

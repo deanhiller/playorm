@@ -32,4 +32,6 @@ public interface QueryResult {
 	 */
 	Cursor<KeyValue<TypedRow>> getPrimaryViewCursor();
 	
+	Iterable<KeyValue<TypedRow>> getPrimaryViewIter();
+	
 }

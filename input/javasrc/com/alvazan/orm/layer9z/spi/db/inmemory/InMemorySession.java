@@ -32,6 +32,7 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.google.inject.Provider;
 
 public class InMemorySession implements NoSqlRawSession {
 
@@ -45,28 +46,10 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
-		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
-		for(byte[] key : rowKeys) {
-			Row row = findRow(colFamily, key);
-			Row newRow = null;
-			if(row != null)
-				newRow = row.deepCopy();
-			KeyValue<Row> kv = new KeyValue<Row>();
-			kv.setKey(key);
-			kv.setValue(newRow);
-			//This add null if there is no row to the list on purpose
-			rows.add(kv);
-		}
-		
-		AbstractCursor<KeyValue<Row>> proxy = new ProxyTempCursor<KeyValue<Row>>(rows);
-		return proxy;
-	}
-	
-	private Row findRow(String colFamily, byte[] key) {
-		Table table = database.findTable(colFamily);
-		if(table == null)
-			return null;
-		return table.getRow(key);
+		//NOTE: We don't have to do a cursor for in-memory, BUT by doing so, the logs are kept the same
+		//as when going against cassandra OR it is very confusing to users who switch(as I got confused).
+		CursorKeysToRows cursor = new CursorKeysToRows(colFamily, rowKeys, list, database, cache);
+		return cursor;
 	}
 
 	@Override

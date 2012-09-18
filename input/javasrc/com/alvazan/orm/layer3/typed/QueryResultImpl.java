@@ -57,5 +57,12 @@ public class QueryResultImpl implements QueryResult {
 		
 		return results;
 	}
+
+	@Override
+	public Iterable<KeyValue<TypedRow>> getPrimaryViewIter() {
+		Cursor<KeyValue<TypedRow>> cursor = getPrimaryViewCursor();
+		Iterable<KeyValue<TypedRow>> proxy = new IterableProxy<TypedRow>(cursor);
+		return proxy;
+	}
 	
 }
