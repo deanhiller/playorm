@@ -26,7 +26,13 @@ public class BootstrapImpl extends Bootstrap {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl2) {
-		Injector injector = Guice.createInjector(new ProductionBindings(type));
+		Object spiImpl = properties.get(Bootstrap.SPI_IMPL);
+		NoSqlRawSession temp = null;
+		if(spiImpl != null && spiImpl instanceof NoSqlRawSession) {
+			temp = (NoSqlRawSession) spiImpl;
+		}
+		
+		Injector injector = Guice.createInjector(new ProductionBindings(type, temp));
 		NoSqlEntityManagerFactory factory = injector.getInstance(NoSqlEntityManagerFactory.class);
 
 		Named named = Names.named("logger");

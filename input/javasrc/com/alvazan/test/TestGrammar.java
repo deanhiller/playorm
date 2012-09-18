@@ -23,7 +23,7 @@ public class TestGrammar {
 
 	@Before
 	public void setup() {
-		Injector injector = Guice.createInjector(new ProductionBindings(DbTypeEnum.IN_MEMORY));
+		Injector injector = Guice.createInjector(new ProductionBindings(DbTypeEnum.IN_MEMORY, null));
 		scanner = injector.getInstance(ScannerSql.class);
 		wiring = new InfoForWiring("<thequery>", null);
 		facade = new MockFacade();

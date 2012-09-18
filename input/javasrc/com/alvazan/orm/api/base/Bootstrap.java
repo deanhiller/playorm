@@ -12,6 +12,7 @@ public abstract class Bootstrap {
 	public static final String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "nosql.listOfClassesToScan";
 	public static final String CASSANDRA_BUILDER = SpiConstants.CASSANDRA_BUILDER;
 	private static final String OUR_IMPL = "com.alvazan.orm.impl.bindings.BootstrapImpl";
+	public static final String SPI_IMPL = "nosql.spi.implementation";
 	
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		return create(type, OUR_IMPL, properties, converters, cl);

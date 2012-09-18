@@ -17,9 +17,11 @@ import com.google.inject.name.Names;
 public class ProductionBindings implements Module {
 
 	private DbTypeEnum type;
+	private NoSqlRawSession rawSession;
 
-	public ProductionBindings(DbTypeEnum type) {
+	public ProductionBindings(DbTypeEnum type, NoSqlRawSession temp) {
 		this.type = type;
+		this.rawSession = temp;
 	}
 
 	/**
@@ -28,15 +30,11 @@ public class ProductionBindings implements Module {
 	 */
 	@Override
 	public void configure(Binder binder) {
-		switch (type) {
-		case CASSANDRA:
-			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named("main")).to(CassandraSession.class).asEagerSingleton();
-			break;
-		case IN_MEMORY:
-			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named("main")).to(InMemorySession.class).asEagerSingleton();
-			break;
-		default:
-			throw new RuntimeException("bug, unsupported database type="+type);
+		if(rawSession != null) {
+			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named("main")).toInstance(rawSession);
+			bindRawSession("sub", binder);
+		} else {
+			bindRawSession("main", binder);
 		}
 		
 		binder.bind(DboDatabaseMeta.class).asEagerSingleton();
@@ -45,6 +43,19 @@ public class ProductionBindings implements Module {
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("writecachelayer")).to(NoSqlWriteCacheImpl.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("readcachelayer")).to(NoSqlReadCacheImpl.class);
 		binder.bind(NoSqlSession.class).annotatedWith(Names.named("logger")).to(NoSqlDevLogger.class);
+	}
+
+	private void bindRawSession(String name, Binder binder) {
+		switch (type) {
+		case CASSANDRA:
+			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named(name)).to(CassandraSession.class).asEagerSingleton();
+			break;
+		case IN_MEMORY:
+			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named(name)).to(InMemorySession.class).asEagerSingleton();
+			break;
+		default:
+			throw new RuntimeException("bug, unsupported database type="+type);
+		}		
 	}
 
 }

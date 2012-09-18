@@ -77,8 +77,10 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 		while(resultingRows.hasNext()) {
 			KeyValue<Row> kv = resultingRows.next();			
-			ByteArray b = new ByteArray((byte[]) kv.getKey());
+			byte[] key = (byte[]) kv.getKey();
+			ByteArray b = new ByteArray(key);
 			map.put(b, kv);
+			cache.cacheRow(colFamily, key, kv.getValue());
 		}
 		
 		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here
