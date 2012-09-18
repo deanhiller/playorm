@@ -9,6 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.CacheThreadLocal;
@@ -26,6 +29,8 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 
 public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 
+	private static final Logger log = LoggerFactory.getLogger(NoSqlReadCacheImpl.class);
+	
 	@Inject @Named("writecachelayer")
 	private NoSqlSession session;
 	private Map<TheKey, RowHolder<Row>> cache = new HashMap<TheKey, RowHolder<Row>>();
@@ -96,24 +101,32 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
 			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
+		Cache c = this;
 		if(skipCache) {
-			CacheThreadLocal.setCache(null);
-			return session.find(colFamily, rowKeys, skipCache, batchSize);
+			c = new EmptyCache(this);
 		}
 		
-		//A layer below will read the thread local and pass it to lowest layer to use
-		CacheThreadLocal.setCache(this);
-		AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
-		CacheThreadLocal.setCache(null);
-		return rowsFromDb;
+		CacheThreadLocal.setCache(c);
+		try {
+			//A layer below will read the thread local and pass it to lowest layer to use
+	
+			AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
+			
+			return rowsFromDb;
+		} finally {
+			CacheThreadLocal.setCache(null);			
+		}
 	}
 	
 	public RowHolder<Row> fromCache(String colFamily, byte[] key) {
 		TheKey k = new TheKey(colFamily, key);
-		return cache.get(k);
+		RowHolder<Row> holder = cache.get(k);
+		if(holder != null)
+			log.info("cache hit(need to optimize this even further)");
+		return holder;
 	}
 
-	void cacheRow(String colFamily, byte[] key, Row r) {
+	public void cacheRow(String colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
 		TheKey k = new TheKey(colFamily, key);
 		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here

@@ -32,7 +32,6 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.google.inject.Provider;
 
 public class InMemorySession implements NoSqlRawSession {
 

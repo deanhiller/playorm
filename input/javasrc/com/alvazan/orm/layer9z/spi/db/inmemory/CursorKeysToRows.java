@@ -13,10 +13,6 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
-import com.netflix.astyanax.connectionpool.OperationResult;
-import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.model.Rows;
-import com.netflix.astyanax.query.RowSliceQuery;
 
 public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
@@ -69,13 +65,15 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			results.add(result);
 		}
 		
-		list.beforeFetchingNextBatch();
+		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
+		if(keysToLookup.size() > 0) {
+			list.beforeFetchingNextBatch();
+			rows = fetchRows();
+			list.afterFetchingNextBatch(rows.size());
+		}
 
-		List<KeyValue<Row>> rows = fetchRows();
 		Iterator<KeyValue<Row>> resultingRows = rows.iterator();
 		
-		list.afterFetchingNextBatch(rows.size());
-
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 		while(resultingRows.hasNext()) {
 			KeyValue<Row> kv = resultingRows.next();			
@@ -128,13 +126,4 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		return table.getRow(key);
 	}
 	
-	private OperationResult<Rows<byte[], byte[]>> execute(
-			RowSliceQuery<byte[], byte[]> slice) {
-		try {
-			return slice.execute();
-		} catch (ConnectionException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 }

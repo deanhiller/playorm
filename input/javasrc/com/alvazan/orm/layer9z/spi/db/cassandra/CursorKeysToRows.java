@@ -80,18 +80,24 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			
 			results.add(result);
 		}
+
 		
-		list.beforeFetchingNextBatch();
-		
-		ColumnFamily<byte[], byte[]> cf = info.getColumnFamilyObj();
-		ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
-		RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keysToLookup);
-		
-		OperationResult<Rows<byte[], byte[]>> result = execute(slice);
-		
-		Rows<byte[], byte[]> rows = result.getResult();		
-		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = rows.iterator();
-		list.afterFetchingNextBatch(rows.size());
+		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = null;
+		if(keysToLookup.size() > 0) {
+			list.beforeFetchingNextBatch();
+			
+			ColumnFamily<byte[], byte[]> cf = info.getColumnFamilyObj();
+			ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
+			RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keysToLookup);
+			
+			OperationResult<Rows<byte[], byte[]>> result = execute(slice);
+			
+			Rows<byte[], byte[]> rows = result.getResult();		
+			resultingRows = rows.iterator();
+			list.afterFetchingNextBatch(rows.size());
+		} else {
+			resultingRows = new ArrayList<com.netflix.astyanax.model.Row<byte[], byte[]>>().iterator();
+		}
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 		while(resultingRows.hasNext()) {
@@ -109,6 +115,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			
 			ByteArray b = new ByteArray(row.getKey());
 			map.put(b, kv);
+			cache.cacheRow(colFamily, row.getKey(), kv.getValue());
 		}
 		
 		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here

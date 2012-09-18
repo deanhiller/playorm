@@ -299,15 +299,13 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache empty, int batchSize, BatchListener l) {
+			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch(colFamily, l, batchSize);
 		}
 		
 		Cache cache = CacheThreadLocal.getCache();
-		if(cache == null)
-			cache = new EmptyCache();
 		return session.find(colFamily, rowKeys, cache, batchSize, list);
 	}
 	
