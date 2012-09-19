@@ -3,8 +3,6 @@ package com.alvazan.orm.api.base;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.z8spi.iter.Cursor;
-
 /**
  * This is used so you do not blow out your memory on a very wide row especially when you only want to display a few of the
  * results.
@@ -13,15 +11,15 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
  *
  * @param <T>
  */
-public class CursorForMany<T> implements Cursor<T> {
+public class CursorToManyImpl<T> implements CursorToMany<T> {
 
 	private List<T> list = new ArrayList<T>();
 	private int index;
 	
-	public CursorForMany() {
+	public CursorToManyImpl() {
 	}
 	
-	public CursorForMany(List<T> elements) {
+	public CursorToManyImpl(List<T> elements) {
 		this.list.addAll(elements);
 	}
 	
@@ -43,11 +41,13 @@ public class CursorForMany<T> implements Cursor<T> {
 		return list.get(index);
 	}
 
+	@Override
 	public void removeCurrent() {
 		list.remove(index);
 		index--;
 	}
 	
+	@Override
 	public void addElement(T element) {
 		this.list.add(element);
 	}
