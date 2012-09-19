@@ -10,8 +10,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.NoSqlDao;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.test.db.Activity;
 
 public class TestIndexGtLtRanges {
@@ -35,6 +39,36 @@ public class TestIndexGtLtRanges {
 	public void clearDatabase() {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase(true);
+	}
+	
+	@Test
+	public void testBasicTableLookup() {
+		Cursor<KeyValue<DboTableMeta>> cursor = NoSqlDao.findAllTables(mgr);
+		int count = 0;
+		while(cursor.next()) {
+			log.info("column family="+cursor.getCurrent().getValue().getColumnFamily());
+			count++;
+		}
+
+		//Our table size keeps growing with the number of test cases so just make sure it is larger than 23
+		Assert.assertTrue(count > 22);
+		
+		Cursor<KeyValue<DboTableMeta>> dboTables = NoSqlDao.findTablesWithPrefix(mgr, "Dbo");
+		
+		int dboCount = 0;
+		while(dboTables.next()) {
+			dboCount++;
+			log.info("CF="+dboTables.getCurrent().getValue().getColumnFamily());
+		}
+		Assert.assertEquals(3, dboCount);
+		
+		Cursor<KeyValue<DboTableMeta>> dboTables2 = NoSqlDao.findTablesWithPrefix(mgr, "DboTable");
+		int dboCount2 = 0;
+		while(dboTables2.next()) {
+			dboCount2++;
+			log.info("CF="+dboTables2.getCurrent().getValue().getColumnFamily());
+		}
+		Assert.assertEquals(1, dboCount2);
 	}
 	
 	@Test

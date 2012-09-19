@@ -15,16 +15,24 @@ import javassist.util.proxy.ProxyFactory;
 
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlQueries;
+import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
 @NoSqlEntity
+@NoSqlQueries({
+	@NoSqlQuery(name="findAll", query="SELECT t FROM TABLE as t"),
+	@NoSqlQuery(name="findLike", query="SELECT t FROM TABLE as t WHERE t.columnFamily >= :prefix and t.columnFamily < :modifiedPrefix")
+})
 public class DboTableMeta {
 
+	@NoSqlIndexed
 	@NoSqlId(usegenerator=false)
 	private String columnFamily;
 
@@ -257,6 +265,8 @@ public class DboTableMeta {
 			if(meta.isIndexed())
 				indexedColumnsCache.add(meta);
 		}
+		if(idColumn.isIndexed)
+			indexedColumnsCache.add(idColumn);
 			
 		cacheOfPartitionedBy = new ArrayList<DboColumnMeta>();
 		for(DboColumnMeta meta : nameToField.values()) {

@@ -1,9 +1,11 @@
 package com.alvazan.test;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -20,10 +22,18 @@ public class MockFacade implements MetaFacade {
 	public DboTableMeta getColumnFamily(String tableName) {
 		DboTableMeta existing = nameToTable.get(tableName);
 		if(existing == null) {
-			existing = new DboTableMeta();
-			existing.setColumnFamily(tableName);
+			existing = createTableMeta(tableName);
 			nameToTable.put(tableName, existing);
 		}
+		return existing;
+	}
+
+	private DboTableMeta createTableMeta(String tableName) {
+		DboTableMeta existing;
+		existing = new DboTableMeta();
+		existing.setColumnFamily(tableName);
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(existing, "id", BigDecimal.class, false);
 		return existing;
 	}
 
@@ -42,8 +52,7 @@ public class MockFacade implements MetaFacade {
 
 	@Override
 	public DboColumnMeta getFkMetaIfExist(DboTableMeta tableMeta, String column) {
-		DboTableMeta fkToTable = new DboTableMeta();
-		fkToTable.setColumnFamily("fktable"+System.currentTimeMillis());
+		DboTableMeta fkToTable = createTableMeta("fktable"+System.currentTimeMillis());
 		DboColumnToOneMeta toOne = new DboColumnToOneMeta();
 		toOne.setup(tableMeta, column, fkToTable, true, false);
 		return toOne;

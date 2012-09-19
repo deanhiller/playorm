@@ -59,8 +59,15 @@ public class NoSqlTypedRowProxyImpl implements MethodHandler {
 		List<DboColumnMeta> cols = classMeta.getIndexedColumns();
 		for(DboColumnMeta f : cols) {
 			String colName = f.getColumnName();
-			TypedColumn col = self.getColumn(colName);
-			indexFieldToOriginalValue.put(colName, col.getValue());
+			Object value;
+			if(colName.equals(this.classMeta.getIdColumnMeta().getColumnName())) {
+				value = self.getRowKey();
+			} else {
+				TypedColumn col = self.getColumn(colName);
+				value = col.getValue();
+			}
+			
+			indexFieldToOriginalValue.put(colName, value);
 		}
 	}
 
