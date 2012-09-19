@@ -252,5 +252,10 @@ public class InMemorySession implements NoSqlRawSession {
 		return new ProxyTempCursor<IndexColumn>(results);
 	}
 
+	@Override
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		//eh, who cares, we already create on persist when needed
+	}
+
 
 }

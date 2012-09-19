@@ -58,4 +58,9 @@ public class HadoopSession implements NoSqlRawSession {
 		return null;
 	}
 
+	@Override
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		
+	}
+
 }

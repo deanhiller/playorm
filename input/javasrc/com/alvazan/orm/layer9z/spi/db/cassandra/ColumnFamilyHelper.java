@@ -120,7 +120,7 @@ public class ColumnFamilyHelper {
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		findExistingColumnFamilies(keySpaceMeta);
-		log.info("Existing column families="+existingColumnFamilies2.keySet()+"\nNOTE: WE WILL CREATE " +
+		log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+existingColumnFamilies2.keySet()+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
 	}
 
@@ -237,8 +237,8 @@ public class ColumnFamilyHelper {
 
 	private Info tryToLoadColumnFamilyImpl(String colFamily) throws ConnectionException {
 		synchronized(colFamily.intern()) {
-			log.info("Column family NOT found in-memory="+colFamily+", CHECK and LOAD from Cassandra if available");
 			String cf = colFamily.toLowerCase();
+			log.info("Column family NOT found in-memory="+cf+", CHECK and LOAD from Cassandra if available");
 			Info info = existingColumnFamilies2.get(cf);
 			if(info != null) {//someone else beat us into the synchronization block
 				log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+cf);
@@ -275,33 +275,42 @@ public class ColumnFamilyHelper {
 	}
 	
 	private synchronized void createColFamilyImpl(String colFamily, MetaLookup ormSession) {
-		if(existingColumnFamilies2.get(colFamily.toLowerCase()) != null)
+		String cfName = colFamily.toLowerCase();
+		if(existingColumnFamilies2.get(cfName) != null)
 			return;
 			
-		log.info("CREATING column family="+colFamily+" in cassandra");
+		String keysp = keyspace.getKeyspaceName();
+		log.info("CREATING column family="+cfName+" in cassandra keyspace="+keysp);
 		
-		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
-		if(cf == null) {
+		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(colFamily);
+		if(meta == null) {
 			//check the database now for the meta since it was not found in the ORM meta data.  This is for
 			//those that are modifying meta data themselves
-			cf = ormSession.find(DboTableMeta.class, colFamily);
-			log.info("cf from db="+cf);
+			meta = ormSession.find(DboTableMeta.class, colFamily);
+			log.info("meta from db="+meta);
 		}
 		
-		
-		if(cf == null) {
+		if(meta == null) {
 			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
 
+		createColFamilyInCassandra(meta);
+	}
+
+	private void createColFamilyInCassandra(DboTableMeta meta) {
+		String keysp = keyspace.getKeyspaceName();
+		String cfName = meta.getColumnFamily().toLowerCase();
+		String colFamily = meta.getColumnFamily();
+		log.info("CREATING colfamily="+cfName+" in keyspace="+keysp);
 		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
 			    .setName(colFamily)
-			    .setKeyspace(keyspace.getKeyspaceName());
+			    .setKeyspace(keysp);
 
-		StorageTypeEnum rowKeyType = cf.getIdColumnMeta().getStorageType();
-		StorageTypeEnum type = cf.getColNamePrefixType();
-		def = addRowKeyValidation(cf, def);
-		def = setColumnNameCompareType(cf, type, def);
+		StorageTypeEnum rowKeyType = meta.getIdColumnMeta().getStorageType();
+		StorageTypeEnum type = meta.getColNamePrefixType();
+		def = addRowKeyValidation(meta, def);
+		def = setColumnNameCompareType(meta, type, def);
 		
 		ColumnType colType = ColumnType.ANY_EXCEPT_COMPOSITE;
 		if(type == StorageTypeEnum.STRING)
@@ -313,7 +322,6 @@ public class ColumnFamilyHelper {
 		
 		addColumnFamily(def);
 		Info info = createInfo(colFamily, colType, rowKeyType);
-		String cfName = colFamily.toLowerCase();
 		existingColumnFamilies2.put(cfName, info);
 	}
 	

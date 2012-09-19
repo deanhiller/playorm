@@ -33,7 +33,7 @@ public class Account extends AccountSuper{
 	//@Transient
 	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
-
+	
 	public String getId() {
 		return id;
 	}

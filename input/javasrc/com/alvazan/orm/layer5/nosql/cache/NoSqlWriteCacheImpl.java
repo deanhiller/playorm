@@ -22,8 +22,10 @@ import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveEnum;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
 
@@ -32,9 +34,13 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	private NoSqlRawSession rawSession;
 	private List<Action> actions = new ArrayList<Action>();
 	private MetaLookup ormSession;
+	private List<byte[]> newTables = new ArrayList<byte[]>();
 	
 	@Override
 	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
+		if(DboTableMeta.class.getSimpleName().equals(colFamily))
+			newTables.add(rowKey);
+
 		Persist persist = new Persist();
 		persist.setColFamily(colFamily);
 		persist.setRowKey(rowKey);
@@ -116,9 +122,15 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public void flush() {
 		//if(log.isDebugEnabled())
 		//	logInformation();
-		
 		rawSession.sendChanges(actions, ormSession);
 		actions = new ArrayList<Action>();
+		
+		//special case here...if any persists were of the DboTableMeta, we should create table now
+		for(byte[] key : newTables) {
+			String colFamily = StandardConverters.convertFromBytes(String.class, key);
+			rawSession.readMetaAndCreateTable(ormSession, colFamily);
+		}
+		newTables.clear();
 	}
 
 //	private void insertTime(Action action, long time) {

@@ -308,6 +308,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		Cache cache = CacheThreadLocal.getCache();
 		return session.find(colFamily, rowKeys, cache, batchSize, list);
 	}
+
+	@Override
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		session.readMetaAndCreateTable(ormSession, colFamily);
+	}
 	
 //	@Override
 //	public AbstractCursor<KeyValue<Row>> find(String colFamily,

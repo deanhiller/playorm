@@ -41,4 +41,6 @@ public interface NoSqlRawSession {
 
 	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list);
 
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily);
+
 }

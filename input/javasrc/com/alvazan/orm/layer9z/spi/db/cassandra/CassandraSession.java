@@ -204,7 +204,6 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 	
 	private void persist(Persist action, MetaLookup ormSession, MutationBatch m) {
-		
 		Info info = columnFamilies.lookupOrCreate2(action.getColFamily(), ormSession);
 		ColumnFamily cf = info.getColumnFamilyObj();
 		
@@ -388,6 +387,11 @@ public class CassandraSession implements NoSqlRawSession {
 				range = range.limit(batchSize);			
 			return createBasicRowQuery(rowKey, info1, range);
 		}
+	}
+
+	@Override
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		columnFamilies.lookupOrCreate2(colFamily, ormSession);
 	}
 
 }
