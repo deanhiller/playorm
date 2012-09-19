@@ -3,6 +3,8 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alvazan.orm.api.base.CursorToMany;
+import com.alvazan.orm.api.base.CursorToManyImpl;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -33,6 +35,10 @@ public class Account extends AccountSuper{
 	//@Transient
 	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
+	
+	@NoSqlIndexed
+	@NoSqlOneToMany(entityType=Activity.class)
+	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	
 	public String getId() {
 		return id;
@@ -87,8 +93,14 @@ public class Account extends AccountSuper{
 		return activities;
 	}
 
+	
+	public CursorToMany<Activity> getActivitiesCursor() {
+		return activitiesCursor;
+	}
+
 	public void addActivity(Activity act1) {
 		activities.add(act1);
+		activitiesCursor.addElement(act1);
 	}
 	
 }

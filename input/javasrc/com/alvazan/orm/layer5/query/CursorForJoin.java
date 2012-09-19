@@ -27,8 +27,6 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 	private ViewInfo rightView;
 	private Iterator<IndexColumnInfo> cachedFromRightResults;
 	private IndexColumnInfo lastCachedRightSide;
-	private JoinType joinType;
-	private boolean alreadyRan;
 	private DboColumnMeta colMeta;
 
 	public CursorForJoin(ViewInfo view, ViewInfo rightView, DirectCursor<IndexColumnInfo> rightResults,
@@ -40,7 +38,6 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		this.newView = view;
 		this.rightView = rightView;
 		this.rightResults = rightResults;
-		this.joinType = joinType;
 	}
 	
 	public void setScanInfo(ScanInfo scanInfo) {
@@ -59,7 +56,6 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 	public void beforeFirst() {
 		this.rightResults.beforeFirst();
 		cachedFromNewView = null;
-		alreadyRan = false;
 	}
 
 	@Override
@@ -114,12 +110,6 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 			counter++;
 		}
 		
-		//When we do the VERY last batch, tack on the null for outer joins as well to find pks that had null right sides
-//		if(rightResultsExhausted && joinType == JoinType.LEFT_OUTER && !alreadyRan) {
-//			//we need to add null to the query type to find in the index the values where it has no right side
-//			values.add(null);
-//			alreadyRan = true;
-//		}
 	}
 
 	private Holder<IndexColumnInfo> createResult(

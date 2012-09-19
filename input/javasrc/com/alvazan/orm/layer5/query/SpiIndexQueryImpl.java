@@ -3,9 +3,6 @@ package com.alvazan.orm.layer5.query;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
@@ -29,8 +26,6 @@ import com.alvazan.orm.parser.antlr.StateAttribute;
 import com.alvazan.orm.parser.antlr.ViewInfoImpl;
 
 public class SpiIndexQueryImpl implements SpiQueryAdapter {
-
-	private static final Logger log = LoggerFactory.getLogger(SpiIndexQueryImpl.class);
 
 	private SpiMetaQueryImpl spiMeta;
 	private NoSqlSession session;

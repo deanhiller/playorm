@@ -213,7 +213,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 
 	public void setup(DboTableMeta tableMeta, Field field, String colName, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
-		metaDbo.setup(tableMeta, colName, fkToTable);
+		metaDbo.setup(tableMeta, colName, fkToTable, false);
 		super.setup(field, colName);
 		this.classMeta = classMeta;
 		this.fieldForKey = fieldForKey;

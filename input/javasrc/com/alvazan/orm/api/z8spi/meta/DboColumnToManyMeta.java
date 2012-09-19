@@ -22,9 +22,16 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	@NoSqlManyToOne
 	private DboTableMeta fkToColumnFamily;
 
-	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable) {
+	/**
+	 * When someone in an entity uses CursorToMany, it is because there are too many and could blow out the memory so
+	 * they use CursorToMany and we store the tomany in a separate index row so they can cursor over the results.
+	 */
+	private Boolean isSeparateRow;
+	
+	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable, boolean isCursor) {
 		super.setup(owner, colName, false);
 		this.fkToColumnFamily = fkToTable;
+		this.isSeparateRow = isCursor;
 	}
 	
 	@Override
@@ -36,6 +43,12 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		return fkToColumnFamily;
 	}
 
+	public boolean isSeparateRow() {
+		if(isSeparateRow = null)
+			return false;
+		return isSeparateRow;
+	}
+	
 	@Override
 	public Class getClassType() {
 		throw new UnsupportedOperationException("Need to figure out how to convert Class to a type of Array Class");

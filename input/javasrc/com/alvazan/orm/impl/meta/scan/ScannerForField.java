@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
@@ -32,6 +33,7 @@ import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
+import com.alvazan.orm.impl.meta.data.MetaCursorField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -48,6 +50,8 @@ public class ScannerForField {
 	private Provider<MetaCommonField> metaProvider;
 	@Inject
 	private Provider<MetaListField> metaListProvider;
+	@Inject
+	private Provider<MetaCursorField> metaCursorProvider;
 	@Inject
 	private Provider<MetaProxyField> metaProxyProvider;
 	
@@ -259,16 +263,21 @@ public class ScannerForField {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("type="+entityType.getName()+" needs the NoSqlEntity annotation" +
-					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
-		
+			throw new RuntimeException("You have entityType="+entityType.getName()+" so that class needs the NoSqlEntity annotation" +
+					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName()+" (or your wrote in the wrong entityType??)");
+
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
+		if(field.getType().equals(CursorToMany.class)) {
+			MetaCursorField metaField = metaCursorProvider.get();
+			metaField.setup(t, field, colName, classMeta, fieldForKey);
+			return metaField;
+		}
 		//field's type must be Map or List right now today
 		if(!field.getType().equals(Map.class) && !field.getType().equals(List.class)
 				&& !field.getType().equals(Set.class) && !field.getType().equals(Collection.class))
 			throw new RuntimeException("field="+field+" must be Set, Collection, List or Map since it is annotated with OneToMany");
 
 		MetaListField metaField = metaListProvider.get();
-		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
 		metaField.setup(t, field, colName,  classMeta, fieldForKey);
 		
 		return metaField;

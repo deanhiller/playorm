@@ -4,6 +4,8 @@
 
 ## PlayOrm Feature List
 
+MAIN FEATURE: We are a Partial Schema or Partially Structured data ORM meaning not all of your schema has to be defined!!!!  We love the schemaless concept of noSQL and want to embrace it, but when it comes time to make your reads faster, we index the writes you want us to on your behalf so that your reads can be even faster so we are partially structured because we need to know what to index ;) .
+
 NOTE: Due to many requests, we will be adding a server with a REST/json api to issue S-SQL commands from any language with the ability to hold a cursor in the session as well when necessary
 
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
@@ -31,7 +33,8 @@ NOTE: Due to many requests, we will be adding a server with a REST/json api to i
 
 ### Features soon to be added
 * WAY better support for @Embedded and putting Map<String, Type> in your entities for wide row support
-* TONS of documentation is in the works due out 9/16/12
+* Ability to index fields inside Embedded objects even if embedded object is a list so you can query them still
+* TONS of documentation is in the works due out.  Check wiki for latest dates
 * More work around solid ad-hoc tool 
 * Map/Reduce tasks for re-indexing, or creating new indexes from existing data
 * MANY MANY optimizations can be made to increase performance like a nested lookahead loop join and other tricks that only work in noSQL

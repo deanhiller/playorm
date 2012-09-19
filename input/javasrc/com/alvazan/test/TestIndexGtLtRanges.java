@@ -79,6 +79,7 @@ public class TestIndexGtLtRanges {
 		
 		//should retrieve from the cache...
 		Activity act = mgr.find(Activity.class, all.get(0).getId());
+		act.getId();
 		
 		List<Activity> all2 = Activity.findAll2(mgr, 3);
 		Assert.assertEquals(3, all2.size());
