@@ -51,7 +51,7 @@ public class TestIndexGtLtRanges {
 		}
 
 		//Our table size keeps growing with the number of test cases so just make sure it is larger than 23
-		Assert.assertTrue(count > 22);
+		Assert.assertTrue(count > 18);
 		
 		Cursor<KeyValue<DboTableMeta>> dboTables = NoSqlDao.findTablesWithPrefix(mgr, "Dbo");
 		

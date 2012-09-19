@@ -218,8 +218,13 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
         //sort it BUT we can determine the length of first value so we can get to primary key.
         
         for(StorageTypeEnum type : StorageTypeEnum.values()) {
-        	if(type == StorageTypeEnum.BYTES)
+        	//Do we want a byte[] index that could be used with == but not < and not >, etc. etc.
+        	//Do we want a separate Boolean index????  I don't think so
+        	if(type != StorageTypeEnum.DECIMAL
+        			&& type != StorageTypeEnum.INTEGER
+        			&& type != StorageTypeEnum.STRING)
         		continue;
+        	
         	DboTableMeta cf = new DboTableMeta();
         	cf.setColumnFamily(type.getIndexTableName());
         	cf.setColNamePrefixType(type);

@@ -37,7 +37,9 @@ public enum StorageTypeEnum {
 	}
 
 	public String getIndexTableName() {
-		return dbValue+"Indice";
+		StorageTypeEnum storedType = getStoredType();
+		String name = storedType.dbValue;
+		return name+"Indice";
 	}
 
 	public ColumnType translateStoreToColumnType() {
