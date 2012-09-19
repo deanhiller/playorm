@@ -185,11 +185,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	private String logColScan2Impl(ScanInfo info, List<byte[]> values) {
-		String cfAndIndex = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		cfAndIndex += cfAndIndex + " rowkey="+rowKey;
+		String cfAndIndex = "CF="+info.getEntityColFamily()+" index="+rowKey;
 		
-		String msg = cfAndIndex;
+		String msg = cfAndIndex+"(in CF="+info.getIndexColFamily()+")";
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
@@ -209,7 +208,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		msg+=" finding non-contiguous keys index rowkey="+rowKey+" for keys:"+strVals;
 		log.info("[rawlogger]"+msg);
-		return rowKey;
+		return cfAndIndex;
 	}
 
 	private String logColScan(ScanInfo info, Key from, Key to, Integer batchSize) {
@@ -222,11 +221,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	private String logColScanImpl(ScanInfo info, Key from, Key to, Integer batchSize) {
-		String cfAndIndex = "main CF="+info.getEntityColFamily()+" index CF="+info.getIndexColFamily();
 		String rowKey = StandardConverters.convertFromBytesNoExc(String.class, info.getRowKey());
-		cfAndIndex += cfAndIndex + " rowkey="+rowKey;
+		String cfAndIndex = "CF="+info.getEntityColFamily()+" index="+rowKey;
 		
-		String msg = cfAndIndex;
+		String msg = cfAndIndex+"(in CF="+info.getIndexColFamily()+")";
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
@@ -264,7 +262,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		
 		msg+=" scanning index for value in range:"+range+" with batchSize="+batchSize;
 		log.info("[rawlogger]"+msg);
-		return rowKey;
+		return cfAndIndex;
 	}
 	
 	@Override
@@ -302,7 +300,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
-			list = new LogBatchFetch(colFamily, l, batchSize);
+			list = new LogBatchFetch("CF="+colFamily, l, batchSize);
 		}
 		
 		Cache cache = CacheThreadLocal.getCache();

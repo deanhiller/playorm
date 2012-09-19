@@ -69,8 +69,6 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			return processKeys(tableInfo, null, scan);
 		}
 	
-		log.info("root(type="+root.getType()+")="+root);
-		
 		return processExpressionTree(root);
 	}
 
