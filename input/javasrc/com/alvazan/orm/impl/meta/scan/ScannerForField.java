@@ -19,6 +19,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
+import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
@@ -209,7 +210,7 @@ public class ScannerForField {
 	}
 	
 	public MetaField processManyToMany(MetaClassSingle<?> metaClass, DboTableMeta t, Field field) {
-		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
+		NoSqlManyToMany annotation = field.getAnnotation(NoSqlManyToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();

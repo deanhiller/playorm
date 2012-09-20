@@ -10,6 +10,7 @@ import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
@@ -36,7 +37,7 @@ public class Account extends AccountSuper{
 	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 	
-	@NoSqlOneToMany(entityType=Activity.class)
+	@NoSqlManyToMany(entityType=Activity.class)
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	
 	public String getId() {
