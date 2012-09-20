@@ -27,7 +27,8 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	private Object owner;
 	private List<T> elementsToAdd = new ArrayList<T>();
 	private List<T> elementsToRemove = new ArrayList<T>();
-
+	private boolean currentCacheLoaded = false;
+			
 	public CursorProxy(Object owner, NoSqlSession session,
 			AbstractCursor<IndexColumn> indexCursor,
 			MetaAbstractClass<T> proxyMeta, int batchSize) {
@@ -76,6 +77,8 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		}
 
 		cachedProxies = proxyList.iterator();
+		//new proxies that are not initialized...
+		currentCacheLoaded = false;
 	}
 
 	@Override
@@ -92,6 +95,11 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	}
 
 	private void loadCache() {
+		if(this.currentCacheLoaded)
+			return;
+		
+		currentCacheLoaded = true;
+		
 		String cf = proxyMeta.getColumnFamily();
 		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keyList, true, batchSize);
 		
