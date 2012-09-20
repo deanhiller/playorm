@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -181,6 +182,39 @@ public class TestOneToMany {
 	}
 
 	@Test
+	public void testIndependentAddsAreCumulativeForCursor() {
+		Account acc = new Account();
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		
+		mgr.put(acc);
+		mgr.flush();
+
+		NoSqlEntityManager mgr1 = factory.createEntityManager();
+		Account acc1 = mgr1.find(Account.class, acc.getId());
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		Account acc2 = mgr2.find(Account.class, acc.getId());
+		
+		addAndSaveActivity1(mgr1, acc1, "dean");
+		addAndSaveActivity1(mgr2, acc2, "xxxx");
+
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
+		//Now, we should have no activities in our account list
+		Account theAccount = mgr3.find(Account.class, acc.getId());
+		
+		CursorToMany<Activity> cursor = theAccount.getActivitiesCursor();
+		int counter = 0;
+		while(cursor.next()) {
+			Activity current = cursor.getCurrent();
+			if(counter == 0)
+				Assert.assertEquals("dean", current.getName());
+			counter++;
+		}
+		
+		Assert.assertEquals(2, counter);
+	}
+	
+	@Test
 	public void testIndependentAddsAreCumulative() {
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
@@ -202,7 +236,7 @@ public class TestOneToMany {
 		Account theAccount = mgr3.find(Account.class, acc.getId());
 		Assert.assertEquals(2, theAccount.getActivities().size());
 	}
-	
+
 	private void addAndSaveActivity1(NoSqlEntityManager mgr1, Account acc1, String name) {
 		Activity act = new Activity();
 		act.setName(name);

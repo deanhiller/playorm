@@ -23,6 +23,8 @@ public class Holder<T> {
 	private CacheLoadCallback cacheLoadCallback;
 
 	public Holder(MetaAbstractClass<T> metaClass, NoSqlSession session, byte[] key, CacheLoadCallback cb) {
+		if(session != null && cb != null)
+			throw new IllegalArgumentException("provide session OR cb but not both");
 		this.metaClass = metaClass;
 		this.session = session;
 		this.key = key;

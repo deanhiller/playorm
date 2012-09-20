@@ -7,10 +7,11 @@ import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
-import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -24,7 +25,6 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 
 	private MetaAbstractClass<OWNER> ownerMeta;
 	private MetaAbstractClass<PROXY> classMeta;
-	private Field fieldForKey;
 	private DboColumnToManyMeta metaDbo = new DboColumnToManyMeta();
 	
 	public DboColumnMeta getMetaDbo() {
@@ -33,10 +33,15 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 	
 	@Override
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
-		String colFamily = getMetaDbo().getIndexTableName();
+		String indexColFamily = getMetaDbo().getIndexTableName();
 		String rowKey = formRowKey(row.getKey());
 		
-		CursorProxy<PROXY> cursor = new CursorProxy<PROXY>(session, colFamily, rowKey);
+		byte[] key = StandardConverters.convertToBytes(rowKey);
+		ScanInfo info = new ScanInfo(ownerMeta.getColumnFamily(), getColumnName(), indexColFamily, key);
+		int batchSize = 200;
+		AbstractCursor<IndexColumn> indexCursor = session.scanIndex(info , null, null, batchSize);
+		
+		CursorProxy<PROXY> cursor = new CursorProxy<PROXY>(entity, session, indexCursor, classMeta, batchSize);
 		ReflectionUtil.putFieldValue(entity, field, cursor);
 	}
 
@@ -47,7 +52,7 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		
 		//We ALWAYS ignore partition in this case since this index row is ALWAYS tied to this row period...moving it all
 		//would be a pain and be useless...
-		String rowKey = getMetaDbo().getIndexRowKey(null, null)+keyAsStr;
+		String rowKey = getMetaDbo().getIndexRowKey(null, null)+"/"+keyAsStr;
 		return rowKey;
 	}
 
@@ -70,6 +75,10 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 			throw new IllegalArgumentException("cursor must be of type CursorToMany");
 		
 		//NOTE: IF instance of proxy, we can just add AND remove modified items only!!!
+		if(cursor instanceof CursorProxy) {
+			addRemoveItems(info, (CursorProxy<PROXY>) cursor);
+			return;
+		}
 		
 		//If it is not our proxy and is brand new cursor, we need to add all of them to the index...
 		CursorToMany<PROXY> c = (CursorToMany<PROXY>) cursor;
@@ -80,7 +89,28 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		}
 	}
 
+	private void addRemoveItems(InfoForIndex<OWNER> info, CursorProxy<PROXY> cursor) {
+		List<PROXY> elementsToAdd = cursor.getElementsToAdd();
+		List<PROXY> elementsToRemove = cursor.getElementsToRemove();
+		
+		for(PROXY p : elementsToAdd) {
+			translateToColumn(info, p);
+		}
+		
+		for(PROXY p : elementsToRemove) {
+			RowToPersist row = info.getRow();
+			IndexData data = fetchIndexData(info, p);
+			row.addIndexToRemove(data);
+		}
+	}
+
 	private void translateToColumn(InfoForIndex<OWNER> info, PROXY value) {
+		RowToPersist row = info.getRow();
+		IndexData data = fetchIndexData(info, value);
+		row.addIndexToPersist(data);
+	}
+
+	private IndexData fetchIndexData(InfoForIndex<OWNER> info, PROXY value) {
 		RowToPersist row = info.getRow();
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
@@ -110,18 +140,16 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		IndexColumn indCol = data.getIndexColumn();
 		indCol.setIndexedValue(byteVal);
 		indCol.setPrimaryKey(key);
-		
-		row.addIndexToPersist(data);
+		return data;
 	}
 
 	public void setup(DboTableMeta tableMeta, Field field, String colName, 
-			MetaAbstractClass<OWNER> ownerMeta, MetaAbstractClass<PROXY> classMeta, Field fieldForKey) {
+			MetaAbstractClass<OWNER> ownerMeta, MetaAbstractClass<PROXY> classMeta) {
 		DboTableMeta fkToTable = classMeta.getMetaDbo();
 		metaDbo.setup(tableMeta, colName, fkToTable, true);
 		super.setup(field, colName);
 		this.classMeta = classMeta;
 		this.ownerMeta = ownerMeta;
-		this.fieldForKey = fieldForKey;
 	}
 
 	@Override

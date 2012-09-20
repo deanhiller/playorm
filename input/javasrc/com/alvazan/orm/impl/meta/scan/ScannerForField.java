@@ -270,7 +270,7 @@ public class ScannerForField {
 		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(entityType);
 		if(field.getType().equals(CursorToMany.class)) {
 			MetaCursorField metaField = metaCursorProvider.get();
-			metaField.setup(t, field, colName, ownerMeta, fkMeta, fieldForKey);
+			metaField.setup(t, field, colName, ownerMeta, fkMeta);
 			return metaField;
 		}
 		//field's type must be Map or List right now today

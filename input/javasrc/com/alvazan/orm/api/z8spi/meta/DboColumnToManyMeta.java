@@ -45,7 +45,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	}
 
 	public boolean isSeparateRow() {
-		if(isSeparateRow = null)
+		if(isSeparateRow == null)
 			return false;
 		return isSeparateRow;
 	}

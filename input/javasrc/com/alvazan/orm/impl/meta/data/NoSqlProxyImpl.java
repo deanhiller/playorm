@@ -35,6 +35,10 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	public NoSqlProxyImpl(NoSqlSession session, MetaAbstractClass<T> classMeta, Object entityId, CacheLoadCallback cacheLoadCallback) {
 		if(classMeta.getColumnFamily() == null)
 			throw new IllegalArgumentException("column family in the classMeta parameter cannot be null");
+		if(session == null && cacheLoadCallback == null)
+			throw new IllegalArgumentException("Need session or cacheCallback");
+		else if(session != null && cacheLoadCallback != null)
+			throw new IllegalArgumentException("You must supply a cacheLoadCallback OR a session but NOT both...give us session and we load it, give us cacheLoad and we tell you to load your list of proxies when needed");
 		this.session = session;
 		this.entityId = entityId;
 		this.classMeta = classMeta;

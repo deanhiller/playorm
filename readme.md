@@ -2,12 +2,15 @@
 
 ``` We answer questions on stackoverflow, so just tag the question with "playOrm".```
 
-## PlayOrm Feature List
+Recently, We are working more and more on matching any model you throw at us.  We want to work with the part of your data that is structured and allow you to still have tons of unstructured data.
 
 MAIN FEATURE: We are a Partial Schema or Partially Structured data ORM meaning not all of your schema has to be defined!!!!  We love the schemaless concept of noSQL and want to embrace it, but when it comes time to make your reads faster, we index the writes you want us to on your behalf so that your reads can be even faster so we are partially structured because we need to know what to index ;) .
 
-NOTE: Due to many requests, we will be adding a server with a REST/json api to issue S-SQL commands from any language with the ability to hold a cursor in the session as well when necessary
+We also embrace embedding information in rows so you can do quick one key lookups unlike a JPA would let you do.  On top of that, we still support relations between these datasets as well allowing you to do joins.  
 
+## PlayOrm Feature List
+
+* Just added support for Entity has a Cursor instead of List which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)

@@ -25,7 +25,7 @@ public class CursorToManyImpl<T> implements CursorToMany<T> {
 	
 	@Override
 	public void beforeFirst() {
-		index = 0;
+		index = -1;
 	}
 
 	@Override

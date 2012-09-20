@@ -36,7 +36,6 @@ public class Account extends AccountSuper{
 	@NoSqlOneToMany(entityType=Activity.class)
 	private List<Activity> activities = new ArrayList<Activity>();
 	
-	@NoSqlIndexed
 	@NoSqlOneToMany(entityType=Activity.class)
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	

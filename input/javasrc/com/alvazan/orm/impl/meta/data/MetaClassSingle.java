@@ -146,6 +146,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		return proxyClass;
 	}
 
+	@Override
 	public Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
 		Tuple<T> t = new Tuple<T>();
 		if(id == null)

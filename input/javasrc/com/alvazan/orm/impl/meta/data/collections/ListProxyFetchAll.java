@@ -21,7 +21,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 		super(owner, session, classMeta);
 		this.keys = keys;
 		for(byte[] key : keys) {
-			Holder h = new Holder(classMeta, session, key, this);
+			Holder h = new Holder(classMeta, null, key, this);
 			originalHolders.add(h);
 			currentList.add(h);
 		}
