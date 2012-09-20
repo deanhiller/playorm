@@ -32,6 +32,7 @@ import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaCursorField;
 import com.alvazan.orm.impl.meta.data.MetaField;
@@ -207,27 +208,27 @@ public class ScannerForField {
 		return processToOne(t, field, colName);
 	}
 	
-	public MetaField processManyToMany(DboTableMeta t, Field field) {
+	public MetaField processManyToMany(MetaClassSingle<?> metaClass, DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(t, field, colName, entityType,
+		return processToManyRelationship(metaClass, t, field, colName, entityType,
 				keyFieldForMap);		
 	}
 	
-	public MetaField processOneToMany(DboTableMeta t, Field field) {
+	public MetaField processOneToMany(MetaClassSingle<?> ownerMeta, DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
 		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(t, field, colName, entityType,
+		return processToManyRelationship(ownerMeta, t, field, colName, entityType,
 				keyFieldForMap);
 	}
 
-	private MetaField processToManyRelationship(DboTableMeta t, Field field, String colNameOrig,
+	private MetaField processToManyRelationship(MetaClassSingle<?> metaClass, DboTableMeta t, Field field, String colNameOrig,
 			Class entityType, String keyFieldForMap) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
@@ -255,21 +256,21 @@ public class ScannerForField {
 			}
 		}
 		
-		return processToMany(t, field, colName, entityType, fieldForKey);
+		return processToMany(metaClass, t, field, colName, entityType, fieldForKey);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private MetaField processToMany(DboTableMeta t, Field field, String colName, Class entityType, Field fieldForKey) {
+	private MetaField processToMany(MetaClassSingle<?> ownerMeta, DboTableMeta t, Field field, String colName, Class entityType, Field fieldForKey) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
 			throw new RuntimeException("You have entityType="+entityType.getName()+" so that class needs the NoSqlEntity annotation" +
 					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName()+" (or your wrote in the wrong entityType??)");
 
-		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(entityType);
+		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(entityType);
 		if(field.getType().equals(CursorToMany.class)) {
 			MetaCursorField metaField = metaCursorProvider.get();
-			metaField.setup(t, field, colName, classMeta, fieldForKey);
+			metaField.setup(t, field, colName, ownerMeta, fkMeta, fieldForKey);
 			return metaField;
 		}
 		//field's type must be Map or List right now today
@@ -278,7 +279,7 @@ public class ScannerForField {
 			throw new RuntimeException("field="+field+" must be Set, Collection, List or Map since it is annotated with OneToMany");
 
 		MetaListField metaField = metaListProvider.get();
-		metaField.setup(t, field, colName,  classMeta, fieldForKey);
+		metaField.setup(t, field, colName,  fkMeta, fieldForKey);
 		
 		return metaField;
 	}

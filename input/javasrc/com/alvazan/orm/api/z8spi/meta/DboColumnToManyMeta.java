@@ -36,7 +36,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	
 	@Override
 	public String getIndexTableName() {
-		throw new UnsupportedOperationException("bug, this should not be called.  it's not supported");
+		StorageTypeEnum storageType = fkToColumnFamily.getIdColumnMeta().getStorageType();
+		return storageType.getIndexTableName();
 	}
 	
 	public DboTableMeta getFkToColumnFamily() {

@@ -185,9 +185,9 @@ public class ScannerForClass {
 		else if(field.isAnnotationPresent(NoSqlOneToOne.class))
 			metaField = inspectorField.processOneToOne(metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlManyToMany.class))
-			metaField = inspectorField.processManyToMany(metaDbo, field);
+			metaField = inspectorField.processManyToMany(metaClass, metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlOneToMany.class))
-			metaField = inspectorField.processOneToMany(metaDbo, field);
+			metaField = inspectorField.processOneToMany(metaClass, metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
 			metaField = inspectorField.processEmbeddable(field);
 		else

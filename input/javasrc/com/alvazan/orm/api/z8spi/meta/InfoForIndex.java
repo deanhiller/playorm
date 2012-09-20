@@ -53,5 +53,5 @@ public class InfoForIndex<T> {
 	public List<PartitionTypeInfo> getPartitions() {
 		return partitions;
 	}
-	
+
 }
