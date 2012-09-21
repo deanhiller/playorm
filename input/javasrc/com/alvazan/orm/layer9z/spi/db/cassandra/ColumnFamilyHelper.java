@@ -201,13 +201,18 @@ public class ColumnFamilyHelper {
 		//2. No one has created the CF yet
 		
 		//fetch will load from cassandra if we don't have it in-memory
-		Info info = fetchColumnFamilyInfo(colFamily);
-		if(info == null) {
+		Info origInfo = fetchColumnFamilyInfo(colFamily);
+		Exception ee = null;
+		if(origInfo == null) {
 			//no one has created the CF yet so we need to create it.
-			createColFamily(colFamily, ormSession);
+			ee = createColFamily(colFamily, ormSession);
 		}
 		
-		return fetchColumnFamilyInfo(colFamily);
+		//Now check...maybe someone else created it...or we did successfully....
+		Info info = fetchColumnFamilyInfo(colFamily);
+		if(info == null)
+			throw new RuntimeException("Could not create and could not find colfamily="+colFamily+" see chained exception", ee);
+		return info;
 	}
 
 	public Info fetchColumnFamilyInfo(String colFamily) {
@@ -261,7 +266,7 @@ public class ColumnFamilyHelper {
 		}
 	}
 
-	private synchronized void createColFamily(String colFamily, MetaLookup ormSession) {
+	private synchronized Exception createColFamily(String colFamily, MetaLookup ormSession) {
 		try {
 			long start = System.currentTimeMillis();
 			createColFamilyImpl(colFamily, ormSession);
@@ -269,9 +274,10 @@ public class ColumnFamilyHelper {
 			if(log.isInfoEnabled())
 				log.info("Total time to CREATE column family in cassandra and wait for all nodes to update="+total);
 		} catch(Exception e) {
-			log.warn("Exception creating col family but may because another node just did that at the same time!!! so this is normal if it happens very rarely", e);
-			//try to continue now...
+			log.trace("maybe someone else created at same time, so hold off on throwing exception", e);
+			return e;
 		}
+		return null;
 	}
 	
 	private synchronized void createColFamilyImpl(String colFamily, MetaLookup ormSession) {
@@ -307,6 +313,7 @@ public class ColumnFamilyHelper {
 			    .setName(colFamily)
 			    .setKeyspace(keysp);
 
+		log.info("cf="+def.getKeyspace()+" alias="+def.getName());
 		StorageTypeEnum rowKeyType = meta.getIdColumnMeta().getStorageType();
 		StorageTypeEnum type = meta.getColNamePrefixType();
 		def = addRowKeyValidation(meta, def);
