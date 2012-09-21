@@ -18,6 +18,9 @@ public class ByteArray implements Comparable<ByteArray> {
 	
 	@Override
 	public int hashCode() {
+		if(key == null)
+			return 0;
+		
 		long hash = 0;
 		for(int i = 0; i < key.length;i++) {
 			hash += key[i];
@@ -34,7 +37,9 @@ public class ByteArray implements Comparable<ByteArray> {
 		if (getClass() != obj.getClass())
 			return false;
 		ByteArray other = (ByteArray) obj;
-		if (!Arrays.equals(key, other.key))
+		if(key == null && other.key == null)
+			return true;
+		else if (!Arrays.equals(key, other.key))
 			return false;
 		return true;
 	}
