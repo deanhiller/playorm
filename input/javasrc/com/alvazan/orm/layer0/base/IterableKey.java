@@ -42,6 +42,8 @@ public class IterableKey<T> implements Iterable<byte[]> {
 		public byte[] next() {
 			Object next = iterator.next();
 			byte[] key = meta.convertIdToNoSql(next);			
+			if(key == null)
+				throw new IllegalArgumentException("You supplied a null key to your list when calling findAll method.  We can't lookup null as a key");
 			return key;
 		}
 

@@ -82,6 +82,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 
 	@Override
 	public <T> T find(Class<T> entityType, Object key) {
+		if(key == null)
+			throw new IllegalArgumentException("key must be supplied but was null");
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
 		Cursor<KeyValue<T>> entities = findAll(entityType, keys);
