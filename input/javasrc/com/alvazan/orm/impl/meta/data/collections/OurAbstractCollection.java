@@ -22,7 +22,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 	
 	private NoSqlSession session;
-	private MetaAbstractClass<T> classMeta;
+	protected MetaAbstractClass<T> metaClass;
 	
 	protected List<byte[]> keys;
 	protected List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
@@ -35,7 +35,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	
     public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2) {
 		this.session = session2;
-		this.classMeta = classMeta2;
+		this.metaClass = classMeta2;
 		this.owner = owner;
 	}
     
@@ -47,7 +47,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		String cf = classMeta.getColumnFamily();
+		String cf = metaClass.getColumnFamily();
 		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keys, false, null);
 		int counter = 0;
 		while(true) {
@@ -57,7 +57,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
 			Row row = kv.getValue();
-			Tuple<T> tuple = classMeta.convertIdToProxy(row, key, session, null);
+			Tuple<T> tuple = metaClass.convertIdToProxy(row, key, session, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +
@@ -67,7 +67,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			T value = h.getValue();
 			if(value instanceof NoSqlProxy) {
 				//inject the row into the proxy object here to load it's fields
-				classMeta.fillInInstance(row, session, value);
+				metaClass.fillInInstance(row, session, value);
 				//((NoSqlProxy)value).__injectData(row);
 			}
 			counter++;
@@ -87,7 +87,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	
 	@Override
 	public boolean contains(Object o) {
-		Holder<T> h = new Holder<T>((T) o);
+		Holder<T> h = new Holder<T>(metaClass, (T) o);
 		return getHolders().contains(h);
 	}
 	
@@ -200,7 +200,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	protected Collection createHolders(Collection c) {
 		Collection holders = new ArrayList();
 		for(Object val : c) {
-			Holder h = new Holder(val);
+			Holder h = new Holder(metaClass, val);
 			holders.add(h);
 		}
 		return holders;
@@ -238,7 +238,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	
 	@Override
 	public boolean add(T e) {
-		Holder<T> h = new Holder<T>(e);
+		Holder<T> h = new Holder<T>(metaClass, e);
 		added.add(h);
 		return getHolders().add(h);
 	}
@@ -246,7 +246,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	@Override
 	public boolean remove(Object o) {
 		loadCacheIfNeeded(); //we have to do this so equals will work
-		Holder<T> h = new Holder<T>((T) o);
+		Holder<T> h = new Holder<T>(metaClass, (T) o);
 		added.remove(h);
 		return getHolders().remove(h);
 	}

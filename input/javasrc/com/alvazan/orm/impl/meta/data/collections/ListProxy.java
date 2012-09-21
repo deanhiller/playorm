@@ -14,8 +14,10 @@ import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 public class ListProxy<T> extends ArrayList<T> {
 
 	private static final long serialVersionUID = 1L;
+	private MetaAbstractClass<T> metaClass;
 
 	public ListProxy(NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
+		this.metaClass = classMeta;
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, null);
 			super.add((T) h);
@@ -62,19 +64,19 @@ public class ListProxy<T> extends ArrayList<T> {
 
 	@Override
 	public T set(int index, T element) {
-		Holder<T> h = new Holder<T>(element);
+		Holder<T> h = new Holder<T>(metaClass, element);
 		return super.set(index, (T) h);
 	}
 
 	@Override
 	public boolean add(T e) {
-		Holder<T> h = new Holder<T>(e);
+		Holder<T> h = new Holder<T>(metaClass, e);
 		return super.add((T) h);
 	}
 
 	@Override
 	public void add(int index, T element) {
-		Holder<T> h = new Holder<T>(element);
+		Holder<T> h = new Holder<T>(metaClass, element);
 		super.add(index, (T) h);
 	}
 
@@ -85,7 +87,7 @@ public class ListProxy<T> extends ArrayList<T> {
 
 	@Override
 	public boolean remove(Object o) {
-		Holder h = new Holder(o);
+		Holder h = new Holder(metaClass, o);
 		return super.remove(h);
 	}
 
@@ -103,7 +105,7 @@ public class ListProxy<T> extends ArrayList<T> {
 	private Collection createHolders(Collection c) {
 		Collection holders = new ArrayList();
 		for(Object val : c) {
-			Holder h = new Holder(val);
+			Holder h = new Holder(metaClass, val);
 			holders.add(h);
 		}
 		return holders;
@@ -178,13 +180,13 @@ public class ListProxy<T> extends ArrayList<T> {
 
 		@Override
 		public void set(T e) {
-			Holder h = new Holder(e);
+			Holder h = new Holder(metaClass, e);
 			delegate.set(h);
 		}
 
 		@Override
 		public void add(T e) {
-			Holder h = new Holder(e);
+			Holder h = new Holder(metaClass, e);
 			delegate.add(h);
 		}
 		

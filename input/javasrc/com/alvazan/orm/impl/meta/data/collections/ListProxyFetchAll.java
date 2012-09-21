@@ -52,7 +52,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 
 	@Override
 	public T set(int index, T element) {
-		Holder<T> holder = new Holder<T>(element);
+		Holder<T> holder = new Holder<T>(metaClass, element);
 		added.add(holder);
 		Holder<T> existing = currentList.set(index, holder);
 		return existing.getValue();
@@ -60,7 +60,7 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 
 	@Override
 	public void add(int index, T element) {
-		Holder<T> holder = new Holder<T>(element);
+		Holder<T> holder = new Holder<T>(metaClass, element);
 		added.add(holder);
 		currentList.add(index, holder);
 	}
@@ -77,13 +77,13 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 
 	@Override
 	public int indexOf(Object o) {
-		Holder<T> holder = new Holder<T>((T) o);
+		Holder<T> holder = new Holder<T>(metaClass, (T) o);
 		return currentList.indexOf(holder);
 	}
 
 	@Override
 	public int lastIndexOf(Object o) {
-		Holder<T> holder = new Holder<T>((T) o);
+		Holder<T> holder = new Holder<T>(metaClass, (T) o);
 		return currentList.indexOf(holder);
 	}
 
@@ -137,14 +137,14 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 
 		@Override
 		public void set(T e) {
-			Holder h = new Holder(e);
+			Holder h = new Holder(metaClass, e);
 			added.add(h);
 			delegate.set(h);
 		}
 
 		@Override
 		public void add(T e) {
-			Holder h = new Holder(e);
+			Holder h = new Holder(metaClass, e);
 			added.add(h);
 			delegate.add(h);
 		}

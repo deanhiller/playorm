@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
 
@@ -15,7 +16,7 @@ import com.alvazan.orm.impl.meta.data.Tuple;
  */
 public class Holder<T> {
 
-	private byte[] key;
+	private ByteArray key;
 	private boolean hasValue;
 	private T value;
 	private MetaAbstractClass<T> metaClass;
@@ -27,17 +28,22 @@ public class Holder<T> {
 			throw new IllegalArgumentException("provide session OR cb but not both");
 		this.metaClass = metaClass;
 		this.session = session;
-		this.key = key;
+		setKey(key);
 		this.cacheLoadCallback = cb;
 	}
-	public Holder(T value) {
+	public Holder(MetaAbstractClass<T> metaClass, T value) {
+		this.metaClass = metaClass;
 		hasValue = true;
 		this.value = value;
+		Class<? extends Object> classType = value.getClass();
+		if(metaClass.getMetaClass().isAssignableFrom(classType)) {
+			key = new ByteArray(metaClass.convertEntityToId(value));
+		}
 	}
 	public synchronized T getValue() {
 		if(!hasValue) {
 			//otherwise, we need to create and cache the value
-			Tuple<T> tuple =  metaClass.convertIdToProxy(null, key, session, cacheLoadCallback);
+			Tuple<T> tuple =  metaClass.convertIdToProxy(null, key.getKey(), session, cacheLoadCallback);
 			T proxy = tuple.getProxy();
 			value = proxy;
 			hasValue = true;
@@ -50,31 +56,21 @@ public class Holder<T> {
 	}
 
 	public void setKey(byte[] key) {
-		this.key = key;
+		this.key = new ByteArray(key);
 	}
 
 	public byte[] getKey() {
-		return key;
+		return key.getKey();
 	}
 
 	@Override
 	public int hashCode() {
-		getValue(); //prime the cache before comparing!!!
-		
-		final int prime = 31;
-		int result = 1;
-		int val = 0;
-		if(value != null)
-			val = value.hashCode();
-		result = prime * result + val;
-		return result;
+		return key.hashCode();
 	}
 
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes" })
 	@Override
 	public boolean equals(Object obj) {
-		getValue(); //prime the cache before comparing to make sure real value is there
-		
 		if (this == obj)
 			return true;
 		if (obj == null)
@@ -82,12 +78,15 @@ public class Holder<T> {
 		if (getClass() != obj.getClass())
 			return false;
 		Holder other = (Holder) obj;
-		if (value == null) {
-			if (other.value != null)
-				return false;
-		} else if (!value.equals(other.value))
+
+		if(key == null && other.key != null)
 			return false;
-		return true;
+		else if(key != null && other.key == null)
+			return false;
+		else if(other.key.equals(key))
+			return true;
+		
+		return false;
 	}
 	
 }

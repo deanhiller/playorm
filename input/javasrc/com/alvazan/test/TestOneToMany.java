@@ -250,6 +250,38 @@ public class TestOneToMany {
 	}
 
 	@Test
+	public void testContainsMethod() {
+		Account acc = new Account();
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		mgr.fillInWithKey(acc);
+		Activity act1 = new Activity();
+		act1.setAccount(acc);
+		act1.setName("dean");
+		act1.setNumTimes(3);
+		
+		mgr.put(act1);
+		
+		Activity act2 = new Activity();
+		act2.setName("dean");
+		act2.setNumTimes(4);
+		
+		mgr.put(act2);
+		
+		acc.addActivity(act1);
+		acc.addActivity(act2);
+		mgr.put(acc);
+		
+		mgr.flush();
+		
+		Account find = mgr.find(Account.class, acc.getId());
+		Activity act = mgr.find(Activity.class, act1.getId());
+		
+		Assert.assertFalse(find.getActivities().contains(act.getId()));
+		Assert.assertTrue(find.getActivities().contains(act));
+	}
+	
+	@Test
 	public void testRemovesAreCumulative() {
 		Account acc = new Account();
 		acc.setName(ACCOUNT_NAME);
