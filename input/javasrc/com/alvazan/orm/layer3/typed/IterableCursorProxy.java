@@ -3,6 +3,7 @@ package com.alvazan.orm.layer3.typed;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
+import com.alvazan.orm.api.z5api.IndexColumnInfo.Wrapper;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
@@ -44,8 +45,13 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 			if(next == null)
 				return null;
 			IndexColumnInfo info = next.getValue();
-			IndexColumn indNode = info.getIndexNode(view);
+			Wrapper wrapper = info.getIndexNode(view);
+			IndexColumn indNode = wrapper.getCol();
 			byte[] key = indNode.getPrimaryKey();
+			if(key == null)
+				throw new IllegalArgumentException("key was null, index data seems corrupt on view="+view+" col="
+						+wrapper.getColMeta()+" some value is tied to a null primary key.  Should" +
+								" never happen even in face of eventual consistent, should never happen");
 			return new IterHolder<byte[]>(key);
 		}
 	}

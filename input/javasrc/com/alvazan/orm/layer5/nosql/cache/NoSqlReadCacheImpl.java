@@ -119,6 +119,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 	
 	public RowHolder<Row> fromCache(String colFamily, byte[] key) {
+		if(key == null)
+			throw new IllegalArgumentException("CF="+colFamily+" key is null and shouldn't be....(this should be trapped in higher level exception telling us which index is corrupt");
 		TheKey k = new TheKey(colFamily, key);
 		RowHolder<Row> holder = cache.get(k);
 		if(holder != null)

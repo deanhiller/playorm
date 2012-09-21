@@ -18,8 +18,8 @@ public class IndexColumnInfo {
 		this.colNameToValue.put(viewInfo, new Wrapper(indCol, colMeta));
 	}
 
-	public IndexColumn getIndexNode(ViewInfo view) {
-		return colNameToValue.get(view).getCol();
+	public Wrapper getIndexNode(ViewInfo view) {
+		return colNameToValue.get(view);
 	}
 
 	public ByteArray getPrimaryKey(ViewInfo leftView) {
@@ -55,7 +55,7 @@ public class IndexColumnInfo {
 		return new IndexPoint(idMeta, col.getCol(), col.getColMeta());
 	}
 	
-	private static class Wrapper {
+	public static class Wrapper {
 		private IndexColumn col;
 		private DboColumnMeta colMeta;
 		public Wrapper(IndexColumn col, DboColumnMeta colMeta) {
