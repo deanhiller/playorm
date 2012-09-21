@@ -85,7 +85,7 @@ public class DboTableMeta {
 		
 		typedRowProxyClass = clazz;
 		
-		NAME_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9\\-]*");
+		NAME_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*");
 	}
 	
 	private static Proxy testInstanceCreation(Class<?> clazz) {

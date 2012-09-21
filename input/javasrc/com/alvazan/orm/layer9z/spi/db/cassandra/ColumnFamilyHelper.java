@@ -211,7 +211,7 @@ public class ColumnFamilyHelper {
 		//Now check...maybe someone else created it...or we did successfully....
 		Info info = fetchColumnFamilyInfo(colFamily);
 		if(info == null)
-			throw new RuntimeException("Could not create and could not find colfamily="+colFamily+" see chained exception", ee);
+			throw new RuntimeException("Could not create and could not find colfamily="+colFamily+" see chained exception AND it could be your name is not allowed as cassandra CF name", ee);
 		return info;
 	}
 
