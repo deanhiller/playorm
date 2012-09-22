@@ -143,7 +143,51 @@ public class TestJoins {
 //		Assert.assertEquals("act1", typedRow.getRowKeyString());
 //		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
 //	}
+
+	@Test
+	public void testJoinViewButNoJoin() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e WHERE e.numTimes < 15", 50);
+		List<ViewInfo> views = result.getViews();
+		Assert.assertEquals(1, views.size());
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+
+		ViewInfo viewAct = views.get(0);
+		String alias1 = viewAct.getAlias();
+		Assert.assertEquals("e", alias1);
+		
+		Assert.assertTrue(cursor.next());
+		compareKeys2(cursor, viewAct, "act1");
+		Assert.assertTrue(cursor.next());
+		compareKeys2(cursor, viewAct, "act3");
+		Assert.assertTrue(cursor.next());
+		compareKeys2(cursor, viewAct, "act5");
+		Assert.assertTrue(cursor.next());
+		compareKeys2(cursor, viewAct, "act7");
+		Assert.assertFalse(cursor.next());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		
+		rows.next();
+		List<TypedRow> joinedRow = rows.getCurrent();
+		Assert.assertEquals(1, joinedRow.size());
+		
+		TypedRow typedRow = joinedRow.get(0);
+
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+	}
 	
+	private void compareKeys2(Cursor<IndexColumnInfo> cursor, ViewInfo viewAct,
+			String expectedKey) {
+		IndexColumnInfo info = cursor.getCurrent();
+		IndexPoint keyForActivity = info.getKeyForView(viewAct);
+		String key = keyForActivity.getKeyAsString();
+		Assert.assertEquals(expectedKey, key);
+	}
+
 	@Test
 	public void testOuterJoin() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
