@@ -21,6 +21,8 @@
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>
 <package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
 <package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
+<package name="args" package="org.kohsuke.args4j"/>
+<package name="logback" package="ch.qos.logback.classic"/>
 
 <package name="def" package="nosql"/>
 
@@ -60,6 +62,12 @@
 <package name="ourParser" package="com.alvazan.orm.parser.antlr">
 	<depends>antlr</depends>
 	<depends>api8</depends>
+</package>
+
+<package name="cmdline" package="com.alvazan.ssql.cmdline">
+    <depends>args</depends>
+    <depends>allapis</depends>
+    <depends>logback</depends>
 </package>
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->

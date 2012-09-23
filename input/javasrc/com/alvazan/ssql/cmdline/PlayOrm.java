@@ -86,8 +86,9 @@ public class PlayOrm {
         }
 	}
 
-	private String processAnotherLine(Scanner sc, String allLines) {
+	private String processAnotherLine(Scanner sc, String allLines2) {
 		try {
+			String allLines = allLines2;
 			String line = sc.nextLine();
 			String newLine = line.trim();
 			allLines += newLine;

@@ -2,7 +2,6 @@ package com.alvazan.orm.api.z8spi.meta;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;

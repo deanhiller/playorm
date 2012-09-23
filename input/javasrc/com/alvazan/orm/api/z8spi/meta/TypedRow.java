@@ -25,7 +25,7 @@ public class TypedRow {
 	public void addColumn(String name, Object value) {
 		addColumn(name, value, null);
 	}
-	public void addColumn(DboColumnMeta meta, String name, String subName, byte[] value, long timestamp) {
+	public void addColumn(DboColumnMeta meta, String name, String subName, byte[] value, Long timestamp) {
 		if(meta == null)
 			throw new IllegalArgumentException("must have meta");
 		TypedColumn col = new TypedColumn(meta, name, subName, value, timestamp);

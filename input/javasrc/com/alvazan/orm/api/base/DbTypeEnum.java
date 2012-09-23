@@ -6,12 +6,12 @@ import java.util.Map;
 public enum DbTypeEnum {
 	CASSANDRA("cassandra"), IN_MEMORY("inmemory"); 
 
-	private static final Map<String, DbTypeEnum> lookup = new HashMap<String, DbTypeEnum>();
+	private static final Map<String, DbTypeEnum> LOOKUP = new HashMap<String, DbTypeEnum>();
 	
 	//HADOOP
 	static {
 		for(DbTypeEnum type : DbTypeEnum.values()) {
-			lookup.put(type.getValue(), type);
+			LOOKUP.put(type.getValue(), type);
 		}
 	}
 	
@@ -26,7 +26,7 @@ public enum DbTypeEnum {
 	}
 	
 	public static DbTypeEnum lookup(String val) {
-		return lookup.get(val);
+		return LOOKUP.get(val);
 	}
 	
 }

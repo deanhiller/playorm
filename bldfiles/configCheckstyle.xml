@@ -183,14 +183,14 @@
         <!-- See http://checkstyle.sf.net/config_misc.html -->
         <module name="ArrayTypeStyle"/>
         <!--module name="FinalParameters"/-->
-        <module name="GenericIllegalRegexp">
+        <!-- module name="GenericIllegalRegexp">
             <property name="format" value="System\.exit"/>
             <property name="message" value="System.exit is not allowed."/>
         </module>
         <module name="GenericIllegalRegexp">
             <property name="format" value="System\.out\.println"/>
             <property name="message" value="Use Logger class instead."/>
-        </module>
+        </module-->
         <module name="GenericIllegalRegexp">
             <property name="format" value="\.printStackTrace"/>
             <property name="message" value="Use Logger class instead."/>
