@@ -283,40 +283,46 @@ public class TestJoins {
 		Account acc1 = new Account();
 		acc1.setId("acc1");
 		acc1.setIsActive(false);
-		mgr.put(acc1);
+		mgr.fillInWithKey(acc1);
+
 		
 		Account acc2 = new Account();
 		acc2.setId("acc2");
 		acc2.setIsActive(true);
-		mgr.put(acc2);
+		mgr.fillInWithKey(acc2);
 		
 		Account acc3 = new Account();
 		acc3.setId("acc3");
 		acc3.setIsActive(false);
-		mgr.put(acc3);
+		mgr.fillInWithKey(acc3);
+
 		
 		Activity act1 = new Activity();
 		act1.setId("act1");
 		act1.setAccount(acc1);
 		act1.setNumTimes(10);
+		acc1.addActivity(act1);
 		mgr.put(act1);
 		
 		Activity act2 = new Activity();
 		act2.setId("act2");
 		act2.setAccount(acc1);
 		act2.setNumTimes(20);
+		acc1.addActivity(act2);
 		mgr.put(act2);
 
 		Activity act3 = new Activity();
 		act3.setId("act3");
 		act3.setAccount(acc2);
 		act3.setNumTimes(10);
+		acc2.addActivity(act3);
 		mgr.put(act3);
 		
 		Activity act4 = new Activity();
 		act4.setId("act4");
 		act4.setAccount(acc2);
 		act4.setNumTimes(20);
+		acc2.addActivity(act4);
 		mgr.put(act4);
 		
 		Activity act5 = new Activity();
@@ -333,7 +339,12 @@ public class TestJoins {
 		act7.setId("act7");
 		act7.setAccount(acc1);
 		act7.setNumTimes(10);
+		acc1.addActivity(act7);
 		mgr.put(act7);
+		
+		mgr.put(acc1);
+		mgr.put(acc2);
+		mgr.put(acc3);
 		
 		mgr.flush();
 	}

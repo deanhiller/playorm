@@ -14,6 +14,9 @@ public abstract class Bootstrap {
 	private static final String OUR_IMPL = "com.alvazan.orm.impl.bindings.BootstrapImpl";
 	public static final String SPI_IMPL = "nosql.spi.implementation";
 	
+	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties) {
+		return create(type, properties, null, Bootstrap.class.getClassLoader());
+	}
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl) {
 		return create(type, OUR_IMPL, properties, converters, cl);
 	}

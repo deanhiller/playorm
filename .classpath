@@ -60,5 +60,7 @@
 	<classpathentry kind="lib" path="input/libinclude/astyanax/libthrift-0.8.0.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/joda-time-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/joda-time-2.1.jar" sourcepath="input/libinclude/joda-time-2.1-sources.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/args4j-2.0.21-sources.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/args4j-2.0.21.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>

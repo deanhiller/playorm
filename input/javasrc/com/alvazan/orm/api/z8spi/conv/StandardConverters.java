@@ -136,6 +136,14 @@ public class StandardConverters {
 	}
 	
 	@SuppressWarnings("unchecked")
+	public static String convertToString(Class clazz, byte[] data) {
+		Object obj = convertFromBytes(clazz, data);
+		BaseConverter converter = stdConverters.get(clazz);
+		String strVal = converter.convertToString(obj);
+		return strVal;
+	}
+	
+	@SuppressWarnings("unchecked")
 	public static <T> T convertFromBytes(Class<T> clazz, byte[] data) {
 		if(data == null)
 			return null;

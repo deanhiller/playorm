@@ -84,7 +84,8 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		
 		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = null;
 		if(keysToLookup.size() > 0) {
-			list.beforeFetchingNextBatch();
+			if(list != null)
+				list.beforeFetchingNextBatch();
 			
 			ColumnFamily<byte[], byte[]> cf = info.getColumnFamilyObj();
 			ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
@@ -94,7 +95,8 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			
 			Rows<byte[], byte[]> rows = result.getResult();		
 			resultingRows = rows.iterator();
-			list.afterFetchingNextBatch(rows.size());
+			if(list != null)
+				list.afterFetchingNextBatch(rows.size());
 		} else {
 			resultingRows = new ArrayList<com.netflix.astyanax.model.Row<byte[], byte[]>>().iterator();
 		}

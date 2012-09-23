@@ -49,6 +49,7 @@ public class TestPartitionedJoins {
 		Assert.assertEquals(2, trades.size());
 	}
 	
+	
 	@Test
 	public void testLeftOuterJoin() {
 		putEntities();
