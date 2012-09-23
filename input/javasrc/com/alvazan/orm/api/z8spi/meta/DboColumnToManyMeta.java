@@ -58,32 +58,23 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 
 	@Override
 	public StorageTypeEnum getStorageType() {
-		throw new UnsupportedOperationException("Need to figure out how to convert Class to a type of Array Class");
-//		StorageTypeEnum typeInTheArray = fkToColumnFamily.getIdColumnMeta().getStorageType();
+		StorageTypeEnum typeInTheArray = fkToColumnFamily.getIdColumnMeta().getStorageType();
+		return typeInTheArray;
 	}
 
 	@Override
 	public void translateFromColumn(Row row, TypedRow entity) {
-		List<Object> pks = translateFromColumnList(row, entity);
-		entity.addColumn(getColumnName(), pks);
+		translateFromColumnList(row, entity);
 	}
 
-	private List<Object> translateFromColumnList(Row row, TypedRow entity) {
-		List<byte[]> keys = parseOutKeyList(row);
-		List<Object> fks = new ArrayList<Object>();
-		for(byte[] key : keys) {
-			Object fk = convertFromStorage2(key);
-			fks.add(fk);
-		}
-
-		return fks;
+	private void translateFromColumnList(Row row, TypedRow entity) {
+		parseOutKeyList(row, entity);
 	}
 
-	private List<byte[]> parseOutKeyList(Row row) {
+	private void parseOutKeyList(Row row, TypedRow entity) {
 		String columnName = getColumnName();
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
-		List<byte[]> entities = new ArrayList<byte[]>();
 
 		//NOTE: Current implementation is just like a Set not a List in that it
 		//cannot have repeats right now.  We could take the approach the column name
@@ -100,10 +91,11 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 			for(int i = bytes.length; i < colNameData.length; i++) {
 				pk[i-bytes.length] =  colNameData[i];
 			}
-			entities.add(pk);
+			
+			Object fk = convertFromStorage2(pk);
+			String subName = convertTypeToString(fk);
+			entity.addColumn(this, getColumnName(), subName, col.getValue(), col.getTimestamp());
 		}
-		
-		return entities;
 	}
 	
 	@Override

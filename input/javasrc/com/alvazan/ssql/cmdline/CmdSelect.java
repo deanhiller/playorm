@@ -9,9 +9,11 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -66,8 +68,17 @@ public class CmdSelect {
 			DboColumnMeta colMeta = meta.getColumnMeta(c.getName());
 			if(colMeta != null) {
 				String name = c.getName();
-				String val = c.getValueAsString();
-				println("=> "+name+" = "+val);
+			
+				if(colMeta instanceof DboColumnToManyMeta) {
+					String subName = c.getCompositeSubName();
+					String fullName = name+"."+subName;
+					byte[] value = (byte[]) c.getValue();
+					String strVal = StandardConverters.convertToString(byte[].class, value);
+					println("=> "+fullName+" = "+ strVal);
+				} else {
+					String val = c.getValueAsString();
+					println("=> "+name+" = "+val);
+				}
 			} else {
 				throw new RuntimeException("we need to fix this");
 			}

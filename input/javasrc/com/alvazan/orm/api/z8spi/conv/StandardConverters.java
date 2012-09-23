@@ -139,7 +139,7 @@ public class StandardConverters {
 	public static String convertToString(Class clazz, byte[] data) {
 		Object obj = convertFromBytes(clazz, data);
 		BaseConverter converter = stdConverters.get(clazz);
-		String strVal = converter.convertToString(obj);
+		String strVal = converter.convertTypeToString(obj);
 		return strVal;
 	}
 	

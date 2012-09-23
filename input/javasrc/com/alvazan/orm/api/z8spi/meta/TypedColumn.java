@@ -6,9 +6,17 @@ import java.util.List;
 
 public class TypedColumn {
 	private String name;
+	//for composite columns
+	private String subName;
+	
 	private Object value;
 	private Long timestamp;
 	private DboColumnMeta columnMeta;
+
+	public TypedColumn(DboColumnMeta colMeta, String name, String subName, Object value, Long timestamp2) {
+		this(colMeta, name, value, timestamp2);
+		this.subName = subName;
+	}
 	
 	public TypedColumn(DboColumnMeta colMeta, String name, Object value, Long timestamp2) {
 		this.columnMeta = colMeta;
@@ -53,5 +61,9 @@ public class TypedColumn {
 	}
 	public Object getValue() {
 		return value;
+	}
+
+	public String getCompositeSubName() {
+		return subName;
 	}
 }
