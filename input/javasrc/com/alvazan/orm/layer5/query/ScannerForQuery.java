@@ -57,7 +57,7 @@ public class ScannerForQuery implements QueryParser {
 		MetaFacade facade = new MetaFacadeImpl(mgr, metaInfo);
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		
-		spiMetaQuery.setASTTree(newTree, wiring.getTargetTables(), wiring.getAllViews());
+		spiMetaQuery.setASTTree(newTree, wiring.getAllViews());
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
 		

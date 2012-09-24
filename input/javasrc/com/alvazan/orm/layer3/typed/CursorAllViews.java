@@ -26,7 +26,7 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 
 	public CursorAllViews(NoSqlTypedSessionImpl session, SpiMetaQuery metaQuery, DirectCursor<IndexColumnInfo> directCursor, int batchSize) {
 		this.session = session;
-		this.views = metaQuery.getAliases();
+		this.views = metaQuery.getTargetViews();
 		this.query = metaQuery.getQuery();
 		this.cursor = directCursor;
 		this.batchSize = batchSize;

@@ -1,9 +1,6 @@
 package com.alvazan.ssql.cmdline;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.exc.ParseException;
@@ -39,9 +36,6 @@ public class CmdSelect {
 	 * @return whether we have exhausted the cursor or not.
 	 */
 	private void processBatch(Cursor<List<TypedRow>> cursor) {
-		Map<Key, Integer> maxSizes = new HashMap<Key, Integer>();
-		//Let's pad columns in batches of 50
-		List<List<TypedRow>> rows = new ArrayList<List<TypedRow>>();
 		int rowCount = 0;
 		while(cursor.next()) {
 			List<TypedRow> joinedRow = cursor.getCurrent();

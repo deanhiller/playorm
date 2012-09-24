@@ -249,7 +249,6 @@ public class ScannerSql {
 			throw new IllegalArgumentException("Meta data(or Entity)="+tableName+" cannot be found");
 
 		ViewInfoImpl info = new ViewInfoImpl(null, metaClass);
-		wiring.addTargetTable(info);
 		
 		if(tableNode.getChildCount() == 0) {
 			if(wiring.getNoAliasTable() != null)

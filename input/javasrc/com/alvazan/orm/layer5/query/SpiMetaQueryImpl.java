@@ -18,10 +18,9 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
-	private List<ViewInfo> targetTables;
 	private Map<String, TypeInfo> parameterFieldMap;
 	private String query;
-	private List<ViewInfo> aliases;
+	private List<ViewInfo> views;
 	
 	@Override
 	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session) {
@@ -30,10 +29,9 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	public void setASTTree(ExpressionNode node, List<ViewInfo> targetTables, List<ViewInfo> aliases) {
+	public void setASTTree(ExpressionNode node, List<ViewInfo> views) {
 		this.astTreeRoot = node;
-		this.targetTables = targetTables;
-		this.aliases = aliases;
+		this.views = views;
 	}
 
 	public ExpressionNode getASTTree() {
@@ -61,12 +59,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 
 	@Override
 	public List<ViewInfo> getTargetViews() {
-		return targetTables;
-	}
-
-	@Override
-	public List<ViewInfo> getAliases() {
-		return aliases;
+		return views;
 	}
 	
 }

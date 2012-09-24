@@ -28,7 +28,5 @@ public interface SpiMetaQuery {
 	public String getQuery();
 
 	List<ViewInfo> getTargetViews();
-
-	List<ViewInfo> getAliases();
 	
 }

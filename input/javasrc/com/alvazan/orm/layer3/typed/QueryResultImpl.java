@@ -36,7 +36,7 @@ public class QueryResultImpl implements QueryResult {
 	}
 
 	public List<ViewInfo> getViews() {
-		return metaQuery.getAliases();
+		return metaQuery.getTargetViews();
 	}
 
 	@Override
