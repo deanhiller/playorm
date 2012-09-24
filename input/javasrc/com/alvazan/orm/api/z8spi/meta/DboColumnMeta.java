@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
@@ -26,12 +27,14 @@ public abstract class DboColumnMeta {
 	@NoSqlId
 	protected String id;
 	
+	@NoSqlIndexed
 	private String columnName;
 
 	protected boolean isIndexed;
 	
 	private String foreignKeyToExtensions;
 	
+	@NoSqlIndexed
 	@NoSqlManyToOne
 	protected DboTableMeta owner;
 	

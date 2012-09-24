@@ -2,6 +2,7 @@ package com.alvazan.orm.layer5.query;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -50,21 +51,29 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new IllegalStateException("You did not call query.setParameter(\""+parameterName+"\", <yourvalue>) and that parameter is required");
 		return result;
 	}
-	
+
 	@Override
-	public DirectCursor<IndexColumnInfo> getResultList() {
+	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews) {
+		if(alreadyJoinedViews == null || alreadyJoinedViews.size() != 0)
+			throw new IllegalArgumentException("You must pass us a non-null Set that is EMPTY and not null");
+		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews);
+		return cursor;
+	}
+	
+	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews) {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
 			DboColumnMeta metaCol = tableMeta.getAnyIndex();
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
-			
+
+			alreadyJoinedViews.add(tableInfo);
 			AbstractCursor<IndexColumn> scan = session.scanIndex(scanInfo, null, null, batchSize);
 			return processKeys(tableInfo, null, scan);
 		}
 	
-		return processExpressionTree(root);
+		return processExpressionTree(root, alreadyJoinedViews);
 	}
 
 	private ScanInfo createScanInfo(ViewInfoImpl tableInfo, DboColumnMeta metaCol) {
@@ -78,18 +87,17 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			Object partIdObj = colMeta.convertFromStorage2(partId);
 			partitionId = colMeta.convertTypeToString(partIdObj);
 		}
-		
 
 		ScanInfo scanInfo = ScanInfo.createScanInfo(metaCol, partitionBy, partitionId);
 		return scanInfo;
 	}
 
-	private DirectCursor<IndexColumnInfo> processExpressionTree(ExpressionNode parent) {
+	private DirectCursor<IndexColumnInfo> processExpressionTree(ExpressionNode parent, Set<ViewInfo> alreadyJoinedViews) {
 		int type = parent.getType();
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:
-			return processAndOr(parent);
+			return processAndOr(parent, alreadyJoinedViews);
 		case NoSqlLexer.EQ:
 		case NoSqlLexer.NE:
 		case NoSqlLexer.GT:
@@ -97,18 +105,18 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
 		case NoSqlLexer.BETWEEN:
-			return processRangeExpression(parent);
+			return processRangeExpression(parent, alreadyJoinedViews);
 		default:
 			throw new UnsupportedOperationException("bug, unsupported type="+type);
 		}
 	}
 
-	private DirectCursor<IndexColumnInfo> processAndOr(ExpressionNode root) {
+	private DirectCursor<IndexColumnInfo> processAndOr(ExpressionNode root, Set<ViewInfo> alreadyJoinedViews) {
 		ExpressionNode left = root.getChild(ChildSide.LEFT);
 		ExpressionNode right = root.getChild(ChildSide.RIGHT);
 		
-		DirectCursor<IndexColumnInfo> leftResults = processExpressionTree(left);
-		DirectCursor<IndexColumnInfo> rightResults = processExpressionTree(right);
+		DirectCursor<IndexColumnInfo> leftResults = processExpressionTree(left, alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> rightResults = processExpressionTree(right, alreadyJoinedViews);
 		
 		JoinMeta joinMeta = left.getJoinMeta();
 		ViewInfo leftView = joinMeta.getPrimaryJoinInfo().getPrimaryTable();
@@ -147,7 +155,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		}
 	}
 	
-	private DirectCursor<IndexColumnInfo> processRangeExpression(ExpressionNode root) {
+	private DirectCursor<IndexColumnInfo> processRangeExpression(ExpressionNode root, Set<ViewInfo> alreadyJoinedViews) {
 		StateAttribute attr;
 		if(root.getType() == NoSqlLexer.BETWEEN) {
 			ExpressionNode grandChild = root.getChild(ChildSide.LEFT).getChild(ChildSide.LEFT);
@@ -159,6 +167,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		DboColumnMeta info = attr.getColumnInfo();
 		ViewInfoImpl viewInfo = attr.getViewInfo();		
 		ScanInfo scanInfo = createScanInfo(viewInfo, info);
+		alreadyJoinedViews.add(viewInfo);
 		
 		AbstractCursor<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {

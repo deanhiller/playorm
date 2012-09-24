@@ -52,6 +52,8 @@ public interface NoSqlTypedSession {
 	 * 
 	 * @param query
 	 * @param batchSize
+	 * @param includeUnecessaryJoins false for speed but doesn't lookup joined entites, true ensures it gives you all
+	 * the entities back.
 	 * @return
 	 */
 	public QueryResult createQueryCursor(String query, int batchSize);
@@ -59,5 +61,6 @@ public interface NoSqlTypedSession {
 	public void flush();
 
 	public Cursor<IndexPoint> indexView(String columnFamily, String column, String partitionBy, String partitionId);
+
 
 }

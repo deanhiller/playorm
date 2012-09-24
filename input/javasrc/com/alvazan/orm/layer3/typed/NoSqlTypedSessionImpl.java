@@ -1,7 +1,9 @@
 package com.alvazan.orm.layer3.typed;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -27,6 +29,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
@@ -163,9 +166,17 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		SpiQueryAdapter spiQueryAdapter = metaQuery.createQueryInstanceFromQuery(session); 
 		
 		spiQueryAdapter.setBatchSize(batchSize);
-		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList();
+		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews);
+
+		List<ViewInfo> leftOverViews = metaQuery.getTargetViews();
+		List<ViewInfo> viewsNotJoinedYet = new ArrayList<ViewInfo>();
+		for(ViewInfo view : leftOverViews) {
+			if(!alreadyJoinedViews.contains(view)) 
+				viewsNotJoinedYet.add(view);
+		}
 		
-		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize);
+		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize, viewsNotJoinedYet);
 		
 		return impl;
 	}

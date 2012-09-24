@@ -23,13 +23,15 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 	private int batchSize;
 	private String query;
 	private DirectCursor<List<TypedRow>> cachedCursors = new EmptyCursor<List<TypedRow>>() ;
+	private List<ViewInfo> viewsNotJoinedYet;
 
-	public CursorAllViews(NoSqlTypedSessionImpl session, SpiMetaQuery metaQuery, DirectCursor<IndexColumnInfo> directCursor, int batchSize) {
+	public CursorAllViews(NoSqlTypedSessionImpl session, SpiMetaQuery metaQuery, DirectCursor<IndexColumnInfo> directCursor, int batchSize, List<ViewInfo> viewsNotJoinedYet) {
 		this.session = session;
 		this.views = metaQuery.getTargetViews();
 		this.query = metaQuery.getQuery();
 		this.cursor = directCursor;
 		this.batchSize = batchSize;
+		this.viewsNotJoinedYet = viewsNotJoinedYet;
 	}
 
 	@Override

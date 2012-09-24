@@ -50,6 +50,13 @@ public class TestGrammar {
 	}
 
 	@Test
+	public void testSimpleJoin() {
+		String sql = "select a from Activity as a left join a.account as acc";
+		ExpressionNode tree = scanner.compileSql(sql, wiring, facade);
+		Assert.assertNull(tree);
+	}
+	
+	@Test
 	public void testSimple() {
 		String sql = "select p FROM MyTable as p";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);

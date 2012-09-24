@@ -18,14 +18,16 @@ public class QueryResultImpl implements QueryResult {
 	private NoSqlTypedSessionImpl session;
 	private DirectCursor<IndexColumnInfo> directCursor;
 	private int batchSize;
+	private List<ViewInfo> viewsNotJoinedYet;
 
 	public QueryResultImpl(SpiMetaQuery metaQuery2,
 			NoSqlTypedSessionImpl noSqlTypedSessionImpl,
-			DirectCursor<IndexColumnInfo> iter, int batchSize) {
+			DirectCursor<IndexColumnInfo> iter, int batchSize, List<ViewInfo> viewsNotJoinedYet) {
 		this.metaQuery = metaQuery2;
 		this.session = noSqlTypedSessionImpl;
 		this.directCursor = iter;
 		this.batchSize = batchSize;
+		this.viewsNotJoinedYet = viewsNotJoinedYet;
 	}
 
 	public Cursor<IndexColumnInfo> getCursor() {
@@ -42,7 +44,7 @@ public class QueryResultImpl implements QueryResult {
 	@Override
 	public Cursor<List<TypedRow>> getAllViewsCursor() {
 		directCursor.beforeFirst();
-		Cursor<List<TypedRow>> cursor = new CursorAllViews(session, metaQuery, directCursor, batchSize);
+		Cursor<List<TypedRow>> cursor = new CursorAllViews(session, metaQuery, directCursor, batchSize, viewsNotJoinedYet);
 		return cursor;
 	}
 

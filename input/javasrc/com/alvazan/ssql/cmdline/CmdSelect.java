@@ -14,6 +14,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class CmdSelect {
 
@@ -48,7 +49,8 @@ public class CmdSelect {
 	private void printJoinedRow(int rowCount, List<TypedRow> joinedRow) {
 		println("----------- JoinedRow"+rowCount);
 		for(TypedRow r: joinedRow) {
-			DboTableMeta meta = r.getView().getTableMeta();
+			ViewInfo view = r.getView();
+			DboTableMeta meta = view.getTableMeta();
 			DboColumnIdMeta idColumnMeta = meta.getIdColumnMeta();
 			String columnName = idColumnMeta.getColumnName();
 			

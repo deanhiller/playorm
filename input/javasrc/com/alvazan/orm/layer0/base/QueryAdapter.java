@@ -2,7 +2,9 @@ package com.alvazan.orm.layer0.base;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -104,7 +106,8 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
-		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList();
+		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
+		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews);
 		
 		//DirectCursor<IndexColumnInfo> debugCursor = new DebugCursor(indice);
 		
