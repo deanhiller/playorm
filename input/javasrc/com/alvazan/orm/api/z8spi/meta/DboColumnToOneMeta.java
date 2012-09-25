@@ -47,7 +47,8 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 
 	@Override
 	public StorageTypeEnum getStorageType() {
-		return fkToColumnFamily.getIdColumnMeta().getStorageType();
+		DboColumnIdMeta idMeta = fkToColumnFamily.getIdColumnMeta();
+		return idMeta.getStorageType();
 	}
 
 	public void translateFromColumn(Row row, TypedRow entity) {

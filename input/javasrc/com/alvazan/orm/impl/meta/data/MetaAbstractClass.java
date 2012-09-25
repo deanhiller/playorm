@@ -26,6 +26,10 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	
 	private Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 	
+	public void setMetaDbo(DboTableMeta metaDbo) {
+		this.metaDbo = metaDbo;
+	}
+	
 	public Object fetchId(T entity) {
 		if(entity == null)
 			return null;

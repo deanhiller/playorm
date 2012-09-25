@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import org.apache.commons.codec.binary.Hex;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 
 public class PlayOrm {
 
@@ -31,10 +29,15 @@ public class PlayOrm {
 
 	public static void main(String[] args) {
 		
-		byte[] data = StandardConverters.convertToBytes("ejktest001:time");
-		char[] str = Hex.encodeHex(data);
-		String s = new String(str);
-		log.info("s="+s);
+//		String hex = "44626f5461626c654d6574613a636f6c756d6e46616d696c79";
+//		byte[] d = Hex.decodeHex(hex.toCharArray());
+//		String value = StandardConverters.convertToString(String.class, d);
+//				
+//		log.info("val="+ value);
+//		byte[] data = StandardConverters.convertToBytes("ejktest001:time");
+//		char[] str = Hex.encodeHex(data);
+//		String s = new String(str);
+//		log.info("s="+s);
 		
 		PlayOptions bean = new PlayOptions();
 	    CmdLineParser parser = new CmdLineParser(bean);

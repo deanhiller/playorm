@@ -96,6 +96,7 @@ public class ScannerForClass {
 			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
 			metaSingle.setColumnFamily(metaClass.getColumnFamily());
 			metaSingle.setMetaClass(clazz);
+			metaSingle.setMetaDbo(metaDbo);
 			metaInfo.addSubclass(clazz, metaClass);
 			scanSingle(metaSingle, metaDbo);
 		}
