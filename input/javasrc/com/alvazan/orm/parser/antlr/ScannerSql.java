@@ -261,6 +261,8 @@ public class ScannerSql {
 			info.setAlias(alias);
 		}
 
+		wiring.addEagerlyJoinedView(info);
+		
 		//set the very first table as the target table
 		if(wiring.getMetaQueryTargetTable() != null)
 			throw new RuntimeException("Two tables are not supported at this time.");
@@ -535,6 +537,7 @@ public class ScannerSql {
 		if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @Index annotation on the field in the entity");
 		
+		wiring.addEagerlyJoinedView(tableInfo);
 		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
 		attributeNode2.setState(attr, textInSql);
 		wiring.incrementAttributesCount(textInSql);

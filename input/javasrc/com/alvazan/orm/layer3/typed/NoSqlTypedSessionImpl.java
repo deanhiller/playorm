@@ -169,14 +169,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
 		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews);
 
-		List<ViewInfo> leftOverViews = metaQuery.getTargetViews();
-		List<ViewInfo> viewsNotJoinedYet = new ArrayList<ViewInfo>();
-		for(ViewInfo view : leftOverViews) {
-			if(!alreadyJoinedViews.contains(view)) 
-				viewsNotJoinedYet.add(view);
-		}
-		
-		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize, viewsNotJoinedYet);
+		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize);
 		
 		return impl;
 	}

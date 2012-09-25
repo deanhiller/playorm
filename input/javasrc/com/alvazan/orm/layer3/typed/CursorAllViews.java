@@ -17,21 +17,23 @@ import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 
-	private List<ViewInfo> views;
+	private List<ViewInfo> eagerlyJoinedViews;
+	private List<ViewInfo> delayedJoinViews;
+	
 	private DirectCursor<IndexColumnInfo> cursor;
 	private NoSqlTypedSessionImpl session;
 	private int batchSize;
 	private String query;
 	private DirectCursor<List<TypedRow>> cachedCursors = new EmptyCursor<List<TypedRow>>() ;
-	private List<ViewInfo> viewsNotJoinedYet;
 
-	public CursorAllViews(NoSqlTypedSessionImpl session, SpiMetaQuery metaQuery, DirectCursor<IndexColumnInfo> directCursor, int batchSize, List<ViewInfo> viewsNotJoinedYet) {
+
+	public CursorAllViews(NoSqlTypedSessionImpl session, SpiMetaQuery metaQuery, DirectCursor<IndexColumnInfo> directCursor, int batchSize) {
 		this.session = session;
-		this.views = metaQuery.getTargetViews();
 		this.query = metaQuery.getQuery();
 		this.cursor = directCursor;
 		this.batchSize = batchSize;
-		this.viewsNotJoinedYet = viewsNotJoinedYet;
+		this.delayedJoinViews = metaQuery.getViewsDelayedJoin();
+		this.eagerlyJoinedViews = metaQuery.getViewsEagerJoin();
 	}
 
 	@Override
@@ -54,20 +56,24 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 
 	private void loadCache() {
 		Map<ViewInfo, List<byte[]>> map = setupKeyLists();
-		List<DirectCursor<KeyValue<TypedRow>>> cursors = new ArrayList<DirectCursor<KeyValue<TypedRow>>>();
-		createCursors(map, cursors);		
+		createCursors(map);		
 	}
 
-	private void createCursors(Map<ViewInfo, List<byte[]>> map,
-			List<DirectCursor<KeyValue<TypedRow>>> cursors) {
-		for(ViewInfo view : views) {
+	private void createCursors(Map<ViewInfo, List<byte[]>> map) {
+		List<DirectCursor<KeyValue<TypedRow>>> cursors = new ArrayList<DirectCursor<KeyValue<TypedRow>>>();
+		
+		for(ViewInfo view : eagerlyJoinedViews) {
 			List<byte[]> rowKeys = map.get(view);
 			DboTableMeta meta = view.getTableMeta();
 			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, rowKeys, query, batchSize);
 			cursors.add(cursor);
 		}
 		
-		cachedCursors = new Proxy(cursors, views);
+		cachedCursors = new CursorJoinedViews(cursors, eagerlyJoinedViews);
+		
+		if(delayedJoinViews.size() > 0) {
+			//TODO: wire in the delayed join views
+		}
 	}
 
 	private Map<ViewInfo, List<byte[]>> setupKeyLists() {
@@ -82,7 +88,7 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			
 			
 			IndexColumnInfo index = next.getValue();
-			for(ViewInfo info : views) {
+			for(ViewInfo info : eagerlyJoinedViews) {
 				byte[] pk = index.getPrimaryKeyRaw(info);
 				if(pk != null) {
 					List<byte[]> list = map.get(info);
@@ -94,50 +100,8 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 	}
 
 	private void initializeMap(Map<ViewInfo, List<byte[]>> map) {
-		for(ViewInfo view : views) {
+		for(ViewInfo view : eagerlyJoinedViews) {
 			map.put(view, new ArrayList<byte[]>());
-		}
-	}
-	
-	private static class Proxy extends AbstractCursor<List<TypedRow>> {
-		private List<DirectCursor<KeyValue<TypedRow>>> cursors;
-		private List<ViewInfo> views;
-		
-		public Proxy(List<DirectCursor<KeyValue<TypedRow>>> cursors2, List<ViewInfo> views2) {
-			this.cursors = cursors2;
-			this.views = views2;
-		}
-		
-		@Override
-		public void beforeFirst() {
-			for(DirectCursor<KeyValue<TypedRow>> d : cursors) {
-				d.beforeFirst();
-			}
-		}
-
-		@Override
-		public Holder<List<TypedRow>> nextImpl() {
-			
-			boolean atLeastOneCursorHasNext = false;
-			List<TypedRow> rows = new ArrayList<TypedRow>();
-			for(int i = 0; i < cursors.size(); i++) {
-				DirectCursor<KeyValue<TypedRow>> cursor = cursors.get(i);
-				ViewInfo view = views.get(i);
-				Holder<KeyValue<TypedRow>> next = cursor.nextImpl();
-				if(next != null) {
-					atLeastOneCursorHasNext = true;
-					KeyValue<TypedRow> kv = next.getValue();
-					TypedRow row = kv.getValue();
-					if(row != null)
-						row.setView(view);
-					rows.add(row);
-				} else
-					rows.add(null);
-			}
-
-			if(atLeastOneCursorHasNext)
-				return new Holder<List<TypedRow>>(rows);
-			return null;
 		}
 	}
 }

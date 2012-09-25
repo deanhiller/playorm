@@ -28,5 +28,17 @@ public interface SpiMetaQuery {
 	public String getQuery();
 
 	List<ViewInfo> getTargetViews();
+
+	/**
+	 * Join happens after rows returned because don't need indices as it would just slow it down.
+	 * @return
+	 */
+	public List<ViewInfo> getViewsDelayedJoin();
+
+	/**
+	 * Join happens from indices during the query
+	 * @return
+	 */
+	public List<ViewInfo> getViewsEagerJoin();
 	
 }

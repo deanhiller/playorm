@@ -23,6 +23,12 @@ public class InfoForWiring {
 	private DboTableMeta metaQueryTargetTable;
 	private List<ViewInfo> targetViews = new ArrayList<ViewInfo>();
 	
+	/**
+	 * This is a list of views that will be joined during expression evaluation.  Some views can be
+	 * joined AFTER expression evaluation by getting FK data from the rows themselves
+	 */
+	private List<ViewInfo> eagerlyJoinedViews = new ArrayList<ViewInfo>();
+	
 	public InfoForWiring(String query, String targetTable) {
 		this.query = query;
 		this.targetTable= targetTable;
@@ -98,6 +104,14 @@ public class InfoForWiring {
 
 	public Map<String,TypeInfo> getParameterFieldMap() {
 		return this.parameterFieldMap;
+	}
+
+	public void addEagerlyJoinedView(ViewInfoImpl tableInfo) {
+		eagerlyJoinedViews.add(tableInfo);
+	}
+
+	public List<ViewInfo> getJoinedViews() {
+		return eagerlyJoinedViews;
 	}
 
 }

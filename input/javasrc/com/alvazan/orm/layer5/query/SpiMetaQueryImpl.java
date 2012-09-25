@@ -21,6 +21,8 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private Map<String, TypeInfo> parameterFieldMap;
 	private String query;
 	private List<ViewInfo> views;
+	private List<ViewInfo> viewsEagerJoin;
+	private List<ViewInfo> viewsDelayedJoin;
 	
 	@Override
 	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session) {
@@ -29,9 +31,11 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	public void setASTTree(ExpressionNode node, List<ViewInfo> views) {
+	public void setASTTree(ExpressionNode node, List<ViewInfo> views, List<ViewInfo> viewsEagerJoin, List<ViewInfo> viewsDelayedJoin) {
 		this.astTreeRoot = node;
 		this.views = views;
+		this.viewsEagerJoin = viewsEagerJoin;
+		this.viewsDelayedJoin = viewsDelayedJoin;
 	}
 
 	public ExpressionNode getASTTree() {
@@ -60,6 +64,17 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Override
 	public List<ViewInfo> getTargetViews() {
 		return views;
+	}
+
+	@Override
+	public List<ViewInfo> getViewsDelayedJoin() {
+		return viewsDelayedJoin;
+
+	}
+
+	@Override
+	public List<ViewInfo> getViewsEagerJoin() {
+		return viewsEagerJoin;
 	}
 	
 }

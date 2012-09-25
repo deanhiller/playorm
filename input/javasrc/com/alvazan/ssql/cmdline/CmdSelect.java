@@ -24,7 +24,7 @@ public class CmdSelect {
 			QueryResult result = s.createQueryCursor(cmd, 100);
 			Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
 
-			processBatch(cursor);
+			processBatch(cursor, result.getViews());
 			
 		} catch(ParseException e) {
 			Throwable childExc = e.getCause();
@@ -34,9 +34,10 @@ public class CmdSelect {
 
 	/**
 	 * @param cursor
+	 * @param views 
 	 * @return whether we have exhausted the cursor or not.
 	 */
-	private void processBatch(Cursor<List<TypedRow>> cursor) {
+	private void processBatch(Cursor<List<TypedRow>> cursor, List<ViewInfo> views) {
 		int rowCount = 0;
 		while(cursor.next()) {
 			List<TypedRow> joinedRow = cursor.getCurrent();

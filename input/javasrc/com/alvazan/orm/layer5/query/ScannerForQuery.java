@@ -1,5 +1,8 @@
 package com.alvazan.orm.layer5.query;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -10,6 +13,7 @@ import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.MetaLoader;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.InfoForWiring;
 import com.alvazan.orm.parser.antlr.MetaFacade;
@@ -57,7 +61,15 @@ public class ScannerForQuery implements QueryParser {
 		MetaFacade facade = new MetaFacadeImpl(mgr, metaInfo);
 		ExpressionNode newTree = compiler.compileSql(query, wiring, facade);
 		
-		spiMetaQuery.setASTTree(newTree, wiring.getAllViews());
+		List<ViewInfo> allViews = wiring.getAllViews();
+		List<ViewInfo> joinedViews = wiring.getJoinedViews();
+		List<ViewInfo> notYetJoinedViews = new ArrayList<ViewInfo>();
+		for(ViewInfo view : allViews) {
+			if(!joinedViews.contains(view))
+				notYetJoinedViews.add(view);
+		}
+		
+		spiMetaQuery.setASTTree(newTree, allViews, joinedViews, notYetJoinedViews);
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
 		
