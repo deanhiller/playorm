@@ -313,7 +313,7 @@ public class ColumnFamilyHelper {
 			    .setName(colFamily)
 			    .setKeyspace(keysp);
 
-		log.info("cf="+def.getKeyspace()+" alias="+def.getName());
+		log.info("keyspace="+def.getKeyspace()+" col family="+def.getName());
 		StorageTypeEnum rowKeyType = meta.getIdColumnMeta().getStorageType();
 		StorageTypeEnum type = meta.getColNamePrefixType();
 		def = addRowKeyValidation(meta, def);
@@ -367,10 +367,10 @@ public class ColumnFamilyHelper {
 			def = def.setKeyValidationClass("UTF8Type");
 			break;
 		case INTEGER:
-			def = def.setKeyValidationClass("DecimalType");
+			def = def.setKeyValidationClass("IntegerType");
 			break;
 		case DECIMAL:
-			def = def.setKeyValidationClass("IntegerType");
+			def = def.setKeyValidationClass("DecimalType");
 			break;
 		case BYTES:
 			break;
