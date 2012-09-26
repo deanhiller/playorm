@@ -71,9 +71,9 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		
 		cachedCursors = new CursorJoinedViews(cursors, eagerlyJoinedViews);
 		
-		if(delayedJoinViews.size() > 0) {
-			//TODO: wire in the delayed join views
-		}
+//		if(delayedJoinViews.size() > 0) {
+//			//TODO: wire in the delayed join views
+//		}
 	}
 
 	private Map<ViewInfo, List<byte[]>> setupKeyLists() {
