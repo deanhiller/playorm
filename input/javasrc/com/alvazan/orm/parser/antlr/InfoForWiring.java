@@ -107,7 +107,8 @@ public class InfoForWiring {
 	}
 
 	public void addEagerlyJoinedView(ViewInfoImpl tableInfo) {
-		eagerlyJoinedViews.add(tableInfo);
+		if(!eagerlyJoinedViews.contains(tableInfo))
+			eagerlyJoinedViews.add(tableInfo);
 	}
 
 	public List<ViewInfo> getJoinedViews() {

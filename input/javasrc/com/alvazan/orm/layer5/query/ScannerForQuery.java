@@ -69,7 +69,7 @@ public class ScannerForQuery implements QueryParser {
 				notYetJoinedViews.add(view);
 		}
 		
-		spiMetaQuery.setASTTree(newTree, allViews, joinedViews, notYetJoinedViews);
+		spiMetaQuery.setASTTree(newTree, joinedViews, notYetJoinedViews);
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
 		

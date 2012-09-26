@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer5.query;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +21,9 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private ExpressionNode astTreeRoot;
 	private Map<String, TypeInfo> parameterFieldMap;
 	private String query;
-	private List<ViewInfo> views;
 	private List<ViewInfo> viewsEagerJoin;
 	private List<ViewInfo> viewsDelayedJoin;
+	private List<ViewInfo> views = new ArrayList<ViewInfo>();
 	
 	@Override
 	public SpiQueryAdapter createQueryInstanceFromQuery(NoSqlSession session) {
@@ -31,11 +32,13 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 		return indexQuery;
 	}
 
-	public void setASTTree(ExpressionNode node, List<ViewInfo> views, List<ViewInfo> viewsEagerJoin, List<ViewInfo> viewsDelayedJoin) {
+	public void setASTTree(ExpressionNode node, List<ViewInfo> viewsEagerJoin, List<ViewInfo> viewsDelayedJoin) {
 		this.astTreeRoot = node;
-		this.views = views;
 		this.viewsEagerJoin = viewsEagerJoin;
 		this.viewsDelayedJoin = viewsDelayedJoin;
+		
+		views.addAll(viewsEagerJoin);
+		views.addAll(viewsDelayedJoin);
 	}
 
 	public ExpressionNode getASTTree() {
