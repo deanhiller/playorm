@@ -231,24 +231,24 @@ public class TestJoins {
 	public void testOuterJoinWithNullClause() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
-		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account as a WHERE e.numTimes < 15 and (e.account = null or a.isActive = false)", 50);
-		List<ViewInfo> views = result.getViews();
-		Cursor<IndexColumnInfo> cursor = result.getCursor();
-
-		ViewInfo viewAct = views.get(0);
-		ViewInfo viewAcc = views.get(1);
-		String alias1 = viewAct.getAlias();
-		String alias2 = viewAcc.getAlias();
-		Assert.assertEquals("e", alias1);
-		Assert.assertEquals("a", alias2);
-		
-		Assert.assertTrue(cursor.next());
-		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
-		Assert.assertTrue(cursor.next());
-		compareKeys(cursor, viewAct, viewAcc, "act5", null);
-		Assert.assertTrue(cursor.next());
-		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
-		Assert.assertFalse(cursor.next());
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e LEFT JOIN e.account as a WHERE e.numTimes < 15 and (e.account = null or a.isActive = false)", 50);
+//		List<ViewInfo> views = result.getViews();
+//		Cursor<IndexColumnInfo> cursor = result.getCursor();
+//
+//		ViewInfo viewAct = views.get(0);
+//		ViewInfo viewAcc = views.get(1);
+//		String alias1 = viewAct.getAlias();
+//		String alias2 = viewAcc.getAlias();
+//		Assert.assertEquals("e", alias1);
+//		Assert.assertEquals("a", alias2);
+//		
+//		Assert.assertTrue(cursor.next());
+//		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+//		Assert.assertTrue(cursor.next());
+//		compareKeys(cursor, viewAct, viewAcc, "act5", null);
+//		Assert.assertTrue(cursor.next());
+//		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+//		Assert.assertFalse(cursor.next());
 		
 		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
 		
@@ -262,6 +262,24 @@ public class TestJoins {
 		Assert.assertEquals("e", typedRow.getView().getAlias());
 		Assert.assertEquals("act1", typedRow.getRowKeyString());
 		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+		
+	    rows.next();
+	    List<TypedRow> joinedRow1 = rows.getCurrent();
+	    TypedRow typedRow1 = joinedRow1.get(0);
+	    TypedRow theJoinedRow1 = joinedRow1.get(1);
+	    log.info("joinedRow1= "+joinedRow1);
+	    Assert.assertEquals("e", typedRow1.getView().getAlias());
+	    Assert.assertEquals("act5", typedRow1.getRowKeyString());
+	    Assert.assertEquals(null, theJoinedRow1.getRowKey());
+
+	    rows.next();
+	    List<TypedRow> joinedRow2 = rows.getCurrent();
+	    TypedRow typedRow2 = joinedRow2.get(0);
+	    TypedRow theJoinedRow2 = joinedRow2.get(1);
+	    log.info("joinedRow1= "+joinedRow2);
+	    Assert.assertEquals("e", typedRow2.getView().getAlias());
+	    Assert.assertEquals("act7", typedRow2.getRowKeyString());
+	    Assert.assertEquals("acc1", theJoinedRow2.getRowKey());
 	}
 	
 	private void compareKeys(Cursor<IndexColumnInfo> cursor, ViewInfo viewAct, ViewInfo viewAcc, String expectedKey, String expectedAccKey) {

@@ -14,6 +14,11 @@ public class IndexColumnInfo {
 
 	private Map<ViewInfo, Wrapper> colNameToValue = new HashMap<ViewInfo, Wrapper>();
 	
+	@Override
+	public String toString() {
+		return "[indColInf]"+colNameToValue;
+	}
+
 	public void putIndexNode(ViewInfo viewInfo, IndexColumn indCol, DboColumnMeta colMeta) {
 		this.colNameToValue.put(viewInfo, new Wrapper(indCol, colMeta));
 	}
@@ -68,6 +73,10 @@ public class IndexColumnInfo {
 		}
 		public DboColumnMeta getColMeta() {
 			return colMeta;
+		}
+		@Override
+		public String toString() {
+			return "meta="+colMeta.getOwner().getColumnFamily()+","+colMeta.getColumnName()+" ind="+col;
 		}
 	}
 }

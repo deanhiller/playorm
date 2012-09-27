@@ -18,6 +18,13 @@ public class IndexColumn {
 	
 	public IndexColumn() {}
 	
+	
+	@Override
+	public String toString() {
+		return "indexedVal="+indexedVal+" key="+rowKey;
+	}
+
+
 	public IndexColumn copy() {
 		IndexColumn c = new IndexColumn();
 		c.indexedValue = indexedValue;

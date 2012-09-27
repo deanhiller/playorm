@@ -55,29 +55,33 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 	}
 
 	private void loadCache() {
-		Map<ViewInfo, List<byte[]>> map = setupKeyLists();
+		Map<ViewInfo, TwoLists> map = setupKeyLists();
 		createCursors(map);		
 	}
 
-	private void createCursors(Map<ViewInfo, List<byte[]>> map) {
+	private void createCursors(Map<ViewInfo, TwoLists> map) {
 		List<DirectCursor<KeyValue<TypedRow>>> cursors = new ArrayList<DirectCursor<KeyValue<TypedRow>>>();
+		List<List<byte[]>> fullKeyLists = new ArrayList<List<byte[]>>();
 		
 		for(ViewInfo view : eagerlyJoinedViews) {
-			List<byte[]> rowKeys = map.get(view);
+			TwoLists twoLists = map.get(view);
+			List<byte[]> rowKeys = twoLists.getListWithNoNulls();
 			DboTableMeta meta = view.getTableMeta();
 			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, rowKeys, query, batchSize);
-			cursors.add(cursor);
+			DirectCursor<KeyValue<TypedRow>> fillCursor = new CursorFillNulls(cursor, twoLists.getFullKeyList(), view);
+			cursors.add(fillCursor);
+			fullKeyLists.add(twoLists.getFullKeyList());
 		}
 		
 		cachedCursors = new CursorJoinedViews(cursors, eagerlyJoinedViews);
 		
 //		if(delayedJoinViews.size() > 0) {
-//			//TODO: wire in the delayed join views
+//			cachedCursors = new CursorDelayedJoins(cachedCursors, eagerlyJoinedViews);
 //		}
 	}
 
-	private Map<ViewInfo, List<byte[]>> setupKeyLists() {
-		Map<ViewInfo, List<byte[]>> map = new HashMap<ViewInfo, List<byte[]>>();
+	private Map<ViewInfo, TwoLists> setupKeyLists() {
+		Map<ViewInfo, TwoLists> map = new HashMap<ViewInfo, TwoLists>();
 		initializeMap(map);
 		
 		for(int i = 0; i < batchSize; i++) {
@@ -90,8 +94,10 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			IndexColumnInfo index = next.getValue();
 			for(ViewInfo info : eagerlyJoinedViews) {
 				byte[] pk = index.getPrimaryKeyRaw(info);
+				TwoLists twoLists = map.get(info);
+				twoLists.getFullKeyList().add(pk);
 				if(pk != null) {
-					List<byte[]> list = map.get(info);
+					List<byte[]> list = twoLists.getListWithNoNulls();
 					list.add(pk);
 				}
 			}
@@ -99,9 +105,20 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		return map;
 	}
 
-	private void initializeMap(Map<ViewInfo, List<byte[]>> map) {
+	private void initializeMap(Map<ViewInfo, TwoLists> map) {
 		for(ViewInfo view : eagerlyJoinedViews) {
-			map.put(view, new ArrayList<byte[]>());
+			map.put(view, new TwoLists());
+		}
+	}
+	
+	private static class TwoLists {
+		private List<byte[]> fullKeyList = new ArrayList<byte[]>();
+		private List<byte[]> listWithNoNulls = new ArrayList<byte[]>();
+		public List<byte[]> getFullKeyList() {
+			return fullKeyList;
+		}
+		public List<byte[]> getListWithNoNulls() {
+			return listWithNoNulls;
 		}
 	}
 }

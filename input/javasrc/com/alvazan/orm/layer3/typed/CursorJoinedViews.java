@@ -6,7 +6,6 @@ import java.util.List;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
-import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
@@ -28,7 +27,6 @@ class CursorJoinedViews extends AbstractCursor<List<TypedRow>> {
 
 	@Override
 	public Holder<List<TypedRow>> nextImpl() {
-		
 		boolean atLeastOneCursorHasNext = false;
 		List<TypedRow> rows = new ArrayList<TypedRow>();
 		for(int i = 0; i < cursors.size(); i++) {
