@@ -265,7 +265,7 @@ public class DboTableMeta {
 			if(meta.isIndexed())
 				indexedColumnsCache.add(meta);
 		}
-		if(idColumn.isIndexed)
+		if(idColumn.isIndexed())
 			indexedColumnsCache.add(idColumn);
 			
 		cacheOfPartitionedBy = new ArrayList<DboColumnMeta>();
