@@ -79,7 +79,7 @@ public abstract class DboColumnMeta {
 	public abstract boolean isPartitionedByThisColumn();
 	public abstract String getIndexTableName();
 	
-	public final String getIndexRowKey(String partitionedBy, String partitionId) {
+	public String getIndexRowKey(String partitionedBy, String partitionId) {
 		String firstPart = "/"+owner.getColumnFamily()+"/"+columnName;
 		if(partitionedBy == null)
 			return firstPart;
@@ -89,7 +89,7 @@ public abstract class DboColumnMeta {
 		return firstPart+"/"+partitionId;
 	}
 	
-	public final boolean isIndexed() {
+	public boolean isIndexed() {
 		return isIndexed;
 	}
 	
