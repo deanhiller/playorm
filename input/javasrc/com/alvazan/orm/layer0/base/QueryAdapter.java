@@ -182,7 +182,7 @@ public class QueryAdapter<T> implements Query<T> {
 	@Override
 	public Iterable<KeyValue<T>> getResultsIter() {
 		Cursor<KeyValue<T>> cursor = getResults();
-		Iterable<KeyValue<T>> proxy = new IterableProxy<T>(cursor);
+		Iterable<KeyValue<T>> proxy = new IterableProxy<KeyValue<T>>(cursor);
 		return proxy;
 	}
 

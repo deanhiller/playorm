@@ -34,4 +34,10 @@ public interface QueryResult {
 	
 	Iterable<KeyValue<TypedRow>> getPrimaryViewIter();
 	
+	/**
+	 * Sometimes an Iterable is way more convenient
+	 * @return
+	 */
+	Iterable<List<TypedRow>> getAllViewsIter();
+	
 }

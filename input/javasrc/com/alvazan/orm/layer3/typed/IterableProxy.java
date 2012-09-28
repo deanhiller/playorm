@@ -2,33 +2,32 @@ package com.alvazan.orm.layer3.typed;
 
 import java.util.Iterator;
 
-import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public class IterableProxy<T> implements
-		Iterable<com.alvazan.orm.api.z8spi.KeyValue<T>> {
+		Iterable<T> {
 
-	private Cursor<KeyValue<T>> cursor;
+	private Cursor<T> cursor;
 
-	public IterableProxy(Cursor<KeyValue<T>> cursor) {
+	public IterableProxy(Cursor<T> cursor) {
 		Precondition.check(cursor, "cursor");
 		this.cursor = cursor;
 	}
 
 	@Override
-	public Iterator<KeyValue<T>> iterator() {
+	public Iterator<T> iterator() {
 		//restart cursor
 		cursor.beforeFirst();
 		return new IteratorProxy<T>(cursor);
 	}
 	
-	private static class IteratorProxy<T> implements Iterator<KeyValue<T>> {
+	private static class IteratorProxy<T> implements Iterator<T> {
 
-		private Cursor<KeyValue<T>> cursor;
-		private KeyValue<T> cachedValue;
+		private Cursor<T> cursor;
+		private T cachedValue;
 		
-		public IteratorProxy(Cursor<KeyValue<T>> cursor) {
+		public IteratorProxy(Cursor<T> cursor) {
 			this.cursor = cursor;
 		}
 
@@ -43,11 +42,11 @@ public class IterableProxy<T> implements
 		}
 
 		@Override
-		public KeyValue<T> next() {
+		public T next() {
 			if(!hasNext())
 				throw new IllegalStateException("You should call hasNext first!!! This iterator has no more values");
 			
-			KeyValue<T> temp = cachedValue;
+			T temp = cachedValue;
 			cachedValue = null;
 			return temp;
 		}
