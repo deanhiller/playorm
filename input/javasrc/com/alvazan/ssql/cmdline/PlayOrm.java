@@ -22,6 +22,7 @@ public class PlayOrm {
 	private NoSqlEntityManagerFactory factory;
 	private CmdHelp help = new CmdHelp();
 	private CmdSelect select = new CmdSelect();
+	private CmdIndex index = new CmdIndex();
 	
 	public PlayOrm(NoSqlEntityManagerFactory factory) {
 		this.factory = factory;
@@ -158,6 +159,8 @@ public class PlayOrm {
 			processCreate(cmd);
 		} else if(startsWithIgnoreCase("SELECT ", cmd) || startsWithIgnoreCase("PARTITIONS ", cmd)) {
 			select.processSelect(cmd, mgr);
+		} else if(startsWithIgnoreCase("INDEXVIEW ", cmd)) {
+			index.processIndex(cmd, mgr);
 		} else {
 			throw new InvalidCommand();
 		}
