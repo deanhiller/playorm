@@ -25,9 +25,21 @@ public class CmdHelp {
 			println("");
 			println("Example: INDEXVIEW /Activity/trade/byAccount/56748321");
 			println("");
+		} else if("REINDEX".equalsIgnoreCase(command)) {
+			println("Rebuilds an index.  This will remove duplicate rowkeys in an index AND if a row no longer exists it");
+			println("will remove those index points as well BUT if you need to add missing index points, you need to map/reduce the");
+			println("table and JUST read in every row and write it back out and it will index it.  NOTE: It is extremely tough to");
+			println("be missing index points...duplicate rowkeys are more likely that missing points(we have had ZERO instances so far in production of this)");
+			println("");
+			println("Rebuild index(non-partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>");
+			println("Rebuild index(partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
+			println("");
+			println("Example 1: REINDEX /Activity/trade/byAccount/56748321");
+			//println("Example 2: REINDEX /Activity/trade/byAccount/56748321 name");
+			//println("         example 2 uses name index to rebuild the trade index in a partition");
+			println("");
 		} else if(command.startsWith("CREATE ")) {
 			processCreateHelp(command);
-
 		} else if("INSERT".equalsIgnoreCase(command)) {
 			System.out.println("not in yet");
 		}

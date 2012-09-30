@@ -87,27 +87,53 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 	
 	@Override
+	public void removeIndexPoint(IndexPoint pt, String partitionBy, String partitionId) {
+		DboColumnMeta colMeta = pt.getColumnMeta();
+		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
+		byte[] rowKey = info.getRowKey();
+		String indColFamily = info.getIndexColFamily();
+		String cf = info.getEntityColFamily();
+		
+		IndexColumn col = new IndexColumn();
+		col.setIndexedValue(pt.getRawIndexedValue());
+		col.setPrimaryKey(pt.getRawKey());
+		session.removeFromIndex(cf, indColFamily, rowKey, col);
+	}
+	public void addIndexPoint(IndexPoint pt, String partitionBy, String partitionId) {
+		DboColumnMeta colMeta = pt.getColumnMeta();
+		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
+		byte[] rowKey = info.getRowKey();
+		String indColFamily = info.getIndexColFamily();
+		String cf = info.getEntityColFamily();
+		
+		IndexColumn col = new IndexColumn();
+		col.setIndexedValue(pt.getRawIndexedValue());
+		col.setPrimaryKey(pt.getRawKey());
+		session.persistIndex(cf, indColFamily, rowKey, col);
+	}
+	
+	@Override
 	public void remove(String colFamily, TypedRow row) {
 		throw new UnsupportedOperationException("not done yet");
 	}
 	
 	@Override
-	public <T> TypedRow find(String cf, T id) {
-		List<T> keys = new ArrayList<T>();
+	public TypedRow find(String cf, Object id) {
+		List<Object> keys = new ArrayList<Object>();
 		keys.add(id);
 		List<KeyValue<TypedRow>> rows = findAllList(cf, keys);
 		return rows.get(0).getValue();
 	}
 	
 	@Override
-	public <T> Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<T> keys, int batchSize) {
+	public Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<Object> keys, int batchSize) {
 		if(keys == null)
 			throw new IllegalArgumentException("keys list cannot be null");
 		DboTableMeta meta = cachedMeta.getMeta(colFamily);
 		if(meta == null)
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
 		DboColumnMeta idMeta = meta.getIdColumnMeta();
-		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<T>(idMeta, keys);
+		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<Object>(idMeta, keys);
 		return findAllImpl2(meta, keys, noSqlKeys, null, batchSize);
 	}
 
@@ -121,9 +147,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		else
 			return new CursorTypedResp<T>(meta, rows2, query);
 	}
-	
+
 	@Override
-	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> keys) {
+	public List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<Object> keys) {
 		List<KeyValue<TypedRow>> rows = new ArrayList<KeyValue<TypedRow>>();
 		Cursor<KeyValue<TypedRow>> iter = createFindCursor(colFamily, keys, 500);
 		while(iter.next()) {

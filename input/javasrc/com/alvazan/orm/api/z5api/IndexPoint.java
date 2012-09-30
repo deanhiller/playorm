@@ -46,4 +46,12 @@ public class IndexPoint {
 		Object obj = getIndexedValue();
 		return colMeta.convertTypeToString(obj);
 	}
+
+	public DboColumnMeta getColumnMeta() {
+		return colMeta;
+	}
+
+	public DboColumnIdMeta getRowKeyMeta() {
+		return idMeta;
+	}
 }

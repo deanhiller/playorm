@@ -41,10 +41,10 @@ public interface NoSqlTypedSession {
 	 */
 	public void remove(String colFamily, TypedRow rowKey);
 	
-	public <T> TypedRow find(String cf, T id);
+	public TypedRow find(String cf, Object id);
 	
-	public <T> List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<T> rowKeys);
-	public <T> Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<T> rowKeys, int batchSize);
+	public List<KeyValue<TypedRow>> findAllList(String colFamily, Iterable<Object> rowKeys);
+	public Cursor<KeyValue<TypedRow>> createFindCursor(String colFamily, Iterable<Object> rowKeys, int batchSize);
 
 	/**
 	 * This creates a query cursor that will query into the database AS you iterate over the cursor.  You
@@ -62,5 +62,7 @@ public interface NoSqlTypedSession {
 
 	public Cursor<IndexPoint> indexView(String columnFamily, String column, String partitionBy, String partitionId);
 
+	public void removeIndexPoint(IndexPoint pt, String partitionBy, String partitionId);
+	public void addIndexPoint(IndexPoint pt, String partitionBy, String partitionId);
 
 }

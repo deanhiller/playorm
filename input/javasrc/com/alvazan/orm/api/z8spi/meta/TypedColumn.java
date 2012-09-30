@@ -66,4 +66,8 @@ public class TypedColumn {
 	public String getCompositeSubName() {
 		return subName;
 	}
+
+	public byte[] getRawValue() {
+		return columnMeta.convertToStorage2(value);
+	}
 }
