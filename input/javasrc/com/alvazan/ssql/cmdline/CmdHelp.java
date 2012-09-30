@@ -1,5 +1,6 @@
 package com.alvazan.ssql.cmdline;
 
+
 public class CmdHelp {
 
 	void processHelpCmd(String cmd) {
@@ -17,11 +18,11 @@ public class CmdHelp {
 			println("Example: PARTITIONS a('partition1') SELECT a FROM Activity as a LEFT JOIN a.trade as t WHERE a.numShares > 5");
 			println("");
 			println("In general, JQL(Java Query Language) can be followed.  We are adding standard SQL as well");
-		} else if("INDEXVIEW".equalsIgnoreCase(command)){
+		} else if("VIEWINDEX".equalsIgnoreCase(command)){
 			println("Lists the index nodes in the index the way they are stored(which is in order)");
 			println("");
-			println("Format(non-partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>");
-			println("Format(partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
+			println("Format(non-partitioned table): VIEWINDEX /<Column Family>/<Indexed Column>");
+			println("Format(partitioned table): VIEWINDEX /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
 			println("");
 			println("Example: INDEXVIEW /Activity/trade/byAccount/56748321");
 			println("");
@@ -38,6 +39,15 @@ public class CmdHelp {
 			//println("Example 2: REINDEX /Activity/trade/byAccount/56748321 name");
 			//println("         example 2 uses name index to rebuild the trade index in a partition");
 			println("");
+		} else if("LISTPARTITIONS".equalsIgnoreCase(command)) {
+			println("Lists out all the partitions that you can query into for a Column Family OR use in the REINDEX or VIEWINDEX");
+			println("");
+			println("Usage: LISTPARTITIONS <Column Family> (Partitioned By)");
+			println("");
+			println("Example 1 is sufficient for most people...");
+			println("Example 1(CF only partitioned one way): LISTPARTITIONS User");
+			println("Example 2(CF multiple partitioned): LISTPARTITIONS PartitionedTrade account");
+			println("     account is the field with the @NoSqlPartitionByThisField annotation");
 		} else if(command.startsWith("CREATE ")) {
 			processCreateHelp(command);
 		} else if("INSERT".equalsIgnoreCase(command)) {

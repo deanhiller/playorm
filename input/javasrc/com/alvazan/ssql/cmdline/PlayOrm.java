@@ -23,6 +23,7 @@ public class PlayOrm {
 	private CmdHelp help = new CmdHelp();
 	private CmdSelect select = new CmdSelect();
 	private CmdIndex index = new CmdIndex();
+	private CmdListPartitions partitions = new CmdListPartitions();
 	
 	public PlayOrm(NoSqlEntityManagerFactory factory) {
 		this.factory = factory;
@@ -148,10 +149,11 @@ public class PlayOrm {
 			println("Commands:");
 			println("SELECT           Selects dataset matching expression.  type 'help SELECT' for more info");
 			println("PARTITIONS       Selects dataset matching expression in a partition.  type 'help PARTITIONS for more info");
-			println("INDEXVIEW        Views an index.  type 'help INDEXVIEW' for more info");
+			println("VIEWINDEX        Views an index.  type 'help INDEXVIEW' for more info");
 			println("REINDEX          Rebuild a particular index.  type 'help REINDEX' for more info");
 			println("CREATE TABLE     Not in yet");
 			println("INSERT           Not in yet");
+			println("LISTPARTITIONS   IF you partition on a field with @ManyToOne, you can list the partitions. type 'help LISTPARTITIONS' for more info");
 		} else if("exit".equals(cmd)) {
 			System.exit(0);
 		} else if(startsWithIgnoreCase("help ", cmd)) {
@@ -160,10 +162,12 @@ public class PlayOrm {
 			processCreate(cmd);
 		} else if(startsWithIgnoreCase("SELECT ", cmd) || startsWithIgnoreCase("PARTITIONS ", cmd)) {
 			select.processSelect(cmd, mgr);
-		} else if(startsWithIgnoreCase("INDEXVIEW ", cmd)) {
+		} else if(startsWithIgnoreCase("VIEWINDEX ", cmd)) {
 			index.processIndex(cmd, mgr);
 		} else if(startsWithIgnoreCase("REINDEX ", cmd)) {
 			index.reindex(cmd, mgr);
+		} else if(startsWithIgnoreCase("LISTPARTITIONS ", cmd)) {
+			partitions.list(cmd, mgr);
 		} else {
 			throw new InvalidCommand();
 		}
