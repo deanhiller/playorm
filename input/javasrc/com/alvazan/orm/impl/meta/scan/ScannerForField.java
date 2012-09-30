@@ -100,6 +100,7 @@ public class ScannerForField {
 			info.setConverter(converter);
 			info.setGen(gen);
 			info.setUseGenerator(idAnno.usegenerator());
+			info.setHalfUseGenerator(idAnno.halfUseGenerator());
 			info.setMetaClass(metaClass);
 			metaField.setup(t, info, field, columnName, isIndexed);
 			return metaField;

@@ -23,7 +23,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class AAPartitionedTrade {
 
-	@NoSqlId
+	@NoSqlId(halfUseGenerator=true)
 	private String id;
 	
 	@NoSqlPartitionByThisField

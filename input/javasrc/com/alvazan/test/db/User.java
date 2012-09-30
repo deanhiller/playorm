@@ -1,14 +1,20 @@
 package com.alvazan.test.db;
 
+import java.util.List;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
-@NoSqlQuery(name="findByName", query="select u from TABLE as u where :name = u.name")
+@NoSqlQueries({
+	@NoSqlQuery(name="findByName", query="select u from TABLE as u where :name = u.name"),
+	@NoSqlQuery(name="findBetween", query="select u from TABLE as u where u.age > :start and u.age < :end")
+})
 public class User {
 
 	@NoSqlId
@@ -17,6 +23,9 @@ public class User {
 	@NoSqlIndexed
 	private String name;
 
+	@NoSqlIndexed
+	private int age;
+	
 	private String lastName;
 	
 	public String getId() {
@@ -25,6 +34,14 @@ public class User {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
 	}
 
 	public String getName() {
@@ -49,4 +66,10 @@ public class User {
 		return query.getSingleObject();
 	}
 	
+	public static List<User> findByAge(NoSqlEntityManager mgr, int start, int end) {
+		Query<User> query = mgr.createNamedQuery(User.class, "findBetween");
+		query.setParameter("start", start);
+		query.setParameter("end", end);
+		return query.getResultList(0, null);
+	}
 }

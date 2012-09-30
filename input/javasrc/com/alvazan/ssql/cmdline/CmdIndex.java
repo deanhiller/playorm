@@ -76,7 +76,6 @@ public class CmdIndex {
 		
 		int rowCounter = 0;
 		int changedCounter = 0;
-		int flushCounter = 0;
 		while(indexView2.next()) {
 			IndexPoint pt = indexView2.getCurrent();
 			

@@ -49,6 +49,13 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	
 	private boolean isTypedSessionInitialized = false;
 	
+	public void put(Object entity, boolean isInsert) {
+		if(!isInsert && !(entity instanceof NoSqlProxy)) {
+			throw new IllegalArgumentException("It is very important you READ in the entity before update or you easily corrupt your indices as we have to know the previous values to remove old values from indices when needed");
+		}
+		put(entity);
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void put(Object entity) {

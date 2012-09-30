@@ -298,62 +298,56 @@ public class TestJoins {
 	}
 
 	private void setupRecords() {
-		Account acc1 = new Account();
-		acc1.setId("acc1");
+		Account acc1 = new Account("acc1");
 		acc1.setIsActive(false);
 		mgr.fillInWithKey(acc1);
 
 		
-		Account acc2 = new Account();
-		acc2.setId("acc2");
+		Account acc2 = new Account("acc2");
 		acc2.setIsActive(true);
 		mgr.fillInWithKey(acc2);
 		
-		Account acc3 = new Account();
-		acc3.setId("acc3");
+		Account acc3 = new Account("acc3");
 		acc3.setIsActive(false);
 		mgr.fillInWithKey(acc3);
 
 		
-		Activity act1 = new Activity();
-		act1.setId("act1");
+		Activity act1 = new Activity("act1");
 		act1.setAccount(acc1);
 		act1.setNumTimes(10);
 		acc1.addActivity(act1);
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
-		act2.setId("act2");
+		Activity act2 = new Activity("act2");
 		act2.setAccount(acc1);
 		act2.setNumTimes(20);
 		acc1.addActivity(act2);
 		mgr.put(act2);
 
-		Activity act3 = new Activity();
-		act3.setId("act3");
+		Activity act3 = new Activity("act3");
 		act3.setAccount(acc2);
 		act3.setNumTimes(10);
 		acc2.addActivity(act3);
 		mgr.put(act3);
 		
-		Activity act4 = new Activity();
+		Activity act4 = new Activity("act4");
 		act4.setId("act4");
 		act4.setAccount(acc2);
 		act4.setNumTimes(20);
 		acc2.addActivity(act4);
 		mgr.put(act4);
 		
-		Activity act5 = new Activity();
+		Activity act5 = new Activity("act5");
 		act5.setId("act5");
 		act5.setNumTimes(10);
 		mgr.put(act5);
 		
-		Activity act6 = new Activity();
+		Activity act6 = new Activity("act6");
 		act6.setId("act6");
 		act6.setNumTimes(20);
 		mgr.put(act6);
 
-		Activity act7 = new Activity();
+		Activity act7 = new Activity("act7");
 		act7.setId("act7");
 		act7.setAccount(acc1);
 		act7.setNumTimes(10);

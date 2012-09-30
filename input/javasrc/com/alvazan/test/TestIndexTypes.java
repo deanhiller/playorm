@@ -83,7 +83,7 @@ public class TestIndexTypes {
 	}
 	
 	private void setupRecords() {
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setName("hello");
 		act.setMyFloat(5.65f);
 		act.setUniqueColumn("notunique");
@@ -94,7 +94,7 @@ public class TestIndexTypes {
 		mgr.put(act);
 		
 		//Everything is null for this activity so queries above should not find him...
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setNumTimes(58);
 		mgr.put(act2);
 		

@@ -44,7 +44,7 @@ public class TestOneToMany {
 		//not found returns null...
 		Assert.assertNull(act);
 		
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setName("dean");
 		act1.setNumTimes(3);
 		mgr.put(act1);
@@ -78,8 +78,8 @@ public class TestOneToMany {
 		entity.setName("asdf");
 		mgr.put(entity);
 		mgr.flush();
-		addAndSaveActivity1(mgr, entity, "dean");
-		addAndSaveActivity1(mgr, entity, "werwer");
+		addAndSaveActivity1(mgr, entity, "dean", "act1");
+		addAndSaveActivity1(mgr, entity, "werwer", "act2");
 		
 		NoSqlEntityManager mgr1 = factory.createEntityManager();
 		SomeEntity acc1 = mgr1.find(SomeEntity.class, entity.getId());
@@ -105,7 +105,7 @@ public class TestOneToMany {
 		SomeEntity newEntity = mgr.find(SomeEntity.class, entity.getId());
 		Assert.assertEquals(0, newEntity.getActivities().size());
 		
-		addAndSaveActivity1(mgr, entity, "dean");
+		addAndSaveActivity1(mgr, entity, "dean", "act1");
 		
 		SomeEntity second = mgr.find(SomeEntity.class, entity.getId());
 		Assert.assertEquals(1,  second.getActivities().size());
@@ -131,8 +131,8 @@ public class TestOneToMany {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		SomeEntity acc2 = mgr2.find(SomeEntity.class, entity.getId());
 		
-		addAndSaveActivity1(mgr1, acc1, "dean");
-		addAndSaveActivity1(mgr2, acc2, "xxxx");
+		addAndSaveActivity1(mgr1, acc1, "dean", "act1");
+		addAndSaveActivity1(mgr2, acc2, "xxxx", "act2");
 
 		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
@@ -141,8 +141,8 @@ public class TestOneToMany {
 	}
 
 	private void addAndSaveActivity1(NoSqlEntityManager mgr1, SomeEntity acc1,
-			String name) {
-		Activity act = new Activity();
+			String name, String actId) {
+		Activity act = new Activity(actId);
 		act.setName(name);
 		act.setNumTimes(5);
 		mgr1.put(act);
@@ -155,11 +155,11 @@ public class TestOneToMany {
 
 	@Test
 	public void testOneToManyWithMap() {
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setName("dean");
 		act1.setNumTimes(3);
 		mgr.put(act1);
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("dean2");
 		act2.setNumTimes(4);
 		mgr.put(act2);
@@ -183,7 +183,7 @@ public class TestOneToMany {
 
 	@Test
 	public void testIndependentAddsAreCumulativeForCursor() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		
@@ -195,8 +195,8 @@ public class TestOneToMany {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		Account acc2 = mgr2.find(Account.class, acc.getId());
 		
-		addAndSaveActivity1(mgr1, acc1, "dean");
-		addAndSaveActivity1(mgr2, acc2, "xxxx");
+		addAndSaveActivity1(mgr1, acc1, "dean", "act1");
+		addAndSaveActivity1(mgr2, acc2, "xxxx", "act2");
 
 		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
@@ -216,7 +216,7 @@ public class TestOneToMany {
 	
 	@Test
 	public void testIndependentAddsAreCumulative() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		
@@ -228,8 +228,8 @@ public class TestOneToMany {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		Account acc2 = mgr2.find(Account.class, acc.getId());
 		
-		addAndSaveActivity1(mgr1, acc1, "dean");
-		addAndSaveActivity1(mgr2, acc2, "xxxx");
+		addAndSaveActivity1(mgr1, acc1, "dean", "act1");
+		addAndSaveActivity1(mgr2, acc2, "xxxx", "act2");
 
 		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
@@ -237,8 +237,8 @@ public class TestOneToMany {
 		Assert.assertEquals(2, theAccount.getActivities().size());
 	}
 
-	private void addAndSaveActivity1(NoSqlEntityManager mgr1, Account acc1, String name) {
-		Activity act = new Activity();
+	private void addAndSaveActivity1(NoSqlEntityManager mgr1, Account acc1, String name, String actId) {
+		Activity act = new Activity(actId);
 		act.setName(name);
 		act.setIsCool(true);
 		mgr1.put(act);
@@ -251,18 +251,18 @@ public class TestOneToMany {
 
 	@Test
 	public void testContainsMethod() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		mgr.fillInWithKey(acc);
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setAccount(acc);
 		act1.setName("dean");
 		act1.setNumTimes(3);
 		
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("dean");
 		act2.setNumTimes(4);
 		
@@ -283,18 +283,18 @@ public class TestOneToMany {
 	
 	@Test
 	public void testRemovesAreCumulative() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		mgr.fillInWithKey(acc);
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setAccount(acc);
 		act1.setName("dean");
 		act1.setNumTimes(3);
 		
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("dean");
 		act2.setNumTimes(4);
 		
@@ -336,18 +336,18 @@ public class TestOneToMany {
 
 	@Test
 	public void testOneToManyWithList() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		mgr.fillInWithKey(acc);
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setAccount(acc);
 		act1.setName("dean");
 		act1.setNumTimes(3);
 		
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("dean");
 		act2.setNumTimes(4);
 		

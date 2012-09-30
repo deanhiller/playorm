@@ -42,6 +42,15 @@ public interface NoSqlEntityManager {
 	 */
 	public void put(Object entity);
 	
+	/**
+	 * MUST be used for entity with MANUAL key generation.  To prevent index corruption, you MUST tell us if this is an 
+	 * insert OR an update.  If it is an update, entity will be checked if it was read in first(it needs to be read in
+	 * first before updating so we can properly remove from index and add to it).
+	 * @param entity
+	 * @param isInsert
+	 */
+	public void put(Object entity, boolean isInsert);
+	
 	//public void putAll(List<Object> entities);
 	
 	/**

@@ -30,6 +30,8 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	private Method method;
 	private MetaAbstractClass<OWNER> metaClass;
 	private DboColumnIdMeta metaDbo = new DboColumnIdMeta();
+
+	private boolean halfUseGenerator;
 	
 	public DboColumnMeta getMetaDbo() {
 		return metaDbo;
@@ -85,10 +87,16 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 				throw new IllegalArgumentException("Entity has @NoSqlEntity(usegenerator=false) but this entity has no id="+entity);
 			return id;
 		} else if(id != null) {
-			//kind of not a good idea if they new an entity and save it twice, this will then fail...should we enable this??? not sure.
-//			if(!(entity instanceof NoSqlProxy))
-//				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @NoSqlId annotation yet you supplied " +
-//						"your own id...this will cause issues, please don't set the id OR you are using a primitive for your key which is not a good idea either if you are going to use a generator");
+			if(halfUseGenerator)
+				return id;
+			//OKAY, we definitely do NOT want them setting their own id when autogeneration is used as IF you set the id on TWO entities
+			//to the same id and add both of them, you end up with a corrupt index in that you have duplicates of two values pointing to
+			//the same exact primary key.
+			if(!(entity instanceof NoSqlProxy))
+				throw new IllegalArgumentException("Uhm, uh, you have useGenerator=true(the default) on @NoSqlId annotation and the entity you " +
+						"passed in was NOT read from the database!!!!  You supplied " +
+						"your own id which could exist in the database...this will cause LARGE issues with indexing so we don't allow it, please don't set the id OR you" +
+						" are using a primitive for your key which is not a good idea either if you are going to use a generator(use Integer or String or Long instead)");
 			return id;
 		}
 		
@@ -102,6 +110,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		this.method = info.getIdMethod();
 		this.method.setAccessible(true);
 		this.useGenerator = info.isUseGenerator();
+		this.halfUseGenerator = info.isHalfUseGenerator();
 		this.generator = info.getGen();
 		this.converter = info.getConverter();	
 		this.metaClass = info.getMetaClass();

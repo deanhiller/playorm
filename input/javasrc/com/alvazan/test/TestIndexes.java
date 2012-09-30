@@ -29,6 +29,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.PartAccount;
+import com.alvazan.test.db.User;
 
 public class TestIndexes {
 
@@ -54,12 +55,12 @@ public class TestIndexes {
 	
 	@Test
 	public void testFailureOnTypeMismatch() {
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setName("hello");
 		act.setUniqueColumn("notunique");
 		act.setNumTimes(5);
 		mgr.put(act);
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setUniqueColumn(act.getUniqueColumn());
 		act2.setName("hello");
 		act2.setNumTimes(4);
@@ -86,19 +87,19 @@ public class TestIndexes {
 	@Test
 	public void testFailureOnGetSingleResultAndSuccess() {
 		//Activity has null reference to account
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setName("hello");
 		act.setUniqueColumn("notunique");
 		act.setNumTimes(5);
 		mgr.put(act);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setUniqueColumn(act.getUniqueColumn());
 		act2.setName("hello");
 		act2.setNumTimes(4);
 		mgr.put(act2);
 
-		Activity act3 = new Activity();
+		Activity act3 = new Activity("act3");
 		act3.setUniqueColumn("isunique");
 		act3.setName("hellossss");
 		act3.setNumTimes(8);
@@ -123,47 +124,51 @@ public class TestIndexes {
 	@Test
 	public void testForPuttingDuplicates() {
 		//Activity has null reference to account
-		Activity act = new Activity();
+		User act = new User();
 		act.setName("hello");
-		act.setUniqueColumn("notunique");
-		act.setNumTimes(5);
+		act.setAge(5);
 		mgr.put(act);
 		
 		mgr.flush();
 		
 		//NOW, re-use the same id...
-		Activity act2 = new Activity();
+		User act2 = new User();
 		act2.setId(act.getId());
-		act2.setUniqueColumn(act.getUniqueColumn());
 		act2.setName("hello");
-		act2.setNumTimes(4);
-		mgr.put(act2);
+		act2.setAge(4);
+		try {
+			mgr.put(act2);
+			org.junit.Assert.fail("should have thrown exception or we are allowing indices to become corrupt");
+		} catch(IllegalArgumentException e) {
+			log.info("this should occur");
+		}
 
 		mgr.flush();
 		
-		List<Activity> activities = Activity.findBetween(mgr, 3, 8);
+		//validate indices are correct..
+		List<User> activities = User.findByAge(mgr, 3, 8);
 		Assert.assertEquals(1, activities.size());
-		Activity activity = activities.get(0);
-		Assert.assertEquals(act2.getNumTimes(), activity.getNumTimes());
+		User activity = activities.get(0);
+		Assert.assertEquals(act.getAge(), activity.getAge());
 	}
 	
 	@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName("tempxxxxx");
 		acc.setUsers(9.33333f);
 		mgr.put(acc);
-		Account acc2 = new Account();
+		Account acc2 = new Account("acc2");
 		acc2.setName("xyz");
 		acc2.setUsers(3.1f);
 		mgr.put(acc2);
-		Account acc3 = new Account();
+		Account acc3 = new Account("acc3");
 		acc3.setName(acc2.getName());
 		acc3.setUsers(2.9f);
 		mgr.put(acc3);
 		
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		mgr.put(act);
 		
 		mgr.flush();

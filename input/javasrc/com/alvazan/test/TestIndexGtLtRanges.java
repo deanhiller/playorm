@@ -116,25 +116,25 @@ public class TestIndexGtLtRanges {
 	}
 
 	private void setupRecords() {
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setNumTimes(3);
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("aaaaaa");
 		act2.setNumTimes(4);
 		mgr.put(act2);
 
-		Activity act3 = new Activity();
+		Activity act3 = new Activity("act3");
 		act3.setName("bbbbbbb");
 		act3.setNumTimes(5);
 		mgr.put(act3);
 		
-		Activity act4 = new Activity();
+		Activity act4 = new Activity("act4");
 		act4.setNumTimes(7);
 		mgr.put(act4);
 		
-		Activity act5 = new Activity();
+		Activity act5 = new Activity("act5");
 		act5.setNumTimes(8);
 		mgr.put(act5);
 		

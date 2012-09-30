@@ -24,7 +24,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class Account extends AccountSuper{
 
-	@NoSqlId
+	@NoSqlId(halfUseGenerator=true)
 	private String id;
 	
 	@NoSqlIndexed
@@ -39,6 +39,12 @@ public class Account extends AccountSuper{
 	
 	@NoSqlManyToMany(entityType=Activity.class)
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
+	
+	public Account() {}
+	
+	public Account(String id ) {
+		this.id = id;
+	}
 	
 	public String getId() {
 		return id;

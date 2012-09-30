@@ -41,7 +41,7 @@ public class TestManyToOne {
 	@Test
 	public void testActivityHasNullAccount() {
 		//Activity has null reference to account
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setName("asdfsdf");
 		act.setNumTimes(3);
 		
@@ -85,7 +85,7 @@ public class TestManyToOne {
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setAccount(acc);
 		act.setName("asdfsdf");
 		act.setNumTimes(3);
@@ -106,12 +106,12 @@ public class TestManyToOne {
 	
 	@Test
 	public void testFillInKeyMethod() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		mgr.fillInWithKey(acc);
 		
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setAccount(acc);
 		act.setName("asdfsdf");
 		act.setNumTimes(3);
@@ -131,13 +131,13 @@ public class TestManyToOne {
 	}
 	
 	private Activity readWriteBasic(NoSqlEntityManager mgr) {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
 		acc.setUsers(5.0f);
 		
 		mgr.put(acc);
 		
-		Activity act = new Activity();
+		Activity act = new Activity("act1");
 		act.setAccount(acc);
 		act.setName("asdfsdf");
 		act.setNumTimes(3);

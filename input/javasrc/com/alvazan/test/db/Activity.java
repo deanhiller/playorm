@@ -37,7 +37,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class Activity {
 
-	@NoSqlId
+	@NoSqlId(usegenerator=false)
 	private String id;
 	
 	@NoSqlManyToOne
@@ -62,6 +62,12 @@ public class Activity {
 	private float myFloat;
 	
 	private String somethingElse;
+	
+	public Activity() {}
+	
+	public Activity(String id) {
+		this.id = id;
+	}
 	
 	public String getId() {
 		return id;

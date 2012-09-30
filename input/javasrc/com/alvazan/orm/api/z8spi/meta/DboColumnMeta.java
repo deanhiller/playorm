@@ -24,7 +24,7 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
 public abstract class DboColumnMeta {
 
-	@NoSqlId
+	@NoSqlId(usegenerator=false)
 	protected String id;
 	
 	@NoSqlIndexed

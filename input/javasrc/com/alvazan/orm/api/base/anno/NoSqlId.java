@@ -33,5 +33,11 @@ public @interface NoSqlId {
 	Class<? extends Converter> customConverter() default NoConversion.class;
 	
 	String columnName() default "";
+	
+	/**
+	 * Very dangerous as indices can become corrupt.  Only use this IF you know what you are doing.
+	 * @return
+	 */
+	boolean halfUseGenerator() default false;
 }
 

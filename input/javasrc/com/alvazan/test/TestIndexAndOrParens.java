@@ -46,23 +46,23 @@ public class TestIndexAndOrParens {
 
 	@Test
 	public void testBooleanWithAndClause() {
-		Account acc = new Account();
+		Account acc = new Account("acc1");
 		acc.setName("abc");
 		acc.setIsActive(true);
 		mgr.put(acc);
-		Account acc2 = new Account();
+		Account acc2 = new Account("acc2");
 		acc2.setName("dean");
 		acc2.setIsActive(false);
 		mgr.put(acc2);
-		Account acc3 = new Account();
+		Account acc3 = new Account("acc3");
 		acc3.setName("dean");
 		acc3.setIsActive(true);
 		mgr.put(acc3);
-		Account acc4 = new Account();
+		Account acc4 = new Account("acc4");
 		acc4.setName("dean");
 		acc4.setIsActive(true);
 		mgr.put(acc4);		
-		Account acc5 = new Account();
+		Account acc5 = new Account("acc5");
 		acc5.setName("dean");
 		acc5.setIsActive(null);
 		mgr.put(acc5);
@@ -116,7 +116,7 @@ public class TestIndexAndOrParens {
 	
 	private void setupRecords() {
 		
-		Activity act1 = new Activity();
+		Activity act1 = new Activity("act1");
 		act1.setName("hello");
 		act1.setMyFloat(5.65f);
 		act1.setUniqueColumn("notunique");
@@ -124,7 +124,7 @@ public class TestIndexAndOrParens {
 		act1.setIsCool(true);
 		mgr.put(act1);
 		
-		Activity act2 = new Activity();
+		Activity act2 = new Activity("act2");
 		act2.setName("notelloBUTHas5ForNumTimes");
 		act2.setMyFloat(5.65f);
 		act2.setUniqueColumn("notunique");
@@ -132,7 +132,7 @@ public class TestIndexAndOrParens {
 		act2.setIsCool(true);
 		mgr.put(act2);
 		
-		Activity act4 = new Activity();
+		Activity act4 = new Activity("act3");
 		act4.setName("hello");
 		act4.setMyFloat(5.65f);
 		act4.setUniqueColumn("notunique");
@@ -140,7 +140,7 @@ public class TestIndexAndOrParens {
 		act4.setIsCool(true);
 		mgr.put(act4);
 		
-		Activity act5 = new Activity();
+		Activity act5 = new Activity("act4");
 		act5.setName("nothaveThe5OrHellohere");
 		act5.setMyFloat(5.65f);
 		act5.setUniqueColumn("notunique");
@@ -148,7 +148,7 @@ public class TestIndexAndOrParens {
 		act5.setIsCool(true);
 		mgr.put(act5);		
 
-		Activity act6 = new Activity();
+		Activity act6 = new Activity("act5");
 		act6.setName("somethingtttt");
 		act6.setMyFloat(5.55f);
 		act6.setUniqueColumn("notunique");
@@ -156,7 +156,7 @@ public class TestIndexAndOrParens {
 		act6.setIsCool(true);
 		mgr.put(act6);
 		
-		Activity act7 = new Activity();
+		Activity act7 = new Activity("act6");
 		act7.setName("hello");
 		act7.setNumTimes(6);
 		mgr.put(act7);
