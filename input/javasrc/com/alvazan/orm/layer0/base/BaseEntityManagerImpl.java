@@ -95,7 +95,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 			Object temp = find(metaClass.getMetaClass(), id);
 			if(temp != null) {
 				entity = temp;
-				copyProperties(entity, originalEntity);
+				BeanProps.copyProps(originalEntity, entity);
 			}
 		}
 		
@@ -120,19 +120,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
 		session.put(cf, key, cols);
-	}
-
-	private void copyProperties(Object dest, Object src) {
-		try {
-			PropertyUtils.copyProperties(dest, src);
-			//BeanUtils.copyProperties(dest, src);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (InvocationTargetException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
 	@Override
