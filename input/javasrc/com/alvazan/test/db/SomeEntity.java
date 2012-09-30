@@ -11,7 +11,7 @@ import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 @NoSqlEntity
 public class SomeEntity {
 
-	@NoSqlId(halfUseGenerator=true)
+	@NoSqlId
 	private String id;
 	
 	private String name;

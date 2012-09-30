@@ -3,9 +3,8 @@ package com.alvazan.test;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -136,12 +135,7 @@ public class TestIndexes {
 		act2.setId(act.getId());
 		act2.setName("hello");
 		act2.setAge(4);
-		try {
-			mgr.put(act2);
-			org.junit.Assert.fail("should have thrown exception or we are allowing indices to become corrupt");
-		} catch(IllegalArgumentException e) {
-			log.info("this should occur");
-		}
+		mgr.put(act2);
 
 		mgr.flush();
 		
@@ -149,7 +143,7 @@ public class TestIndexes {
 		List<User> activities = User.findByAge(mgr, 3, 8);
 		Assert.assertEquals(1, activities.size());
 		User activity = activities.get(0);
-		Assert.assertEquals(act.getAge(), activity.getAge());
+		Assert.assertEquals(act2.getAge(), activity.getAge());
 	}
 	
 	@Test

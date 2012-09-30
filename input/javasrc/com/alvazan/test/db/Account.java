@@ -24,7 +24,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 })
 public class Account extends AccountSuper{
 
-	@NoSqlId(halfUseGenerator=true)
+	@NoSqlId
 	private String id;
 	
 	@NoSqlIndexed

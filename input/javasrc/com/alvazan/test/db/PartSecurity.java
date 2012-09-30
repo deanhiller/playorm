@@ -7,7 +7,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 @NoSqlEntity
 public class PartSecurity {
 
-	@NoSqlId(halfUseGenerator=true)
+	@NoSqlId
 	private String id;
 	
 	@NoSqlIndexed

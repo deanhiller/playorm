@@ -1,11 +1,15 @@
 package com.alvazan.orm.layer0.base;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
@@ -49,11 +53,19 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	
 	private boolean isTypedSessionInitialized = false;
 	
+	@SuppressWarnings("rawtypes")
 	public void put(Object entity, boolean isInsert) {
+		boolean needRead = false;
 		if(!isInsert && !(entity instanceof NoSqlProxy)) {
-			throw new IllegalArgumentException("It is very important you READ in the entity before update or you easily corrupt your indices as we have to know the previous values to remove old values from indices when needed");
+			needRead = true;
 		}
-		put(entity);
+		
+		Class cl = entity.getClass();
+		MetaClass metaClass = metaInfo.getMetaClass(cl);
+		if(metaClass == null)
+			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
+		
+		putImpl(entity, needRead, metaClass);
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -63,6 +75,29 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		MetaClass metaClass = metaInfo.getMetaClass(cl);
 		if(metaClass == null)
 			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" was not scanned and added to meta information on startup.  It is either missing @NoSqlEntity annotation or it was not in list of scanned packages");
+
+		boolean needRead = false;
+		MetaIdField idField = metaClass.getIdField();
+		Object id = metaClass.fetchId(entity);
+		if(idField.isAutoGen() && id != null && !(entity instanceof NoSqlProxy)) {
+			//We do NOT have the data from the database IF this is NOT a NoSqlProxy and we need it since this is an 
+			//update
+			needRead = true;
+		}
+		putImpl(entity, needRead, metaClass);
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void putImpl(Object originalEntity, boolean needRead, MetaClass metaClass) {
+		Object entity = originalEntity;
+		if(needRead) {
+			Object id = metaClass.fetchId(originalEntity);
+			Object temp = find(metaClass.getMetaClass(), id);
+			if(temp != null) {
+				entity = temp;
+				copyProperties(entity, originalEntity);
+			}
+		}
 		
 		RowToPersist row = metaClass.translateToRow(entity);
 		
@@ -85,6 +120,19 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
 		session.put(cf, key, cols);
+	}
+
+	private void copyProperties(Object dest, Object src) {
+		try {
+			PropertyUtils.copyProperties(dest, src);
+			//BeanUtils.copyProperties(dest, src);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (InvocationTargetException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override

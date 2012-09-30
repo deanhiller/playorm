@@ -12,7 +12,6 @@ public class IdInfo {
 	private KeyGenerator gen;
 	private Converter converter;
 	private MetaAbstractClass metaClass;
-	private boolean isHalfUseGenerator;
 	public Method getIdMethod() {
 		return idMethod;
 	}
@@ -42,11 +41,5 @@ public class IdInfo {
 	}
 	public void setMetaClass(MetaAbstractClass metaClass) {
 		this.metaClass = metaClass;
-	}
-	public boolean isHalfUseGenerator() {
-		return isHalfUseGenerator;
-	}
-	public void setHalfUseGenerator(boolean isHalfUseGenerator) {
-		this.isHalfUseGenerator = isHalfUseGenerator;
 	}
 }
