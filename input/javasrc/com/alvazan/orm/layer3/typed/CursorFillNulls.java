@@ -4,8 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
-import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
