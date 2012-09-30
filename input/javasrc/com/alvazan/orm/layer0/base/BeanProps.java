@@ -24,7 +24,7 @@ public class BeanProps {
 		}
 	}
 	
-	public static void copyPropsImpl(Object src, Object dest) throws IllegalArgumentException, IllegalAccessException {
+	public static void copyPropsImpl(Object src, Object dest) throws IllegalAccessException {
 		Class<? extends Object> clazz = src.getClass();
 		List<Field> fields = findAllFields(clazz);
 		
