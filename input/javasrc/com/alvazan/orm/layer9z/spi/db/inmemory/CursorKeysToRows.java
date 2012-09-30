@@ -67,9 +67,11 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
 		if(keysToLookup.size() > 0) {
-			list.beforeFetchingNextBatch();
+			if(list != null)
+				list.beforeFetchingNextBatch();
 			rows = fetchRows();
-			list.afterFetchingNextBatch(rows.size());
+			if(list != null)
+				list.afterFetchingNextBatch(rows.size());
 		}
 
 		Iterator<KeyValue<Row>> resultingRows = rows.iterator();

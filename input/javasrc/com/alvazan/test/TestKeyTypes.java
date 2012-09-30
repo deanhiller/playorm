@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import org.joda.time.LocalDateTime;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.db.EntityWithDateTimeKey;
 import com.alvazan.test.db.EntityWithIntKey;
 
 public class TestKeyTypes {
@@ -48,6 +50,19 @@ public class TestKeyTypes {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		EntityWithIntKey entity = mgr2.find(EntityWithIntKey.class, act.getId());
 		Assert.assertEquals(act.getSomething(), entity.getSomething());
+	}
 	
+	@Test
+	public void testLocalDateTimeKey() {
+		EntityWithDateTimeKey k = new EntityWithDateTimeKey();
+		k.setId(new LocalDateTime());
+		k.setSomething("qwer");
+		
+		mgr.put(k);
+		mgr.flush();
+		
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		EntityWithDateTimeKey entity = mgr2.find(EntityWithDateTimeKey.class, k.getId());
+		Assert.assertEquals(k.getSomething(), entity.getSomething());
 	}
 }

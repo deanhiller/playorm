@@ -11,3 +11,8 @@ are very likely to accidentally do this.
 
 delayed joins not working yet
 
+test query by a data format like 10/2/21 10:15:37.893
+
+allow to query on non-index fields!!!
+
+need @EMbedded tag as well
