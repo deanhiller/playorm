@@ -287,4 +287,14 @@ public class DboTableMeta {
 		return indexedColumnsCache.get(index);
 	}
 
+
+	public List<String> getColumnNameList() {
+		List<String> names = new ArrayList<String>();
+		names.add(idColumn.getColumnName());
+		for(DboColumnMeta m : getAllColumns()) {
+			names.add(m.getColumnName());
+		}
+		return names;
+	}
+
 }

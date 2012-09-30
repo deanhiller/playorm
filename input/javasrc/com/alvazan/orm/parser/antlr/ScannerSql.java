@@ -530,8 +530,11 @@ public class ScannerSql {
 		if (colMeta == null) {
 			//okay, there is no column found, but maybe the column name for the id matches(id is a special case)
 			colMeta = metaClass.getIdColumnMeta();
-			if(!colMeta.getColumnName().equals(columnName))
-				throw new IllegalArgumentException("There is no " + columnName + " exists for class " + metaClass);
+			if(!colMeta.getColumnName().equals(columnName)) {
+				List<String> names = metaClass.getColumnNameList();
+				throw new IllegalArgumentException("There is no column=" + columnName + " that exists for table " 
+						+ metaClass.getColumnFamily()+" potential columns are="+names+"  rowkey col="+colMeta.getColumnName());
+			}
 		}
 		
 		if(!colMeta.isIndexed())
