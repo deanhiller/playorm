@@ -121,6 +121,33 @@ public class TestIndexes {
 	}
 	
 	@Test
+	public void testForPuttingDuplicates() {
+		//Activity has null reference to account
+		Activity act = new Activity();
+		act.setName("hello");
+		act.setUniqueColumn("notunique");
+		act.setNumTimes(5);
+		mgr.put(act);
+		
+		mgr.flush();
+		
+		//NOW, re-use the same id...
+		Activity act2 = new Activity();
+		act2.setId(act.getId());
+		act2.setUniqueColumn(act.getUniqueColumn());
+		act2.setName("hello");
+		act2.setNumTimes(4);
+		mgr.put(act2);
+
+		mgr.flush();
+		
+		List<Activity> activities = Activity.findBetween(mgr, 3, 8);
+		Assert.assertEquals(1, activities.size());
+		Activity activity = activities.get(0);
+		Assert.assertEquals(act2.getNumTimes(), activity.getNumTimes());
+	}
+	
+	@Test
 	public void testTwoQueriesSameNameDifferentEntitiesAllowed() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account();
