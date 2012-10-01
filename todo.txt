@@ -1,4 +1,4 @@
-add query by row key
+allow query by row key if they just do where table.rowkey = :id  but for >,<, they have to Index it
 
 tests for extra data so we can read in row AND read in data we don't have schema for as well to tack on to entity
 

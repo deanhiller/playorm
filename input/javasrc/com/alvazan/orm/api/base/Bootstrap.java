@@ -8,11 +8,38 @@ import com.alvazan.orm.api.z8spi.conv.Converter;
 @SuppressWarnings("rawtypes")
 public abstract class Bootstrap {
 
+	public static final String TYPE = "nosql.nosqltype";
 	public static final String AUTO_CREATE_KEY = "nosql.autoCreateKey";
 	public static final String LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY = "nosql.listOfClassesToScan";
+	
 	public static final String CASSANDRA_BUILDER = SpiConstants.CASSANDRA_BUILDER;
+	public static final String CASSANDRA_CLUSTERNAME = "nosql.cassandra.clusterName";
+	public static final String CASSANDRA_KEYSPACE = "nosql.cassandra.keyspace";
+	public static final String CASSANDRA_SEEDS = "nosql.cassandra.seeds";
+	
 	private static final String OUR_IMPL = "com.alvazan.orm.impl.bindings.BootstrapImpl";
 	public static final String SPI_IMPL = "nosql.spi.implementation";
+	
+	public synchronized static NoSqlEntityManagerFactory create(Map<String, Object> properties) {
+		String type = (String) properties.get(TYPE);
+		DbTypeEnum dbType;
+		if("inmemory".equals(type)) {
+			dbType = DbTypeEnum.IN_MEMORY;
+		} else if("cassandra".equals(type)) {
+			dbType = DbTypeEnum.CASSANDRA;
+		} else
+			throw new IllegalArgumentException("NoSql type="+TYPE+" not supported. Read Bootstrap.java for possible values");
+		
+		if(dbType == DbTypeEnum.CASSANDRA) {
+			String clusterName = (String) properties.get(CASSANDRA_CLUSTERNAME);
+			String keyspace = (String) properties.get(CASSANDRA_KEYSPACE);
+			String seeds = (String) properties.get(CASSANDRA_SEEDS);
+			if(clusterName == null || keyspace == null || seeds == null)
+				throw new IllegalArgumentException("Must supply the nosql.cassandra.* properties.  Read Bootstrap.java for values");
+			createAndAddBestCassandraConfiguration(properties, clusterName, keyspace, seeds);
+		}
+		return create(dbType, properties);
+	}
 	
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties) {
 		return create(type, properties, null, Bootstrap.class.getClassLoader());

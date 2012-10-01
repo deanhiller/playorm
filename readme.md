@@ -32,13 +32,14 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 * IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
 * support for joda-time LocalDateTime, LocalDate, LocalTime which works way better than java's Date object and is less buggy than java's Date and Calendar objects
+* Command Line tool
 
 
 ### Features soon to be added
 * WAY better support for @Embedded and putting Map<String, Type> in your entities for wide row support
 * Ability to index fields inside Embedded objects even if embedded object is a list so you can query them still
 * TONS of documentation is in the works due out.  Check wiki for latest dates
-* More work around solid ad-hoc tool 
+* More work around the command line tool 
 * Map/Reduce tasks for re-indexing, or creating new indexes from existing data
 * MANY MANY optimizations can be made to increase performance like a nested lookahead loop join and other tricks that only work in noSQL
 * We are considering a stateless server that exposes JDBC BUT requires S-SQL commands (OR just SQL commands for non-partitioned tables)
