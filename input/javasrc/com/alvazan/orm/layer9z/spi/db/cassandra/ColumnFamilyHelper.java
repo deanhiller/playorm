@@ -251,7 +251,7 @@ public class ColumnFamilyHelper {
 			}
 
 			//perhaps the schema is changing and was caused by someone else, let's wait until it stablizes
-			waitForNodesToBeUpToDate(null, 30000);
+			waitForNodesToBeUpToDate(null, 300000);
 			
 			//NOW, the schema appears stable, let's get that column family and load it
 			KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
@@ -383,7 +383,7 @@ public class ColumnFamilyHelper {
 	private void addColumnFamily(ColumnFamilyDefinition def) {
 		try {
 			String id = cluster.addColumnFamily(def);
-			long timeout = 30000;
+			long timeout = 300000;
 			waitForNodesToBeUpToDate(id, timeout);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e.getMessage(), e);

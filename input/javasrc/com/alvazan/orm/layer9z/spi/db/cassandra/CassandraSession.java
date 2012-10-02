@@ -246,7 +246,7 @@ public class CassandraSession implements NoSqlRawSession {
 		cluster.dropKeyspace(keyspaceName);
 		String id = cluster.addKeyspace(ourDef);
 		
-		columnFamilies.waitForNodesToBeUpToDate(id, 30000);
+		columnFamilies.waitForNodesToBeUpToDate(id, 300000);
 	}
 
 
