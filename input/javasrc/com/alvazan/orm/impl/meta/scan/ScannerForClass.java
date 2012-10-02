@@ -172,9 +172,16 @@ public class ScannerForClass {
 			inspectField(meta, metaDbo, field);
 		}
 	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void inspectField(MetaClassSingle<?> metaClass, DboTableMeta metaDbo, Field field) {
+		try {
+			inspectFieldImpl(metaClass, metaDbo, field);
+		} catch(RuntimeException e) {
+			throw new RuntimeException("Failure scanning field="+field+" for class="+metaClass.getMetaClass().getSimpleName(), e);
+		}
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void inspectFieldImpl(MetaClassSingle<?> metaClass, DboTableMeta metaDbo, Field field) {
 		if(Modifier.isTransient(field.getModifiers()) || 
 				Modifier.isStatic(field.getModifiers()) ||
 				field.isAnnotationPresent(NoSqlTransient.class))
