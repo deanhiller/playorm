@@ -176,5 +176,5 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	public boolean isPartitioned() {
 		return partitionColumns.size() > 0;
 	}
-	
+
 }

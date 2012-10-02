@@ -9,17 +9,17 @@ public class InfoForIndex<T> {
 	
 	private T entity;
 	private RowToPersist row;
-	private String columnFamily;
+	private String virtualCf;
 	@SuppressWarnings("rawtypes")
 	private Map fieldToValue;
 	private List<PartitionTypeInfo> partitions;
 
 	@SuppressWarnings("rawtypes")
-	public InfoForIndex(T entity2, RowToPersist row2, String columnFamily2,
+	public InfoForIndex(T entity2, RowToPersist row2, String virtualCf,
 			Map fieldToValue2, List<PartitionTypeInfo> partitions) {
 		this.entity = entity2;
 		this.row = row2;
-		this.columnFamily = columnFamily2;
+		this.virtualCf = virtualCf;
 		this.fieldToValue = fieldToValue2;
 		this.partitions = partitions;
 	}
@@ -37,10 +37,10 @@ public class InfoForIndex<T> {
 		this.row = row;
 	}
 	public String getColumnFamily() {
-		return columnFamily;
+		return virtualCf;
 	}
 	public void setColumnFamily(String columnFamily) {
-		this.columnFamily = columnFamily;
+		this.virtualCf = columnFamily;
 	}
 	@SuppressWarnings("rawtypes")
 	public Map getFieldToValue() {

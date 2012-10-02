@@ -27,6 +27,7 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
@@ -59,7 +60,7 @@ public class CassandraSession implements NoSqlRawSession {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public void close() {
 		throw new UnsupportedOperationException("not done here yet");
@@ -67,8 +68,8 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
-		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily);
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
+		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info == null) {
 			//If there is no column family in cassandra, then we need to return no rows to the user...
 			return new CursorReturnsEmptyRows(rowKeys);
@@ -116,11 +117,11 @@ public class CassandraSession implements NoSqlRawSession {
 			if(action instanceof Persist) {
 				persist((Persist)action, ormSession, m);
 			} else if(action instanceof Remove) {
-				remove((Remove)action, m);
+				remove((Remove)action, ormSession, m);
 			} else if(action instanceof PersistIndex) {
 				persistIndex((PersistIndex)action, ormSession, m);
 			} else if(action instanceof RemoveIndex) {
-				removeIndex((RemoveIndex)action, m);
+				removeIndex((RemoveIndex)action, ormSession, m);
 			}
 		}
 		
@@ -134,8 +135,8 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	
-	private void remove(Remove action, MutationBatch m) {
-		Info info = columnFamilies.fetchColumnFamilyInfo(action.getColFamily());
+	private void remove(Remove action, MetaLookup mgr, MutationBatch m) {
+		Info info = columnFamilies.fetchColumnFamilyInfo(action.getColFamily(), mgr);
 		if(info == null)
 			return; //if no cf exist/returned, nothing to do
 		ColumnFamily cf = info.getColumnFamilyObj();
@@ -170,8 +171,8 @@ public class CassandraSession implements NoSqlRawSession {
 		colMutation.putEmptyColumn(toPersist);
 	}
 
-	private void removeIndex(RemoveIndex action, MutationBatch m) {
-		Info info = columnFamilies.fetchColumnFamilyInfo(action.getColFamily());
+	private void removeIndex(RemoveIndex action, MetaLookup mgr, MutationBatch m) {
+		Info info = columnFamilies.fetchColumnFamilyInfo(action.getColFamily(), mgr);
 		if(info == null)
 			return; //nothing to do since it doesn't exist
 		
@@ -252,10 +253,10 @@ public class CassandraSession implements NoSqlRawSession {
 
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener) {
+	public AbstractCursor<Column> columnSlice(String colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener, MetaLookup mgr) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
-		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
@@ -279,9 +280,9 @@ public class CassandraSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList, MetaLookup mgr) {
 		String colFamily = info.getIndexColFamily();
-		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);
@@ -300,12 +301,12 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to,
-			Integer batchSize, BatchListener bListener) {
+			Integer batchSize, BatchListener bListener, MetaLookup mgr) {
 		if(batchSize != null && batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
-		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily);
+		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			log.info("query was run on column family that does not yet exist="+colFamily);

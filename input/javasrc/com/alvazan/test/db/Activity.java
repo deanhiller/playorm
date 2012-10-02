@@ -6,6 +6,7 @@ import org.joda.time.LocalDateTime;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -15,6 +16,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE as e WHERE e.numTimes >= :begin and e.numTimes < :to"),
 	@NoSqlQuery(name="findBetween2", query="select * FROM TABLE as e WHERE e.numTimes > :begin and e.numTimes <= :to"),

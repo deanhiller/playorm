@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
-
 import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.CompositeType;
 import org.apache.cassandra.db.marshal.DecimalType;
@@ -19,7 +17,6 @@ import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
-import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
@@ -37,11 +34,9 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 public class ColumnFamilyHelper {
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
 	
-	@Inject
-	private DboDatabaseMeta dbMetaFromOrmOnly;
+	private Map<String, Info> cfNameToCassandra = new HashMap<String, Info>();
+	private Map<String, String> virtualToCfName = new HashMap<String, String>();
 	
-	private Map<String, Info> existingColumnFamilies2 = new HashMap<String, Info>();
-
 	private Keyspace keyspace;
 	private Cluster cluster;
 	private String keyspaceName;
@@ -120,18 +115,24 @@ public class ColumnFamilyHelper {
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		findExistingColumnFamilies(keySpaceMeta);
-		log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+existingColumnFamilies2.keySet()+"\nNOTE: WE WILL CREATE " +
+		log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+cfNameToCassandra.keySet()+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
 	}
 
 	private void findExistingColumnFamilies(KeyspaceDefinition keySpaceMeta) {
 		List<ColumnFamilyDefinition> cfList = keySpaceMeta.getColumnFamilyList();
 		for(ColumnFamilyDefinition def : cfList) {
-			loadColumnFamily(def);
+			loadColumnFamilyImpl(def);
 		}
 	}
 
-	private void loadColumnFamily(ColumnFamilyDefinition def) {
+	private void loadColumnFamily(ColumnFamilyDefinition def, String virtCf,
+			String realCf) {
+		loadColumnFamilyImpl(def);
+		virtualToCfName.put(virtCf, realCf);
+	}
+	
+	private void loadColumnFamilyImpl(ColumnFamilyDefinition def) {
 		String comparatorType = def.getComparatorType();
 		ColumnType type = ColumnType.ANY_EXCEPT_COMPOSITE;
 		if(formName(UTF8Type.class, BytesType.class).equals(comparatorType)) {
@@ -152,12 +153,13 @@ public class ColumnFamilyHelper {
 			keyType = StorageTypeEnum.INTEGER;
 		} else if(BytesType.class.getName().equals(keyValidationClass)) {
 			keyType = StorageTypeEnum.BYTES;
-		}
+		} else 
+			keyType = StorageTypeEnum.BYTES;
 		
 		String colFamily = def.getName();
 		Info info = createInfo(colFamily, type, keyType);
 		String lowerCaseName = colFamily.toLowerCase();
-		existingColumnFamilies2.put(lowerCaseName, info);
+		cfNameToCassandra.put(lowerCaseName, info);
 	}
 	
 	private String formName(Class class1, Class class2) {
@@ -195,42 +197,47 @@ public class ColumnFamilyHelper {
 		return info;
 	}
 	
-	public Info lookupOrCreate2(String colFamily, MetaLookup ormSession) {
+	public Info lookupOrCreate2(String virtualCf, MetaLookup ormSession) {
 		//There is a few possibilities here
 		//1. Another server already created the CF while we were online in which case we just need to load it into memory
 		//2. No one has created the CF yet
 		
 		//fetch will load from cassandra if we don't have it in-memory
-		Info origInfo = fetchColumnFamilyInfo(colFamily);
+		Info origInfo = fetchColumnFamilyInfo(virtualCf, ormSession);
 		Exception ee = null;
 		if(origInfo == null) {
 			//no one has created the CF yet so we need to create it.
-			ee = createColFamily(colFamily, ormSession);
+			ee = createColFamily(virtualCf, ormSession);
 		}
 		
 		//Now check...maybe someone else created it...or we did successfully....
-		Info info = fetchColumnFamilyInfo(colFamily);
+		Info info = fetchColumnFamilyInfo(virtualCf, ormSession);
 		if(info == null)
-			throw new RuntimeException("Could not create and could not find colfamily="+colFamily+" see chained exception AND it could be your name is not allowed as cassandra CF name", ee);
+			throw new RuntimeException("Could not create and could not find virtual or real colfamily="+virtualCf+" see chained exception AND it could be your name is not allowed as a valid cassandra Column Family name", ee);
 		return info;
 	}
 
-	public Info fetchColumnFamilyInfo(String colFamily) {
-		String cf = colFamily.toLowerCase();
-		Info info = existingColumnFamilies2.get(cf);
+	public Info fetchColumnFamilyInfo(String virtualCf, MetaLookup lookup) {
+		Info info = lookupVirtCf(virtualCf);
+		if(info != null)
+			return info;
+		
 		//in rare circumstances, there may be a new column family that was created by another server we need to load into
 		//memory for ourselves
-		if(info == null) {
-			info = tryToLoadColumnFamily(colFamily);
-		}
-		
-		return info;
+		return tryToLoadColumnFamilyVirt(virtualCf, lookup);
 	}
 
-	private Info tryToLoadColumnFamily(String colFamily) {
+	private Info lookupVirtCf(String virtualCf) {
+		String cfName = virtualToCfName.get(virtualCf);
+		if(cfName == null)
+			return null;
+		return cfNameToCassandra.get(cfName);
+	}
+
+	private Info tryToLoadColumnFamilyVirt(String virtColFamily, MetaLookup lookup) {
 		try {
 			long start = System.currentTimeMillis();
-			Info info = tryToLoadColumnFamilyImpl(colFamily);
+			Info info = tryToLoadColumnFamilyImpl(virtColFamily, lookup);
 			long total = System.currentTimeMillis() - start;
 			if(log.isInfoEnabled())
 				log.info("Total time to LOAD column family meta from cassandra="+total);
@@ -240,36 +247,56 @@ public class ColumnFamilyHelper {
 		}
 	}
 
-	private Info tryToLoadColumnFamilyImpl(String colFamily) throws ConnectionException {
-		synchronized(colFamily.intern()) {
-			String cf = colFamily.toLowerCase();
-			log.info("Column family NOT found in-memory="+cf+", CHECK and LOAD from Cassandra if available");
-			Info info = existingColumnFamilies2.get(cf);
-			if(info != null) {//someone else beat us into the synchronization block
-				log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+cf);
-				return info;
+	private Info tryToLoadColumnFamilyImpl(String virtCf, MetaLookup lookup) throws ConnectionException {
+		synchronized(virtCf.intern()) {
+			log.info("Column family NOT found in-memory="+virtCf+", CHECK and LOAD from Cassandra if available");
+			
+			String cfName = virtualToCfName.get(virtCf);
+			if(cfName != null) {
+				Info info = cfNameToCassandra.get(cfName);
+				if(info != null) {
+					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+virtCf+"(realcf="+cfName+")");
+					return cfNameToCassandra.get(cfName);
+				}
 			}
 
+			log.info("looking up meta="+virtCf+" so we can add table to memory(one time operation)");
+			DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
+			if(table == null)
+				throw new IllegalArgumentException("We can't load the meta for virtual or real CF="+virtCf+" because there is not meta found in DboTableMeta table");
+			
+			String realCf = table.getRealColumnFamily();
+
+			Info info = cfNameToCassandra.get(realCf);
+			if(info != null) {
+				log.info("Virt CF="+virtCf+" already exists and real colfamily="+realCf+" already exists so return it");
+				//Looks like it already existed
+				String cfLowercase = realCf.toLowerCase();
+				virtualToCfName.put(virtCf, cfLowercase);
+				return info;
+			}
+			
 			//perhaps the schema is changing and was caused by someone else, let's wait until it stablizes
 			waitForNodesToBeUpToDate(null, 300000);
 			
 			//NOW, the schema appears stable, let's get that column family and load it
 			KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
-			ColumnFamilyDefinition def = keySpaceMeta.getColumnFamily(colFamily);
+			ColumnFamilyDefinition def = keySpaceMeta.getColumnFamily(realCf);
 			if(def == null) {
-				log.info("Well, we did NOT find any column family="+colFamily+" to load in cassandra");
+				log.info("Well, we did NOT find any column family="+realCf+" to load in cassandra(from virt="+virtCf+")");
 				return null;
 			} 
-			log.info("coooool, we found a new column family="+colFamily+" to load so we are going to load that for you so every future operation is FAST");
-			loadColumnFamily(def);
-			return existingColumnFamilies2.get(cf);
+			log.info("coooool, we found a new column family="+realCf+"(virt="+virtCf+") to load so we are going to load that for you so every future operation is FAST");
+			loadColumnFamily(def, virtCf, realCf);
+			
+			return lookupVirtCf(virtCf);
 		}
 	}
 
-	private synchronized Exception createColFamily(String colFamily, MetaLookup ormSession) {
+	private synchronized Exception createColFamily(String virtualCf, MetaLookup ormSession) {
 		try {
 			long start = System.currentTimeMillis();
-			createColFamilyImpl(colFamily, ormSession);
+			createColFamilyImpl(virtualCf, ormSession);
 			long total = System.currentTimeMillis() - start;
 			if(log.isInfoEnabled())
 				log.info("Total time to CREATE column family in cassandra and wait for all nodes to update="+total);
@@ -280,34 +307,27 @@ public class ColumnFamilyHelper {
 		return null;
 	}
 	
-	private synchronized void createColFamilyImpl(String colFamily, MetaLookup ormSession) {
-		String cfName = colFamily.toLowerCase();
-		if(existingColumnFamilies2.get(cfName) != null)
+	private synchronized void createColFamilyImpl(String virtualCf, MetaLookup ormSession) {
+		if(lookupVirtCf(virtualCf) != null)
 			return;
-			
+
 		String keysp = keyspace.getKeyspaceName();
-		log.info("CREATING column family="+cfName+" in cassandra keyspace="+keysp);
+		log.info("CREATING column family="+virtualCf+" in cassandra keyspace="+keysp);
 		
-		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(colFamily);
+		DboTableMeta meta = ormSession.find(DboTableMeta.class, virtualCf);
 		if(meta == null) {
-			//check the database now for the meta since it was not found in the ORM meta data.  This is for
-			//those that are modifying meta data themselves
-			meta = ormSession.find(DboTableMeta.class, colFamily);
-			log.info("meta from db="+meta);
-		}
-		
-		if(meta == null) {
-			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
+			throw new IllegalStateException("Column family='"+virtualCf+"' was not found AND we looked up meta data for this column" +
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
+		log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
 
 		createColFamilyInCassandra(meta);
 	}
 
 	private void createColFamilyInCassandra(DboTableMeta meta) {
 		String keysp = keyspace.getKeyspaceName();
-		String cfName = meta.getColumnFamily().toLowerCase();
-		String colFamily = meta.getColumnFamily();
+		String cfName = meta.getRealColumnFamily().toLowerCase();
+		String colFamily = meta.getRealColumnFamily();
 		log.info("CREATING colfamily="+cfName+" in keyspace="+keysp);
 		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
 			    .setName(colFamily)
@@ -315,21 +335,29 @@ public class ColumnFamilyHelper {
 
 		log.info("keyspace="+def.getKeyspace()+" col family="+def.getName());
 		StorageTypeEnum rowKeyType = meta.getIdColumnMeta().getStorageType();
-		StorageTypeEnum type = meta.getColNamePrefixType();
-		def = addRowKeyValidation(meta, def);
-		def = setColumnNameCompareType(meta, type, def);
-		
 		ColumnType colType = ColumnType.ANY_EXCEPT_COMPOSITE;
-		if(type == StorageTypeEnum.STRING)
-			colType = ColumnType.COMPOSITE_STRINGPREFIX;
-		else if(type == StorageTypeEnum.INTEGER)
-			colType = ColumnType.COMPOSITE_INTEGERPREFIX;
-		else if(type == StorageTypeEnum.DECIMAL)
-			colType = ColumnType.COMPOSITE_DECIMALPREFIX;
+		if(meta.isVirtualCf()) {
+			rowKeyType = StorageTypeEnum.BYTES;
+		} else {
+			StorageTypeEnum type = meta.getColNamePrefixType();
+			def = addRowKeyValidation(meta, def);
+			def = setColumnNameCompareType(meta, type, def);
+			
+			if(type == StorageTypeEnum.STRING)
+				colType = ColumnType.COMPOSITE_STRINGPREFIX;
+			else if(type == StorageTypeEnum.INTEGER)
+				colType = ColumnType.COMPOSITE_INTEGERPREFIX;
+			else if(type == StorageTypeEnum.DECIMAL)
+				colType = ColumnType.COMPOSITE_DECIMALPREFIX;
+		}
 		
 		addColumnFamily(def);
-		Info info = createInfo(colFamily, colType, rowKeyType);
-		existingColumnFamilies2.put(cfName, info);
+		String virtual = meta.getColumnFamily();
+		String realCf = meta.getRealColumnFamily();
+		
+		Info info = createInfo(realCf, colType, rowKeyType);
+		virtualToCfName.put(virtual, realCf);
+		cfNameToCassandra.put(realCf, info);
 	}
 	
 	private ColumnFamilyDefinition setColumnNameCompareType(DboTableMeta cf,

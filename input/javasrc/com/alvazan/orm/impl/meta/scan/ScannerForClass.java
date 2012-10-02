@@ -25,6 +25,7 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -77,11 +78,7 @@ public class ScannerForClass {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
 		Class<T> mainClass = metaClass.getMetaClass();
-		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
-		String colFamily = noSqlEntity.columnfamily();
-		if("".equals(colFamily))
-			colFamily = metaClass.getMetaClass().getSimpleName();
-		metaClass.setColumnFamily(colFamily);
+		scanForAnnotations(metaClass);
 
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		List<Field> fields = findAllFields(mainClass);
@@ -89,12 +86,15 @@ public class ScannerForClass {
 			processIdFieldWorks(metaClass, metaDbo, field);
 		}
 		
+		String virtualCf = metaDbo.getRealVirtual();
+		String cf = metaDbo.getRealColumnFamily();
+		
 		String discColumn = annotation.discriminatorColumnName();
 		metaClass.setDiscriminatorColumnName(discColumn);
 		
 		for(Class clazz : annotation.subclassesToScan()) {
 			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
-			metaSingle.setColumnFamily(metaClass.getColumnFamily());
+			metaSingle.setup(virtualCf, cf);
 			metaSingle.setMetaClass(clazz);
 			metaSingle.setMetaDbo(metaDbo);
 			metaInfo.addSubclass(clazz, metaClass);
@@ -148,17 +148,31 @@ public class ScannerForClass {
 	private void scanForAnnotations(MetaAbstractClass<?> meta) {
 		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
 		NoSqlEmbeddable embeddable = meta.getMetaClass().getAnnotation(NoSqlEmbeddable.class);
+		String cf;
+		String virtualCf = null;
 		if(noSqlEntity != null) {
-			String colFamily = noSqlEntity.columnfamily();
-			if("".equals(colFamily))
-				colFamily = meta.getMetaClass().getSimpleName();
-			meta.setColumnFamily(colFamily);
+			cf = noSqlEntity.columnfamily();
+			if("".equals(cf))
+				cf = meta.getMetaClass().getSimpleName();
+			if(embeddable != null)
+				throw new IllegalArgumentException("You can't have NoSqlEntity AND be NoSqlEmbeddable.  remove one of the annotations");
 		} else if(embeddable != null) {
 			log.trace("nothing to do yet here until we implement");
 			//nothing to do at this point
+			throw new RuntimeException("embeddable not implemented yet");
 		} else {
 			throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
 		}
+		
+		NoSqlVirtualCf anno = meta.getMetaClass().getAnnotation(NoSqlVirtualCf.class);
+		if(anno != null) {
+			//okay, here we swap, the entity name is the virtual CF name now...
+			virtualCf = cf; 
+			//The REAL CF is the one defined in NoSqlVirtualCf
+			cf = anno.storedInCf();
+		}
+		
+		meta.setup(virtualCf, cf);
 	}
 	
 	private void scanFields(MetaClassSingle<?> meta, DboTableMeta metaDbo) {

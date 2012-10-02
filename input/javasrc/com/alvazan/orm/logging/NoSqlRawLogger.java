@@ -141,37 +141,37 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
 			list = new LogBatchFetch("basic column slice", l, batchSize);
 		}
 		
-		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
+		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list, mgr);
 		
 		return ret;
 	}
 	
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan(info, from, to, batchSize);
 			list = new LogBatchFetch(cfAndIndex, l, batchSize);
 		}
-		return session.scanIndex(info, from, to, batchSize, list);
+		return session.scanIndex(info, from, to, batchSize, list, mgr);
 	}
 	
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan2(scanInfo, values);
 			list = new LogBatchFetch(cfAndIndex, l, null);
 		}
 
-		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list);
+		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list, mgr);
 		return cursor;
 	}
 	
@@ -297,14 +297,14 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l) {
+			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch("CF="+colFamily, l, batchSize);
 		}
 		
 		Cache cache = CacheThreadLocal.getCache();
-		return session.find(colFamily, rowKeys, cache, batchSize, list);
+		return session.find(colFamily, rowKeys, cache, batchSize, list, mgr);
 	}
 
 	@Override

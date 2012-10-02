@@ -60,11 +60,14 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	public String getColumnFamily() {
 		return columnFamily;
 	}
-	public void setColumnFamily(String cf) {
+	public void setup(String virtualCf, String cf) {
 		if(cf == null)
 			throw new IllegalArgumentException("colFamily cannot be null");
-		this.columnFamily = cf;
-		metaDbo.setColumnFamily(cf);
+		if(virtualCf != null)
+			columnFamily = virtualCf;
+		else
+			this.columnFamily = cf;
+		metaDbo.setup(virtualCf, cf);
 	}
 
 	public void setMetaClass(Class<T> clazz) {

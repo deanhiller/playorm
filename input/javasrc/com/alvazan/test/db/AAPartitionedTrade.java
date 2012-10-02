@@ -5,6 +5,7 @@ import java.util.List;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -14,6 +15,7 @@ import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
 	@NoSqlQuery(name="findLeftOuter", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t LEFT JOIN t.security as s WHERE (t.security = null or s.securityType = :type) and t.numShares = :shares"),

@@ -36,31 +36,34 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
+	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		
+	}
+
+	@Override
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+			byte[] from, byte[] to, Integer batchSize, BatchListener l,
+			MetaLookup mgr) {
 		return null;
 	}
 
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
-			Integer batchSize, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from,
+			Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		return null;
 	}
 
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo,
+			List<byte[]> values, BatchListener list, MetaLookup mgr) {
 		return null;
 	}
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize,
+			BatchListener list, MetaLookup mgr) {
 		return null;
-	}
-
-	@Override
-	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
-		
 	}
 
 }

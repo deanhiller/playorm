@@ -36,6 +36,8 @@ public class DboTableMeta {
 	@NoSqlId(usegenerator=false)
 	private String columnFamily;
 
+	private String actualColFamily;
+	
 	/**
 	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
 	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
@@ -99,15 +101,35 @@ public class DboTableMeta {
 		}
 	}
 	
-	
+	public String getRealColumnFamily() {
+		if(actualColFamily != null)
+			return actualColFamily;
+		return columnFamily;
+	}
 	public String getColumnFamily() {
 		return columnFamily;
 	}
 
-	public void setColumnFamily(String columnFamily) {
-		if(!NAME_PATTERN.matcher(columnFamily).matches())
+	public String getRealVirtual() {
+		if(isVirtualCf())
+			return columnFamily;
+		return null;
+	}
+	
+	public boolean isVirtualCf() {
+		return actualColFamily != null;
+	}
+	
+	public void setup(String virtualCf, String cf) {
+		if(!NAME_PATTERN.matcher(cf).matches())
 			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");
-		this.columnFamily = columnFamily;
+
+		if(virtualCf != null) {
+			actualColFamily = cf;
+			columnFamily = virtualCf;
+		} else {
+			this.columnFamily = cf;
+		}
 	}
 	
 	public void setRowKeyMeta(DboColumnIdMeta idMeta) {

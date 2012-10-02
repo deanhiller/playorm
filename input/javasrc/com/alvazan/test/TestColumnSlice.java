@@ -46,7 +46,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setColumnFamily(colFamily);
+		tableMeta.setup(null, colFamily);
 		tableMeta.setColNameType(double.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
@@ -108,7 +108,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setColumnFamily(colFamily);
+		tableMeta.setup(null, colFamily);
 		tableMeta.setColNameType(long.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();

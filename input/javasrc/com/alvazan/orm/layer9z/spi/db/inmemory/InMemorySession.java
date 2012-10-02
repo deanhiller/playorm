@@ -44,7 +44,7 @@ public class InMemorySession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
 		//NOTE: We don't have to do a cursor for in-memory, BUT by doing so, the logs are kept the same
 		//as when going against cassandra OR it is very confusing to users who switch(as I got confused).
 		CursorKeysToRows cursor = new CursorKeysToRows(colFamily, rowKeys, list, database, cache);
@@ -228,20 +228,20 @@ public class InMemorySession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
 		return new ProxyTempCursor<Column>(iter);
 	}
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
-			Integer batchSize, BatchListener l) {
+			Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
 		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr) {
 		List<IndexColumn> results = new ArrayList<IndexColumn>();
 		for(byte[] val : values) {
 			Key from = new Key(val, true);

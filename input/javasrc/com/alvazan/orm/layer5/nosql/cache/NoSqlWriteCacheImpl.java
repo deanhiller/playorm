@@ -94,7 +94,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		int size = 500;
 		if(batchSize != null)
 			size = batchSize;
-		return rawSession.find(colFamily, rowKeys, null, size, null);
+		return rawSession.find(colFamily, rowKeys, null, size, null, ormSession);
 	}
 	
 	public List<Row> find(String colFamily, List<byte[]> keys) {
@@ -150,16 +150,16 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	@Override
 	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
-		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null);
+		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null, ormSession);
 	}
 	
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize) {
-		return rawSession.scanIndex(info, from, to, batchSize, null);
+		return rawSession.scanIndex(info, from, to, batchSize, null, ormSession);
 	}
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values) {
-		return rawSession.scanIndex(scanInfo, values, null);
+		return rawSession.scanIndex(scanInfo, values, null, ormSession);
 	}
 	
 	@Override

@@ -12,7 +12,7 @@ public class Info {
 	private ColumnType columnType;
 	private AnnotatedCompositeSerializer compositeSerializer;
 	private ColumnFamily columnFamilyObj;
-
+	
 	public ColumnType getColumnType() {
 		return columnType;
 	}
@@ -45,5 +45,5 @@ public class Info {
 	public void setRowKeyType(StorageTypeEnum rowKeyType) {
 		this.rowKeyType = rowKeyType;
 	}
-	
+
 }

@@ -25,7 +25,7 @@ public interface NoSqlRawSession {
 	
 	public void close();
 
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, BatchListener l);
+	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr);
 	
 	/**
 	 * 
@@ -35,11 +35,11 @@ public interface NoSqlRawSession {
 	 * @param batchSize 
 	 * @return
 	 */
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l);
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l, MetaLookup mgr);
 
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list);
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr);
 
-	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list);
+	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr);
 
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily);
 
