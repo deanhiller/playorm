@@ -77,6 +77,9 @@ public class ScannerForClass {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private <T> void scanMultipleClasses(NoSqlInheritance annotation, MetaClassInheritance<T> metaClass) {
 		Class<T> mainClass = metaClass.getMetaClass();
+		if(log.isDebugEnabled())
+			log.debug("Scanning class heirarchy for class="+mainClass);
+		
 		NoSqlEntity noSqlEntity = metaClass.getMetaClass().getAnnotation(NoSqlEntity.class);
 		String colFamily = noSqlEntity.columnfamily();
 		if("".equals(colFamily))

@@ -11,6 +11,9 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
@@ -44,6 +47,8 @@ import com.alvazan.orm.impl.meta.data.MetaProxyField;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {
+	private static final Logger log = LoggerFactory.getLogger(ScannerForField.class);
+	
 	@Inject
 	private MetaInfo metaInfo;
 	@Inject
@@ -308,6 +313,8 @@ public class ScannerForField {
 				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
+			if(log.isDebugEnabled())
+				log.debug("superclass with @NoSqlEntity="+theSuperclass);
 			if(theSuperclass == null)
 				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
 						"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");

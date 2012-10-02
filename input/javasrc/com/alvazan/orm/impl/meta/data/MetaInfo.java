@@ -12,11 +12,17 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 
 @SuppressWarnings("rawtypes")
 @Singleton
 public class MetaInfo {
+	private static final Logger log = LoggerFactory.getLogger(MetaInfo.class);
+	
 	@Inject
 	private Provider<MetaClassSingle> classMetaProvider;
 	@Inject
@@ -53,6 +59,9 @@ public class MetaInfo {
 			metaClass2 = inheritanceProvider.get();
 		else
 			metaClass2 = classMetaProvider.get();
+		
+		if(log.isDebugEnabled())
+			log.debug("Adding mapping clazz="+clazz+" to type="+metaClass2.getClass().getSimpleName());
 		
 		metaClass2.setMetaClass(clazz);
 		classToClassMeta.put(clazz, metaClass2);
