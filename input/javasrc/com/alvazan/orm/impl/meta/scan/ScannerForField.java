@@ -305,6 +305,7 @@ public class ScannerForField {
 			isPartitionedBy = true;
 		
 		Class<?> theSuperclass = null;
+		Class<?> type = field.getType();
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
 		if(!field.getType().isAnnotationPresent(NoSqlEntity.class) && 
@@ -313,6 +314,7 @@ public class ScannerForField {
 				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
+			type = theSuperclass;
 			if(log.isDebugEnabled())
 				log.debug("superclass with @NoSqlEntity="+theSuperclass);
 			if(theSuperclass == null)
@@ -340,7 +342,7 @@ public class ScannerForField {
 		}
 		
 		MetaProxyField metaField = metaProxyProvider.get();
-		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(field.getType());
+		MetaAbstractClass<?> classMeta = metaInfo.findOrCreate(type);
 		
 		if(theSuperclass != null) {
 			//we need to swap the classMeta to the more specific class meta which may have not been 
