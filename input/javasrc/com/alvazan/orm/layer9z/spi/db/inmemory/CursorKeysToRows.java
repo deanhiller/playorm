@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
@@ -24,8 +25,8 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private String colFamily;
 	private NoSqlDatabase database;
 
-	public CursorKeysToRows(String colFamily, Iterable<byte[]> rowKeys, BatchListener list, NoSqlDatabase database, Cache cache2) {
-		this.colFamily = colFamily;
+	public CursorKeysToRows(DboTableMeta colFamily, Iterable<byte[]> rowKeys, BatchListener list, NoSqlDatabase database, Cache cache2) {
+		this.colFamily = colFamily.getColumnFamily();
 		this.cache = cache2;
 		this.database = database;
 		this.rowKeys = rowKeys;

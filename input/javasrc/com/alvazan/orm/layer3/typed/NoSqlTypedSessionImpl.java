@@ -68,22 +68,21 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
-			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
+			session.remove(metaClass, row.getKey(), row.getColumnNamesToRemove());
 		
-		String cf = metaClass.getColumnFamily();
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			session.persistIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.persistIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
-		session.put(cf, key, cols);
+		session.put(metaClass, key, cols);
 	}
 	
 	@Override
@@ -92,7 +91,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
 		byte[] rowKey = info.getRowKey();
 		String indColFamily = info.getIndexColFamily();
-		String cf = info.getEntityColFamily();
+		DboTableMeta cf = info.getEntityColFamily();
 		
 		IndexColumn col = new IndexColumn();
 		col.setIndexedValue(pt.getRawIndexedValue());
@@ -104,7 +103,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
 		byte[] rowKey = info.getRowKey();
 		String indColFamily = info.getIndexColFamily();
-		String cf = info.getEntityColFamily();
+		DboTableMeta cf = info.getEntityColFamily();
 		
 		IndexColumn col = new IndexColumn();
 		col.setIndexedValue(pt.getRawIndexedValue());
@@ -140,8 +139,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String query, int batchSize) {
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		String cf = meta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows2 = session.find(cf, noSqlKeys, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, noSqlKeys, true, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else

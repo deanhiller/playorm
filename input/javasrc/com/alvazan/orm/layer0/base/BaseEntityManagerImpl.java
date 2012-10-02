@@ -97,25 +97,25 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		
 		RowToPersist row = metaClass.translateToRow(entity);
 		
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
-			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
+			session.remove(metaDbo, row.getKey(), row.getColumnNamesToRemove());
 
-		String cf = metaClass.getColumnFamily();
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			session.persistIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.persistIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 
 		byte[] key = row.getKey();
 		List<Column> cols = row.getColumns();
-		session.put(cf, key, cols);
+		session.put(metaDbo, key, cols);
 	}
 
 	@Override
@@ -150,8 +150,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
 		boolean skipCache = query != null;
-		String cf = meta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> cursor = session.find(cf, iter, skipCache, batchSize);
+		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), iter, skipCache, batchSize);
 		return new CursorRow<T>(session, meta, cursor, query);
 	}
 
@@ -298,9 +297,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		Object proxy = entity;
 		Object pk = metaClass.fetchId(entity);
 		byte[] rowKey = metaClass.convertIdToNoSql(pk);
-			
+		
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		if(!metaClass.hasIndexedField()) {
-			session.remove(metaClass.getColumnFamily(), rowKey);
+			session.remove(metaDbo, rowKey);
 			return;
 		} else if(!(entity instanceof NoSqlProxy)) {
 			//then we don't have the database information for indexes so we need to read from the database
@@ -309,13 +309,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		
 		List<IndexData> indexToRemove = metaClass.findIndexRemoves((NoSqlProxy)proxy, rowKey);
 		
-		String cf = metaClass.getColumnFamily();
 		//REMOVE EVERYTHING HERE, we are probably removing extra and could optimize this later
 		for(IndexData ind : indexToRemove) {
-			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		session.remove(cf, rowKey);
+		session.remove(metaDbo, rowKey);
 	}
 
 	@Override

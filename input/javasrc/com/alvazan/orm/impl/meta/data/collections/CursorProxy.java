@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
 
@@ -100,8 +101,8 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		
 		currentCacheLoaded = true;
 		
-		String cf = proxyMeta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keyList, true, batchSize);
+		DboTableMeta metaDbo = proxyMeta.getMetaDbo();
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, keyList, true, batchSize);
 		
 		int counter = 0;
 		while(true) {

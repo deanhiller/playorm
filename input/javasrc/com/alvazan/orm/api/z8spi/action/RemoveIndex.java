@@ -1,19 +1,21 @@
 package com.alvazan.orm.api.z8spi.action;
 
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+
 
 
 
 public class RemoveIndex implements Action {
-	private String colFamily;
+	private DboTableMeta colFamily;
 	private byte[] rowKey;
 	private IndexColumn column;
-	private String realColFamily;
+	private String indexCfName;
 	
-	public String getColFamily() {
+	public DboTableMeta getColFamily() {
 		return colFamily;
 	}
-	public void setColFamily(String colFamily) {
-		this.colFamily = colFamily;
+	public void setColFamily(DboTableMeta indexColFamily) {
+		this.colFamily = indexColFamily;
 	}
 	public byte[] getRowKey() {
 		return rowKey;
@@ -27,14 +29,15 @@ public class RemoveIndex implements Action {
 	public void setColumn(IndexColumn column) {
 		this.column = column;
 	}
-	public String getRealColFamily() {
-		return realColFamily;
-	}
-	public void setRealColFamily(String realColFamily) {
-		this.realColFamily = realColFamily;
-	}
 	@Override
 	public String toString() {
-		return "indexChg to:"+realColFamily+"."+column.getColumnName();
+		return "indexChg to:"+colFamily.getColumnFamily()+"."+column.getColumnName();
 	}
+	public String getIndexCfName() {
+		return indexCfName;
+	}
+	public void setIndexCfName(String indexCfName) {
+		this.indexCfName = indexCfName;
+	}
+	
 }

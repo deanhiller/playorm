@@ -17,7 +17,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
-import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 /**
  * WE need to use this to see when the proxies are accidentally going back to the cache of already loaded rows and RE-translating everything
@@ -29,8 +29,6 @@ public class NoSqlDevLogger implements NoSqlSession {
 
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
-	@Inject
-	private DboDatabaseMeta databaseInfo;
 	
 	@Override
 	public NoSqlRawSession getRawSession() {
@@ -38,41 +36,40 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public void persistIndex(String colFamily, String indexColFamily,
-			byte[] rowKey, IndexColumn column) {
+	public void persistIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKey, IndexColumn column) {
 		session.persistIndex(colFamily, indexColFamily, rowKey, column);
 	}
 
 	@Override
-	public void removeFromIndex(String colFamily, String indexColFamily,
+	public void removeFromIndex(DboTableMeta colFamily, String indexColFamily,
 			byte[] rowKeyBytes, IndexColumn c) {
 		session.removeFromIndex(colFamily, indexColFamily, rowKeyBytes, c);
 	}
 
 	@Override
-	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
+	public void put(DboTableMeta colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey) {
+	public void remove(DboTableMeta colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey,
+	public void remove(DboTableMeta colFamily, byte[] rowKey,
 			Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String cf,
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta cf,
 			Iterable<byte[]> noSqlKeys, boolean skipCache, Integer batchSize) {
 		return session.find(cf, noSqlKeys, skipCache, batchSize);
 	}
 	
 	@Override
-	public Row find(String colFamily, byte[] rowKey) {
+	public Row find(DboTableMeta colFamily, byte[] rowKey) {
 		List<byte[]> keys = new ArrayList<byte[]>();
 		keys.add(rowKey);
 		//NoSqlRawLogger.logKeys("[cache]", databaseInfo, colFamily, keys);
@@ -90,7 +87,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 	

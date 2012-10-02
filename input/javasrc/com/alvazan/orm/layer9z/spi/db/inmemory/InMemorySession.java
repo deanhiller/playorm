@@ -43,7 +43,7 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
 		//NOTE: We don't have to do a cursor for in-memory, BUT by doing so, the logs are kept the same
 		//as when going against cassandra OR it is very confusing to users who switch(as I got confused).
@@ -88,7 +88,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 	
 	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
-		String colFamily = action.getColFamily();
+		String colFamily = action.getColFamily().getColumnFamily();
 		Table table = database.findTable(colFamily);
 		if(table != null)
 			return table;
@@ -194,9 +194,9 @@ public class InMemorySession implements NoSqlRawSession {
 		
 	}
 
-	public Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnSliceImpl(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
-		Table table = database.findTable(colFamily);
+		Table table = database.findTable(colFamily.getColumnFamily());
 		if(table == null) {
 			return new HashSet<Column>();
 		}
@@ -227,7 +227,7 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
 		return new ProxyTempCursor<Column>(iter);

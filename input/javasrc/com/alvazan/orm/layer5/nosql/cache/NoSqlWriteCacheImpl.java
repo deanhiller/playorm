@@ -37,7 +37,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	private List<byte[]> newTables = new ArrayList<byte[]>();
 	
 	@Override
-	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
+	public void put(DboTableMeta colFamily, byte[] rowKey, List<Column> columns) {
 		if(DboTableMeta.class.getSimpleName().equals(colFamily))
 			newTables.add(rowKey);
 
@@ -49,7 +49,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey) {
+	public void remove(DboTableMeta colFamily, byte[] rowKey) {
 		Remove remove = new Remove();
 		remove.setAction(RemoveEnum.REMOVE_ENTIRE_ROW);
 		remove.setColFamily(colFamily);
@@ -58,7 +58,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	@Override
-	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
+	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		Remove remove = new Remove();
 		remove.setAction(RemoveEnum.REMOVE_COLUMNS_FROM_ROW);
 		remove.setColFamily(colFamily);
@@ -68,28 +68,28 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 
 	@Override
-	public void persistIndex(String cf, String indexColFamily, byte[] rowKey, IndexColumn column) {
+	public void persistIndex(DboTableMeta cf, String indexColFamily, byte[] rowKey, IndexColumn column) {
 		PersistIndex persist = new PersistIndex();
-		persist.setColFamily(indexColFamily);
-		persist.setRealColFamily(cf);
+		persist.setColFamily(cf);
+		persist.setIndexCfName(indexColFamily);
 		persist.setRowKey(rowKey);
 		persist.setColumn(column);
 		actions.add(persist);
 	}	
 	
 	@Override
-	public void removeFromIndex(String cf, String indexColFamily, byte[] rowKeyBytes,
+	public void removeFromIndex(DboTableMeta cf, String indexColFamily, byte[] rowKeyBytes,
 			IndexColumn c) {
 		RemoveIndex remove = new RemoveIndex();
-		remove.setColFamily(indexColFamily);
-		remove.setRealColFamily(cf);
+		remove.setColFamily(cf);
+		remove.setIndexCfName(indexColFamily);
 		remove.setRowKey(rowKeyBytes);
 		remove.setColumn(c);
 		actions.add(remove);
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
 		int size = 500;
 		if(batchSize != null)
@@ -97,7 +97,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		return rawSession.find(colFamily, rowKeys, null, size, null, ormSession);
 	}
 	
-	public List<Row> find(String colFamily, List<byte[]> keys) {
+	public List<Row> find(DboTableMeta colFamily, List<byte[]> keys) {
 		AbstractCursor<KeyValue<Row>> results = find(colFamily, keys, false, null);
 		List<Row> rows = new ArrayList<Row>();
 		while(true) {
@@ -110,7 +110,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		return rows;
 	}
 	
-	public Row find(String colFamily, byte[] rowKey) {
+	public Row find(DboTableMeta colFamily, byte[] rowKey) {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
 		//log.debug("cf="+colFamily+" finding the key="+new ByteArray(rowKey));
@@ -149,7 +149,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabase();
 	}
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null, ormSession);
 	}
 	

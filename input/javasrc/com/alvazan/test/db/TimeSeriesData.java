@@ -7,8 +7,10 @@ import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findById", query="select t from TABLE as t where t.key = :key"),
 	@NoSqlQuery(name="findByTemp", query="select t from TABLE as t where t.temp = :temp")

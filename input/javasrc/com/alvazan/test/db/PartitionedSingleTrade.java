@@ -1,13 +1,13 @@
 package com.alvazan.test.db;
 
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
-import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 @NoSqlEntity
 @NoSqlVirtualCf(storedInCf="ourstuff")

@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.impl.meta.data.Tuple;
@@ -47,8 +48,8 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		if(cacheLoaded)
 			return;
 		
-		String cf = metaClass.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows = session.find(cf, keys, false, null);
+		DboTableMeta metaDbo = metaClass.getMetaDbo();
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, keys, false, null);
 		int counter = 0;
 		while(true) {
 			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();
