@@ -38,7 +38,11 @@ public class MyClassAnnotationDiscoveryListener implements
 	}
 
 	public void scanClass(Class<?> clazz) {
-		inspectorClass.addClass(clazz);
+		try {
+			inspectorClass.addClass(clazz);
+		} catch(RuntimeException e) {
+			throw new RuntimeException("Failure parsing class(see chained exception)="+clazz, e);
+		}
 	}
 
 	public void setClassLoader(ClassLoader cl) {
