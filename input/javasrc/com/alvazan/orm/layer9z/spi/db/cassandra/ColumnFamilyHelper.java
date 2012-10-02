@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import org.apache.cassandra.db.marshal.BytesType;
 import org.apache.cassandra.db.marshal.CompositeType;
 import org.apache.cassandra.db.marshal.DecimalType;
@@ -17,6 +19,7 @@ import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
@@ -33,6 +36,9 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 @SuppressWarnings("rawtypes")
 public class ColumnFamilyHelper {
 	private static final Logger log = LoggerFactory.getLogger(ColumnFamilyHelper.class);
+	
+	@Inject
+	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	private Map<String, Info> cfNameToCassandra = new HashMap<String, Info>();
 	private Map<String, String> virtualToCfName = new HashMap<String, String>();
@@ -260,14 +266,12 @@ public class ColumnFamilyHelper {
 				}
 			}
 
-			log.info("looking up meta="+virtCf+" so we can add table to memory(one time operation)");
-			DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
-			if(table == null)
-				throw new IllegalArgumentException("We can't load the meta for virtual or real CF="+virtCf+" because there is not meta found in DboTableMeta table");
+			DboTableMeta table = loadFromInMemoryOrDb(virtCf, lookup);
 			
 			String realCf = table.getRealColumnFamily();
 
-			Info info = cfNameToCassandra.get(realCf);
+			String realCfLower = realCf.toLowerCase();
+			Info info = cfNameToCassandra.get(realCfLower);
 			if(info != null) {
 				log.info("Virt CF="+virtCf+" already exists and real colfamily="+realCf+" already exists so return it");
 				//Looks like it already existed
@@ -293,6 +297,21 @@ public class ColumnFamilyHelper {
 		}
 	}
 
+	private DboTableMeta loadFromInMemoryOrDb(String virtCf, MetaLookup lookup) {
+		log.info("looking up meta="+virtCf+" so we can add table to memory(one time operation)");
+		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(virtCf);
+		if(meta != null) {
+			log.info("found meta="+virtCf+" locally");
+			return meta;
+		}
+		
+		DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
+		if(table == null)
+			throw new IllegalArgumentException("We can't load the meta for virtual or real CF="+virtCf+" because there is not meta found in DboTableMeta table");
+		log.info("found meta="+virtCf+" in database");
+		return table;
+	}
+
 	private synchronized Exception createColFamily(String virtualCf, MetaLookup ormSession) {
 		try {
 			long start = System.currentTimeMillis();
@@ -314,11 +333,7 @@ public class ColumnFamilyHelper {
 		String keysp = keyspace.getKeyspaceName();
 		log.info("CREATING column family="+virtualCf+" in cassandra keyspace="+keysp);
 		
-		DboTableMeta meta = ormSession.find(DboTableMeta.class, virtualCf);
-		if(meta == null) {
-			throw new IllegalStateException("Column family='"+virtualCf+"' was not found AND we looked up meta data for this column" +
-					" family to create it AND we could not find that data so we can't create it for you");
-		}
+		DboTableMeta meta = loadFromInMemoryOrDb(virtualCf, ormSession);
 		log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
 
 		createColFamilyInCassandra(meta);
@@ -354,10 +369,10 @@ public class ColumnFamilyHelper {
 		addColumnFamily(def);
 		String virtual = meta.getColumnFamily();
 		String realCf = meta.getRealColumnFamily();
-		
+		String realCfLower = realCf.toLowerCase();
 		Info info = createInfo(realCf, colType, rowKeyType);
-		virtualToCfName.put(virtual, realCf);
-		cfNameToCassandra.put(realCf, info);
+		virtualToCfName.put(virtual, realCfLower);
+		cfNameToCassandra.put(realCfLower, info);
 	}
 	
 	private ColumnFamilyDefinition setColumnNameCompareType(DboTableMeta cf,
