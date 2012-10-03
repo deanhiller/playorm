@@ -15,6 +15,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
@@ -34,9 +35,11 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;
 	private Cache cache;
+	private DboTableMeta cf;
 
-	public CursorKeysToRows(Info info, Iterable<byte[]> rowKeys, Cache cache, int batchSize,
+	public CursorKeysToRows(DboTableMeta cf, Info info, Iterable<byte[]> rowKeys, Cache cache, int batchSize,
 			BatchListener list, Keyspace keyspace, Provider<Row> rowProvider) {
+		this.cf = cf;
 		this.cache = cache;
 		this.rowProvider = rowProvider;
 		this.info = info;
@@ -69,12 +72,11 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		else if(!theKeys.hasNext())
 			return;
 		
-		String colFamily = info.getColumnFamilyObj().getName();
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
 		while(results.size() < batchSize && theKeys.hasNext()) {
 			byte[] key = theKeys.next();
-			RowHolder<Row> result = cache.fromCache(colFamily, key);
+			RowHolder<Row> result = cache.fromCache(cf, key);
 			if(result == null)
 				keysToLookup.add(key);
 			
@@ -117,7 +119,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			
 			ByteArray b = new ByteArray(row.getKey());
 			map.put(b, kv);
-			cache.cacheRow(colFamily, row.getKey(), kv.getValue());
+			cache.cacheRow(cf, row.getKey(), kv.getValue());
 		}
 		
 		//UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we provided so, we need to iterate over the whole thing here

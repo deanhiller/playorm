@@ -24,9 +24,11 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.NoSqlTypedRowProxy;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -113,7 +115,31 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	
 	@Override
 	public void remove(String colFamily, TypedRow row) {
-		throw new UnsupportedOperationException("not done yet");
+		DboTableMeta metaDbo = cachedMeta.getMeta(colFamily);
+		if(metaDbo == null)
+			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
+		
+		TypedRow proxy = row;
+		Object rowKey = row.getRowKey();
+		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
+		byte[] byteKey = idMeta.convertToStorage2(rowKey);
+		
+		if(!metaDbo.hasIndexedField()) {
+			session.remove(metaDbo, byteKey);
+			return;
+		} else if(!(row instanceof NoSqlTypedRowProxy)) {
+			//then we don't have the database information for indexes so we need to read from the database
+			proxy = find(metaDbo.getColumnFamily(), rowKey);
+		}
+		
+		List<IndexData> indexToRemove = metaDbo.findIndexRemoves((NoSqlTypedRowProxy)proxy, byteKey);
+		
+		//REMOVE EVERYTHING HERE, we are probably removing extra and could optimize this later
+		for(IndexData ind : indexToRemove) {
+			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+		}
+		
+		session.remove(metaDbo, byteKey);
 	}
 	
 	@Override

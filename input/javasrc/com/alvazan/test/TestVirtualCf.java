@@ -1,15 +1,23 @@
 package com.alvazan.test;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z3api.QueryResult;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.PartitionedSingleTrade;
 import com.alvazan.test.db.TimeSeriesData;
@@ -35,6 +43,75 @@ public class TestVirtualCf {
 	}
 	
 	@Test
+	public void testRawStuff() {
+		DboTableMeta fkToTable = new DboTableMeta();
+		fkToTable.setup("Owner", "ourstuff");
+		DboColumnIdMeta id = new DboColumnIdMeta();
+		id.setup(fkToTable, "id", String.class, true);
+		DboColumnCommonMeta col1 = new DboColumnCommonMeta();
+		col1.setup(fkToTable, "name", String.class, false, false);
+		
+		mgr.put(fkToTable);
+		mgr.put(id);
+		mgr.put(col1);
+		
+		DboTableMeta meta = new DboTableMeta();
+		meta.setup("MyRaceCar", "ourstuff");
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(meta, "id", String.class, true);
+		DboColumnToOneMeta toOne = new DboColumnToOneMeta();
+		toOne.setup(meta, "carOwner", fkToTable, false, false);
+		
+		mgr.put(meta);
+		mgr.put(idMeta);
+		mgr.put(toOne);
+		mgr.flush();
+		
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		TypedRow row2 = s.createTypedRow("Owner");
+		row2.setRowKey("myoneid");
+		row2.addColumn("name", "dean");
+		
+		s.put("Owner", row2);
+
+		byte[] temp = new byte[2];
+		temp[0] = 23;
+		temp[1] = 24;
+		TypedRow row = s.createTypedRow("MyRaceCar");
+		row.setRowKey("myoneid");
+		row.addColumn("carOwner", row2.getRowKey());
+		
+		s.put("MyRaceCar", row);
+		
+		s.flush();
+		
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		NoSqlTypedSession s2 = mgr2.getTypedSession();
+		
+		s2.remove("Owner", row2);
+		s2.flush();
+		
+		QueryResult rResult = s2.createQueryCursor("select * from Owner", 50);
+		Assert.assertFalse(rResult.getCursor().next());
+		
+		TypedRow result = s2.find("MyRaceCar", row.getRowKey());
+		Assert.assertNotNull(result);
+		
+		Object fk = result.getColumn("carOwner").getValue();
+		Object rowId = row2.getRowKey();
+		Assert.assertEquals(rowId, fk);
+		
+		QueryResult qResult = s2.createQueryCursor("select * from MyRaceCar", 50);
+		Cursor<List<TypedRow>> cursor = qResult.getAllViewsCursor();
+		Assert.assertTrue(cursor.next());
+		List<TypedRow> theRow = cursor.getCurrent();
+		Assert.assertEquals(1, theRow.size());
+		TypedRow myRow = theRow.get(0);
+		Assert.assertEquals(row.getRowKey(), myRow.getRowKey());
+	}
+	
+	@Test
 	public void testWriteRead() {
 		//let's use TWO entities that share the same columnFamily AND use the same key in both to make sure
 		//the prefix stuff works just fine...
@@ -47,7 +124,7 @@ public class TestVirtualCf {
 		trade.setId("myid");
 		trade.setNumber(89);
 		mgr.put(trade);
-		
+
 		//throw an a guy with Long key types as well...
 		TimeSeriesData d = new TimeSeriesData();
 		d.setKey(897L);
@@ -62,11 +139,13 @@ public class TestVirtualCf {
 		mgr.flush();
 		
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
-		Activity act = mgr2.find(Activity.class, act1.getId());
-		Assert.assertEquals(act1.getName(), act.getName());
 		
 		PartitionedSingleTrade r = mgr2.find(PartitionedSingleTrade.class, trade.getId());
 		Assert.assertNull(r);
+		
+		Activity act = mgr2.find(Activity.class, act1.getId());
+		Assert.assertNotNull(act);
+		Assert.assertEquals(act1.getName(), act.getName());
 		
 		TimeSeriesData d2 = mgr2.find(TimeSeriesData.class, d.getKey());
 		Assert.assertEquals(d.getSomeName(), d2.getSomeName());

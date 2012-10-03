@@ -22,11 +22,11 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private BatchListener list;
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Cache cache;
-	private String colFamily;
+	private DboTableMeta colFamily;
 	private NoSqlDatabase database;
 
 	public CursorKeysToRows(DboTableMeta colFamily, Iterable<byte[]> rowKeys, BatchListener list, NoSqlDatabase database, Cache cache2) {
-		this.colFamily = colFamily.getColumnFamily();
+		this.colFamily = colFamily;
 		this.cache = cache2;
 		this.database = database;
 		this.rowKeys = rowKeys;
@@ -111,7 +111,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
 	public List<KeyValue<Row>> fetchRows() {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
-		Table table = database.findTable(colFamily);
+		Table table = database.findTable(colFamily.getColumnFamily());
 		for(byte[] key : rowKeys) {
 			Row row = findRow(table, key);
 			Row newRow = null;

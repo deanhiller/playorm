@@ -73,8 +73,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
-		StorageTypeEnum storageType = metaDbo.getStorageType();
-		removingThisEntity(info, indexRemoves, pk, storageType);
+		removingThisEntity(info, indexRemoves, pk);
 	}
 	
 	public Object fillInAndFetchId(OWNER entity) {

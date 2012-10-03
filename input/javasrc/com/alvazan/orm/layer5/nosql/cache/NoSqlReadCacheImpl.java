@@ -41,8 +41,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	@Override
 	public void put(DboTableMeta colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
-		String cfName = colFamily.getColumnFamily();
-		RowHolder<Row> currentRow = fromCache(cfName, rowKey);
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
 		if(currentRow == null) {
 			currentRow = new RowHolder<Row>(rowKey);
 		}
@@ -53,7 +52,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		
 		value.setKey(rowKey);
 		value.addColumns(columns);
-		cacheRow(cfName, rowKey, value);
+		cacheRow(colFamily, rowKey, value);
 	}
 
 	@Override
@@ -70,15 +69,13 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	@Override
 	public void remove(DboTableMeta colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
-		String cfName = colFamily.getColumnFamily();
-		cacheRow(cfName, rowKey, null);
+		cacheRow(colFamily, rowKey, null);
 	}
 
 	@Override
 	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
-		String cfName = colFamily.getColumnFamily();
-		RowHolder<Row> currentRow = fromCache(cfName, rowKey);
+		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
 		if(currentRow == null) {
 			return;
 		}
@@ -92,13 +89,12 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 
 	@Override
 	public Row find(DboTableMeta colFamily, byte[] rowKey) {
-		String cfName = colFamily.getColumnFamily();
-		RowHolder<Row> result = fromCache(cfName, rowKey);
+		RowHolder<Row> result = fromCache(colFamily, rowKey);
 		if(result != null)
 			return result.getValue(); //This may return the cached null value!!
 		
 		Row row = session.find(colFamily, rowKey);
-		cacheRow(cfName, rowKey, row);
+		cacheRow(colFamily, rowKey, row);
 		return row;
 	}
 	
@@ -122,19 +118,19 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		}
 	}
 	
-	public RowHolder<Row> fromCache(String colFamily, byte[] key) {
+	public RowHolder<Row> fromCache(DboTableMeta colFamily, byte[] key) {
 		if(key == null)
 			throw new IllegalArgumentException("CF="+colFamily+" key is null and shouldn't be....(this should be trapped in higher level exception telling us which index is corrupt");
-		TheKey k = new TheKey(colFamily, key);
+		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = cache.get(k);
 		if(holder != null)
 			log.info("cache hit(need to optimize this even further)");
 		return holder;
 	}
 
-	public void cacheRow(String colFamily, byte[] key, Row r) {
+	public void cacheRow(DboTableMeta colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
-		TheKey k = new TheKey(colFamily, key);
+		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);
 	}

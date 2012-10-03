@@ -58,20 +58,21 @@ public class InMemorySession implements NoSqlRawSession {
 	
 	public void sendChangesImpl(List<Action> actions, Object ormSession) {
 		for(Action action : actions) {
-			Table table = lookupColFamily(action, (NoSqlEntityManager) ormSession);
 			if(action instanceof Persist) {
-				persist((Persist)action, table);
+				persist((Persist)action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof Remove) {
-				remove((Remove)action, table);
+				remove((Remove)action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof PersistIndex) {
-				persistIndex((PersistIndex) action, table);
+				persistIndex((PersistIndex) action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof RemoveIndex) {
-				removeIndex((RemoveIndex) action, table);
+				removeIndex((RemoveIndex) action, (NoSqlEntityManager) ormSession);
 			}
 		}
 	}
 
-	private void persistIndex(PersistIndex action, Table table) {
+	private void persistIndex(PersistIndex action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getIndexCfName();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
@@ -80,15 +81,17 @@ public class InMemorySession implements NoSqlRawSession {
 
 
 
-	private void removeIndex(RemoveIndex action, Table table) {
+	private void removeIndex(RemoveIndex action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getIndexCfName();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
+		
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
 		row.removeIndexedColumn(column.copy());		
 	}
 	
-	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
-		String colFamily = action.getColFamily().getColumnFamily();
+	private Table lookupColFamily(String colFamily, NoSqlEntityManager mgr) {
 		Table table = database.findTable(colFamily);
 		if(table != null)
 			return table;
@@ -151,7 +154,9 @@ public class InMemorySession implements NoSqlRawSession {
 		return table;
 	}
 
-	private void remove(Remove action, Table table) {
+	private void remove(Remove action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getColFamily().getColumnFamily();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		if(action.getAction() == null)
 			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
 		switch(action.getAction()) {
@@ -176,7 +181,9 @@ public class InMemorySession implements NoSqlRawSession {
 		}
 	}
 
-	private void persist(Persist action, Table table) {
+	private void persist(Persist action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getColFamily().getColumnFamily();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {

@@ -103,8 +103,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
-		StorageTypeEnum storageType = getStorageType();
-		removingThisEntity(info, indexRemoves, pk, storageType);
+		removingThisEntity(info, indexRemoves, pk);
 	}
 	
 	@SuppressWarnings("unchecked")

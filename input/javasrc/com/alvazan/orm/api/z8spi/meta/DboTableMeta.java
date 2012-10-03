@@ -39,6 +39,8 @@ public class DboTableMeta {
 	private String actualColFamily;
 	
 	/**
+	 * This is only used by our index tables at this time I believe.
+	 * 
 	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
 	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
 	 * In general, this is always a composite type of <indexed value type>.<primary key type> such that we can do a column
@@ -212,7 +214,22 @@ public class DboTableMeta {
 		return row;
 	}
 	
+	public List<IndexData> findIndexRemoves(NoSqlTypedRowProxy proxy, byte[] rowKey) {
+		initCaches();
+		
+		TypedRow r = (TypedRow) proxy;
+		Map<String, Object> fieldToValue = proxy.__getOriginalValues();
+		List<PartitionTypeInfo> partTypes = formPartitionTypesList(r);
+		InfoForIndex<TypedRow> info = new InfoForIndex<TypedRow>(r, null, getColumnFamily(), fieldToValue, partTypes);
+		List<IndexData> indexRemoves = new ArrayList<IndexData>();
+		idColumn.removingThisEntity(info, indexRemoves, rowKey);
 
+		for(DboColumnMeta indexed : this.indexedColumnsCache) {
+			indexed.removingThisEntity(info, indexRemoves, rowKey);
+		}
+		
+		return indexRemoves;
+	}
 	
 	private List<PartitionTypeInfo> formPartitionTypesList(TypedRow row) {
 		initCaches();
@@ -317,6 +334,13 @@ public class DboTableMeta {
 			names.add(m.getColumnName());
 		}
 		return names;
+	}
+
+	public boolean hasIndexedField() {
+		initCaches();
+		if(indexedColumnsCache.size() > 0 || idColumn.isIndexed())
+			return true;
+		return false;
 	}
 
 }
