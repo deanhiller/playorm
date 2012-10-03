@@ -76,9 +76,8 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		col.setName(colBytes);
 		col.setValue(byteVal);
 		Object primaryKey = column.getValue();
-		StorageTypeEnum storageType = getStorageType();
-		addIndexInfo(info, primaryKey, byteVal, storageType);
-		removeIndexInfo(info, primaryKey, byteVal, storageType);		
+		addIndexInfo(info, primaryKey, byteVal);
+		removeIndexInfo(info, primaryKey, byteVal);		
 	}
 
 	@Override

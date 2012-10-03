@@ -2,9 +2,11 @@ package com.alvazan.orm.api.z8spi.action;
 
 import java.util.Collection;
 
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+
 
 public class Remove implements Action {
-	private String colFamily;
+	private DboTableMeta colFamily;
 	private byte[] rowKey;
 	private RemoveEnum action;
 	private Collection<byte[]> columns;
@@ -15,11 +17,11 @@ public class Remove implements Action {
 	public void setAction(RemoveEnum action) {
 		this.action = action;
 	}
-	public String getColFamily() {
+	public DboTableMeta getColFamily() {
 		return colFamily;
 	}
-	public void setColFamily(String colFamily) {
-		this.colFamily = colFamily;
+	public void setColFamily(DboTableMeta colFamily2) {
+		this.colFamily = colFamily2;
 	}
 	public byte[] getRowKey() {
 		return rowKey;

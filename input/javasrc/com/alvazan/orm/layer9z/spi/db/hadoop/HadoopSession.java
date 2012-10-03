@@ -15,6 +15,7 @@ import com.alvazan.orm.api.z8spi.action.Action;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class HadoopSession implements NoSqlRawSession {
 
@@ -36,31 +37,34 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
-		return null;
-	}
-
-	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
-			Integer batchSize, BatchListener l) {
-		return null;
-	}
-
-	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
-		return null;
-	}
-
-	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
-		return null;
-	}
-
-	@Override
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
 		
+	}
+
+	@Override
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l,
+			MetaLookup mgr) {
+		return null;
+	}
+
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from,
+			Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
+		return null;
+	}
+
+	@Override
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo,
+			List<byte[]> values, BatchListener list, MetaLookup mgr) {
+		return null;
+	}
+
+	@Override
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize,
+			BatchListener list, MetaLookup mgr) {
+		return null;
 	}
 
 }

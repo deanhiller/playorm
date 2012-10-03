@@ -65,9 +65,8 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		col.setName(getColumnNameAsBytes());
 		col.setValue(byteVal);
 		
-		StorageTypeEnum storageType = this.getStorageType();
-		addIndexInfo(info, value, byteVal, storageType);
-		removeIndexInfo(info, value, byteVal, storageType);
+		addIndexInfo(info, value, byteVal);
+		removeIndexInfo(info, value, byteVal);
 	}
 
 	@Override

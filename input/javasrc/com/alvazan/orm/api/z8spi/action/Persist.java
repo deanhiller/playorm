@@ -2,10 +2,12 @@ package com.alvazan.orm.api.z8spi.action;
 
 import java.util.List;
 
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+
 
 
 public class Persist implements Action {
-	private String colFamily;
+	private DboTableMeta colFamily;
 	private byte[] rowKey;
 	private long timestamp;
 	private List<Column> columns;
@@ -16,10 +18,10 @@ public class Persist implements Action {
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}
-	public String getColFamily() {
+	public DboTableMeta getColFamily() {
 		return colFamily;
 	}
-	public void setColFamily(String colFamily) {
+	public void setColFamily(DboTableMeta colFamily) {
 		this.colFamily = colFamily;
 	}
 	public byte[] getRowKey() {

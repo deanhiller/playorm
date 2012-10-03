@@ -34,7 +34,10 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	private List<MetaField<T>> partitionColumns = new ArrayList<MetaField<T>>();
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
-		Tuple<T> tuple = convertIdToProxy(row, row.getKey(), session, null);
+		byte[] virtual = row.getKey();
+		byte[] nonVirtKey = idField.unformVirtRowKey(virtual);
+		
+		Tuple<T> tuple = convertIdToProxy(row, session, nonVirtKey, null);
 		T inst = tuple.getProxy();
 		fillInInstance(row, session, inst);
 		NoSqlProxy temp = (NoSqlProxy)inst;
@@ -147,14 +150,14 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
+	public Tuple<T> convertIdToProxy(Row row, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cacheLoadCallback) {
 		Tuple<T> t = new Tuple<T>();
-		if(id == null)
+		if(nonVirtKey == null)
 			return t;
 		MetaIdField<T> idField = this.getIdField();
 		Converter converter = idField.getConverter();
 
-		Object entityId = converter.convertFromNoSql(id);
+		Object entityId = converter.convertFromNoSql(nonVirtKey);
 		T proxy = idField.convertIdToProxy(session, entityId, cacheLoadCallback);
 		t.setEntityId(entityId);
 		t.setProxy(proxy);
@@ -176,5 +179,5 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	public boolean isPartitioned() {
 		return partitionColumns.size() > 0;
 	}
-	
+
 }

@@ -84,13 +84,10 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		}
 	}
 	
-	protected void removingThisEntity(InfoForIndex<OWNER> info,
-			List<IndexData> indexRemoves, byte[] pk, StorageTypeEnum storageType) {
+	protected void removingThisEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
+		StorageTypeEnum storageType = getMetaDbo().getStorageType();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		Object valueInDatabase = fieldToValue.get(field);
-		if(valueInDatabase == null)
-			return;
-		
 		byte[] oldIndexedVal = translateValue(valueInDatabase);
 		
 		addToList(info, oldIndexedVal, storageType, pk, indexRemoves);

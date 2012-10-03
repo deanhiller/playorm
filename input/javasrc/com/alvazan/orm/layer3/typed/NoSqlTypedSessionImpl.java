@@ -24,9 +24,12 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
+import com.alvazan.orm.api.z8spi.meta.NoSqlTypedRowProxy;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -68,22 +71,21 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
-			session.remove(metaClass.getColumnFamily(), row.getKey(), row.getColumnNamesToRemove());
+			session.remove(metaClass, row.getKey(), row.getColumnNamesToRemove());
 		
-		String cf = metaClass.getColumnFamily();
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
-			session.removeFromIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.removeFromIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
-			session.persistIndex(cf, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+			session.persistIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		byte[] key = row.getKey();
+		byte[] virtualKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
-		session.put(cf, key, cols);
+		session.put(metaClass, virtualKey, cols);
 	}
 	
 	@Override
@@ -92,7 +94,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
 		byte[] rowKey = info.getRowKey();
 		String indColFamily = info.getIndexColFamily();
-		String cf = info.getEntityColFamily();
+		DboTableMeta cf = info.getEntityColFamily();
 		
 		IndexColumn col = new IndexColumn();
 		col.setIndexedValue(pt.getRawIndexedValue());
@@ -104,7 +106,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		ScanInfo info = ScanInfo.createScanInfo(colMeta, partitionBy, partitionId);
 		byte[] rowKey = info.getRowKey();
 		String indColFamily = info.getIndexColFamily();
-		String cf = info.getEntityColFamily();
+		DboTableMeta cf = info.getEntityColFamily();
 		
 		IndexColumn col = new IndexColumn();
 		col.setIndexedValue(pt.getRawIndexedValue());
@@ -114,7 +116,31 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	
 	@Override
 	public void remove(String colFamily, TypedRow row) {
-		throw new UnsupportedOperationException("not done yet");
+		DboTableMeta metaDbo = cachedMeta.getMeta(colFamily);
+		if(metaDbo == null)
+			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
+		
+		TypedRow proxy = row;
+		Object rowKey = row.getRowKey();
+		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
+		byte[] byteKey = idMeta.convertToStorage2(rowKey);
+		byte[] virtualKey = idMeta.formVirtRowKey(byteKey);
+		if(!metaDbo.hasIndexedField()) {
+			session.remove(metaDbo, virtualKey);
+			return;
+		} else if(!(row instanceof NoSqlTypedRowProxy)) {
+			//then we don't have the database information for indexes so we need to read from the database
+			proxy = find(metaDbo.getColumnFamily(), rowKey);
+		}
+		
+		List<IndexData> indexToRemove = metaDbo.findIndexRemoves((NoSqlTypedRowProxy)proxy, byteKey);
+		
+		//REMOVE EVERYTHING HERE, we are probably removing extra and could optimize this later
+		for(IndexData ind : indexToRemove) {
+			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
+		}
+		
+		session.remove(metaDbo, virtualKey);
 	}
 	
 	@Override
@@ -138,10 +164,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String query, int batchSize) {
+		
+		Iterable<byte[]> virtKeys = new IterToVirtual(meta, noSqlKeys);
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		String cf = meta.getColumnFamily();
-		AbstractCursor<KeyValue<Row>> rows2 = session.find(cf, noSqlKeys, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, virtKeys, true, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else

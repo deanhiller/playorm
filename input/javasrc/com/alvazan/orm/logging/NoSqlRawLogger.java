@@ -29,7 +29,6 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
-import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlRawLogger implements NoSqlRawSession {
@@ -38,8 +37,6 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	@Inject
 	@Named("main")
 	private NoSqlRawSession session;
-	@Inject
-	private DboDatabaseMeta databaseInfo;
 	
 	@Override
 	public void sendChanges(List<Action> actions, MetaLookup ormFromAbove) {
@@ -66,7 +63,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	private void logInformationImpl(List<Action> actions) {
 		String msg = "[rawlogger] Data being flushed to database in one go=";
 		for(Action act : actions) {
-			String cf = act.getColFamily();
+			DboTableMeta cf = act.getColFamily();
 			if(act instanceof Persist) {
 				msg += "\nCF="+cf;
 				Persist p = (Persist) act;
@@ -79,12 +76,12 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 				msg += " remove  rowkey="+key;
 			} else if(act instanceof PersistIndex) {
 				PersistIndex p = (PersistIndex) act;
-				msg += "\nCF="+p.getRealColFamily();
+				msg += "\nCF="+p.getColFamily().getColumnFamily();
 				String ind = convert(p);
 				msg += " index persist("+ind;
 			} else if(act instanceof RemoveIndex) {
 				RemoveIndex r = (RemoveIndex) act;
-				msg += "\nCF="+r.getRealColFamily();
+				msg += "\nCF="+r.getColFamily().getColumnFamily();
 				String ind = convert(r);
 				msg += " index remove ("+ind;
 			}
@@ -98,7 +95,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		msg += "[rowkey="+StandardConverters.convertFromBytesNoExc(String.class, r.getRowKey())+"]";
 		
 		try {
-			DboTableMeta meta = databaseInfo.getMeta(r.getRealColFamily());
+			DboTableMeta meta = r.getColFamily();
 			if(meta == null) 
 				return msg+" (meta not found)";
 			String colName = r.getColumn().getColumnName();
@@ -121,14 +118,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		}
 	}
 
-	private String convert(String cf, byte[] rowKey) {
+	private String convert(DboTableMeta meta, byte[] rowKey) {
 		if(rowKey == null)
 			return "null";
 		
-		DboTableMeta meta = databaseInfo.getMeta(cf);
-		if(meta == null)
-			return "(meta not found)";
-
 		try {
 			Object obj = meta.getIdColumnMeta().convertFromStorage2(rowKey);
 			return meta.getIdColumnMeta().convertTypeToString(obj);
@@ -140,38 +133,38 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
 			list = new LogBatchFetch("basic column slice", l, batchSize);
 		}
 		
-		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list);
+		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list, mgr);
 		
 		return ret;
 	}
 	
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan(info, from, to, batchSize);
 			list = new LogBatchFetch(cfAndIndex, l, batchSize);
 		}
-		return session.scanIndex(info, from, to, batchSize, list);
+		return session.scanIndex(info, from, to, batchSize, list, mgr);
 	}
 	
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan2(scanInfo, values);
 			list = new LogBatchFetch(cfAndIndex, l, null);
 		}
 
-		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list);
+		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list, mgr);
 		return cursor;
 	}
 	
@@ -192,10 +185,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
-		DboTableMeta meta = databaseInfo.getMeta(info.getEntityColFamily());
+		DboTableMeta meta = info.getEntityColFamily();
 		if(meta == null)
 			return msg + " (meta for main CF was not found)";
-		DboColumnMeta colMeta = meta.getColumnMeta(info.getColumnName());
+		DboColumnMeta colMeta = info.getColumnName();
 		if(colMeta == null)
 			return msg + " (CF meta found but columnMeta not found)";
 		
@@ -228,10 +221,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		if(info.getEntityColFamily() == null)
 			return msg + " (meta for main CF can't be looked up)";
 
-		DboTableMeta meta = databaseInfo.getMeta(info.getEntityColFamily());
+		DboTableMeta meta = info.getEntityColFamily();
 		if(meta == null)
 			return msg + " (meta for main CF was not found)";
-		DboColumnMeta colMeta = meta.getColumnMeta(info.getColumnName());
+		DboColumnMeta colMeta = info.getColumnName();
 		if(colMeta == null)
 			return msg + " (CF meta found but columnMeta not found)";
 		
@@ -296,15 +289,15 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l) {
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
+			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch("CF="+colFamily, l, batchSize);
 		}
 		
 		Cache cache = CacheThreadLocal.getCache();
-		return session.find(colFamily, rowKeys, cache, batchSize, list);
+		return session.find(colFamily, rowKeys, cache, batchSize, list, mgr);
 	}
 
 	@Override

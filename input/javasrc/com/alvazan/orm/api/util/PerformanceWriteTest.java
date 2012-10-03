@@ -99,7 +99,7 @@ public class PerformanceWriteTest {
 		}
 
 		DboTableMeta table = new DboTableMeta();
-		table.setColumnFamily("testWrites");
+		table.setup(null, "testWrites");
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
 		idMeta.setup(table, "id", String.class, false);
@@ -139,7 +139,6 @@ public class PerformanceWriteTest {
 			
 			NoSqlEntityManager mgr = mgrFactory.createEntityManager();
 			NoSqlSession session = mgr.getSession();
-			String colFamily = table.getColumnFamily();
 			
 			while(shouldRun) {
 				
@@ -148,7 +147,7 @@ public class PerformanceWriteTest {
 					String rowKey = UniqueKeyGenerator.generateKey();
 					byte[] key = table.getIdColumnMeta().convertToStorage2(rowKey);
 					List<Column> columns = createColumns(i, table);
-					session.put(colFamily, key, columns);
+					session.put(table, key, columns);
 					count++;
 				}
 				addCount(count);

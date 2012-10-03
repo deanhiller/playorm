@@ -43,8 +43,8 @@ public class InMemorySession implements NoSqlRawSession {
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list) {
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
+			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
 		//NOTE: We don't have to do a cursor for in-memory, BUT by doing so, the logs are kept the same
 		//as when going against cassandra OR it is very confusing to users who switch(as I got confused).
 		CursorKeysToRows cursor = new CursorKeysToRows(colFamily, rowKeys, list, database, cache);
@@ -58,20 +58,21 @@ public class InMemorySession implements NoSqlRawSession {
 	
 	public void sendChangesImpl(List<Action> actions, Object ormSession) {
 		for(Action action : actions) {
-			Table table = lookupColFamily(action, (NoSqlEntityManager) ormSession);
 			if(action instanceof Persist) {
-				persist((Persist)action, table);
+				persist((Persist)action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof Remove) {
-				remove((Remove)action, table);
+				remove((Remove)action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof PersistIndex) {
-				persistIndex((PersistIndex) action, table);
+				persistIndex((PersistIndex) action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof RemoveIndex) {
-				removeIndex((RemoveIndex) action, table);
+				removeIndex((RemoveIndex) action, (NoSqlEntityManager) ormSession);
 			}
 		}
 	}
 
-	private void persistIndex(PersistIndex action, Table table) {
+	private void persistIndex(PersistIndex action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getIndexCfName();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
@@ -80,15 +81,17 @@ public class InMemorySession implements NoSqlRawSession {
 
 
 
-	private void removeIndex(RemoveIndex action, Table table) {
+	private void removeIndex(RemoveIndex action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getIndexCfName();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
+		
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
 		row.removeIndexedColumn(column.copy());		
 	}
 	
-	private Table lookupColFamily(Action action, NoSqlEntityManager mgr) {
-		String colFamily = action.getColFamily();
+	private Table lookupColFamily(String colFamily, NoSqlEntityManager mgr) {
 		Table table = database.findTable(colFamily);
 		if(table != null)
 			return table;
@@ -151,7 +154,9 @@ public class InMemorySession implements NoSqlRawSession {
 		return table;
 	}
 
-	private void remove(Remove action, Table table) {
+	private void remove(Remove action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getColFamily().getColumnFamily();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		if(action.getAction() == null)
 			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
 		switch(action.getAction()) {
@@ -176,7 +181,9 @@ public class InMemorySession implements NoSqlRawSession {
 		}
 	}
 
-	private void persist(Persist action, Table table) {
+	private void persist(Persist action, NoSqlEntityManager ormSession) {
+		String colFamily = action.getColFamily().getColumnFamily();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
@@ -194,9 +201,9 @@ public class InMemorySession implements NoSqlRawSession {
 		
 	}
 
-	public Iterable<Column> columnSliceImpl(String colFamily, byte[] rowKey,
+	public Iterable<Column> columnSliceImpl(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
-		Table table = database.findTable(colFamily);
+		Table table = database.findTable(colFamily.getColumnFamily());
 		if(table == null) {
 			return new HashSet<Column>();
 		}
@@ -227,21 +234,21 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
+			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
 		return new ProxyTempCursor<Column>(iter);
 	}
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
-			Integer batchSize, BatchListener l) {
+			Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
 		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
 	@Override
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list) {
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr) {
 		List<IndexColumn> results = new ArrayList<IndexColumn>();
 		for(byte[] val : values) {
 			Key from = new Key(val, true);

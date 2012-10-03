@@ -201,7 +201,7 @@ public class TestIndexes {
 		byte[] value = StandardConverters.convertToBytes("DeansCoolBusiness");
 		col.setIndexedValue(value);
 		col.setPrimaryKey(pk);
-		session.persistIndex("PartAccount", info.getIndexColFamily(), info.getRowKey(), col);
+		session.persistIndex(table, info.getIndexColFamily(), info.getRowKey(), col);
 		
 		mgr.flush();
 		

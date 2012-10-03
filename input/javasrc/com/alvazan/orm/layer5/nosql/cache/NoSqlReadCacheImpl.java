@@ -26,6 +26,7 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 
@@ -38,7 +39,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	private Provider<Row> rowProvider;
 	
 	@Override
-	public void put(String colFamily, byte[] rowKey, List<Column> columns) {
+	public void put(DboTableMeta colFamily, byte[] rowKey, List<Column> columns) {
 		session.put(colFamily, rowKey, columns);
 		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
 		if(currentRow == null) {
@@ -55,7 +56,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	@Override
-	public void persistIndex(String colFamily, String indexColFamily, byte[] rowKey, IndexColumn columns) {
+	public void persistIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKey, IndexColumn columns) {
 		if(indexColFamily == null)
 			throw new IllegalArgumentException("indexcolFamily cannot be null");
 		else if(rowKey == null)
@@ -66,15 +67,14 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 	
 	@Override
-	public void remove(String colFamily, byte[] rowKey) {
+	public void remove(DboTableMeta colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
 		cacheRow(colFamily, rowKey, null);
 	}
 
 	@Override
-	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
+	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames) {
 		session.remove(colFamily, rowKey, columnNames);
-		
 		RowHolder<Row> currentRow = fromCache(colFamily, rowKey);
 		if(currentRow == null) {
 			return;
@@ -88,7 +88,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	@Override
-	public Row find(String colFamily, byte[] rowKey) {
+	public Row find(DboTableMeta colFamily, byte[] rowKey) {
 		RowHolder<Row> result = fromCache(colFamily, rowKey);
 		if(result != null)
 			return result.getValue(); //This may return the cached null value!!
@@ -99,7 +99,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 	
 	@Override
-	public AbstractCursor<KeyValue<Row>> find(String colFamily,
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
 		Cache c = this;
 		if(skipCache) {
@@ -118,19 +118,19 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		}
 	}
 	
-	public RowHolder<Row> fromCache(String colFamily, byte[] key) {
+	public RowHolder<Row> fromCache(DboTableMeta colFamily, byte[] key) {
 		if(key == null)
 			throw new IllegalArgumentException("CF="+colFamily+" key is null and shouldn't be....(this should be trapped in higher level exception telling us which index is corrupt");
-		TheKey k = new TheKey(colFamily, key);
+		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = cache.get(k);
 		if(holder != null)
 			log.info("cache hit(need to optimize this even further)");
 		return holder;
 	}
 
-	public void cacheRow(String colFamily, byte[] key, Row r) {
+	public void cacheRow(DboTableMeta colFamily, byte[] key, Row r) {
 		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
-		TheKey k = new TheKey(colFamily, key);
+		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);
 	}
@@ -189,7 +189,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	@Override
-	public void removeFromIndex(String cf, String indexColFamily, byte[] rowKeyBytes,
+	public void removeFromIndex(DboTableMeta cf, String indexColFamily, byte[] rowKeyBytes,
 			IndexColumn c) {
 		session.removeFromIndex(cf, indexColFamily, rowKeyBytes, c);
 	}
@@ -200,7 +200,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
 		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
 	}
 	

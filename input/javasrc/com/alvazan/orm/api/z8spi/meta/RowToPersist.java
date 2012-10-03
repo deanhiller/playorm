@@ -15,12 +15,14 @@ public class RowToPersist {
 
 	private List<IndexData> indexToAdd = new ArrayList<IndexData>();
 	private List<IndexData> indexToRemove = new ArrayList<IndexData>();
+	private byte[] virtualKey;
 	
 	public byte[] getKey() {
 		return key;
 	}
-	public void setKey(byte[] key) {
+	public void setKeys(byte[] key, byte[] virtualKey) {
 		this.key = key;
+		this.virtualKey = virtualKey;
 	}
 	public List<Column> getColumns() {
 		return columns;
@@ -55,5 +57,8 @@ public class RowToPersist {
 	}
 	public void setIndexToRemove(List<IndexData> indexToRemove) {
 		this.indexToRemove = indexToRemove;
+	}
+	public byte[] getVirtualKey() {
+		return virtualKey;
 	}
 }

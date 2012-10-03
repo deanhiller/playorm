@@ -23,12 +23,12 @@ public class Holder<T> {
 	private NoSqlSession session;
 	private CacheLoadCallback cacheLoadCallback;
 
-	public Holder(MetaAbstractClass<T> metaClass, NoSqlSession session, byte[] key, CacheLoadCallback cb) {
+	public Holder(MetaAbstractClass<T> metaClass, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cb) {
 		if(session != null && cb != null)
 			throw new IllegalArgumentException("provide session OR cb but not both");
 		this.metaClass = metaClass;
 		this.session = session;
-		setKey(key);
+		setKey(nonVirtKey);
 		this.cacheLoadCallback = cb;
 	}
 	public Holder(MetaAbstractClass<T> metaClass, T value) {
@@ -43,7 +43,7 @@ public class Holder<T> {
 	public synchronized T getValue() {
 		if(!hasValue) {
 			//otherwise, we need to create and cache the value
-			Tuple<T> tuple =  metaClass.convertIdToProxy(null, key.getKey(), session, cacheLoadCallback);
+			Tuple<T> tuple =  metaClass.convertIdToProxy(null, session, key.getKey(), cacheLoadCallback);
 			T proxy = tuple.getProxy();
 			value = proxy;
 			hasValue = true;

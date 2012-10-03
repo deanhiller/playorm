@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaIdField;
 
 public class IterableKey<T> implements Iterable<byte[]> {
 
@@ -24,12 +25,13 @@ public class IterableKey<T> implements Iterable<byte[]> {
 	
 	private static class IteratorProxy<T> implements Iterator<byte[]> {
 
-		private MetaClass<T> meta;
+
 		private Iterator<? extends Object> iterator;
+		private MetaIdField<T> idMeta;
 
 		public IteratorProxy(MetaClass<T> meta,
 				Iterator<? extends Object> iterator) {
-			this.meta = meta;
+			this.idMeta = meta.getIdField();
 			this.iterator = iterator;
 		}
 
@@ -41,10 +43,11 @@ public class IterableKey<T> implements Iterable<byte[]> {
 		@Override
 		public byte[] next() {
 			Object next = iterator.next();
-			byte[] key = meta.convertIdToNoSql(next);			
-			if(key == null)
+			byte[] nonVirtKey = idMeta.convertIdToNonVirtKey(next);
+			if(nonVirtKey == null)
 				throw new IllegalArgumentException("You supplied a null key to your list when calling findAll method.  We can't lookup null as a key");
-			return key;
+			//NOTE: Next iterator CONVERTS to virtual key so do not do it here!!!!
+			return nonVirtKey;
 		}
 
 		@Override

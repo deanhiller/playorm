@@ -7,8 +7,10 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findByNumber", query="PARTITIONS e(:partitionId) select * FROM TABLE as e WHERE e.number = :number")
 })

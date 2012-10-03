@@ -12,8 +12,10 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlPartitionByThisField;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findJoinOnNullPartition", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t INNER JOIN t.security as s WHERE s.securityType = :type and t.numShares = :shares"),
 	@NoSqlQuery(name="findLeftOuter", query="PARTITIONS t('account', :partId) SELECT t FROM TABLE as t LEFT JOIN t.security as s WHERE (t.security = null or s.securityType = :type) and t.numShares = :shares"),

@@ -36,7 +36,11 @@ public class DboTableMeta {
 	@NoSqlId(usegenerator=false)
 	private String columnFamily;
 
+	private String actualColFamily;
+	
 	/**
+	 * This is only used by our index tables at this time I believe.
+	 * 
 	 * A special case where the table has rows with names that are not Strings.  This is done frequently for indexes like
 	 * indexes by time for instance where the name of the column might be a byte[] representing a long value or an int value
 	 * In general, this is always a composite type of <indexed value type>.<primary key type> such that we can do a column
@@ -99,15 +103,35 @@ public class DboTableMeta {
 		}
 	}
 	
-	
+	public String getRealColumnFamily() {
+		if(actualColFamily != null)
+			return actualColFamily;
+		return columnFamily;
+	}
 	public String getColumnFamily() {
 		return columnFamily;
 	}
 
-	public void setColumnFamily(String columnFamily) {
-		if(!NAME_PATTERN.matcher(columnFamily).matches())
+	public String getRealVirtual() {
+		if(isVirtualCf())
+			return columnFamily;
+		return null;
+	}
+	
+	public boolean isVirtualCf() {
+		return actualColFamily != null;
+	}
+	
+	public void setup(String virtualCf, String cf) {
+		if(!NAME_PATTERN.matcher(cf).matches())
 			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");
-		this.columnFamily = columnFamily;
+
+		if(virtualCf != null) {
+			actualColFamily = cf;
+			columnFamily = virtualCf;
+		} else {
+			this.columnFamily = cf;
+		}
 	}
 	
 	public void setRowKeyMeta(DboColumnIdMeta idMeta) {
@@ -190,7 +214,22 @@ public class DboTableMeta {
 		return row;
 	}
 	
+	public List<IndexData> findIndexRemoves(NoSqlTypedRowProxy proxy, byte[] rowKey) {
+		initCaches();
+		
+		TypedRow r = (TypedRow) proxy;
+		Map<String, Object> fieldToValue = proxy.__getOriginalValues();
+		List<PartitionTypeInfo> partTypes = formPartitionTypesList(r);
+		InfoForIndex<TypedRow> info = new InfoForIndex<TypedRow>(r, null, getColumnFamily(), fieldToValue, partTypes);
+		List<IndexData> indexRemoves = new ArrayList<IndexData>();
+		idColumn.removingThisEntity(info, indexRemoves, rowKey);
 
+		for(DboColumnMeta indexed : this.indexedColumnsCache) {
+			indexed.removingThisEntity(info, indexRemoves, rowKey);
+		}
+		
+		return indexRemoves;
+	}
 	
 	private List<PartitionTypeInfo> formPartitionTypesList(TypedRow row) {
 		initCaches();
@@ -210,7 +249,7 @@ public class DboTableMeta {
 	}
 
 	public <T> KeyValue<TypedRow> translateFromRow(Row row) {
-		TypedRow typedRow = convertIdToProxy(row, row.getKey(), typedRowProxyClass);
+		TypedRow typedRow = convertIdToProxy(row, typedRowProxyClass);
 		fillInInstance(row, typedRow);
 		NoSqlTypedRowProxy temp = (NoSqlTypedRowProxy)typedRow;
 		//mark initialized so it doesn't hit the database again and cache original values so if they change
@@ -224,7 +263,7 @@ public class DboTableMeta {
 	}
 
 	@SuppressWarnings("unchecked")
-	private TypedRow convertIdToProxy(Row row, byte[] key, Class typedRowProxyClass) {
+	private TypedRow convertIdToProxy(Row row, Class typedRowProxyClass) {
 		Proxy inst = (Proxy) ReflectionUtil.create(typedRowProxyClass);
 		inst.setHandler(new NoSqlTypedRowProxyImpl(this));
 		TypedRow r = (TypedRow) inst;
@@ -295,6 +334,13 @@ public class DboTableMeta {
 			names.add(m.getColumnName());
 		}
 		return names;
+	}
+
+	public boolean hasIndexedField() {
+		initCaches();
+		if(indexedColumnsCache.size() > 0 || idColumn.isIndexed())
+			return true;
+		return false;
 	}
 
 }

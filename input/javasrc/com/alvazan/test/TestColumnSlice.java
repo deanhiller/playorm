@@ -46,7 +46,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setColumnFamily(colFamily);
+		tableMeta.setup(null, colFamily);
 		tableMeta.setColNameType(double.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
@@ -82,12 +82,12 @@ public class TestColumnSlice {
 		columns.add(new Column(toDecBytes(new BigDecimal("3")), new byte[0]));
 		columns.add(new Column(toDecBytes(new BigDecimal("-3")), new byte[0]));
 		
-		session.put(colFamily, rowKey, columns);
+		session.put(tableMeta, rowKey, columns);
 		session.flush();
 
 		byte[] from = toDecBytes(-250);
 		byte[] to = toDecBytes(12);
-		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);//(scanInfo, from, to, 2);
+		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
 		while(results.next()) {
@@ -108,7 +108,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setColumnFamily(colFamily);
+		tableMeta.setup(null, colFamily);
 		tableMeta.setColNameType(long.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
@@ -144,12 +144,12 @@ public class TestColumnSlice {
 		columns.add(new Column(toIntBytes(new BigInteger("3")), new byte[0]));
 		columns.add(new Column(toIntBytes(new BigInteger("-3")), new byte[0]));
 		
-		session.put(colFamily, rowKey, columns);
+		session.put(tableMeta, rowKey, columns);
 		session.flush();
 
 		byte[] from = toIntBytes(-250);
 		byte[] to = toIntBytes(50);
-		Cursor<Column> results = session.columnSlice(colFamily, rowKey, from, to, 2);
+		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2);
 		
 		int counter = 0;
 		while(results.next()) {

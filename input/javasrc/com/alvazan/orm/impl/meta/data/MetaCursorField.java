@@ -37,7 +37,7 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		String rowKey = formRowKey(row.getKey());
 		
 		byte[] key = StandardConverters.convertToBytes(rowKey);
-		ScanInfo info = new ScanInfo(ownerMeta.getColumnFamily(), getColumnName(), indexColFamily, key);
+		ScanInfo info = new ScanInfo(ownerMeta.getMetaDbo(), getMetaDbo(), indexColFamily, key);
 		int batchSize = 200;
 		AbstractCursor<IndexColumn> indexCursor = session.scanIndex(info , null, null, batchSize);
 		

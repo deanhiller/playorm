@@ -12,9 +12,11 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlQueries({
 	@NoSqlQuery(name="findBetween", query="select *  FROM TABLE as e WHERE e.numTimes >= :begin and e.numTimes < :to"),
 	@NoSqlQuery(name="findBetween2", query="select * FROM TABLE as e WHERE e.numTimes > :begin and e.numTimes <= :to"),
@@ -247,4 +249,6 @@ public class Activity {
 		query.setParameter("date", time);
 		return query.getResultList(0, null);
 	}
+	
+	
 }

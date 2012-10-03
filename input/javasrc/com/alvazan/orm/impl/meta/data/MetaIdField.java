@@ -41,8 +41,9 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
-		byte[] rowKey = row.getKey();
-		Object entityId = converter.convertFromNoSql(rowKey);
+		byte[] virtKey = row.getKey();
+		byte[] nonVirtKey = metaDbo.unformVirtRowKey(virtKey);
+		Object entityId = converter.convertFromNoSql(nonVirtKey);
 		ReflectionUtil.putFieldValue(entity, field, entityId);
 	}
 	
@@ -53,7 +54,8 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		
 		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
-		row.setKey(byteVal);
+		byte[] virtualKey = metaDbo.formVirtRowKey(byteVal);
+		row.setKeys(byteVal, virtualKey);
 		
 		StorageTypeEnum storageType = metaDbo.getStorageType();
 		addIndexInfo(info, id, byteVal, storageType);
@@ -73,8 +75,7 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info, List<IndexData> indexRemoves, byte[] pk) {
-		StorageTypeEnum storageType = metaDbo.getStorageType();
-		removingThisEntity(info, indexRemoves, pk, storageType);
+		removingThisEntity(info, indexRemoves, pk);
 	}
 	
 	public Object fillInAndFetchId(OWNER entity) {
@@ -159,6 +160,19 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 
 	public boolean isAutoGen() {
 		return useGenerator;
+	}
+
+	public byte[] convertIdToNonVirtKey(Object pk) {
+		return converter.convertToNoSql(pk);
+	}
+
+	public byte[] formVirtRowKey(byte[] rowKey) {
+		byte[] virtKey = metaDbo.formVirtRowKey(rowKey);
+		return virtKey;
+	}
+
+	public byte[] unformVirtRowKey(byte[] virtualKey) {
+		return metaDbo.unformVirtRowKey(virtualKey);
 	}
 
 }

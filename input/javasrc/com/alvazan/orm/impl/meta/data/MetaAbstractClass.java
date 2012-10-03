@@ -36,10 +36,10 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		return ReflectionUtil.fetchFieldValue(entity, idField.getField());
 	}
 	
-	public byte[] convertIdToNoSql(Object entityId) {
-		Converter converter = idField.getConverter();
-		return converter.convertToNoSql(entityId);
-	}
+//	public byte[] convertIdToNoSql(Object entityId) {
+//		Converter converter = idField.getConverter();
+//		return converter.convertToNoSql(entityId);
+//	}
 	
 	@SuppressWarnings("rawtypes")
 	public byte[] convertEntityToId(T value) {
@@ -60,11 +60,14 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	public String getColumnFamily() {
 		return columnFamily;
 	}
-	public void setColumnFamily(String cf) {
+	public void setup(String virtualCf, String cf) {
 		if(cf == null)
 			throw new IllegalArgumentException("colFamily cannot be null");
-		this.columnFamily = cf;
-		metaDbo.setColumnFamily(cf);
+		if(virtualCf != null)
+			columnFamily = virtualCf;
+		else
+			this.columnFamily = cf;
+		metaDbo.setup(virtualCf, cf);
 	}
 
 	public void setMetaClass(Class<T> clazz) {
@@ -99,7 +102,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	}
 
 	public abstract Class<? extends T> getProxyClass();
-	public abstract Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session, CacheLoadCallback cacheLoadCallback);
+	public abstract Tuple<T> convertIdToProxy(Row row, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cacheLoadCallback);
 	public abstract List<MetaField<T>> getIndexedColumns();
 	public abstract void fillInInstance(Row row, NoSqlSession session, T inst);
 

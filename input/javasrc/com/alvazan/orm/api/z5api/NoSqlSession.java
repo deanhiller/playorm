@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlWriteCacheImpl;
 import com.google.inject.ImplementedBy;
 
@@ -28,10 +29,10 @@ public interface NoSqlSession {
 	 */
 	public NoSqlRawSession getRawSession();
 	
-	public void persistIndex(String colFamily, String indexColFamily, byte[] rowKey, IndexColumn column);
-	public void removeFromIndex(String colFamily, String indexColFamily, byte[] rowKeyBytes, IndexColumn c);
+	public void persistIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKey, IndexColumn column);
+	public void removeFromIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKeyBytes, IndexColumn c);
 	
-	public void put(String colFamily, byte[] rowKey, List<Column> columns);
+	public void put(DboTableMeta colFamily, byte[] rowKey, List<Column> columns);
 
 	/**
 	 * Remove entire row.
@@ -39,7 +40,7 @@ public interface NoSqlSession {
 	 * @param colFamily
 	 * @param rowKey
 	 */
-	public void remove(String colFamily, byte[] rowKey);
+	public void remove(DboTableMeta colFamily, byte[] rowKey);
 	
 	/**
 	 * Remove specific columns from a row, mainly 
@@ -48,11 +49,11 @@ public interface NoSqlSession {
 	 * @param rowKey
 	 * @param columns
 	 */
-	public void remove(String colFamily, byte[] rowKey, Collection<byte[]> columnNames);
+	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 	
-	public AbstractCursor<KeyValue<Row>> find(String colFamily, Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize);
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize);
 	
-	public Row find(String colFamily, byte[] rowKey);
+	public Row find(DboTableMeta colFamily, byte[] rowKey);
 	
 	public void flush();
 
@@ -72,7 +73,7 @@ public interface NoSqlSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values);
 	
-	public AbstractCursor<Column> columnSlice(String colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	
 	public void setOrmSessionForMeta(MetaLookup entityMgr);
 

@@ -4,31 +4,32 @@ import java.io.UnsupportedEncodingException;
 
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class ScanInfo {
 	private String indexColFamily; 
 	private byte[] rowKey;
+	private DboTableMeta entityColFamily;
+	
 	//optional but logging won't work without it
-	private String entityColFamily;
-	//optional but logging won't work without it
-	private String columnName;
+	private DboColumnMeta columnName;
 
 	public static ScanInfo createScanInfo(DboColumnMeta colMeta, String partitionBy, String partitionId) {
-		String realColFamily = colMeta.getOwner().getColumnFamily();
-		String colName = colMeta.getColumnName();
+		DboTableMeta realColFamily = colMeta.getOwner();
 		String columnFamily = colMeta.getIndexTableName();
 		String indexRowKey = colMeta.getIndexRowKey(partitionBy, partitionId);
 		byte[] rowKey = StandardConverters.convertToBytes(indexRowKey);
-		ScanInfo scanInfo = new ScanInfo(realColFamily, colName, columnFamily, rowKey);
+		ScanInfo scanInfo = new ScanInfo(realColFamily, colMeta, columnFamily, rowKey);
 		return scanInfo;
 	}
 	
-	public ScanInfo(String indexColFamily, byte[] rowKey2) {
+	public ScanInfo(String indexColFamily, DboTableMeta realColFamily, byte[] rowKey2) {
 		this.indexColFamily = indexColFamily;
+		this.entityColFamily = realColFamily;
 		this.rowKey = rowKey2;
 	}
 	
-	public ScanInfo(String realColFamily, String colName, String indexColFamily,
+	public ScanInfo(DboTableMeta realColFamily, DboColumnMeta colName, String indexColFamily,
 			byte[] rowKey2) {
 		this.entityColFamily = realColFamily;
 		this.columnName = colName;
@@ -42,10 +43,10 @@ public class ScanInfo {
 	public byte[] getRowKey() {
 		return rowKey;
 	}
-	public String getEntityColFamily() {
+	public DboTableMeta getEntityColFamily() {
 		return entityColFamily;
 	}
-	public String getColumnName() {
+	public DboColumnMeta getColumnName() {
 		return columnName;
 	}
 

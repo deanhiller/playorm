@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
@@ -21,10 +22,10 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private BatchListener list;
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Cache cache;
-	private String colFamily;
+	private DboTableMeta colFamily;
 	private NoSqlDatabase database;
 
-	public CursorKeysToRows(String colFamily, Iterable<byte[]> rowKeys, BatchListener list, NoSqlDatabase database, Cache cache2) {
+	public CursorKeysToRows(DboTableMeta colFamily, Iterable<byte[]> rowKeys, BatchListener list, NoSqlDatabase database, Cache cache2) {
 		this.colFamily = colFamily;
 		this.cache = cache2;
 		this.database = database;
@@ -110,7 +111,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
 	public List<KeyValue<Row>> fetchRows() {
 		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
-		Table table = database.findTable(colFamily);
+		Table table = database.findTable(colFamily.getColumnFamily());
 		for(byte[] key : rowKeys) {
 			Row row = findRow(table, key);
 			Row newRow = null;
