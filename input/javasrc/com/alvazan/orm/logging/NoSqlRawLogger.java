@@ -292,11 +292,16 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
+		//NOTE: get the cache here before the below log statement which used to clear out the trhead local as it ends
+		//up doing a find through the cache layer that used to clear the thread local
+		Cache cache = CacheThreadLocal.getCache();
+		
 		if(log.isInfoEnabled()) {
 			list = new LogBatchFetch("CF="+colFamily, l, batchSize);
 		}
 		
-		Cache cache = CacheThreadLocal.getCache();
+		if(cache == null)
+			throw new IllegalArgumentException("bug, above layer needs to call CacheThradLocal.setCache(cache) with non-null cache");
 		return session.find(colFamily, rowKeys, cache, batchSize, list, mgr);
 	}
 

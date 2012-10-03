@@ -106,16 +106,14 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 			c = new EmptyCache(this);
 		}
 		
+		//NOTE: I would put a finally to clear out the threadlocal normally BUT sometimes log statements may
+		//cause further finds to be called which come in here as well and on their way BACK up the stack, they set
+		//the cache to NULL before the find actually happens(ie. very bad).
 		CacheThreadLocal.setCache(c);
-		try {
-			//A layer below will read the thread local and pass it to lowest layer to use
-	
-			AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
-			
-			return rowsFromDb;
-		} finally {
-			CacheThreadLocal.setCache(null);			
-		}
+
+		//A layer below will read the thread local and pass it to lowest layer to use
+		AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
+		return rowsFromDb;
 	}
 	
 	public RowHolder<Row> fromCache(DboTableMeta colFamily, byte[] key) {
