@@ -46,6 +46,8 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	}
 
 	public void setupMore(Keyspace keyspace, DboTableMeta cf, Info info, Cache cache) {
+		if(cache == null || keyspace == null || cf == null | info == null)
+			throw new IllegalArgumentException("no params can be null but one was null");
 		this.cf = cf;
 		this.info = info;
 		this.cache = cache;
