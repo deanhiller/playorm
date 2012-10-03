@@ -37,19 +37,21 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private Cache cache;
 	private DboTableMeta cf;
 
-	public CursorKeysToRows(DboTableMeta cf, Info info, Iterable<byte[]> rowKeys, Cache cache, int batchSize,
-			BatchListener list, Keyspace keyspace, Provider<Row> rowProvider) {
-		this.cf = cf;
-		this.cache = cache;
+	public CursorKeysToRows(Iterable<byte[]> rowKeys, int batchSize,
+			BatchListener list, Provider<Row> rowProvider) {
 		this.rowProvider = rowProvider;
-		this.info = info;
 		this.rowKeys = rowKeys;
 		this.batchSize = batchSize;
 		this.list = list;
+	}
+
+	public void setupMore(Keyspace keyspace, DboTableMeta cf, Info info, Cache cache) {
+		this.cf = cf;
+		this.info = info;
+		this.cache = cache;
 		this.keyspace = keyspace;
 		beforeFirst();
 	}
-
 	@Override
 	public void beforeFirst() {
 		theKeys = rowKeys.iterator();

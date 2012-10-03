@@ -12,12 +12,12 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.impl.meta.data.Tuple;
-import com.alvazan.orm.layer3.typed.IterToVirtual;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLoadCallback {

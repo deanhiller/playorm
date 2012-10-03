@@ -21,6 +21,7 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
@@ -31,7 +32,6 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.layer3.typed.IterToVirtual;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, MetaLoader {

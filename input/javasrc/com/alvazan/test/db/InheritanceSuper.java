@@ -4,8 +4,10 @@ import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlInheritanceType;
+import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 
 @NoSqlEntity
+@NoSqlVirtualCf(storedInCf="ourstuff")
 @NoSqlInheritance(subclassesToScan={InheritanceSub1.class, InheritanceSub2.class},
 		strategy=NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName="classType")
 public class InheritanceSuper {

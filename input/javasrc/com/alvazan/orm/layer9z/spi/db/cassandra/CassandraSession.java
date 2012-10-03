@@ -81,7 +81,9 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		Keyspace keyspace = columnFamilies.getKeyspace();
-		return new CursorKeysToRows(colFamily, info, rowKeys, cache, batchSize, list, keyspace, rowProvider);
+		CursorKeysToRows cursor = new CursorKeysToRows(rowKeys, batchSize, list, rowProvider);
+		cursor.setupMore(keyspace, colFamily, info, cache);
+		return cursor;
 	}
 
 	static void processColumns(

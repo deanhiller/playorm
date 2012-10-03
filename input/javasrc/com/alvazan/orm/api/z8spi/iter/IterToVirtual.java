@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer3.typed;
+package com.alvazan.orm.api.z8spi.iter;
 
 import java.util.Iterator;
 
