@@ -6,6 +6,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaIdField;
 
 public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 
@@ -38,6 +39,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		return new Holder<KeyValue<T>>(result);
 	}
 	
+	@SuppressWarnings("rawtypes")
 	private KeyValue<T> translateRow(KeyValue<Row> kv) {
 		Row row = kv.getValue();
 		Object key = kv.getKey();
@@ -45,7 +47,9 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		KeyValue<T> keyVal;
 		if(row == null) {
 			keyVal = new KeyValue<T>();
-			Object obj = meta.getIdField().translateFromBytes((byte[]) key);
+			MetaIdField idMeta = meta.getIdField();
+			byte[] nonVirtKey = idMeta.unformVirtRowKey((byte[]) key);
+			Object obj = meta.getIdField().translateFromBytes(nonVirtKey);
 			if(query != null) {
 				RowNotFoundException exc = new RowNotFoundException("Your query="+query+" contained a value with a pk where that entity no longer exists in the nosql store");
 				keyVal.setException(exc);

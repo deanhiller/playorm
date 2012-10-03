@@ -14,6 +14,7 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
+import com.alvazan.orm.layer3.typed.IterToVirtual;
 
 public class CursorProxy<T> implements CursorToMany<T> {
 
@@ -102,7 +103,8 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		currentCacheLoaded = true;
 		
 		DboTableMeta metaDbo = proxyMeta.getMetaDbo();
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, keyList, true, batchSize);
+		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keyList);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, true, batchSize);
 		
 		int counter = 0;
 		while(true) {
