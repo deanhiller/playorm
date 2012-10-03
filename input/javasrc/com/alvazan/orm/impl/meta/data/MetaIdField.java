@@ -41,8 +41,9 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
-		byte[] rowKey = row.getKey();
-		Object entityId = converter.convertFromNoSql(rowKey);
+		byte[] virtKey = row.getKey();
+		byte[] nonVirtKey = metaDbo.unformVirtRowKey(virtKey);
+		Object entityId = converter.convertFromNoSql(nonVirtKey);
 		ReflectionUtil.putFieldValue(entity, field, entityId);
 	}
 	
@@ -159,6 +160,19 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 
 	public boolean isAutoGen() {
 		return useGenerator;
+	}
+
+	public byte[] convertIdToNonVirtKey(Object pk) {
+		return converter.convertToNoSql(pk);
+	}
+
+	public byte[] formVirtRowKey(byte[] rowKey) {
+		byte[] virtKey = metaDbo.formVirtRowKey(rowKey);
+		return virtKey;
+	}
+
+	public byte[] unformVirtRowKey(byte[] virtualKey) {
+		return metaDbo.unformVirtRowKey(virtualKey);
 	}
 
 }

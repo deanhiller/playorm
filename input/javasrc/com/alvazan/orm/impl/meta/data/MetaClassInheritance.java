@@ -111,12 +111,12 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public Tuple<T> convertIdToProxy(Row row, byte[] id, NoSqlSession session,
+	public Tuple<T> convertIdToProxy(Row row, NoSqlSession session, byte[] nonVirtKey,
 			CacheLoadCallback cacheLoadCallback) {
 		if(row == null)
 			throw new IllegalArgumentException("bug, inheritance does not support who called this so you can't have inheritance along with it, we need to fix so let us know");
 		MetaClassSingle<T> metaClassSingle = retrieveMeta(row);
-		return metaClassSingle.convertIdToProxy(row, id, session, cacheLoadCallback);
+		return metaClassSingle.convertIdToProxy(row, session, nonVirtKey, cacheLoadCallback);
 	}
 
 	@Override

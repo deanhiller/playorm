@@ -19,6 +19,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
@@ -110,11 +111,14 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	private void fillInThisOneInstance(T self) {
 		MetaIdField<T> idField = classMeta.getIdField();
 		Converter converter = idField.getConverter();
-		byte[] rowKey = converter.convertToNoSql(entityId);
-		List<byte[]> rowKeys = new ArrayList<byte[]>();
-		rowKeys.add(rowKey);
-		
+		byte[] nonVirtKey = converter.convertToNoSql(entityId);
 		DboTableMeta metaDbo = classMeta.getMetaDbo();
+		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
+		byte[] virtKey = idMeta.formVirtRowKey(nonVirtKey);
+		
+		List<byte[]> rowKeys = new ArrayList<byte[]>();
+		rowKeys.add(virtKey);
+
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, rowKeys, false, null);
 		Holder<KeyValue<Row>> holder = rows.nextImpl();
 		if(holder == null)

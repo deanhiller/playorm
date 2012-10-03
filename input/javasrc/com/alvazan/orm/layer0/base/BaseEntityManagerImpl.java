@@ -31,6 +31,7 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
+import com.alvazan.orm.layer3.typed.IterToVirtual;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, MetaLoader {
@@ -113,9 +114,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 			session.persistIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 
-		byte[] key = row.getKey();
+		byte[] virtKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
-		session.put(metaDbo, key, cols);
+		session.put(metaDbo, virtKey, cols);
 	}
 
 	@Override
@@ -149,8 +150,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
+		Iterable<byte[]> virtKeys = new IterToVirtual(meta.getMetaDbo(), iter);
 		boolean skipCache = query != null;
-		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), iter, skipCache, batchSize);
+		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), virtKeys, skipCache, batchSize);
 		return new CursorRow<T>(session, meta, cursor, query);
 	}
 
@@ -161,11 +163,6 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		MetaClass<T> meta = metaInfo.getMetaClass(entityType);
 		if(meta == null)
 			throw new IllegalArgumentException("Class type="+entityType.getName()+" was not found, please check that you scanned the right package and look at the logs to see if this class was scanned");
-		List<byte[]> noSqlKeys = new ArrayList<byte[]>();
-		for(Object k : keys) {
-			byte[] key = meta.convertIdToNoSql(k);
-			noSqlKeys.add(key);
-		}
 		
 		List<KeyValue<T>> all = new ArrayList<KeyValue<T>>();
 		Cursor<KeyValue<T>> results = findAll(entityType, keys);
@@ -296,11 +293,13 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 
 		Object proxy = entity;
 		Object pk = metaClass.fetchId(entity);
-		byte[] rowKey = metaClass.convertIdToNoSql(pk);
-		
+		MetaIdField idField = metaClass.getIdField();
+		byte[] rowKey = idField.convertIdToNonVirtKey(pk);
+		byte[] virtKey = idField.formVirtRowKey(rowKey);
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
+		
 		if(!metaClass.hasIndexedField()) {
-			session.remove(metaDbo, rowKey);
+			session.remove(metaDbo, virtKey);
 			return;
 		} else if(!(entity instanceof NoSqlProxy)) {
 			//then we don't have the database information for indexes so we need to read from the database
@@ -314,7 +313,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		session.remove(metaDbo, rowKey);
+		session.remove(metaDbo, virtKey);
 	}
 
 	@Override

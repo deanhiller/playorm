@@ -12,10 +12,12 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 import com.alvazan.orm.impl.meta.data.Tuple;
+import com.alvazan.orm.layer3.typed.IterToVirtual;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLoadCallback {
@@ -25,7 +27,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private NoSqlSession session;
 	protected MetaAbstractClass<T> metaClass;
 	
-	protected List<byte[]> keys;
+	private List<byte[]> keys;
 	protected List<Holder<T>> originalHolders = new ArrayList<Holder<T>>();
 	private boolean cacheLoaded = false;
 
@@ -34,10 +36,11 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 
 	private Object owner;
 	
-    public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2) {
+    public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2, List<byte[]> keys) {
 		this.session = session2;
 		this.metaClass = classMeta2;
 		this.owner = owner;
+		this.keys = keys;
 	}
     
 	protected abstract Collection<Holder<T>> getHolders();
@@ -49,7 +52,9 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			return;
 		
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, keys, false, null);
+		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
+		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
 		int counter = 0;
 		while(true) {
 			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();
@@ -57,8 +62,9 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 				break;
 			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
+			byte[] nonVirtKey = idMeta.unformVirtRowKey(key);
 			Row row = kv.getValue();
-			Tuple<T> tuple = metaClass.convertIdToProxy(row, key, session, null);
+			Tuple<T> tuple = metaClass.convertIdToProxy(row, session, nonVirtKey, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +

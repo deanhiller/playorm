@@ -55,6 +55,7 @@ public class TestOneToMany {
 		keyList.add(act1.getId());
 		keyList.add("notexist");
 		List<KeyValue<Activity>> results = mgr.findAllList(Activity.class, keyList);
+		Assert.assertEquals(act1.getId(), results.get(0).getValue().getId());
 		Assert.assertEquals(act1.getName(), results.get(0).getValue().getName());
 		
 		Assert.assertEquals("notexist", results.get(1).getKey());

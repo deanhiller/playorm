@@ -116,8 +116,8 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return pk;
 	}
 	
-	public PROXY convertIdToProxy(Row row, byte[] id, NoSqlSession session) {
-		Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, id, session, null);
+	public PROXY convertIdToProxy(Row row, byte[] nonVirtFk, NoSqlSession session) {
+		Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, session, nonVirtFk, null);
 		return tuple.getProxy();
 	}
 	

@@ -249,4 +249,6 @@ public class Activity {
 		query.setParameter("date", time);
 		return query.getResultList(0, null);
 	}
+	
+	
 }

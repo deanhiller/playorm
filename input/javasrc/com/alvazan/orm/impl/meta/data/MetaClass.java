@@ -31,7 +31,7 @@ public interface MetaClass<T> {
 
 	Object fetchId(T entity);
 
-	byte[] convertIdToNoSql(Object pk);
+	//byte[] convertIdToNoSql(Object pk);
 
 	List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey);
 

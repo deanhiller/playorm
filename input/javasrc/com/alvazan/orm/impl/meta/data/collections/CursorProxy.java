@@ -91,7 +91,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	}
 	
 	public T convertIdToProxy(byte[] id, NoSqlSession session) {
-		Tuple<T> tuple = proxyMeta.convertIdToProxy(null, id, null, new LoadCacheCallback());
+		Tuple<T> tuple = proxyMeta.convertIdToProxy(null, null, id, new LoadCacheCallback());
 		return tuple.getProxy();
 	}
 
@@ -112,7 +112,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
 			Row row = kv.getValue();
-			Tuple<T> tuple = proxyMeta.convertIdToProxy(row, key, session, null);
+			Tuple<T> tuple = proxyMeta.convertIdToProxy(row, session, key, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +

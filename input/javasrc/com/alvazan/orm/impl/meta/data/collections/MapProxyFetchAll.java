@@ -17,9 +17,11 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
+import com.alvazan.orm.layer3.typed.IterToVirtual;
 
 public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements CacheLoadCallback {
 
@@ -56,7 +58,9 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 			return;
 
 		DboTableMeta metaDbo = classMeta.getMetaDbo();
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, keys, false, null);
+		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
+		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
 		log.info("loading key list="+keys+" results="+rows);
 		while(true) {
 			Holder<KeyValue<Row>> holder = rows.nextImpl();
@@ -64,8 +68,9 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 				break;
 			KeyValue<Row> kv = holder.getValue();
 			byte[] key = (byte[]) kv.getKey();
+			byte[] nonVirtKey = idMeta.unformVirtRowKey(key);
 			Row row = kv.getValue();
-			Tuple<V> tuple = classMeta.convertIdToProxy(row, key, session, null);
+			Tuple<V> tuple = classMeta.convertIdToProxy(row, session, nonVirtKey, null);
 			if(row == null) {
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +

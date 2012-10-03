@@ -15,4 +15,7 @@ public @interface NoSqlVirtualCf {
 	 */
 	String storedInCf();
 	
+	//This will be the prefix of every key for this entity
+	//String keyPrefix();
+	
 }
