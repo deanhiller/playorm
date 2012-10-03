@@ -12,6 +12,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
+import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
@@ -92,23 +93,31 @@ public class TestVirtualCf {
 		s2.remove("Owner", row2);
 		s2.flush();
 		
-		QueryResult rResult = s2.createQueryCursor("select * from Owner", 50);
-		Assert.assertFalse(rResult.getCursor().next());
-		
 		TypedRow result = s2.find("MyRaceCar", row.getRowKey());
 		Assert.assertNotNull(result);
+		TypedRow result2 = s2.find("Owner", row2.getRowKey());
+		Assert.assertNull(result2);
 		
 		Object fk = result.getColumn("carOwner").getValue();
 		Object rowId = row2.getRowKey();
 		Assert.assertEquals(rowId, fk);
 		
 		QueryResult qResult = s2.createQueryCursor("select * from MyRaceCar", 50);
+		Cursor<KeyValue<TypedRow>> primView = qResult.getPrimaryViewCursor();
+		Assert.assertTrue(primView.next());
+		KeyValue<TypedRow> current = primView.getCurrent();
+		TypedRow resultRow = current.getValue();
+		Assert.assertEquals(row.getRowKey(), resultRow.getRowKey());
+		
 		Cursor<List<TypedRow>> cursor = qResult.getAllViewsCursor();
 		Assert.assertTrue(cursor.next());
 		List<TypedRow> theRow = cursor.getCurrent();
 		Assert.assertEquals(1, theRow.size());
 		TypedRow myRow = theRow.get(0);
 		Assert.assertEquals(row.getRowKey(), myRow.getRowKey());
+		
+		QueryResult rResult = s2.createQueryCursor("select * from Owner", 50);
+		Assert.assertFalse(rResult.getCursor().next());
 	}
 	
 	@Test

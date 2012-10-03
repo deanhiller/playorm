@@ -249,7 +249,7 @@ public class DboTableMeta {
 	}
 
 	public <T> KeyValue<TypedRow> translateFromRow(Row row) {
-		TypedRow typedRow = convertIdToProxy(row, row.getKey(), typedRowProxyClass);
+		TypedRow typedRow = convertIdToProxy(row, typedRowProxyClass);
 		fillInInstance(row, typedRow);
 		NoSqlTypedRowProxy temp = (NoSqlTypedRowProxy)typedRow;
 		//mark initialized so it doesn't hit the database again and cache original values so if they change
@@ -263,7 +263,7 @@ public class DboTableMeta {
 	}
 
 	@SuppressWarnings("unchecked")
-	private TypedRow convertIdToProxy(Row row, byte[] key, Class typedRowProxyClass) {
+	private TypedRow convertIdToProxy(Row row, Class typedRowProxyClass) {
 		Proxy inst = (Proxy) ReflectionUtil.create(typedRowProxyClass);
 		inst.setHandler(new NoSqlTypedRowProxyImpl(this));
 		TypedRow r = (TypedRow) inst;

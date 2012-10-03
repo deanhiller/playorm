@@ -64,12 +64,13 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow>> {
 	@SuppressWarnings("unchecked")
 	private KeyValue<TypedRow> nextForQuery(KeyValue<Row> kv) {
 		Row row = kv.getValue();
-		byte[] rowKey = (byte[]) kv.getKey();
+		byte[] virtualKey = (byte[]) kv.getKey();
 		DboColumnIdMeta idField = meta.getIdColumnMeta();
-		T key = (T) idField.convertFromStorage2(rowKey);
 		
 		KeyValue<TypedRow> keyVal;
 		if(row == null) {
+			byte[] notVirtKey = idField.unformVirtRowKey(virtualKey);
+			T key = (T) idField.convertFromStorage2(notVirtKey);
 			keyVal = new KeyValue<TypedRow>();
 			keyVal.setKey(key);
 			RowNotFoundException exc = new RowNotFoundException("Your query="+query+" contained a value with a pk where that entity no longer exists in the nosql store");

@@ -82,9 +82,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			session.persistIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		byte[] key = row.getKey();
+		byte[] virtualKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
-		session.put(metaClass, key, cols);
+		session.put(metaClass, virtualKey, cols);
 	}
 	
 	@Override
@@ -123,9 +123,9 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		Object rowKey = row.getRowKey();
 		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
 		byte[] byteKey = idMeta.convertToStorage2(rowKey);
-		
+		byte[] virtualKey = idMeta.formVirtRowKey(byteKey);
 		if(!metaDbo.hasIndexedField()) {
-			session.remove(metaDbo, byteKey);
+			session.remove(metaDbo, virtualKey);
 			return;
 		} else if(!(row instanceof NoSqlTypedRowProxy)) {
 			//then we don't have the database information for indexes so we need to read from the database
@@ -139,7 +139,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			session.removeFromIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		session.remove(metaDbo, byteKey);
+		session.remove(metaDbo, virtualKey);
 	}
 	
 	@Override
@@ -163,9 +163,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 	}
 
 	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String query, int batchSize) {
+		
+		Iterable<byte[]> virtKeys = new IterToVirtual(meta, noSqlKeys);
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, noSqlKeys, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, virtKeys, true, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else

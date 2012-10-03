@@ -53,7 +53,8 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		
 		Object id = fillInAndFetchId(entity);
 		byte[] byteVal = converter.convertToNoSql(id);
-		row.setKey(byteVal);
+		byte[] virtualKey = metaDbo.formVirtRowKey(byteVal);
+		row.setKeys(byteVal, virtualKey);
 		
 		StorageTypeEnum storageType = metaDbo.getStorageType();
 		addIndexInfo(info, id, byteVal, storageType);
