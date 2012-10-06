@@ -7,7 +7,7 @@
     
 	Run "ant -projecthelp" to view all the possible targets and descriptions
 -->
-<project name="std_buildfile" default="testCheckin" basedir="..">
+<project name="std_buildfile" default="testCheckin" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant">
 
 	<property name="version.filename" value="version.properties"/>
     <property name="version.file.path" value="input/version/${version.filename}" />
@@ -28,6 +28,55 @@
 
 	<property name="jar.name" value="${name}.jar" />
 	<property name="war.file" value="${wardist}/${name}.war"/>
+		
+	<property name="ivy.install.version" value="2.3.0-rc1"/>
+	<property name="ivy.jar.dir" value="${tool.dir}/ivy"/>
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
+	<property name="ivy.lib.dir" value="${input}/libinclude"/>
+	
+	 <target name="download-ivy" unless="skip.download">
+	    	<mkdir dir="${ivy.jar.dir}"/>
+			<!-- download Ivy from web site so that it can be used even without any special installation -->
+			<echo message="installing ivy..."/>
+	    	<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar" dest="${ivy.jar.file}" usetimestamp="true"/>
+	    </target>
+	    
+	    <!-- ================================= 
+	          target: install-ivy         
+	            this target is not necessary if ivy.jar is in ant lib directory
+	            if ivy is already in ant lib, then the below target can be removed. 
+	         ================================= -->
+	    <target name="install-ivy" depends="download-ivy" description="--&gt; install ivy">
+	    	<!-- try to load ivy here from local ivy dir, in case the user has not already dropped
+	    	      it into ant's lib dir (note that the latter copy will always take precedence).
+	    	      We will not fail as long as local lib dir exists (it may be empty) and
+	    	      ivy is in at least one of ant's lib dir or the local lib dir. -->
+	    	<path id="ivy.lib.path">
+	    	    <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+	    	</path>
+	    	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+	    </target>    
+		
+	    
+		<target name="resolve" depends="install-ivy">
+	        <ivy:configure file="bldfiles/ivysettings.xml" />        
+	        <ivy:resolve file="bldfiles/ivy.xml"/>        
+	    </target>
+		
+	    <target name="retrieve" depends="resolve">
+	        <ivy:retrieve />
+	    </target>
+
+	    <target name="deliver" depends="retrieve">
+	        <ivy:deliver />
+	    </target>
+		
+	    <target name="publish" depends="deliver">
+	    	<ivy:publish resolver="local" forcedeliver="true">
+	    	   <artifacts pattern="${input}/libinclude/[artifact].[ext]" />
+	    	</ivy:publish>
+	    </target>
+		
 
 	<description>
     This is a generic build file template.  All the customizable properties are
@@ -60,6 +109,7 @@
 		</fileset>
 		<fileset dir="${lib}">
 			<include name="antlr*.jar"/>
+			<include name="ST*.jar"/>
 		</fileset>
 	</path>
 	
@@ -150,7 +200,7 @@
               INIT TASKS
 ***********************************************************************
 -->
-	<target name="taskdefs">
+	<target name="taskdefs" depends = "deliver">
 		<tstamp>
 			<format property="manifest.date" pattern="EE MMMM d yyyy, HH:mm:ss" locale="en" />
 		</tstamp>
