@@ -15,6 +15,7 @@
     <dependency org="junit" name="junit" rev="4.9" conf="compile->*,!sources,!javadoc"/>
 	<dependency org="com.netflix.astyanax" name="astyanax" rev="1.0.6" conf="compile->*,!sources,!javadoc"/>
 	<dependency org="org.javassist" name="javassist" rev="3.16.1-GA" conf="compile->*,!sources,!javadoc"/>
+	<dependency org="com.google.guava" name="guava" rev="11.0" conf="compile->*,!sources,!javadoc"/>
 	<dependency org="com.google.inject" name="guice" rev="3.0" conf="compile->*"/>
 	<dependency org="args4j" name="args4j" rev="2.0.16" conf="compile->*,!sources,!javadoc"/>
 	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="compile->*,!sources,!javadoc"/>
