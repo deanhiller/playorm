@@ -22,6 +22,8 @@ import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 @SuppressWarnings("rawtypes")
@@ -207,8 +209,21 @@ public class DboTableMeta {
 
 		idColumn.translateToColumn(info);
 
-		for(DboColumnMeta m : nameToField.values()) {
-			m.translateToColumn(info);
+		for(DboColumnMeta col : nameToField.values()) {
+			col.translateToColumn(info);
+		}
+
+		//Now, let's write the leftover data here...
+		for(TypedColumn col : typedRow.getColumnsAsColl()) {
+			DboColumnMeta colMeta = col.getColumnMeta();
+			if(colMeta != null)
+				continue;
+			
+			List<Column> columns = row.getColumns();
+			Column c = new Column();
+			c.setName(col.getNameRaw());
+			c.setValue(col.getValueRaw());
+			columns.add(c);
 		}
 		
 		return row;
@@ -282,6 +297,15 @@ public class DboTableMeta {
 
 		for(DboColumnMeta column : this.nameToField.values()) {
 			column.translateFromColumn(row, inst);
+		}
+		
+		for(Column c : row.getColumns()) {
+			byte[] name = c.getName();
+			String strName = StandardConverters.convertFromBytes(String.class, name);
+			if(this.nameToField.get(strName) != null)
+				continue;
+			
+			inst.addColumn(c.getName(), c.getValue(), c.getTimestamp());
 		}
 	}
 

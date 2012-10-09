@@ -37,6 +37,12 @@ public class TypedRow {
 		columns.put(b, c);
 	}
 	
+	public void addColumn(byte[] name, byte[] value, Long timestamp) {
+		ByteArray b = new ByteArray(name);
+		TypedColumn c = new TypedColumn(null, name, value, timestamp);
+		columns.put(b, c);
+	}
+	
 	public void addColumn(String name, Object obj) {
 		DboColumnMeta columnMeta = metaClass.getColumnMeta(name);
 		byte[] nameBytes = StandardConverters.convertToBytes(name);

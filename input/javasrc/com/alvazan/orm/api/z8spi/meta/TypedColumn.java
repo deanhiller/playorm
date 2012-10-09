@@ -27,7 +27,18 @@ public class TypedColumn {
 	}
 	
 	public byte[] getNameRaw() {
-		return name;
+		if(subName == null)
+			return name;
+		
+		byte[] all = new byte[name.length+subName.length];
+		for(int i = 0; i < name.length;i++) {
+			all[i] = name[i];
+		}
+		
+		for(int i = 0; i < subName.length; i++) {
+			all[i+name.length] = subName[i];
+		}
+		return all;
 	}
 	
 	public String getName() {
@@ -48,7 +59,7 @@ public class TypedColumn {
 			throw new IllegalArgumentException("This is defined in schema, call getName() instead");
 		
 		Object data = StandardConverters.convertFromBytes(type, name);
-		return StandardConverters.convertToString(0, data);
+		return StandardConverters.convertToString(data);
 	}
 
 	public <T> T getNameAsType(Class<T> type) {
@@ -68,7 +79,7 @@ public class TypedColumn {
 			return;
 		}
 		
-		name = StandardConverters.convertToBytes(name);
+		this.name = StandardConverters.convertToBytes(name);
 	}
 	
 	public String getValueAsString() {
@@ -77,7 +88,7 @@ public class TypedColumn {
 			return columnMeta.convertTypeToString(val);
 		}
 		
-		return StandardConverters.convertFromBytes(String.class, value);
+		return StandardConverters.convertToString(value);
 	}
 	
 	public BigDecimal getValueAsBigDecimal() {
@@ -89,11 +100,11 @@ public class TypedColumn {
 	
 	public void setValue(Object value) {
 		if(columnMeta != null) {
-			value = columnMeta.convertToStorage2(value);
+			this.value = columnMeta.convertToStorage2(value);
 			return;
 		}
 		
-		value = StandardConverters.convertToBytes(value);
+		this.value = StandardConverters.convertToBytes(value);
 	}
 	
 	public void setValueStr(String val) {
@@ -138,6 +149,10 @@ public class TypedColumn {
 
 	public Boolean getValueAsBoolean() {
 		return StandardConverters.convertFromBytes(Boolean.class, value);
+	}
+
+	public DboColumnMeta getColumnMeta() {
+		return columnMeta;
 	}
 
 }

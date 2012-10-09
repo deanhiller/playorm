@@ -47,6 +47,8 @@ public class TestVirtualCf {
 	
 	@Test
 	public void testExtraStuff() {
+		setupModel();
+		
 		byte[] temp = new byte[2];
 		temp[0] = 23;
 		temp[1] = 24;
@@ -66,7 +68,7 @@ public class TestVirtualCf {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		NoSqlTypedSession s2 = mgr2.getTypedSession();
 		
-		TypedRow result = s2.find("MyRaceCar", row2.getRowKey());
+		TypedRow result = s2.find("Owner", row2.getRowKey());
 		byte[] unknowResult = row2.getColumn("unknown").getValueRaw();
 		Assert.assertEquals(temp[1], unknowResult[1]);
 		BigDecimal dec1 = row2.getColumn("decimal").getValueAsBigDecimal();

@@ -145,7 +145,7 @@ public class StandardConverters {
 		}
 	}
 	
-	public static String convertToString(int i, Object data) {
+	public static String convertToString(Object data) {
 		Class clazz = data.getClass();
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
