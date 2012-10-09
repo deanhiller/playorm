@@ -41,9 +41,7 @@ class CursorJoinedViews extends AbstractCursor<List<TypedRow>> {
 					row.setView(view);
 				rows.add(row);
 			} else {
-				TypedRow row = new TypedRow();
-				row.setView(view);
-				row.setMeta(view.getTableMeta());
+				TypedRow row = new TypedRow(view, view.getTableMeta());
 				rows.add(row);
 			}
 		}

@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import org.junit.After;
@@ -44,29 +46,46 @@ public class TestVirtualCf {
 	}
 	
 	@Test
+	public void testExtraStuff() {
+		byte[] temp = new byte[2];
+		temp[0] = 23;
+		temp[1] = 24;
+		
+		NoSqlTypedSession s = mgr.getTypedSession();
+		TypedRow row2 = s.createTypedRow("Owner");
+		row2.setRowKey("myoneid");
+		row2.addColumn("name", "dean");
+		row2.addColumn("unknown", temp);
+		row2.addColumn("decimal", new BigDecimal(52.32));
+		row2.addColumn("integer", BigInteger.valueOf(54));
+		row2.addColumn("boolean", true);
+		
+		s.put("Owner", row2);
+		s.flush();
+		
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		NoSqlTypedSession s2 = mgr2.getTypedSession();
+		
+		TypedRow result = s2.find("MyRaceCar", row2.getRowKey());
+		byte[] unknowResult = row2.getColumn("unknown").getValueRaw();
+		Assert.assertEquals(temp[1], unknowResult[1]);
+		BigDecimal dec1 = row2.getColumn("decimal").getValueAsBigDecimal();
+		BigDecimal dec2 = result.getColumn("decimal").getValueAsBigDecimal();
+		Assert.assertEquals(dec1, dec2);
+		
+		BigInteger big1 = row2.getColumn("integer").getValueAsBigInteger();
+		BigInteger big2 = result.getColumn("integer").getValueAsBigInteger();
+		Assert.assertEquals(big1, big2);
+		
+		Boolean b1 = row2.getColumn("boolean").getValueAsBoolean();
+		Boolean b2 = result.getColumn("boolean").getValueAsBoolean();
+		Assert.assertEquals(b1, b2);
+		
+	}
+	
+	@Test
 	public void testRawStuff() {
-		DboTableMeta fkToTable = new DboTableMeta();
-		fkToTable.setup("Owner", "ourstuff");
-		DboColumnIdMeta id = new DboColumnIdMeta();
-		id.setup(fkToTable, "id", String.class, true);
-		DboColumnCommonMeta col1 = new DboColumnCommonMeta();
-		col1.setup(fkToTable, "name", String.class, false, false);
-		
-		mgr.put(fkToTable);
-		mgr.put(id);
-		mgr.put(col1);
-		
-		DboTableMeta meta = new DboTableMeta();
-		meta.setup("MyRaceCar", "ourstuff");
-		DboColumnIdMeta idMeta = new DboColumnIdMeta();
-		idMeta.setup(meta, "id", String.class, true);
-		DboColumnToOneMeta toOne = new DboColumnToOneMeta();
-		toOne.setup(meta, "carOwner", fkToTable, false, false);
-		
-		mgr.put(meta);
-		mgr.put(idMeta);
-		mgr.put(toOne);
-		mgr.flush();
+		setupModel();
 		
 		NoSqlTypedSession s = mgr.getTypedSession();
 
@@ -76,9 +95,6 @@ public class TestVirtualCf {
 		
 		s.put("Owner", row2);
 
-		byte[] temp = new byte[2];
-		temp[0] = 23;
-		temp[1] = 24;
 		TypedRow row = s.createTypedRow("MyRaceCar");
 		row.setRowKey("myoneid");
 		row.addColumn("carOwner", row2.getRowKey());
@@ -118,6 +134,31 @@ public class TestVirtualCf {
 		
 		QueryResult rResult = s2.createQueryCursor("select * from Owner", 50);
 		Assert.assertFalse(rResult.getCursor().next());
+	}
+
+	private void setupModel() {
+		DboTableMeta fkToTable = new DboTableMeta();
+		fkToTable.setup("Owner", "ourstuff");
+		DboColumnIdMeta id = new DboColumnIdMeta();
+		id.setup(fkToTable, "id", String.class, true);
+		DboColumnCommonMeta col1 = new DboColumnCommonMeta();
+		col1.setup(fkToTable, "name", String.class, false, false);
+		
+		mgr.put(fkToTable);
+		mgr.put(id);
+		mgr.put(col1);
+		
+		DboTableMeta meta = new DboTableMeta();
+		meta.setup("MyRaceCar", "ourstuff");
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(meta, "id", String.class, true);
+		DboColumnToOneMeta toOne = new DboColumnToOneMeta();
+		toOne.setup(meta, "carOwner", fkToTable, false, false);
+		
+		mgr.put(meta);
+		mgr.put(idMeta);
+		mgr.put(toOne);
+		mgr.flush();
 	}
 	
 	@Test

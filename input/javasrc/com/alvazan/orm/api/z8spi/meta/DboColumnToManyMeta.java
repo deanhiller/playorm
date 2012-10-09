@@ -72,8 +72,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 
 	private void parseOutKeyList(Row row, TypedRow entity) {
 		String columnName = getColumnName();
-		byte[] bytes = StandardConverters.convertToBytes(columnName);
-		Collection<Column> columns = row.columnByPrefix(bytes);
+		byte[] namePrefix = StandardConverters.convertToBytes(columnName);
+		Collection<Column> columns = row.columnByPrefix(namePrefix);
 
 		//NOTE: Current implementation is just like a Set not a List in that it
 		//cannot have repeats right now.  We could take the approach the column name
@@ -83,17 +83,14 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 		//it comes to removing one item and shifting all other column names by one(ie. lots of removes/adds)
 		//so for now, just make everything Set like.
 		for(Column col : columns) {
-			byte[] colNameData = col.getName();
+			byte[] fullName = col.getName();
 			//strip off the prefix to get the foreign key
-			int pkLen = colNameData.length-bytes.length;
-			byte[] pk = new byte[pkLen];
-			for(int i = bytes.length; i < colNameData.length; i++) {
-				pk[i-bytes.length] =  colNameData[i];
+			int pkLen = fullName.length-namePrefix.length;
+			byte[] fk = new byte[pkLen];
+			for(int i = namePrefix.length; i < fullName.length; i++) {
+				fk[i-namePrefix.length] =  fullName[i];
 			}
-			
-			Object fk = convertFromStorage2(pk);
-			String subName = convertTypeToString(fk);
-			entity.addColumn(this, getColumnName(), subName, col.getValue(), col.getTimestamp());
+			entity.addColumn(this, fullName, namePrefix, fk, col.getValue(), col.getTimestamp());
 		}
 	}
 	

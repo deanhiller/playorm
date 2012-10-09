@@ -57,8 +57,8 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 			return;
 		}
 
-		Object value = convertFromStorage2(column.getValue());
-		entity.addColumn(getColumnName(), value, column.getTimestamp());
+		byte[] value = column.getValue();
+		entity.addColumn(this, getColumnNameAsBytes(), value, column.getTimestamp());
 	}
 	
 	@Override

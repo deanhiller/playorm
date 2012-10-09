@@ -12,7 +12,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.EntityWithDateTimeKey;
 import com.alvazan.test.db.EntityWithIntKey;
 
-public class TestKeyTypes {
+public class TestKeysAndBasic {
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;

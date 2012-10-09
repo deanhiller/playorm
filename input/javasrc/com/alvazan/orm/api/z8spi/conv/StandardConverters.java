@@ -67,6 +67,16 @@ public class StandardConverters {
 		return stdConverters.containsKey(newType);
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T convertFromBytes(Class<T> clazz, byte[] data) {
+		if(data == null)
+			return null;
+		BaseConverter converter = stdConverters.get(clazz);
+		if(converter == null)
+			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
+		return (T) converter.convertFromNoSql(data);
+	}
+	
 	/**
 	 * Converts to BigInteger byte form OR BigDecimal byte form OR UTF8 byte form
 	 * @param obj
@@ -135,24 +145,23 @@ public class StandardConverters {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static String convertToString(Class clazz, byte[] data) {
-		Object obj = convertFromBytes(clazz, data);
+	public static String convertToString(int i, Object data) {
+		Class clazz = data.getClass();
 		BaseConverter converter = stdConverters.get(clazz);
-		String strVal = converter.convertTypeToString(obj);
-		return strVal;
+		if(converter == null)
+			throw new IllegalArgumentException("Type clazz="+clazz+" is not supported at this time");
+		return converter.convertToString(data);
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static <T> T convertFromBytes(Class<T> clazz, byte[] data) {
+	public static Object convertFromString(Class<?> clazz, String data) {
 		if(data == null)
 			return null;
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
-		return (T) converter.convertFromNoSql(data);
+		return converter.convertStringToType(data);
 	}
-
+	
 	public static StorageTypeEnum getStorageType(Class fieldType) {
 		return storageTypes.get(fieldType);
 	}

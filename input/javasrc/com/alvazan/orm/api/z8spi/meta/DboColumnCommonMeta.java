@@ -47,7 +47,8 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		}
 
 		Object value = convertFromStorage2(column.getValue());
-		entity.addColumn(getColumnName(), value, column.getTimestamp());
+		Long timestamp = column.getTimestamp();
+		entity.addColumn(this, getColumnNameAsBytes(), column.getValue(), timestamp);
 	}
 	
 	public void translateToColumn(InfoForIndex<TypedRow> info) {

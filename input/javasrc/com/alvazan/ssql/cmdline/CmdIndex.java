@@ -97,7 +97,7 @@ public class CmdIndex {
 					IndexColumn col = new IndexColumn();
 					col.setColumnName(colName);
 					col.setPrimaryKey(pt.getRawKey());
-					byte[] indValue = column.getRawValue();
+					byte[] indValue = column.getValueRaw();
 					col.setIndexedValue(indValue);
 					IndexPoint newPoint = new IndexPoint(pt.getRowKeyMeta(), col , data.getColumnMeta());
 					s.addIndexPoint(newPoint, data.getPartitionBy(), data.getPartitionId());

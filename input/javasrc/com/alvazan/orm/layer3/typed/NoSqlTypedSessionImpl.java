@@ -233,7 +233,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(metaClass == null)
 			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
 		
-		TypedRow r = new TypedRow(metaClass);
+		TypedRow r = new TypedRow(null, metaClass);
 		return r;
 	}
 

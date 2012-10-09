@@ -2,57 +2,116 @@ package com.alvazan.orm.api.z8spi.meta;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
+
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 
 public class TypedColumn {
-	private String name;
+	private byte[] name;
 	//for composite columns
-	private String subName;
+	private byte[] subName;
 	
-	private Object value;
+	private byte[] value;
 	private Long timestamp;
 	private DboColumnMeta columnMeta;
 
-	public TypedColumn(DboColumnMeta colMeta, String name, String subName, Object value, Long timestamp2) {
-		this(colMeta, name, value, timestamp2);
-		this.subName = subName;
+	public TypedColumn(DboColumnToManyMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2) {
+		this(colMeta, prefixName, value, timestamp2);
+		this.subName = postFixName;
 	}
 	
-	public TypedColumn(DboColumnMeta colMeta, String name, Object value, Long timestamp2) {
+	public TypedColumn(DboColumnMeta colMeta, byte[] name, byte[] value, Long timestamp2) {
 		this.columnMeta = colMeta;
 		this.name = name;
 		this.value = value;
 		this.timestamp = timestamp2;
 	}
-	public TypedColumn(DboColumnMeta colMeta) {
-		this.columnMeta = colMeta;
+	
+	public byte[] getNameRaw() {
+		return name;
 	}
 	
 	public String getName() {
-		return name;
+		if(columnMeta == null)
+			throw new IllegalArgumentException("You need to call getName(Class type) instead as this column is not defined in our schema");
+
+		String strName = StandardConverters.convertFromBytes(String.class, name);
+		if(!(columnMeta instanceof DboColumnToManyMeta))
+			return strName;
+		
+		DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
+		Object objVal = many.convertFromStorage2(subName);
+		return strName+many.convertTypeToString(objVal);	
 	}
-	public void setName(String name) {
+	
+	public String getName(Class<?> type) {
+		if(columnMeta != null)
+			throw new IllegalArgumentException("This is defined in schema, call getName() instead");
+		
+		Object data = StandardConverters.convertFromBytes(type, name);
+		return StandardConverters.convertToString(0, data);
+	}
+
+	public <T> T getNameAsType(Class<T> type) {
+		if(columnMeta != null)
+			throw new IllegalArgumentException("This is defined in schema, call getName() instead");
+		
+		return StandardConverters.convertFromBytes(type, name);
+	}
+	
+	public void setNameRaw(byte[] name) {
 		this.name = name;
 	}
-	public String getValueAsString() {
-		return columnMeta.convertTypeToString(value);
+	
+	public void setName(Object name) {
+		if(columnMeta != null) {
+			this.name = StandardConverters.convertToBytes(name);
+			return;
+		}
+		
+		name = StandardConverters.convertToBytes(name);
 	}
+	
+	public String getValueAsString() {
+		if(columnMeta != null) {
+			Object val = columnMeta.convertFromStorage2(value);
+			return columnMeta.convertTypeToString(val);
+		}
+		
+		return StandardConverters.convertFromBytes(String.class, value);
+	}
+	
 	public BigDecimal getValueAsBigDecimal() {
-		return (BigDecimal) value;
+		return StandardConverters.convertFromBytes(BigDecimal.class, value);
 	}
 	public BigInteger getValueAsBigInteger() {
-		return (BigInteger) value;
+		return StandardConverters.convertFromBytes(BigInteger.class, value);
 	}
-	@SuppressWarnings("rawtypes")
-	public List getValueAsList() {
-		return (List) value;
-	}
+	
 	public void setValue(Object value) {
-		this.value = value;
+		if(columnMeta != null) {
+			value = columnMeta.convertToStorage2(value);
+			return;
+		}
+		
+		value = StandardConverters.convertToBytes(value);
 	}
+	
 	public void setValueStr(String val) {
-		this.value = columnMeta.convertStringToType(val);
+		if(columnMeta == null)
+			throw new IllegalArgumentException("Call setValueStr(String val, Class type) instead as we don't know the type to store as");
+
+		Object objVal = columnMeta.convertStringToType(val);
+		this.value = columnMeta.convertToStorage2(objVal);
 	}
+
+	public void setValueStr(String val, Class<?> typeToStoreAs) {
+		if(columnMeta != null)
+			throw new IllegalArgumentException("Call setValueStr(String val) instead as we have the type information for this column");
+		
+		Object objVal = StandardConverters.convertFromString(typeToStoreAs, val);
+		this.value = StandardConverters.convertToBytes(objVal);
+	}
+	
 	public Long getTimestamp() {
 		return timestamp;
 	}
@@ -60,14 +119,25 @@ public class TypedColumn {
 		this.timestamp = timestamp;
 	}
 	public Object getValue() {
-		return value;
+		if(columnMeta == null)
+			throw new IllegalArgumentException("Call getValue(Class type) instead as this column is not in our schema");
+		
+		return columnMeta.convertFromStorage2(value);
 	}
 
-	public String getCompositeSubName() {
+	public <T> T getValue(Class<T> asType) {
+		return StandardConverters.convertFromBytes(asType, value);
+	}
+	public byte[] getValueRaw() {
+		return value;
+	}
+	
+	public byte[] getCompositeSubName() {
 		return subName;
 	}
 
-	public byte[] getRawValue() {
-		return columnMeta.convertToStorage2(value);
+	public Boolean getValueAsBoolean() {
+		return StandardConverters.convertFromBytes(Boolean.class, value);
 	}
+
 }
