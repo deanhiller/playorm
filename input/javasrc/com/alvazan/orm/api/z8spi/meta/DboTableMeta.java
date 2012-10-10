@@ -65,6 +65,11 @@ public class DboTableMeta {
 	private transient List<DboColumnMeta> indexedColumnsCache;
 	private transient List<DboColumnMeta> cacheOfPartitionedBy;
 	private transient Random r = new Random();
+
+	/**
+	 * Some virtual column families are embeddable
+	 */
+	private boolean isEmbeddable;
 	
 	private static Class typedRowProxyClass;
 
@@ -124,7 +129,11 @@ public class DboTableMeta {
 		return actualColFamily != null;
 	}
 	
-	public void setup(String virtualCf, String cf) {
+	public boolean isEmbeddable() {
+		return isEmbeddable;
+	}
+
+	public void setup(String virtualCf, String cf, boolean isEmbeddable) {
 		if(!NAME_PATTERN.matcher(cf).matches())
 			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");
 
@@ -134,6 +143,8 @@ public class DboTableMeta {
 		} else {
 			this.columnFamily = cf;
 		}
+		
+		this.isEmbeddable = isEmbeddable;
 	}
 	
 	public void setRowKeyMeta(DboColumnIdMeta idMeta) {

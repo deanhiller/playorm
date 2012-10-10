@@ -264,7 +264,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
         	DboTableMeta cf = new DboTableMeta();
 
         	//TODO: PUT this in virtual partition????
-        	cf.setup(null, type.getIndexTableName());
+        	cf.setup(null, type.getIndexTableName(), false);
         	cf.setColNamePrefixType(type);
         	
         	DboColumnIdMeta idMeta = new DboColumnIdMeta();

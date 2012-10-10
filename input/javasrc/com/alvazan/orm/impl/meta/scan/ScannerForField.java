@@ -18,6 +18,8 @@ import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
+import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -39,6 +41,7 @@ import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaCursorField;
+import com.alvazan.orm.impl.meta.data.MetaEmbeddedField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -57,6 +60,8 @@ public class ScannerForField {
 	private Provider<MetaCommonField> metaProvider;
 	@Inject
 	private Provider<MetaListField> metaListProvider;
+	@Inject
+	private Provider<MetaEmbeddedField> metaEmbeddedProvider;
 	@Inject
 	private Provider<MetaCursorField> metaCursorProvider;
 	@Inject
@@ -190,10 +195,6 @@ public class ScannerForField {
 		throw new IllegalArgumentException("bug, caller should catch this and log info about field or id converter, etc. etc");
 	}
 
-	public MetaField processEmbeddable(Field field) {
-		throw new UnsupportedOperationException("not implemented yet");
-	}
-
 	public void setCustomConverters(Map<Class, Converter> converters) {
 		if(converters == null)
 			return; //nothing to do
@@ -290,6 +291,33 @@ public class ScannerForField {
 		return metaField;
 	}
 
+	public MetaField processEmbedded(DboTableMeta t, Field field) {
+		NoSqlEmbedded embedded = field.getAnnotation(NoSqlEmbedded.class);
+		Class<?> entityType = field.getType();
+		if(entityType.equals(List.class)) {
+			Class clazz = embedded.targetEntity();
+			if(clazz.equals(void.class))
+				throw new IllegalArgumentException("NoSqlEmbedded annotation requires targetEntity attribute when using a collection like List for field="+field);
+			entityType = clazz;
+		}
+		
+		if(!entityType.isAnnotationPresent(NoSqlEmbeddable.class))
+			throw new IllegalArgumentException("Entity type="+entityType.getName()+" is missing annotation NoSqlEmbeddable" +
+					" because field refers to it as being embedded. field="+field);
+
+		String colNameOrig = embedded.columnNamePrefix();
+		String colName = field.getName();
+		if(!"".equals(colNameOrig))
+			colName = colNameOrig;
+		
+		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(entityType);
+		
+		MetaEmbeddedField metaField = metaEmbeddedProvider.get();
+		metaField.setup(t, field, colName, fkMeta);
+
+		return metaField;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public MetaField processToOne(DboTableMeta t, Field field, String colNameOrig) {
 		String colName = field.getName();

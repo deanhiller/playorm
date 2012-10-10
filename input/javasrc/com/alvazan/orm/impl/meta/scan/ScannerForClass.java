@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
+import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
@@ -97,7 +98,7 @@ public class ScannerForClass {
 		
 		for(Class clazz : annotation.subclassesToScan()) {
 			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
-			metaSingle.setup(virtualCf, cf);
+			metaSingle.setup(virtualCf, cf, false);
 			metaSingle.setMetaClass(clazz);
 			metaSingle.setMetaDbo(metaDbo);
 			metaInfo.addSubclass(clazz, metaClass);
@@ -160,9 +161,11 @@ public class ScannerForClass {
 			if(embeddable != null)
 				throw new IllegalArgumentException("You can't have NoSqlEntity AND be NoSqlEmbeddable.  remove one of the annotations");
 		} else if(embeddable != null) {
-			log.trace("nothing to do yet here until we implement");
-			//nothing to do at this point
-			throw new RuntimeException("embeddable not implemented yet");
+			String virtualCfName = embeddable.virtualCfName();
+			if("".equals(virtualCfName))
+				virtualCfName = meta.getMetaClass().getSimpleName();
+			meta.setup(null, virtualCfName, true);
+			return;
 		} else {
 			throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
 		}
@@ -175,7 +178,7 @@ public class ScannerForClass {
 			cf = anno.storedInCf();
 		}
 		
-		meta.setup(virtualCf, cf);
+		meta.setup(virtualCf, cf, false);
 	}
 	
 	private void scanFields(MetaClassSingle<?> meta, DboTableMeta metaDbo) {
@@ -213,8 +216,8 @@ public class ScannerForClass {
 			metaField = inspectorField.processManyToMany(metaClass, metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlOneToMany.class))
 			metaField = inspectorField.processOneToMany(metaClass, metaDbo, field);
-		else if(field.isAnnotationPresent(NoSqlEmbeddable.class))
-			metaField = inspectorField.processEmbeddable(field);
+		else if(field.isAnnotationPresent(NoSqlEmbedded.class))
+			metaField = inspectorField.processEmbedded(metaDbo, field);
 		else
 			metaField = inspectorField.processColumn(metaDbo, field);
 		

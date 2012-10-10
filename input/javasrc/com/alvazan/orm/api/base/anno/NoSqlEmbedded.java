@@ -10,5 +10,7 @@ import java.lang.annotation.Target;
 public @interface NoSqlEmbedded {
     @SuppressWarnings("rawtypes")
 	Class targetEntity() default void.class;
+    
+    String columnNamePrefix() default "";
 }
 

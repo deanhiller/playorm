@@ -158,7 +158,7 @@ public class TestNewRawLayer {
 
 	private DboTableMeta addMetaClassDbo(DboDatabaseMeta map, String entityName, String idField, String ... fields) {
 		DboTableMeta meta = new DboTableMeta();
-		meta.setup(null, entityName);
+		meta.setup(null, entityName, false);
 		map.addMetaClassDbo(meta);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();

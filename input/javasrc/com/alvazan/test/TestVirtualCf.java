@@ -140,7 +140,7 @@ public class TestVirtualCf {
 
 	private void setupModel() {
 		DboTableMeta fkToTable = new DboTableMeta();
-		fkToTable.setup("Owner", "ourstuff");
+		fkToTable.setup("Owner", "ourstuff", false);
 		DboColumnIdMeta id = new DboColumnIdMeta();
 		id.setup(fkToTable, "id", String.class, true);
 		DboColumnCommonMeta col1 = new DboColumnCommonMeta();
@@ -151,7 +151,7 @@ public class TestVirtualCf {
 		mgr.put(col1);
 		
 		DboTableMeta meta = new DboTableMeta();
-		meta.setup("MyRaceCar", "ourstuff");
+		meta.setup("MyRaceCar", "ourstuff", false);
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
 		idMeta.setup(meta, "id", String.class, true);
 		DboColumnToOneMeta toOne = new DboColumnToOneMeta();

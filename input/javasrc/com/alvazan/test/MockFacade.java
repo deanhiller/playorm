@@ -31,7 +31,7 @@ public class MockFacade implements MetaFacade {
 	private DboTableMeta createTableMeta(String tableName) {
 		DboTableMeta existing;
 		existing = new DboTableMeta();
-		existing.setup(null, tableName);
+		existing.setup(null, tableName, false);
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
 		idMeta.setup(existing, "id", BigDecimal.class, false);
 		return existing;

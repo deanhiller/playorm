@@ -99,7 +99,7 @@ public class PerformanceWriteTest {
 		}
 
 		DboTableMeta table = new DboTableMeta();
-		table.setup(null, "testWrites");
+		table.setup(null, "testWrites", false);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
 		idMeta.setup(table, "id", String.class, false);
