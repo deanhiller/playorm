@@ -33,6 +33,7 @@
 	<property name="ivy.jar.dir" value="${tool.dir}/ivy"/>
 	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy.jar"/>
 	<property name="ivy.lib.dir" value="${input}/libinclude"/>
+
 	
 	 <target name="download-ivy" unless="skip.download">
 	    	<mkdir dir="${ivy.jar.dir}"/>
@@ -50,7 +51,7 @@
 	    	<!-- try to load ivy here from local ivy dir, in case the user has not already dropped
 	    	      it into ant's lib dir (note that the latter copy will always take precedence).
 	    	      We will not fail as long as local lib dir exists (it may be empty) and
-	    	      ivy is in at least one of ant's lib dir or the local lib dir. -->
+	    	      ivy is in at least one of ant's lib dir or the local lib dir.	  -->
 	    	<path id="ivy.lib.path">
 	    	    <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
 	    	</path>
@@ -60,11 +61,12 @@
 	    
 		<target name="resolve" depends="install-ivy">
 	        <ivy:configure file="bldfiles/ivysettings.xml" />        
-	        <ivy:resolve file="bldfiles/ivy.xml"/>        
+	        <ivy:resolve file="bldfiles/ivy.xml"/>
 	    </target>
 		
 	    <target name="retrieve" depends="resolve">
-	        <ivy:retrieve />
+	        <ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" />   	
+
 	    </target>
 
 	    <target name="deliver" depends="retrieve">
@@ -107,9 +109,8 @@
 		<fileset dir="${tool.dir}/antlr">
 			<include name="**/*.jar"/>
 		</fileset>
-		<fileset dir="${lib}">
-			<include name="antlr*.jar"/>
-			<include name="ST*.jar"/>
+		<fileset dir="${ivy.lib.dir}/build">
+			<include name="**/*.jar"/>
 		</fileset>
 	</path>
 	
