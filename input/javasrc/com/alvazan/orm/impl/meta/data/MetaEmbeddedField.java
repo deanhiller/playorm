@@ -33,32 +33,28 @@ public class MetaEmbeddedField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void removingEntity(InfoForIndex<OWNER> info,
 			List<IndexData> indexRemoves, byte[] rowKey) {
-		// TODO Auto-generated method stub
-		
+		throw new UnsupportedOperationException();		
 	}
 
 	@Override
 	public byte[] translateValue(Object value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Object fetchField(Object entity) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public String translateToString(Object fieldsValue) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -68,7 +64,7 @@ public class MetaEmbeddedField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	@Override
 	protected Object unwrapIfNeeded(Object value) {
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 	
