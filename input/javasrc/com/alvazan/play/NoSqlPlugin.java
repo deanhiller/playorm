@@ -95,7 +95,8 @@ public class NoSqlPlugin extends PlayPlugin {
 		
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
-
+        props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+        
         log.info("Initializing PlayORM...");
 
         NoSqlEntityManagerFactory factory = Bootstrap.create(type, props, null, Play.classloader);
