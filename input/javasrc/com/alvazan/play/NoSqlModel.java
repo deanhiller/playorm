@@ -43,6 +43,20 @@ public class NoSqlModel {
         }
     }
 
+    static String retrieveValue(ParamNode id) {
+        if(id == null)
+        	return null;
+        
+        String[] ids = id.getValues();
+        if(ids == null || ids.length == 0)
+        	return null;
+        
+        if("".equals(ids[0]))
+        	return null;
+            
+		return ids[0];
+	}
+    
     @SuppressWarnings("rawtypes")
 	public static <T> T edit(ParamNode rootParamNode, String name, T o, Annotation[] annotations) {
         ParamNode paramNode = rootParamNode.getChild(name, true);
@@ -97,7 +111,8 @@ public class NoSqlModel {
         ParamNode fieldParamNode = paramNode.getChild(field.getName(), true);
 
         String keyName = meta.getKeyFieldName(relation);
-    	String[] ids = fieldParamNode.getChild(keyName, true).getValues();
+        ParamNode idChild = fieldParamNode.getChild(keyName, true);
+        String theIdStr = retrieveValue(idChild);
         if (multiple && Collection.class.isAssignableFrom(field.getType())) {
 //        	Collection l = new ArrayList();
 //        	if (SortedSet.class.isAssignableFrom(field.getType())) {
@@ -108,10 +123,8 @@ public class NoSqlModel {
         	log.trace("not implemented");
         	//NOTE: for now we skip this
         	
-        } else if(ids == null || ids.length == 0) {
-        	return;
-        } else if (!ids[0].equals("")) {
-        	Object theId = meta.convertIdFromString(relation, ids[0]);
+        } else if (theIdStr != null) {
+        	Object theId = meta.convertIdFromString(relation, theIdStr);
         	Object to = em.find(relation, theId);
         	if(to != null) {
         		edit(paramNode, field.getName(), to, field.getAnnotations());
@@ -121,7 +134,7 @@ public class NoSqlModel {
         		return;
         	}
         	
-    		Validation.addError(fieldParamNode.getOriginalKey(), "validation.notFound", ids[0]);
+    		Validation.addError(fieldParamNode.getOriginalKey(), "validation.notFound", theIdStr);
     		// Remove only the key to prevent us from finding it again later
     		// This how the old impl does it..
     		fieldParamNode.removeChild(keyName, removedNodesList);
@@ -130,7 +143,7 @@ public class NoSqlModel {
     			paramNode.removeChild( field.getName(), removedNodesList);
     		}
 
-        } else if (ids[0].equals("")) {
+        } else {
         	bw.set(field.getName(), o, null);
         	// Remove the key to prevent us from finding it again later
         	fieldParamNode.removeChild(keyName, removedNodesList);

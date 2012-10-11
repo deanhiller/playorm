@@ -37,16 +37,11 @@ public class NoSqlPlugin extends PlayPlugin {
 
         String keyFieldName = metaLayer.getKeyFieldName(clazz);
         ParamNode id = paramNode.getChild(keyFieldName);
-        
-        if(id == null) {
-        	return NoSqlModel.create(rootParamNode, name, clazz, annotations);
-        }
 
-        String[] ids = id.getValues();
-        if(ids == null || ids.length == 0)
+        String idStr = NoSqlModel.retrieveValue(id);
+        if(idStr == null)
         	return NoSqlModel.create(rootParamNode, name, clazz, annotations);
-        
-        String idStr = ids[0];
+
         Object theId = metaLayer.convertIdFromString(clazz, idStr);
         
         //Read the entity in so that this entity is used instead...
@@ -55,7 +50,7 @@ public class NoSqlPlugin extends PlayPlugin {
     	return NoSqlModel.edit(rootParamNode, name, o, annotations);
     }
 
-    @Override
+	@Override
     public Object bindBean(RootParamNode rootParamNode, String name, Object bean) {
     	NoSqlEntityManager mgr = NoSql.em();
     	MetaLayer meta = mgr.getMeta();
@@ -120,5 +115,4 @@ public class NoSqlPlugin extends PlayPlugin {
         NoSqlEntityManager manager = NoSql.getEntityManagerFactory().createEntityManager();
         NoSql.createContext(manager);
     }
-    
 }
