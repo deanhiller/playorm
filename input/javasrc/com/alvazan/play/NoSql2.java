@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.util;
+package com.alvazan.play;
 
 import play.exceptions.JPAException;
 
@@ -7,9 +7,9 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 
 public class NoSql2 {
 
-    public static NoSqlEntityManagerFactory entityManagerFactory = null;
-    public static ThreadLocal<NoSql2> local = new ThreadLocal<NoSql2>();
-    public NoSqlEntityManager entityManager;
+    private static NoSqlEntityManagerFactory entityManagerFactory = null;
+    private static ThreadLocal<NoSql2> local = new ThreadLocal<NoSql2>();
+    private NoSqlEntityManager entityManager;
 
     static NoSql2 get() {
         if (local.get() == null) {
@@ -58,5 +58,13 @@ public class NoSql2 {
     public static NoSqlEntityManager newEntityManager() {
         return entityManagerFactory.createEntityManager();
     }
+
+	public static NoSqlEntityManagerFactory getEntityManagerFactory() {
+		return entityManagerFactory;
+	}
+
+	static void setEntityManagerFactory(NoSqlEntityManagerFactory factory) {
+		entityManagerFactory = factory;
+	}
 
 }

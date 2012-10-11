@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.util;
+package com.alvazan.play;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -18,6 +18,7 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 
 public class NoSqlPlugin extends PlayPlugin {
@@ -67,7 +68,7 @@ public class NoSqlPlugin extends PlayPlugin {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void onApplicationStart() {
-        if (NoSql2.entityManagerFactory != null)
+        if (NoSql2.getEntityManagerFactory() != null)
         	return;
         
         List<Class> classes = Play.classloader.getAnnotatedClasses(NoSqlEntity.class);
@@ -97,16 +98,17 @@ public class NoSqlPlugin extends PlayPlugin {
 
         log.info("Initializing PlayORM...");
 
-        NoSql2.entityManagerFactory = Bootstrap.create(type, props, null, Play.classloader);
+        NoSqlEntityManagerFactory factory = Bootstrap.create(type, props, null, Play.classloader);
+        NoSql2.setEntityManagerFactory(factory);
 	}
 
 	@Override
 	public void onApplicationStop() {
-		if(NoSql2.entityManagerFactory == null)
+		if(NoSql2.getEntityManagerFactory() == null)
 			return;
 		
-		NoSql2.entityManagerFactory.close();
-		NoSql2.entityManagerFactory = null;
+		NoSql2.getEntityManagerFactory().close();
+		NoSql2.setEntityManagerFactory(null);
 	}
 	
     @Override
@@ -114,7 +116,7 @@ public class NoSqlPlugin extends PlayPlugin {
         if (!NoSql2.isEnabled())
             return;
 
-        NoSqlEntityManager manager = NoSql2.entityManagerFactory.createEntityManager();
+        NoSqlEntityManager manager = NoSql2.getEntityManagerFactory().createEntityManager();
         NoSql2.createContext(manager);
     }
     

@@ -1,4 +1,4 @@
-package com.alvazan.orm.api.util;
+package com.alvazan.play;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import play.data.binding.BeanWrapper;
 import play.data.binding.Binder;
@@ -26,6 +29,9 @@ import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
 
 public class NoSqlModel {
+	
+	private static final Logger log = LoggerFactory.getLogger(NoSqlModel.class);
+	
     public static <T> T create(ParamNode rootParamNode, String name, Class<T> type, Annotation[] annotations) {
         try {
             Constructor<T> c = type.getDeclaredConstructor();
@@ -99,7 +105,7 @@ public class NoSqlModel {
 //        	} else if (Set.class.isAssignableFrom(field.getType())) {
 //        		l = new HashSet();
 //        	}
-        
+        	log.trace("not implemented");
         	//NOTE: for now we skip this
         	
         } else if(ids == null || ids.length == 0) {
@@ -112,16 +118,17 @@ public class NoSqlModel {
         		// Remove it to prevent us from finding it again later
         		paramNode.removeChild( field.getName(), removedNodesList);
         		bw.set(field.getName(), o, to);
-        	} else {
-        		Validation.addError(fieldParamNode.getOriginalKey(), "validation.notFound", ids[0]);
-        		// Remove only the key to prevent us from finding it again later
-        		// This how the old impl does it..
-        		fieldParamNode.removeChild(keyName, removedNodesList);
-        		if (fieldParamNode.getAllChildren().size()==0) {
-        			// remove the whole node..
-        			paramNode.removeChild( field.getName(), removedNodesList);
-        		}
+        		return;
         	}
+        	
+    		Validation.addError(fieldParamNode.getOriginalKey(), "validation.notFound", ids[0]);
+    		// Remove only the key to prevent us from finding it again later
+    		// This how the old impl does it..
+    		fieldParamNode.removeChild(keyName, removedNodesList);
+    		if (fieldParamNode.getAllChildren().size()==0) {
+    			// remove the whole node..
+    			paramNode.removeChild( field.getName(), removedNodesList);
+    		}
 
         } else if (ids[0].equals("")) {
         	bw.set(field.getName(), o, null);
