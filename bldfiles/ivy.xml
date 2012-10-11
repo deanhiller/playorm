@@ -1,0 +1,25 @@
+<ivy-module version="1.0">
+  <info organisation="alvazan" module="orm"/>
+  <configurations>
+    <conf name="build"/>
+    <conf name="playorm-astyanax"/>
+    <conf name="playorm-inmemory"/>
+  </configurations>
+  <publications>
+  	<artifact name="nosqlorm" type="jar" ext="jar"/>
+  </publications>
+  <dependencies>
+  	<dependency org="org.antlr" name="ST4" rev="4.0.4" conf="build->*,!sources,!javadoc"/>
+	<dependency org="org.antlr" name="antlr" rev="3.4" conf="build->*,!sources,!javadoc"/>   
+    <dependency org="junit" name="junit" rev="4.9" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.netflix.astyanax" name="astyanax" rev="1.0.6" conf="playorm-astyanax->*,!sources,!javadoc">
+		<exclude org="org.slf4j" name="slf4j-log4j12"/>
+		<exclude org="log4j" name="log4j"/>
+	</dependency>
+	<dependency org="org.javassist" name="javassist" rev="3.16.1-GA" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.google.guava" name="guava" rev="11.0" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.google.inject" name="guice" rev="3.0" conf="playorm-inmemory->*"/>
+	<dependency org="args4j" name="args4j" rev="2.0.16" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="playorm-inmemory->*,!sources,!javadoc"/>
+  </dependencies>
+</ivy-module>
