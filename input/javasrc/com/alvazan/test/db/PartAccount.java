@@ -27,7 +27,7 @@ public class PartAccount {
 	
 	private int someNumber;
 
-	@NoSqlOneToMany(entityType=AAPartitionedTrade.class)
+	@NoSqlOneToMany
 	private List<AAPartitionedTrade> activities = new ArrayList<AAPartitionedTrade>();
 
 	public String getId() {

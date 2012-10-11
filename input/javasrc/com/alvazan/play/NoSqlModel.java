@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -86,7 +87,6 @@ public class NoSqlModel {
         }
     }
 
-	@SuppressWarnings("rawtypes")
 	private static void processField(Field field, ParamNode paramNode, List<RemovedNode> removedNodesList, Object o) {
     	NoSqlEntityManager em = NoSql.em();
     	MetaLayer meta = em.getMeta();
@@ -99,9 +99,12 @@ public class NoSqlModel {
             isEntity = true;
             relation = field.getType();
         } else if (field.isAnnotationPresent(NoSqlOneToMany.class) || field.isAnnotationPresent(NoSqlManyToMany.class)) {
-            Class fieldType = (Class) ((ParameterizedType) field.getGenericType()).getActualTypeArguments()[0];
+        	ParameterizedType p = (ParameterizedType) field.getGenericType();
+        	relation = (Class<?>) p.getActualTypeArguments()[0];
+        	if(field.getType().equals(Map.class)) {
+        		relation = (Class<?>) p.getActualTypeArguments()[1];
+        	}
             isEntity = true;
-            relation = fieldType;
             multiple = true;
         }
 
@@ -111,8 +114,7 @@ public class NoSqlModel {
         ParamNode fieldParamNode = paramNode.getChild(field.getName(), true);
 
         String keyName = meta.getKeyFieldName(relation);
-        ParamNode idChild = fieldParamNode.getChild(keyName, true);
-        String theIdStr = retrieveValue(idChild);
+
         if (multiple && Collection.class.isAssignableFrom(field.getType())) {
 //        	Collection l = new ArrayList();
 //        	if (SortedSet.class.isAssignableFrom(field.getType())) {
@@ -122,8 +124,13 @@ public class NoSqlModel {
 //        	}
         	log.trace("not implemented");
         	//NOTE: for now we skip this
-        	
-        } else if (theIdStr != null) {
+        	return;
+        }
+        
+        ParamNode idChild = fieldParamNode.getChild(keyName, true);
+        String theIdStr = retrieveValue(idChild);
+        
+        if (theIdStr != null) {
         	Object theId = meta.convertIdFromString(relation, theIdStr);
         	Object to = em.find(relation, theId);
         	if(to != null) {

@@ -8,8 +8,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NoSqlManyToMany {
-    @SuppressWarnings("rawtypes")
-	Class entityType();
 
 	String columnName() default "";
 

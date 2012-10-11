@@ -15,7 +15,7 @@ public class ForCollection {
 	
 	private String name;
 
-	@NoSqlOneToMany(entityType=Activity.class)
+	@NoSqlOneToMany
 	private Collection<Activity> activities = new ArrayList<Activity>();
 	
 	public String getId() {

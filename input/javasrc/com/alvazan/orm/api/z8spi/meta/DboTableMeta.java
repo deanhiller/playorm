@@ -55,7 +55,7 @@ public class DboTableMeta {
 	 */
 	private String colNameType = String.class.getName();
 	
-	@NoSqlOneToMany(entityType=DboColumnMeta.class, keyFieldForMap="columnName")
+	@NoSqlOneToMany(keyFieldForMap="columnName")
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	@NoSqlOneToOne
 	private DboColumnIdMeta idColumn;

@@ -16,7 +16,7 @@ public class SomeEntity {
 	
 	private String name;
 
-	@NoSqlOneToMany(entityType=Activity.class, keyFieldForMap="name")
+	@NoSqlOneToMany(keyFieldForMap="name")
 	private Map<String, Activity> activities = new HashMap<String, Activity>();
 	
 	public String getId() {

@@ -13,7 +13,7 @@ public class Email {
 	@NoSqlId
 	private String id; 
 	
-	@NoSqlEmbedded(targetEntity=Email.class)
+	@NoSqlEmbedded
 	private List<Email> emails = new ArrayList<Email>();
 	
 	@NoSqlEmbedded

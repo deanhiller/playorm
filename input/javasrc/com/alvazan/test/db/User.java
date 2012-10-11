@@ -30,7 +30,7 @@ public class User {
 	
 	private String lastName;
 	
-	@NoSqlEmbedded(targetEntity=Email.class)
+	@NoSqlEmbedded
 	private List<Email> emails = new ArrayList<Email>();
 	
 	public String getId() {

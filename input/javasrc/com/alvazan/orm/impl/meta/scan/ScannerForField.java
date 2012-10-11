@@ -2,6 +2,7 @@ package com.alvazan.orm.impl.meta.scan;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -218,25 +219,21 @@ public class ScannerForField {
 	public MetaField processManyToMany(MetaClassSingle<?> metaClass, DboTableMeta t, Field field) {
 		NoSqlManyToMany annotation = field.getAnnotation(NoSqlManyToMany.class);
 		String colName = annotation.columnName();
-		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(metaClass, t, field, colName, entityType,
-				keyFieldForMap);		
+		return processToManyRelationship(metaClass, t, field, colName, keyFieldForMap);		
 	}
 	
 	public MetaField processOneToMany(MetaClassSingle<?> ownerMeta, DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
-		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(ownerMeta, t, field, colName, entityType,
-				keyFieldForMap);
+		return processToManyRelationship(ownerMeta, t, field, colName, keyFieldForMap);
 	}
 
 	private MetaField processToManyRelationship(MetaClassSingle<?> metaClass, DboTableMeta t, Field field, String colNameOrig,
-			Class entityType, String keyFieldForMap) {
+			String keyFieldForMap) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
@@ -246,11 +243,14 @@ public class ScannerForField {
 		
 		Field fieldForKey = null;
 
-		if(entityType == null)
-			throw new RuntimeException("Field="+field+" is missing entityType attribute of OneToMany annotation which is required");
-		else if(field.getType().equals(Map.class)) {
+		ParameterizedType genType = (ParameterizedType) field.getGenericType();
+		Class entityType;
+		if(field.getType().equals(Map.class)) {
 			if("".equals(keyFieldForMap))
 				throw new RuntimeException("Field="+field+" is a Map so @OneToMany annotation REQUIRES a keyFieldForMap attribute which is the field name in the child entity to use as the key");
+			
+			entityType = (Class) genType.getActualTypeArguments()[1];
+			
 			String fieldName = keyFieldForMap;
 			
 			try {
@@ -261,6 +261,8 @@ public class ScannerForField {
 			} catch (SecurityException e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			entityType = (Class) genType.getActualTypeArguments()[0];
 		}
 		
 		return processToMany(metaClass, t, field, colName, entityType, fieldForKey);
@@ -295,10 +297,8 @@ public class ScannerForField {
 		NoSqlEmbedded embedded = field.getAnnotation(NoSqlEmbedded.class);
 		Class<?> entityType = field.getType();
 		if(entityType.equals(List.class)) {
-			Class clazz = embedded.targetEntity();
-			if(clazz.equals(void.class))
-				throw new IllegalArgumentException("NoSqlEmbedded annotation requires targetEntity attribute when using a collection like List for field="+field);
-			entityType = clazz;
+			ParameterizedType genType = (ParameterizedType) field.getGenericType();
+			entityType = (Class<?>) genType.getActualTypeArguments()[0];
 		}
 		
 		if(!entityType.isAnnotationPresent(NoSqlEmbeddable.class))
