@@ -131,14 +131,8 @@ public interface NoSqlEntityManager {
 	 */
 	public void fillInWithKey(Object acc);
 	
-	/**
-	 * Mainly for framework code but a nice way to get the key of an unknown entity
-	 * where you don't care about the entity but just need that dang key
-	 * @param entity
-	 * @return
-	 */
-	public Object getKey(Object entity);
-
+	public MetaLayer getMeta();
+	
 	/**
 	 * This is a convenience method for in memory database and cassandra database
 	 * so that you can run unit tests against in-memory (and run the same unit tests

@@ -62,5 +62,6 @@
 	<classpathentry kind="lib" path="input/libinclude/joda-time-2.1.jar" sourcepath="input/libinclude/joda-time-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/args4j-2.0.21-sources.jar"/>
 	<classpathentry kind="lib" path="input/libinclude/args4j-2.0.21.jar"/>
+	<classpathentry kind="lib" path="input/libinclude/play-1.2.x-dcdb1f3.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>
