@@ -71,6 +71,9 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
 		Object cursor = ReflectionUtil.fetchFieldValue(entity, field);
+		if(cursor == null)
+			return; //just ignore it then since user is not modifying what is in the cursor
+		
 		if(!(cursor instanceof CursorToMany))
 			throw new IllegalArgumentException("cursor must be of type CursorToMany");
 		

@@ -21,6 +21,7 @@ import play.data.binding.ParamNode.RemovedNode;
 import play.data.validation.Validation;
 import play.exceptions.UnexpectedException;
 
+import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
@@ -64,7 +65,6 @@ public class NoSqlModel {
         // returning from this method.
         List<ParamNode.RemovedNode> removedNodesList = new ArrayList<ParamNode.RemovedNode>();
         try {
-            BeanWrapper bw = new BeanWrapper(o.getClass());
             // Start with relations
             Set<Field> fields = new HashSet<Field>();
             Class clazz = o.getClass();
@@ -73,7 +73,7 @@ public class NoSqlModel {
                 clazz = clazz.getSuperclass();
             }
             for (Field field : fields) {
-            	processField(field, paramNode, bw, removedNodesList, o);
+            	processField(field, paramNode, removedNodesList, o);
             }
             ParamNode beanNode = rootParamNode.getChild(name, true);
             Binder.bindBean(beanNode, o, annotations);
@@ -87,7 +87,7 @@ public class NoSqlModel {
     }
 
 	@SuppressWarnings("rawtypes")
-	private static void processField(Field field, ParamNode paramNode, BeanWrapper bw, List<RemovedNode> removedNodesList, Object o) {
+	private static void processField(Field field, ParamNode paramNode, List<RemovedNode> removedNodesList, Object o) {
     	NoSqlEntityManager em = NoSql.em();
     	MetaLayer meta = em.getMeta();
     	
@@ -130,7 +130,7 @@ public class NoSqlModel {
         		edit(paramNode, field.getName(), to, field.getAnnotations());
         		// Remove it to prevent us from finding it again later
         		paramNode.removeChild( field.getName(), removedNodesList);
-        		bw.set(field.getName(), o, to);
+        		set(field, o, to);
         		return;
         	}
         	
@@ -144,9 +144,20 @@ public class NoSqlModel {
     		}
 
         } else {
-        	bw.set(field.getName(), o, null);
+        	set(field, o, null);
         	// Remove the key to prevent us from finding it again later
         	fieldParamNode.removeChild(keyName, removedNodesList);
         }
+	}
+
+	private static void set(Field field, Object o, Object to) {
+		field.setAccessible(true);
+		try {
+			field.set(o, to);
+		} catch (IllegalArgumentException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
