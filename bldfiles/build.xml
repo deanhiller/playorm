@@ -7,7 +7,7 @@
     
 	Run "ant -projecthelp" to view all the possible targets and descriptions
 -->
-<project name="std_buildfile" default="testCheckin" basedir="..">
+<project name="std_buildfile" default="testCheckin" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant">
 
 	<property name="version.filename" value="version.properties"/>
     <property name="version.file.path" value="input/version/${version.filename}" />
@@ -23,11 +23,46 @@
 
 	<!--convert the lib file separators to this file system for later use in pathconvert
 	    to put together the manifest file -->
-	<property name="full.lib.path" location="${lib}" />
+	<property name="full.lib.path" location="${jardist}" />
 	<property name="full.config.path" location="${projectPath}" />
 
 	<property name="jar.name" value="${name}.jar" />
 	<property name="war.file" value="${wardist}/${name}.war"/>
+		
+	<property name="ivy.install.version" value="2.3.0-rc1"/>
+	<property name="ivy.jar.dir" value="${tool.dir}/ivy"/>
+	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar"/>
+	<property name="ivy.lib.dir" value="${input}/libinclude"/>
+
+	
+
+	    <target name="install-ivy"  description="--&gt; install ivy">
+	    	<path id="ivy.lib.path">
+	    	    <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+	    	</path>
+	    	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+	    </target>    
+		
+	    
+		<target name="resolve" depends="install-ivy">
+	        <ivy:configure file="bldfiles/ivysettings.xml" />        
+	        <ivy:resolve file="bldfiles/ivy.xml"/>
+	    </target>
+		
+	    <target name="retrieve" depends="resolve">
+	    	<ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" />
+	    </target>
+
+	    <target name="deliver" depends="retrieve">
+	        <ivy:deliver deliverpattern="${generated}/ivy/ivy-[module]-[revision].xml"   	 />
+	    </target>
+		
+	    <target name="publish" depends="deliver">
+	    	<ivy:publish resolver="local" forcedeliver="true">
+	    	   <artifacts pattern="${input}/libinclude/[artifact].[ext]" />
+	    	</ivy:publish>
+	    </target>
+		
 
 	<description>
     This is a generic build file template.  All the customizable properties are
@@ -58,8 +93,8 @@
 		<fileset dir="${tool.dir}/antlr">
 			<include name="**/*.jar"/>
 		</fileset>
-		<fileset dir="${lib}">
-			<include name="antlr*.jar"/>
+		<fileset dir="${ivy.lib.dir}/build">
+			<include name="**/*.jar"/>
 		</fileset>
 	</path>
 	
@@ -108,8 +143,10 @@
 ***********************************************************************
 -->
 	<path id="lib.include">
-		<fileset dir="${lib}">
+		<fileset dir="${jardist}">
 			<include name="**/*.jar" />
+			<!-- Excluding the jar otherwise the tests are not getting passed-->
+			<exclude name="*.jar" />
 		</fileset>
 	</path>
 
@@ -150,7 +187,7 @@
               INIT TASKS
 ***********************************************************************
 -->
-	<target name="taskdefs">
+	<target name="taskdefs" depends = "retrieve">
 		<tstamp>
 			<format property="manifest.date" pattern="EE MMMM d yyyy, HH:mm:ss" locale="en" />
 		</tstamp>
@@ -228,12 +265,17 @@
 		</java>
 	</target>
 	
+	<target name="movejars" depends="deliver">
+		<move todir="${jardist}">
+				<fileset dir="${lib}" includes="**" />
+		</move>
+	</target>
 	<!-- 
 ***********************************************************************
               COMPILE TARGET
 ***********************************************************************
 -->
-	<target name="compile" depends="generateparser">
+	<target name="compile" depends="generateparser,movejars">
 		<mkdir dir="${build}" />
 
 		<pathconvert property="compile.classpath" pathsep=":">
@@ -446,12 +488,6 @@
 					<property name="run.war.target" value="true" />
 				</then>
 			</elseif>
-			<else>
-				<!-- Also, copy over all needed jars from ${lib} to ${jardist} -->
-				<copy todir="${jardist}">
-					<fileset dir="${lib}" includes="**" />
-				</copy>
-			</else>
 		</if>
 	</target>
 	<!-- 
@@ -909,7 +945,7 @@ class file exists.  The classpath is=${search.classpath}
 ***********************************************************************
 -->
 	
-	<target name="all" depends="verifydesign, forprod, war,testall,checkstyle" description="">
+	<target name="all" depends="verifydesign, forprod, war, testall, checkstyle" description="">
 	</target>
 
 	<target name="testCheckin" depends="clean, all" description="This target should be run before checking in.  It runs verifydesign, testall, checkstyle to make sure your code is good" />
