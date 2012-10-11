@@ -74,7 +74,7 @@ public class NoSqlModel {
 
 	@SuppressWarnings("rawtypes")
 	private static void processField(Field field, ParamNode paramNode, BeanWrapper bw, List<RemovedNode> removedNodesList, Object o) {
-    	NoSqlEntityManager em = NoSql2.em();
+    	NoSqlEntityManager em = NoSql.em();
     	MetaLayer meta = em.getMeta();
     	
         boolean isEntity = false;

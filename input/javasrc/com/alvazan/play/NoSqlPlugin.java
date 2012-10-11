@@ -28,7 +28,7 @@ public class NoSqlPlugin extends PlayPlugin {
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
     public Object bind(RootParamNode rootParamNode, String name, Class clazz, java.lang.reflect.Type type, Annotation[] annotations) {
-        NoSqlEntityManager em = NoSql2.em();
+        NoSqlEntityManager em = NoSql.em();
         MetaLayer metaLayer = em.getMeta();
         if(!metaLayer.isManagedEntity(clazz))
         	return null;
@@ -57,7 +57,7 @@ public class NoSqlPlugin extends PlayPlugin {
 
     @Override
     public Object bindBean(RootParamNode rootParamNode, String name, Object bean) {
-    	NoSqlEntityManager mgr = NoSql2.em();
+    	NoSqlEntityManager mgr = NoSql.em();
     	MetaLayer meta = mgr.getMeta();
     	if(meta.isManagedEntity(bean.getClass())) {
             return NoSqlModel.edit(rootParamNode, name, bean, null);
@@ -68,7 +68,7 @@ public class NoSqlPlugin extends PlayPlugin {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void onApplicationStart() {
-        if (NoSql2.getEntityManagerFactory() != null)
+        if (NoSql.getEntityManagerFactory() != null)
         	return;
         
         List<Class> classes = Play.classloader.getAnnotatedClasses(NoSqlEntity.class);
@@ -99,25 +99,25 @@ public class NoSqlPlugin extends PlayPlugin {
         log.info("Initializing PlayORM...");
 
         NoSqlEntityManagerFactory factory = Bootstrap.create(type, props, null, Play.classloader);
-        NoSql2.setEntityManagerFactory(factory);
+        NoSql.setEntityManagerFactory(factory);
 	}
 
 	@Override
 	public void onApplicationStop() {
-		if(NoSql2.getEntityManagerFactory() == null)
+		if(NoSql.getEntityManagerFactory() == null)
 			return;
 		
-		NoSql2.getEntityManagerFactory().close();
-		NoSql2.setEntityManagerFactory(null);
+		NoSql.getEntityManagerFactory().close();
+		NoSql.setEntityManagerFactory(null);
 	}
 	
     @Override
     public void beforeInvocation() {
-        if (!NoSql2.isEnabled())
+        if (!NoSql.isEnabled())
             return;
 
-        NoSqlEntityManager manager = NoSql2.getEntityManagerFactory().createEntityManager();
-        NoSql2.createContext(manager);
+        NoSqlEntityManager manager = NoSql.getEntityManagerFactory().createEntityManager();
+        NoSql.createContext(manager);
     }
     
 }

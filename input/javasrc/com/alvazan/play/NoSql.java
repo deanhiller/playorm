@@ -5,13 +5,13 @@ import play.exceptions.JPAException;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 
-public class NoSql2 {
+public class NoSql {
 
     private static NoSqlEntityManagerFactory entityManagerFactory = null;
-    private static ThreadLocal<NoSql2> local = new ThreadLocal<NoSql2>();
+    private static ThreadLocal<NoSql> local = new ThreadLocal<NoSql>();
     private NoSqlEntityManager entityManager;
 
-    static NoSql2 get() {
+    static NoSql get() {
         if (local.get() == null) {
             throw new JPAException("The JPA context is not initialized. JPA Entity Manager automatically start when one or more classes annotated with the @NoSqlEntity annotation are found in the application.");
         }
@@ -31,7 +31,7 @@ public class NoSql2 {
 //            }
             local.remove();
         }
-        NoSql2 context = new NoSql2();
+        NoSql context = new NoSql();
         context.entityManager = entityManager;
         local.set(context);
     }
