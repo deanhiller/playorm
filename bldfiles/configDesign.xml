@@ -61,7 +61,6 @@
 </package>
 
 <package name="apiutil" package="com.alvazan.orm.api.util">
-	<depends>astyanax</depends>
 	<depends>allapis</depends>
 </package>
 
