@@ -23,7 +23,7 @@
 
 	<!--convert the lib file separators to this file system for later use in pathconvert
 	    to put together the manifest file -->
-	<property name="full.lib.path" location="${lib}" />
+	<property name="full.lib.path" location="${jardist}" />
 	<property name="full.config.path" location="${projectPath}" />
 
 	<property name="jar.name" value="${name}.jar" />
@@ -65,12 +65,11 @@
 	    </target>
 		
 	    <target name="retrieve" depends="resolve">
-	        <ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" />   	
-
+	    	<ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" />
 	    </target>
 
 	    <target name="deliver" depends="retrieve">
-	        <ivy:deliver />
+	        <ivy:deliver deliverpattern="${generated}/ivy/ivy-[module]-[revision].xml"   	 />
 	    </target>
 		
 	    <target name="publish" depends="deliver">
@@ -159,8 +158,10 @@
 ***********************************************************************
 -->
 	<path id="lib.include">
-		<fileset dir="${lib}">
+		<fileset dir="${jardist}">
 			<include name="**/*.jar" />
+			<!-- Excluding the jar otherwise the tests are not getting passed-->
+			<exclude name="*.jar" />
 		</fileset>
 	</path>
 
@@ -201,7 +202,7 @@
               INIT TASKS
 ***********************************************************************
 -->
-	<target name="taskdefs" depends = "deliver">
+	<target name="taskdefs" depends = "retrieve">
 		<tstamp>
 			<format property="manifest.date" pattern="EE MMMM d yyyy, HH:mm:ss" locale="en" />
 		</tstamp>
@@ -279,12 +280,17 @@
 		</java>
 	</target>
 	
+	<target name="movejars" depends="deliver">
+		<move todir="${jardist}">
+				<fileset dir="${lib}" includes="**" />
+		</move>
+	</target>
 	<!-- 
 ***********************************************************************
               COMPILE TARGET
 ***********************************************************************
 -->
-	<target name="compile" depends="generateparser">
+	<target name="compile" depends="generateparser,movejars">
 		<mkdir dir="${build}" />
 
 		<pathconvert property="compile.classpath" pathsep=":">
@@ -497,12 +503,6 @@
 					<property name="run.war.target" value="true" />
 				</then>
 			</elseif>
-			<else>
-				<!-- Also, copy over all needed jars from ${lib} to ${jardist} -->
-				<copy todir="${jardist}">
-					<fileset dir="${lib}" includes="**" />
-				</copy>
-			</else>
 		</if>
 	</target>
 	<!-- 
