@@ -18,7 +18,6 @@
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/commons-logging-jar-1.1.1.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/compress-lzf-bundle-0.8.4.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/concurrentlinkedhashmap-lru-jar-1.2.jar"/>
-	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/guava-jar-r08.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/high-scale-lib-jar-1.1.2.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/httpclient-jar-4.0.1.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/httpcore-jar-4.0.1.jar"/>
@@ -52,19 +51,19 @@
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/cglib-jar-2.2.1-v20090111.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/geronimo-jms_1.1_spec-jar-1.0.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/groovy-all-jar-1.7.6.jar"/>
-	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/guava-bootstrap-jar-11.0.jar"/>
-	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/guava-jar-11.0.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/guice-jar-3.0.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/guice-javadoc-3.0.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/guice-source-3.0.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/hamcrest-core-jar-1.1.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/janino-jar-2.5.16.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/javax.inject-jar-1.jar"/>
-	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/jsr305-jar-1.3.9.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/logback-classic-jar-1.0.1.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/logback-core-jar-1.0.1.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/mail-jar-1.4.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/servlet-api-jar-2.5.jar"/>
 	<classpathentry kind="lib" path="output/jardist/playorm-inmemory/slf4j-api-jar-1.6.4.jar"/>
+	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/guava-bootstrap-jar-11.0.jar"/>
+	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/guava-jar-11.0.jar"/>
+	<classpathentry kind="lib" path="output/jardist/playorm-astyanax/jsr305-jar-1.3.9.jar"/>
 	<classpathentry kind="output" path="eclipsegen"/>
 </classpath>

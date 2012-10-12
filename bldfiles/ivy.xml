@@ -15,9 +15,10 @@
 	<dependency org="com.netflix.astyanax" name="astyanax" rev="1.0.6" conf="playorm-astyanax->*,!sources,!javadoc">
 		<exclude org="org.slf4j" name="slf4j-log4j12"/>
 		<exclude org="log4j" name="log4j"/>
+		<exclude org="com.google.guava" name="guava"/>
 	</dependency>
 	<dependency org="org.javassist" name="javassist" rev="3.16.1-GA" conf="playorm-inmemory->*,!sources,!javadoc"/>
-	<dependency org="com.google.guava" name="guava" rev="11.0" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.google.guava" name="guava" rev="11.0" conf="playorm-astyanax->*,!sources,!javadoc"/>
 	<dependency org="com.google.inject" name="guice" rev="3.0" conf="playorm-inmemory->*"/>
 	<dependency org="args4j" name="args4j" rev="2.0.16" conf="playorm-inmemory->*,!sources,!javadoc"/>
 	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="playorm-inmemory->*,!sources,!javadoc"/>
