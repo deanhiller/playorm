@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NoSqlEmbedded {
-    @SuppressWarnings("rawtypes")
-	Class targetEntity() default void.class;
+    
+    String columnNamePrefix() default "";
 }
 

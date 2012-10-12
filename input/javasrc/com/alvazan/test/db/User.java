@@ -1,9 +1,11 @@
 package com.alvazan.test.db;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
+import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -27,6 +29,9 @@ public class User {
 	private int age;
 	
 	private String lastName;
+	
+	@NoSqlEmbedded
+	private List<Email> emails = new ArrayList<Email>();
 	
 	public String getId() {
 		return id;
@@ -58,6 +63,14 @@ public class User {
 
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+	public List<Email> getEmails() {
+		return emails;
+	}
+
+	public void setEmails(List<Email> emails) {
+		this.emails = emails;
 	}
 
 	public static User findByName(NoSqlEntityManager mgr, String name) {

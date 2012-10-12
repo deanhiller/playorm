@@ -32,9 +32,6 @@
 	<property name="ivy.install.version" value="2.3.0-rc1"/>
 	<property name="ivy.jar.dir" value="${tool.dir}/ivy"/>
 	<property name="ivy.jar.file" value="${ivy.jar.dir}/ivy-${ivy.install.version}.jar"/>
-	<property name="ivy.lib.dir" value="${input}/libinclude"/>
-
-	
 
 	    <target name="install-ivy"  description="--&gt; install ivy">
 	    	<path id="ivy.lib.path">
@@ -49,15 +46,12 @@
 	        <ivy:resolve file="bldfiles/ivy.xml"/>
 	    </target>
 		
-	    <target name="retrieve" depends="resolve">
-	    	<ivy:retrieve pattern="${ivy.lib.dir}/[conf]/[artifact]-[type]-[revision].[ext]" />
-	    </target>
-
-	    <target name="deliver" depends="retrieve">
+	    <target name="retrieve" depends="resolve, create-src">
+	    	<ivy:retrieve pattern="${libinclude}/[conf]/[artifact]-[type]-[revision].[ext]" />
 	        <ivy:deliver deliverpattern="${generated}/ivy/ivy-[module]-[revision].xml"   	 />
 	    </target>
-		
-	    <target name="publish" depends="deliver">
+
+	    <target name="publish" depends="all">
 	    	<ivy:publish resolver="local" forcedeliver="true">
 	    	   <artifacts pattern="${input}/libinclude/[artifact].[ext]" />
 	    	</ivy:publish>
@@ -93,7 +87,7 @@
 		<fileset dir="${tool.dir}/antlr">
 			<include name="**/*.jar"/>
 		</fileset>
-		<fileset dir="${ivy.lib.dir}/build">
+		<fileset dir="${libinclude}/build">
 			<include name="**/*.jar"/>
 		</fileset>
 	</path>
@@ -187,7 +181,7 @@
               INIT TASKS
 ***********************************************************************
 -->
-	<target name="taskdefs" depends = "retrieve">
+	<target name="taskdefs" depends = "install-ivy">
 		<tstamp>
 			<format property="manifest.date" pattern="EE MMMM d yyyy, HH:mm:ss" locale="en" />
 		</tstamp>
@@ -232,7 +226,7 @@
 	<target name="create-src" depends="taskdefs">
 
 		<mkdir dir="${javacode}" />
-		<mkdir dir="${lib}" />
+		<mkdir dir="${libinclude}" />
 		<mkdir dir="${libexclude}" />
 		<mkdir dir="${native}" />
 		<mkdir dir="${schemas}" />
@@ -251,7 +245,7 @@
 
 	</target>
 
-	<target name="generateparser" depends="create-src">
+	<target name="generateparser" depends="retrieve">
 		<java classname="org.antlr.Tool" fork="true" failonerror="true">
 			<classpath >
 				<path refid="antlr.lib" />
@@ -265,17 +259,12 @@
 		</java>
 	</target>
 	
-	<target name="movejars" depends="deliver">
-		<move todir="${jardist}">
-				<fileset dir="${lib}" includes="**" />
-		</move>
-	</target>
 	<!-- 
 ***********************************************************************
               COMPILE TARGET
 ***********************************************************************
 -->
-	<target name="compile" depends="generateparser,movejars">
+	<target name="compile" depends="generateparser">
 		<mkdir dir="${build}" />
 
 		<pathconvert property="compile.classpath" pathsep=":">
@@ -342,7 +331,7 @@
 		<rmic base="${build}" includes="**\RMI*.class" debug="yes">
 			<classpath>
 				<pathelement path="${build}" />
-				<fileset dir="${lib}">
+				<fileset dir="${libinclude}">
 					<include name="**/*.jar" />
 				</fileset>
 			</classpath>
@@ -478,7 +467,7 @@
 			<then>
 				<!-- copy all jars that need to be in this osgi bundle jar into the directory that will be jarred up-->
 				<copy todir="${build}">
-					<fileset dir="${lib}" includes="**" />
+					<fileset dir="${libinclude}" includes="**" />
 				</copy>
 			</then>
 			<elseif>
@@ -550,7 +539,7 @@
 			
 		<mkdir dir="${wardist}" />
 		<war destfile="${war.file}" webxml="${webroot}/WEB-INF/web.xml" manifest="${manifest}/MANIFEST.MF">
-			<lib dir="${lib}">
+			<lib dir="${libinclude}">
 				<include name="**/*.jar"/>
 			</lib>
 			<classes dir="${build}" />

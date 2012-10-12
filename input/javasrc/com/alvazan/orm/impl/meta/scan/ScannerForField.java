@@ -2,6 +2,7 @@ package com.alvazan.orm.impl.meta.scan;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,8 @@ import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.NoSqlColumn;
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
+import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -39,6 +42,7 @@ import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
 import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaCommonField;
 import com.alvazan.orm.impl.meta.data.MetaCursorField;
+import com.alvazan.orm.impl.meta.data.MetaEmbeddedField;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
@@ -57,6 +61,8 @@ public class ScannerForField {
 	private Provider<MetaCommonField> metaProvider;
 	@Inject
 	private Provider<MetaListField> metaListProvider;
+	@Inject
+	private Provider<MetaEmbeddedField> metaEmbeddedProvider;
 	@Inject
 	private Provider<MetaCursorField> metaCursorProvider;
 	@Inject
@@ -190,10 +196,6 @@ public class ScannerForField {
 		throw new IllegalArgumentException("bug, caller should catch this and log info about field or id converter, etc. etc");
 	}
 
-	public MetaField processEmbeddable(Field field) {
-		throw new UnsupportedOperationException("not implemented yet");
-	}
-
 	public void setCustomConverters(Map<Class, Converter> converters) {
 		if(converters == null)
 			return; //nothing to do
@@ -217,25 +219,21 @@ public class ScannerForField {
 	public MetaField processManyToMany(MetaClassSingle<?> metaClass, DboTableMeta t, Field field) {
 		NoSqlManyToMany annotation = field.getAnnotation(NoSqlManyToMany.class);
 		String colName = annotation.columnName();
-		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(metaClass, t, field, colName, entityType,
-				keyFieldForMap);		
+		return processToManyRelationship(metaClass, t, field, colName, keyFieldForMap);		
 	}
 	
 	public MetaField processOneToMany(MetaClassSingle<?> ownerMeta, DboTableMeta t, Field field) {
 		NoSqlOneToMany annotation = field.getAnnotation(NoSqlOneToMany.class);
 		String colName = annotation.columnName();
-		Class entityType = annotation.entityType();
 		String keyFieldForMap = annotation.keyFieldForMap();
 		
-		return processToManyRelationship(ownerMeta, t, field, colName, entityType,
-				keyFieldForMap);
+		return processToManyRelationship(ownerMeta, t, field, colName, keyFieldForMap);
 	}
 
 	private MetaField processToManyRelationship(MetaClassSingle<?> metaClass, DboTableMeta t, Field field, String colNameOrig,
-			Class entityType, String keyFieldForMap) {
+			String keyFieldForMap) {
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
 			colName = colNameOrig;
@@ -245,11 +243,14 @@ public class ScannerForField {
 		
 		Field fieldForKey = null;
 
-		if(entityType == null)
-			throw new RuntimeException("Field="+field+" is missing entityType attribute of OneToMany annotation which is required");
-		else if(field.getType().equals(Map.class)) {
+		ParameterizedType genType = (ParameterizedType) field.getGenericType();
+		Class entityType;
+		if(field.getType().equals(Map.class)) {
 			if("".equals(keyFieldForMap))
 				throw new RuntimeException("Field="+field+" is a Map so @OneToMany annotation REQUIRES a keyFieldForMap attribute which is the field name in the child entity to use as the key");
+			
+			entityType = (Class) genType.getActualTypeArguments()[1];
+			
 			String fieldName = keyFieldForMap;
 			
 			try {
@@ -260,6 +261,8 @@ public class ScannerForField {
 			} catch (SecurityException e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			entityType = (Class) genType.getActualTypeArguments()[0];
 		}
 		
 		return processToMany(metaClass, t, field, colName, entityType, fieldForKey);
@@ -290,6 +293,31 @@ public class ScannerForField {
 		return metaField;
 	}
 
+	public MetaField processEmbedded(DboTableMeta t, Field field) {
+		NoSqlEmbedded embedded = field.getAnnotation(NoSqlEmbedded.class);
+		Class<?> entityType = field.getType();
+		if(entityType.equals(List.class)) {
+			ParameterizedType genType = (ParameterizedType) field.getGenericType();
+			entityType = (Class<?>) genType.getActualTypeArguments()[0];
+		}
+		
+		if(!entityType.isAnnotationPresent(NoSqlEmbeddable.class))
+			throw new IllegalArgumentException("Entity type="+entityType.getName()+" is missing annotation NoSqlEmbeddable" +
+					" because field refers to it as being embedded. field="+field);
+
+		String colNameOrig = embedded.columnNamePrefix();
+		String colName = field.getName();
+		if(!"".equals(colNameOrig))
+			colName = colNameOrig;
+		
+		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(entityType);
+		
+		MetaEmbeddedField metaField = metaEmbeddedProvider.get();
+		metaField.setup(t, field, colName, fkMeta);
+
+		return metaField;
+	}
+	
 	@SuppressWarnings("unchecked")
 	public MetaField processToOne(DboTableMeta t, Field field, String colNameOrig) {
 		String colName = field.getName();

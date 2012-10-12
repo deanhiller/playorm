@@ -22,7 +22,7 @@ public class DboDatabaseMeta {
 	@NoSqlId(usegenerator=false)
 	private String id = META_DB_ROWKEY;
 	
-	@NoSqlOneToMany(entityType=DboTableMeta.class, keyFieldForMap="columnFamily")
+	@NoSqlOneToMany(keyFieldForMap="columnFamily")
 	private Map<String, DboTableMeta> colFamilyToMeta = new HashMap<String, DboTableMeta>();
 	
 	public String getId() {

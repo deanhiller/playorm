@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NoSqlEmbeddable {
-    String name() default "";
+    String virtualCfName() default "";
 }

@@ -13,7 +13,7 @@ public class InheritanceToMany {
 	@NoSqlId
 	private String id;
 	
-	@NoSqlOneToMany(entityType=InheritanceSuper.class, keyFieldForMap="lastName")
+	@NoSqlOneToMany(keyFieldForMap="lastName")
 	private final Map<String, InheritanceSuper> nameToEntity = new HashMap<String, InheritanceSuper>();
 
 	public String getId() {

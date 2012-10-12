@@ -34,10 +34,10 @@ public class Account extends AccountSuper{
 	private Float users;
 
 	//@Transient
-	@NoSqlOneToMany(entityType=Activity.class)
+	@NoSqlOneToMany
 	private List<Activity> activities = new ArrayList<Activity>();
 	
-	@NoSqlManyToMany(entityType=Activity.class)
+	@NoSqlManyToMany
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	
 	public Account() {}

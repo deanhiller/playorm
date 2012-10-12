@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -47,6 +48,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	private NoSqlTypedSessionImpl typedSession;
 	@Inject
 	private DboDatabaseMeta databaseInfo;
+	@Inject
+	private MetaLayerImpl metaImpl;
 	
 	private boolean isTypedSessionInitialized = false;
 	
@@ -207,13 +210,11 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		return session;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Object getKey(Object entity) {
-		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
-		return metaClass.fetchId(entity);
+	public MetaLayer getMeta() {
+		return metaImpl;
 	}
-
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public void fillInWithKey(Object entity) {
@@ -264,7 +265,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
         	DboTableMeta cf = new DboTableMeta();
 
         	//TODO: PUT this in virtual partition????
-        	cf.setup(null, type.getIndexTableName());
+        	cf.setup(null, type.getIndexTableName(), false);
         	cf.setColNamePrefixType(type);
         	
         	DboColumnIdMeta idMeta = new DboColumnIdMeta();

@@ -16,7 +16,7 @@ public class ForSet {
 	
 	private String name;
 
-	@NoSqlOneToMany(entityType=Activity.class)
+	@NoSqlOneToMany
 	private Set<Activity> activities = new HashSet<Activity>();
 	
 	public String getId() {
