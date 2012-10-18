@@ -1,4 +1,6 @@
 <ivysettings>
+    <credentials host="oss.sonatype.org" realm="Sonatype Nexus Repository Manager" username="${ossuser}" passwd="${osspasswd}"/>
+    <property name="nexus-staging" value="https://oss.sonatype.org/service/local/staging/deploy/maven2/"/>    
     <settings defaultResolver="chained"/>
     <resolvers>
         <chain name="chained" returnFirst="true">
@@ -7,4 +9,7 @@
             <ibiblio name="java-net-maven2" root="http://download.java.net/maven/2/" m2compatible="true"/>
         </chain>   
     </resolvers>
+    <resolvers>
+    	<ibiblio name="nexus-staging" m2compatible="true" root="${nexus-staging}"/>
+   </resolvers>    
 </ivysettings>

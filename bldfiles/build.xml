@@ -51,12 +51,11 @@
 	        <ivy:deliver deliverpattern="${generated}/ivy/ivy-[module]-[revision].xml"   	 />
 	    </target>
 
-	    <target name="publish" depends="all">
-	    	<ivy:publish resolver="local" forcedeliver="true">
-	    	   <artifacts pattern="${input}/libinclude/[artifact].[ext]" />
-	    	</ivy:publish>
-	    </target>
-		
+	    <target name="makepom" depends="retrieve">
+   			<ivy:makepom ivyfile="bldfiles/ivy.xml" pomfile="${libinclude}/playorm.pom" templatefile="bldfiles/pom-template"/>	
+		</target>
+ 
+
 
 	<description>
     This is a generic build file template.  All the customizable properties are
@@ -497,7 +496,21 @@
 			<fileset dir="${javacode}" excludes="**/test/**"  />
 			<fileset dir="${gen.src}" excludes="**/test/**"  />
 		</jar>
-
+	    <echo file="${jardist}/source/Readmesrc.txt">
+			Source files are in main jar file.	
+	    </echo>
+		<echo file="${jardist}/javadoc/Readmejavadoc.txt">
+			Placeholder for java doc.
+		</echo>
+		<jar jarfile="${jardist}/${name}-sources.jar">
+			<fileset dir="${jardist}/source"/>
+		</jar>
+		<jar jarfile="${jardist}/${name}-javadoc.jar">
+			<fileset dir="${jardist}/javadoc"/>
+		</jar>
+		<delete dir="${jardist}/javadoc" />		
+		<delete dir="${jardist}/source" />
+		
 	</target>
 
 	<target name="verifydesign" depends="compile">
@@ -937,7 +950,7 @@ class file exists.  The classpath is=${search.classpath}
 	<target name="all" depends="verifydesign, forprod, war, testall, checkstyle" description="">
 	</target>
 
-	<target name="testCheckin" depends="clean, all" description="This target should be run before checking in.  It runs verifydesign, testall, checkstyle to make sure your code is good" />
+	<target name="testCheckin" depends="clean, all, makepom" description="This target should be run before checking in.  It runs verifydesign, testall, checkstyle to make sure your code is good" />
 
 	<target name="universe" depends="all, javadoc" description="Runs all targets including javadoc as well as 'all' target" />
 
