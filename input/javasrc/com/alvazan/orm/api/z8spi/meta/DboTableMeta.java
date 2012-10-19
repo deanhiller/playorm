@@ -13,6 +13,9 @@ import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
 import javassist.util.proxy.ProxyFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -34,6 +37,8 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 })
 public class DboTableMeta {
 
+	private static final Logger log = LoggerFactory.getLogger(DboTableMeta.class);
+	
 	@NoSqlIndexed
 	@NoSqlId(usegenerator=false)
 	private String columnFamily;
@@ -92,6 +97,7 @@ public class DboTableMeta {
 			}
 		});
 		Class clazz = f.createClass();
+		logClassLoaders(clazz);
 		testInstanceCreation(clazz);
 		
 		typedRowProxyClass = clazz;
@@ -110,6 +116,32 @@ public class DboTableMeta {
 		}
 	}
 	
+	private static void logClassLoaders(Class clazz) {
+		logClassLoader("[proxies loaded in this one]", clazz.getClassLoader());
+		
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		logClassLoader("[context classloader]", cl);
+		
+		ClassLoader sysCl = ClassLoader.getSystemClassLoader();
+		logClassLoader("[system classloader]", sysCl);
+		
+		ClassLoader playCl = DboTableMeta.class.getClassLoader();
+		logClassLoader("[play jar in this classloader]", playCl);
+		
+		ClassLoader assistCl = Proxy.class.getClassLoader();
+		logClassLoader("[javassist jar in this classloader]", assistCl);
+	}
+	
+	private static void logClassLoader(String prefix, ClassLoader loader) {
+		ClassLoader cl = loader;
+		String logMsg = "classloader list={";
+		while(cl != null) {
+			logMsg+=cl+",";
+			cl = cl.getParent();
+		}
+		log.info("classloaders that proxies class exists in="+logMsg+"}");
+	}
+
 	public String getRealColumnFamily() {
 		if(actualColFamily != null)
 			return actualColFamily;
