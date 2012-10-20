@@ -3,7 +3,9 @@ package com.alvazan.orm.impl.meta.scan;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -115,14 +117,22 @@ public class ScannerForField {
 			metaField.setup(t, info, field, columnName, isIndexed);
 			return metaField;
 		} catch(IllegalArgumentException e)	{
-			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
-					+field.getDeclaringClass()+".  You need to either add on of the @*ToOne annotations, @Embedded, " +
-							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
-							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
-							" or @NoSqlId(customConverter=YourConverter.class) " +
-							" or finally if we missed a standard converter, we need to add it in file "+getClass()+
-							" in the constructor and it is trivial code(and we can copy the existing pattern)");
-		}		 
+			throw throwInvalidConverter(field, e);
+		}
+	}
+
+	private IllegalArgumentException throwInvalidConverter(Field field, IllegalArgumentException e) {
+		Class type = field.getType();
+		if(Date.class.equals(type) || Calendar.class.equals(type))
+			return new IllegalArgumentException("See this url for what you did wrong: https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support");
+		
+		//TODO: create url with information on this one..
+		return new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
+				+field.getDeclaringClass()+".  You need to either add one of the @*ToOne annotations, @Embedded, @Transient " +
+						"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
+						"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
+						" or finally if we missed a standard converter, we need to add it in file InspectorField.java" +
+						" in the constructor and it is trivial code(and we can copy the existing pattern)", e);
 	}
 
 	private Method getIdMethod(Field field) {
@@ -176,12 +186,7 @@ public class ScannerForField {
 			metaField.setup(t, field, colName, converter, isIndexed, isPartitioned);
 			return metaField;			
 		} catch(IllegalArgumentException e)	{
-			throw new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
-					+field.getDeclaringClass()+".  You need to either add one of the @*ToOne annotations, @Embedded, @Transient " +
-							"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
-							"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
-							" or finally if we missed a standard converter, we need to add it in file InspectorField.java" +
-							" in the constructor and it is trivial code(and we can copy the existing pattern)");
+			throw throwInvalidConverter(field, e);
 		}
 	}
 	
@@ -193,7 +198,7 @@ public class ScannerForField {
 		} else if(StandardConverters.get(type) != null){
 			return StandardConverters.get(type);
 		}
-		throw new IllegalArgumentException("bug, caller should catch this and log info about field or id converter, etc. etc");
+		throw new IllegalArgumentException("check the exception above this one for the real issue");
 	}
 
 	public void setCustomConverters(Map<Class, Converter> converters) {

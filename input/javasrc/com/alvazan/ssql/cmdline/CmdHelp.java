@@ -32,8 +32,8 @@ public class CmdHelp {
 			println("table and JUST read in every row and write it back out and it will index it.  NOTE: It is extremely tough to");
 			println("be missing index points...duplicate rowkeys are more likely that missing points(we have had ZERO instances so far in production of this)");
 			println("");
-			println("Rebuild index(non-partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>");
-			println("Rebuild index(partitioned table): INDEXVIEW /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
+			println("Rebuild index(non-partitioned table): REINDEX /<Column Family>/<Indexed Column>");
+			println("Rebuild index(partitioned table): REINDEX /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
 			println("");
 			println("Example 1: REINDEX /Activity/trade/byAccount/56748321");
 			//println("Example 2: REINDEX /Activity/trade/byAccount/56748321 name");

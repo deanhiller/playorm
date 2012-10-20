@@ -1,6 +1,14 @@
 
-play plugin for NoSql stuff to make that easier
-need @Embedded tag as well
+play plugin for NoSql stuff to make that easier...only need to add edits now to playframework plugin and we are good..later add gui for queries
+need @Embedded tag as well especially for List<String>
+
+do a TimeUUID for PlayOrm with a type1 style UUID (ie. not random) and allow queries on time range as well.
+
+make sure query on LocalDateTime works and add test case as well
+
+test query by a data format like 10/2/21 10:15:37.893
+
+add queries/indexing of @Embedded stuff as well
 
 allow query by row key if they just do where table.rowkey = :id  but for >,<, they have to Index it
 
@@ -12,12 +20,10 @@ Add generic Map<ByteArray, byte[]> to suck in additional columns we don't have s
 
 playframework plugin as well using query interface in development mode
 
-don't allow someone to create entity and just save as entity could exist.  This causes index corruption too easy and users
-are very likely to accidentally do this.
-
 delayed joins not working yet
 
-test query by a data format like 10/2/21 10:15:37.893
 
 allow to query on non-index fields!!!
+
+add support for hadoop first and then mongodb after that as well
 
