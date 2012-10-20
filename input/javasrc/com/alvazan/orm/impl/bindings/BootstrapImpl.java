@@ -26,6 +26,19 @@ public class BootstrapImpl extends Bootstrap {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public NoSqlEntityManagerFactory createInstance(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl2) {
+		ClassLoader previous = Thread.currentThread().getContextClassLoader();
+		try {
+			//Javassit uses the thread's context classloader so we need to set that for javassist then
+			//we reset it back in case some other framework relies on it...
+			ClassLoader playOrmCl = BootstrapImpl.class.getClassLoader();
+			Thread.currentThread().setContextClassLoader(playOrmCl);
+			return createInstanceImpl(type, properties, converters, cl2);
+		} finally {
+			Thread.currentThread().setContextClassLoader(previous);
+		}
+	}
+	
+	private NoSqlEntityManagerFactory createInstanceImpl(DbTypeEnum type, Map<String, Object> properties, Map<Class, Converter> converters, ClassLoader cl2) {
 		Object spiImpl = properties.get(Bootstrap.SPI_IMPL);
 		NoSqlRawSession temp = null;
 		if(spiImpl != null && spiImpl instanceof NoSqlRawSession) {
