@@ -17,6 +17,11 @@ public class Email {
 	private List<Email> emails = new ArrayList<Email>();
 	
 	@NoSqlEmbedded
+	private List<String> ids = new ArrayList<String>();
+	@NoSqlEmbedded
+	private List<Integer> ints = new ArrayList<Integer>();
+
+	@NoSqlEmbedded
 	private Email email;
 
 	private String name;
@@ -52,6 +57,21 @@ public class Email {
 	public void setEmail(Email email) {
 		this.email = email;
 	}
-	
+
+	public List<String> getIds() {
+		return ids;
+	}
+
+	public void setIds(List<String> ids) {
+		this.ids = ids;
+	}
+
+	public List<Integer> getInts() {
+		return ints;
+	}
+
+	public void setInts(List<Integer> ints) {
+		this.ints = ints;
+	}
 	
 }

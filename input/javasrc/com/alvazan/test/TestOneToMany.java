@@ -416,4 +416,54 @@ public class TestOneToMany {
 		Email email2 = emails.get(1);
 		Assert.assertEquals(e2.getName(), email2.getName());
 	}
+	
+	@Test
+	public void testEmbeddedSimple() {
+		Email sub = new Email();
+		sub.setId("sub");
+		sub.setName("dean");
+		
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		
+		mgr.put(sub);
+		mgr.flush();
+		
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		Email email = mgr2.find(Email.class, sub.getId());
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
+		Email email2 = mgr3.find(Email.class, sub.getId());
+		
+		List<String> ids = email.getIds();
+		Assert.assertEquals("one", ids.get(0));
+		
+		List<Integer> nums = email.getInts();
+		Assert.assertEquals(new Integer(5), nums.get(0));
+		
+		email.getInts().remove(0);
+		email.getIds().remove("one");
+		mgr2.put(email);
+		mgr2.flush();
+		
+		email2.getInts().add(12);
+		email2.getIds().add("zzzz");
+		mgr3.put(email2);
+		mgr3.flush();
+		
+		NoSqlEntityManager mgr4 = factory.createEntityManager();
+		Email emailF = mgr4.find(Email.class, sub.getId());
+		
+		Assert.assertEquals(2, emailF.getInts().size());
+		Assert.assertEquals(2, emailF.getIds().size());
+
+		Assert.assertEquals(new Integer(8), emailF.getInts().get(0));
+		Assert.assertEquals(new Integer(12), emailF.getInts().get(1));
+		
+		Assert.assertEquals("two", emailF.getIds().get(0));
+		Assert.assertEquals("zzzz", emailF.getIds().get(1));
+	}
+
 }

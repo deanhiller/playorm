@@ -1,6 +1,5 @@
 package com.alvazan.orm.impl.meta.data;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +24,7 @@ import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 
-public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
+public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
@@ -54,7 +53,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
-		List<byte[]> keys = parseOutKeyList(row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session, classMeta, keys);
 		return retVal;
 	}
@@ -62,7 +61,7 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
-		List<byte[]> keys = parseOutKeyList(row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session, classMeta, keys, fieldForKey);
 		//MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
 		return proxy;
@@ -70,13 +69,12 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	
 	private List<PROXY> translateFromColumnList(Row row,
 			OWNER entity, NoSqlSession session) {
-		List<byte[]> keys = parseOutKeyList(row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session, classMeta, keys);
 		return retVal;
 	}
 
-	private List<byte[]> parseOutKeyList(Row row) {
-		String columnName = getColumnName();
+	static List<byte[]> parseColNamePostfix(String columnName, Row row) {
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
 		List<byte[]> entities = new ArrayList<byte[]>();
@@ -173,23 +171,18 @@ public final class MetaListField<OWNER, PROXY> extends MetaAbstractField<OWNER> 
 	}
 	
 	private byte[] formTheName(PROXY p) {
-		try {
-			return formTheNameImpl(p);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
-	private byte[] formTheNameImpl(PROXY p) throws UnsupportedEncodingException {
 		byte[] pkData = translateOne(p);
-		
-		byte[] prefix = StandardConverters.convertToBytes(columnName);
-		byte[] name = new byte[prefix.length + pkData.length];
+		return formTheNameImpl(columnName, pkData);
+	}
+
+	static byte[] formTheNameImpl(String colName, byte[] postFix) {
+		byte[] prefix = StandardConverters.convertToBytes(colName);
+		byte[] name = new byte[prefix.length + postFix.length];
 		for(int i = 0; i < name.length; i++) {
 			if(i < prefix.length)
 				name[i] = prefix[i];
 			else
-				name[i] = pkData[i-prefix.length];
+				name[i] = postFix[i-prefix.length];
 		}
 		return name;
 	}

@@ -2,6 +2,12 @@
 
 ``` We answer questions on stackoverflow, so just tag the question with "playOrm".```
 
+For paid support send an email to dean at alvazan.com. We support clients in Asia, Europe, South and North America.
+
+For training in the US as low as 200/student, feel free to contact us as well.
+
+***Developers***: Please help us by encouraging those people with the money to utilize our support and/or training as we use the money to create a better product for you and the more we can split the cost between many companies, the cheaper it is to add more and more features.
+
 Recently, We are working more and more on matching any model you throw at us.  We want to work with the part of your data that is structured and allow you to still have tons of unstructured data.
 
 MAIN FEATURE: We are a Partial Schema or Partially Structured data ORM meaning not all of your schema has to be defined!!!!  We love the schemaless concept of noSQL and want to embrace it, but when it comes time to make your reads faster, we index the writes you want us to on your behalf so that your reads can be even faster so we are partially structured because we need to know what to index ;) .
@@ -10,6 +16,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
+* @NoSqlEmbedded for List<Integer>, List<LocaDate>, List<String>, etc. etc. (something NOT in JPA)
 * Just added support for Entity has a Cursor instead of List which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)

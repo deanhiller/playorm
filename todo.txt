@@ -1,5 +1,11 @@
 
-play plugin for NoSql stuff to make that easier...only need to add edits now to playframework plugin and we are good..later add gui for queries
+@Embedded with a List<String> first
+
+maven publish jar
+
+@Embedded with actual entities
+
+finish PLAY plugin for NoSql stuff to make that easier...only need to add edits now to playframework plugin and we are good..later add gui for queries
 need @Embedded tag as well especially for List<String>
 
 do a TimeUUID for PlayOrm with a type1 style UUID (ie. not random) and allow queries on time range as well.

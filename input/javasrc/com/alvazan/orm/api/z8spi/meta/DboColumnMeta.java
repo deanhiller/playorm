@@ -22,7 +22,8 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 @NoSqlEntity
 @NoSqlInheritance(subclassesToScan = { DboColumnCommonMeta.class,
 		DboColumnToOneMeta.class, DboColumnToManyMeta.class,
-		DboColumnIdMeta.class, DboColumnEmbedMeta.class }, strategy = NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName = "classType")
+		DboColumnIdMeta.class, DboColumnEmbedMeta.class, 
+		DboColumnEmbedSimpleMeta.class }, strategy = NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName = "classType")
 public abstract class DboColumnMeta {
 
 	@NoSqlId(usegenerator = false)
@@ -166,15 +167,7 @@ public abstract class DboColumnMeta {
 	}
 
 	protected static Class translateType(Class classType) {
-		Class finalType = classType;
-		if (!StandardConverters.containsConverterFor(classType))
-			finalType = byte[].class; // if it is not a supported type, we
-										// always support a straight byte[] as
-										// the type
-
-		finalType = convertIfPrimitive(finalType);
-
-		return finalType;
+		return convertIfPrimitive(classType);
 	}
 
 	public static Class convertIfPrimitive(Class fieldType) {
@@ -199,7 +192,10 @@ public abstract class DboColumnMeta {
 	}
 
 	public static StorageTypeEnum getStorageType(Class fieldType) {
-		return StandardConverters.getStorageType(fieldType);
+		StorageTypeEnum type = StandardConverters.getStorageType(fieldType);
+		if(type == null)
+			return StorageTypeEnum.BYTES;
+		return type;
 	}
 
 	protected static Class classForName(String columnType) {

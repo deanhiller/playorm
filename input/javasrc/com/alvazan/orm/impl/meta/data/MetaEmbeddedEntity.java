@@ -11,11 +11,11 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 
-public class MetaEmbeddedField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
+public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private DboColumnEmbedMeta metaDbo = new DboColumnEmbedMeta();
 	private MetaAbstractClass<PROXY> classMeta;
-	
+
 	public void setup(DboTableMeta t, Field field, String colName, MetaAbstractClass<PROXY> fkMeta) {
 		DboTableMeta fkToTable = fkMeta.getMetaDbo();
 		metaDbo.setup(t, colName, fkToTable);

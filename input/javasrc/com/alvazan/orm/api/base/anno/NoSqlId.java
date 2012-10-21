@@ -25,11 +25,14 @@ public @interface NoSqlId {
 	boolean usegenerator() default true;
 	
 	/**
+	 * Deprecated: Use @NoSqlConverter instead
+	 * 
 	 * You can supply your own converter for a field here which will override all
 	 * standard conversions even for primitives.  You just translate back and
 	 * forth from the byte[] for us and we wire that in.
 	 * @return
 	 */
+	@Deprecated
 	Class<? extends Converter> customConverter() default NoConversion.class;
 	
 	String columnName() default "";
