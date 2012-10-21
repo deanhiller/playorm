@@ -18,7 +18,6 @@ import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
-import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SimpleAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SimpleList;
 
