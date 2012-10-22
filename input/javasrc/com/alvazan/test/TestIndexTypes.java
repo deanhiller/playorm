@@ -84,14 +84,6 @@ public class TestIndexTypes {
 		Assert.assertEquals(0, zero.size());		
 	}
 	
-	@Test
-	public void testUUID() {
-		List<Activity> list = Activity.findByUUID(mgr, uid);
-		Assert.assertEquals(1, list.size());
-		
-		List<Activity> zero = Activity.findByUUID(mgr, new UUID());
-		Assert.assertEquals(0, zero.size());		
-	}
 	
 	private void setupRecords() {
 		Activity act = new Activity("act1");

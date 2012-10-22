@@ -59,7 +59,7 @@ public class StandardConverters {
 		storageTypes.put(LocalDateTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalDate.class, StorageTypeEnum.INTEGER);
-		storageTypes.put(UUID.class, StorageTypeEnum.STRING);
+		storageTypes.put(UUID.class, StorageTypeEnum.BYTES);
 	}
 
 	public static BaseConverter get(Class type) {

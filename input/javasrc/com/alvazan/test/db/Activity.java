@@ -35,8 +35,7 @@ import com.eaio.uuid.UUID;
 	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE as e WHERE e.myFloat=:myFloat"),
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
 	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
-	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date"),
-	@NoSqlQuery(name="findByUUID", query="select * from TABLE as e where e.uniqueId = :uniqueId")
+	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date")
 	
 })
 public class Activity {
@@ -65,7 +64,7 @@ public class Activity {
 	@NoSqlIndexed 
 	private float myFloat;
 	
-	@NoSqlIndexed
+
 	private UUID uniqueId;
 	
 	private String somethingElse;
@@ -262,11 +261,6 @@ public class Activity {
 		query.setParameter("date", time);
 		return query.getResultList(0, null);
 	}
-	
-	public static List<Activity> findByUUID(NoSqlEntityManager mgr, UUID uid) {
-		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByUUID");
-		query.setParameter("uniqueId", uid);
-		return query.getResultList(0, null);
-	}
+
 	
 }
