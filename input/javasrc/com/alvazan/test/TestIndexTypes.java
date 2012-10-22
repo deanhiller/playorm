@@ -13,12 +13,14 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Activity;
+import com.eaio.uuid.UUID;
 
 public class TestIndexTypes {
 
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 	private LocalDateTime time;
+	private UUID uid;
 
 	@BeforeClass
 	public static void setup() {
@@ -82,6 +84,7 @@ public class TestIndexTypes {
 		Assert.assertEquals(0, zero.size());		
 	}
 	
+	
 	private void setupRecords() {
 		Activity act = new Activity("act1");
 		act.setName("hello");
@@ -91,6 +94,8 @@ public class TestIndexTypes {
 		act.setIsCool(true);
 		time = LocalDateTime.now();
 		act.setDate(time);
+		uid = new UUID();
+		act.setUniqueId(uid);
 		mgr.put(act);
 		
 		//Everything is null for this activity so queries above should not find him...

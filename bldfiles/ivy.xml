@@ -1,12 +1,19 @@
 <ivy-module version="1.0">
-  <info organisation="alvazan" module="orm"/>
+  <info organisation="com.alvazan" module="${name}" revision="${version}"/>
   <configurations>
     <conf name="build"/>
     <conf name="playorm-astyanax"/>
     <conf name="playorm-inmemory"/>
   </configurations>
-  <publications>
-  	<artifact name="nosqlorm" type="jar" ext="jar"/>
+  <publications xmlns:e="http://ant.apache.org/ivy/extra">
+  	<artifact name="${name}" type="jar" ext="jar"/>
+  	<artifact name="${name}" type="jar.asc" ext="jar.asc"/>
+  	<artifact name="${name}" type="pom" ext="pom"/>
+  	<artifact name="${name}" type="pom.asc" ext="pom.asc"/>
+  	<artifact name="${name}" type="javadoc" ext="jar" e:classifier="javadoc"/>
+  	<artifact name="${name}" type="javadoc.asc" ext="jar.asc" e:classifier="javadoc"/>
+  	<artifact name="${name}" type="source" ext="jar" e:classifier="sources"/>
+  	<artifact name="${name}" type="source.asc" ext="jar.asc" e:classifier="sources"/>  	
   </publications>
   <dependencies>
   	<dependency org="org.antlr" name="ST4" rev="4.0.4" conf="build->*,!sources,!javadoc"/>
@@ -22,5 +29,6 @@
 	<dependency org="com.google.inject" name="guice" rev="3.0" conf="playorm-inmemory->*"/>
 	<dependency org="args4j" name="args4j" rev="2.0.16" conf="playorm-inmemory->*,!sources,!javadoc"/>
 	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.eaio.uuid" name="uuid" rev="3.2" conf="playorm-inmemory->*,!sources,!javadoc"/>
   </dependencies>
 </ivy-module>

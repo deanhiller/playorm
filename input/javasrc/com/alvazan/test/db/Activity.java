@@ -13,6 +13,7 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
+import com.eaio.uuid.UUID;
 
 
 @NoSqlEntity
@@ -45,7 +46,7 @@ public class Activity {
 	@NoSqlManyToOne
 	@NoSqlIndexed
 	private Account account;
-	
+
 	@NoSqlIndexed
 	private String uniqueColumn;
 
@@ -62,6 +63,9 @@ public class Activity {
 	private Boolean isCool;
 	@NoSqlIndexed 
 	private float myFloat;
+	
+
+	private UUID uniqueId;
 	
 	private String somethingElse;
 	
@@ -144,7 +148,15 @@ public class Activity {
 	public void setIsCool(Boolean isCool) {
 		this.isCool = isCool;
 	}
+	
+	public UUID getUniqueId() {
+		return uniqueId;
+	}
 
+	public void setUniqueId(UUID uniqueId) {
+		this.uniqueId = uniqueId;
+	}
+	
 	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);
@@ -249,6 +261,6 @@ public class Activity {
 		query.setParameter("date", time);
 		return query.getResultList(0, null);
 	}
-	
+
 	
 }

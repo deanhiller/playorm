@@ -16,6 +16,8 @@ import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.eaio.uuid.UUID;
+
 
 public class Converters {
 
@@ -34,6 +36,7 @@ public class Converters {
 	public static final BaseConverter DATE_TIME = new DateTimeConverter();
 	public static final BaseConverter LOCAL_DATE = new LocalDateConverter();
 	public static final BaseConverter LOCAL_TIME = new LocalTimeConverter();
+	public static final BaseConverter UUID_CONVERTER = new UUIDConverter();
 
 	private static byte[] intToBytes(int val) {
 		try {
@@ -463,6 +466,48 @@ public class Converters {
 		protected String convertToString(Object value) {
 			DateTime dt = (DateTime) value;
 			return fmt.print(dt);
+		}
+	}
+	
+	public static class UUIDConverter extends BaseConverter {
+		
+		@Override
+		public byte[] convertToNoSqlImpl(Object value) {
+			UUID uid = (UUID) value;
+		    long time = uid.getTime();
+		    long clockSeqAndNode = uid.getClockSeqAndNode();
+		    byte[] timeArray = LONG_CONVERTER.convertToNoSql(time);
+		    byte[] nodeArray = LONG_CONVERTER.convertToNoSql(clockSeqAndNode);
+		    byte[] combinedUUID = new byte[timeArray.length + nodeArray.length];
+		    System.arraycopy(timeArray,0,combinedUUID,0         ,timeArray.length);
+		    System.arraycopy(nodeArray,0,combinedUUID,timeArray.length,nodeArray.length);
+		    return combinedUUID;			
+		}
+
+		@Override
+		public Object convertFromNoSqlImpl(byte[] value) {
+			byte[] timeArray = new byte[8];
+			byte[] clockSeqAndNodeArray=new byte[8];
+			System.out.println("HERE in convertFromNoSqlImpl value = "+value.toString());
+			for (int count=0; count<=7;count++)
+				timeArray[count]=value[count];
+			for (int i=0,count=8; count<=15;count++,i++)
+				clockSeqAndNodeArray[i]=value[count];
+			long time = StandardConverters.convertFromBytes(Long.class, timeArray);
+			long clockSeqAndNode = StandardConverters.convertFromBytes(Long.class, clockSeqAndNodeArray);
+			UUID ud = new UUID(time,clockSeqAndNode);
+			return ud;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			UUID ud = new UUID(value);
+			return ud;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			return value.toString();
 		}
 	}
 }
