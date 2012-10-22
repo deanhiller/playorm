@@ -29,5 +29,6 @@
 	<dependency org="com.google.inject" name="guice" rev="3.0" conf="playorm-inmemory->*"/>
 	<dependency org="args4j" name="args4j" rev="2.0.16" conf="playorm-inmemory->*,!sources,!javadoc"/>
 	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="com.eaio.uuid" name="uuid" rev="3.2" conf="playorm-inmemory->*,!sources,!javadoc"/>
   </dependencies>
 </ivy-module>

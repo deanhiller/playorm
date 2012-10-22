@@ -16,6 +16,8 @@ import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.eaio.uuid.UUID;
+
 
 public class Converters {
 
@@ -34,6 +36,7 @@ public class Converters {
 	public static final BaseConverter DATE_TIME = new DateTimeConverter();
 	public static final BaseConverter LOCAL_DATE = new LocalDateConverter();
 	public static final BaseConverter LOCAL_TIME = new LocalTimeConverter();
+	public static final BaseConverter UUID_CONVERTER = new UUIDConverter();
 
 	private static byte[] intToBytes(int val) {
 		try {
@@ -463,6 +466,35 @@ public class Converters {
 		protected String convertToString(Object value) {
 			DateTime dt = (DateTime) value;
 			return fmt.print(dt);
+		}
+	}
+	
+	public static class UUIDConverter extends BaseConverter {
+		
+		@Override
+		public byte[] convertToNoSqlImpl(Object value) {
+			UUID uid = (UUID) value;
+			String ud = uid.toString();
+			return StandardConverters.convertToBytes(ud);
+			
+		}
+
+		@Override
+		public Object convertFromNoSqlImpl(byte[] value) {
+			String uid = StandardConverters.convertFromBytes(String.class, value);
+			UUID ud = new UUID(uid);
+			return ud;
+		}
+
+		@Override
+		protected Object convertToType(String value) {
+			UUID ud = new UUID(value);
+			return ud;
+		}
+
+		@Override
+		protected String convertToString(Object value) {
+			return value.toString();
 		}
 	}
 }

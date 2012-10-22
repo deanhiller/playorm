@@ -13,6 +13,7 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
+import com.eaio.uuid.UUID;
 
 
 @NoSqlEntity
@@ -34,7 +35,8 @@ import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE as e WHERE e.myFloat=:myFloat"),
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
 	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
-	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date")
+	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date"),
+	@NoSqlQuery(name="findByUUID", query="select * from TABLE as e where e.uniqueId = :uniqueId")
 	
 })
 public class Activity {
@@ -45,7 +47,7 @@ public class Activity {
 	@NoSqlManyToOne
 	@NoSqlIndexed
 	private Account account;
-	
+
 	@NoSqlIndexed
 	private String uniqueColumn;
 
@@ -62,6 +64,9 @@ public class Activity {
 	private Boolean isCool;
 	@NoSqlIndexed 
 	private float myFloat;
+	
+	@NoSqlIndexed
+	private UUID uniqueId;
 	
 	private String somethingElse;
 	
@@ -144,7 +149,15 @@ public class Activity {
 	public void setIsCool(Boolean isCool) {
 		this.isCool = isCool;
 	}
+	
+	public UUID getUniqueId() {
+		return uniqueId;
+	}
 
+	public void setUniqueId(UUID uniqueId) {
+		this.uniqueId = uniqueId;
+	}
+	
 	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);
@@ -250,5 +263,10 @@ public class Activity {
 		return query.getResultList(0, null);
 	}
 	
+	public static List<Activity> findByUUID(NoSqlEntityManager mgr, UUID uid) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByUUID");
+		query.setParameter("uniqueId", uid);
+		return query.getResultList(0, null);
+	}
 	
 }
