@@ -488,11 +488,8 @@ public class Converters {
 		public Object convertFromNoSqlImpl(byte[] value) {
 			byte[] timeArray = new byte[8];
 			byte[] clockSeqAndNodeArray=new byte[8];
-			System.out.println("HERE in convertFromNoSqlImpl value = "+value.toString());
-			for (int count=0; count<=7;count++)
-				timeArray[count]=value[count];
-			for (int i=0,count=8; count<=15;count++,i++)
-				clockSeqAndNodeArray[i]=value[count];
+			System.arraycopy(value,0,timeArray,0,8);
+			System.arraycopy(value,8,clockSeqAndNodeArray,0,8);
 			long time = StandardConverters.convertFromBytes(Long.class, timeArray);
 			long clockSeqAndNode = StandardConverters.convertFromBytes(Long.class, clockSeqAndNodeArray);
 			UUID ud = new UUID(time,clockSeqAndNode);

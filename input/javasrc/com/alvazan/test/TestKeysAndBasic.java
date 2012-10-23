@@ -14,7 +14,6 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.EntityWithDateTimeKey;
 import com.alvazan.test.db.EntityWithIntKey;
 import com.alvazan.test.db.EntityWithUUIDKey;
-import com.eaio.uuid.UUID;
 
 public class TestKeysAndBasic {
 
@@ -68,7 +67,6 @@ public class TestKeysAndBasic {
 	@Test
 	public void testUUIDKey() {
 		EntityWithUUIDKey enUID = new EntityWithUUIDKey();
-		enUID.setId(new UUID());
 		enUID.setSomething("testingUUIDconverter");
 		
 		mgr.put(enUID);
