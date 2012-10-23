@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,8 +17,8 @@ public class SetProxyFetchAll<T> extends OurAbstractCollection<T> implements Cac
 	private static final long serialVersionUID = 1L;
 	private Set<Holder<T>> holders = new HashSet<Holder<T>>();
 	
-	public SetProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
-		super(owner, session, classMeta, keys);
+	public SetProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys, Field field) {
+		super(owner, session, classMeta, keys, field);
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, session, key, this);
 			holders.add(h);

@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -7,6 +8,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -22,6 +26,8 @@ import com.alvazan.orm.impl.meta.data.Tuple;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLoadCallback {
 
+	private static final Logger log = LoggerFactory.getLogger(OurAbstractCollection.class);
+	
 	private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 	
 	private NoSqlSession session;
@@ -35,12 +41,14 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
 
 	private Object owner;
+	private Field field;
 	
-    public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2, List<byte[]> keys) {
+    public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2, List<byte[]> keys, Field field) {
 		this.session = session2;
 		this.metaClass = classMeta2;
 		this.owner = owner;
 		this.keys = keys;
+		this.field = field;
 	}
     
 	protected abstract Collection<Holder<T>> getHolders();
@@ -55,6 +63,8 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
 		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
+		String name = getClass().getSimpleName();
+		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
 		int counter = 0;
 		while(true) {
 			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();

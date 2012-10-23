@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,8 +18,8 @@ public class ListProxyFetchAll<T> extends OurAbstractCollection<T> implements Li
 	private List<Holder<T>> currentList = new ArrayList<Holder<T>>();
 	//immutable structures that hold the things cached that would need to be loaded
 
-	public ListProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys) {
-		super(owner, session, classMeta, keys);
+	public ListProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys, Field field) {
+		super(owner, session, classMeta, keys, field);
 		for(byte[] key : keys) {
 			Holder h = new Holder(classMeta, null, key, this);
 			originalHolders.add(h);

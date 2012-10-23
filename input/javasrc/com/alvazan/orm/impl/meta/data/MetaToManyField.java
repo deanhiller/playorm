@@ -54,7 +54,7 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
 		List<byte[]> keys = parseColNamePostfix(columnName, row);
-		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session, classMeta, keys);
+		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session, classMeta, keys, field);
 		return retVal;
 	}
 
@@ -62,7 +62,7 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseColNamePostfix(columnName, row);
-		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session, classMeta, keys, fieldForKey);
+		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session, classMeta, keys, fieldForKey, field);
 		//MapProxyFetchAll proxy = new MapProxyFetchAll(entity, session, classMeta, keys, fieldForKey);
 		return proxy;
 	}
@@ -70,7 +70,7 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 	private List<PROXY> translateFromColumnList(Row row,
 			OWNER entity, NoSqlSession session) {
 		List<byte[]> keys = parseColNamePostfix(columnName, row);
-		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session, classMeta, keys);
+		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session, classMeta, keys, field);
 		return retVal;
 	}
 
