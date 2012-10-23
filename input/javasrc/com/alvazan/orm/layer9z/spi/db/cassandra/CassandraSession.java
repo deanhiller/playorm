@@ -63,7 +63,7 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public void close() {
-		throw new UnsupportedOperationException("not done here yet");
+		columnFamilies.close();
 	}
 	
 	@Override

@@ -46,6 +46,10 @@ public class ColumnFamilyHelper {
 	private Keyspace keyspace;
 	private Cluster cluster;
 	private String keyspaceName;
+
+	private AstyanaxContext<Cluster> clusterContext;
+
+	private AstyanaxContext<Keyspace> context;
 	
 	public Keyspace getKeyspace() {
 		return keyspace;
@@ -86,7 +90,7 @@ public class ColumnFamilyHelper {
 			throw new IllegalArgumentException("The property Bootstrap.CASSANDRA_BUILDER was not in the Map or was in Map but was not of type Builder and must be supplied when using Cassandra plugin");
 
 		Builder builder = (Builder) builderObj;
-		AstyanaxContext<Cluster> clusterContext = builder.buildCluster(ThriftFamilyFactory.getInstance());
+		clusterContext = builder.buildCluster(ThriftFamilyFactory.getInstance());
 		keyspaceName = clusterContext.getKeyspaceName();
 		if(keyspaceName == null)
 			throw new IllegalArgumentException("You did not call Builder.forKeyspace on the astyanax Builder api.  We need to know the keyspace to continue");
@@ -113,7 +117,7 @@ public class ColumnFamilyHelper {
 			cluster.addKeyspace(def);
 		}
 		
-		AstyanaxContext<Keyspace> context = builder.buildKeyspace(ThriftFamilyFactory.getInstance());
+		context = builder.buildKeyspace(ThriftFamilyFactory.getInstance());
 		context.start();
 		
 		keyspace = context.getEntity();
@@ -461,6 +465,19 @@ public class ColumnFamilyHelper {
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
+		}
+	}
+
+	public void close() {
+		try {
+			clusterContext.shutdown();
+		} catch(Exception e) {
+			log.warn("Could not shutdown properly", e);
+		}
+		try {
+			context.shutdown();
+		} catch(Exception e) {
+			log.warn("Could not shutdown properly", e);
 		}
 	}
 }
