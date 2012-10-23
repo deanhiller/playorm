@@ -87,6 +87,7 @@ public class NoSqlPlugin extends PlayPlugin {
 
 	@Override
 	public void onApplicationStop() {
+		log.info("stopping PlayOrm");
 		if(NoSql.getEntityManagerFactory() == null)
 			return;
 		
