@@ -73,8 +73,9 @@ public class DboTableMeta {
 
 	/**
 	 * Some virtual column families are embeddable
+	 * capital Boolean for backwards compatibility...
 	 */
-	private boolean isEmbeddable;
+	private Boolean isEmbeddable;
 	
 	private static Class typedRowProxyClass;
 
@@ -162,6 +163,8 @@ public class DboTableMeta {
 	}
 	
 	public boolean isEmbeddable() {
+		if(isEmbeddable == null)
+			return false;
 		return isEmbeddable;
 	}
 
