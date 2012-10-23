@@ -60,13 +60,15 @@ public class CmdSelect {
 
 	private void printColumns(TypedRow r, DboTableMeta meta) {
 		for(TypedColumn c : r.getColumnsAsColl()) {
-			DboColumnMeta colMeta = meta.getColumnMeta(c.getName());
+			DboColumnMeta colMeta = c.getColumnMeta();
 			if(colMeta != null) {
 				String fullName = c.getName();
 				String val = c.getValueAsString();
 				println("=> "+fullName+" = "+val);
 			} else {
-				throw new RuntimeException("we need to fix this");
+				String fullName = c.getNameAsString(byte[].class);
+				String val = c.getValueAsString(byte[].class);
+				println("=> "+fullName+" = "+ val);
 			}
 		}
 	}

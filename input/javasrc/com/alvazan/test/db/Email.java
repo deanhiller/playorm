@@ -6,6 +6,7 @@ import java.util.List;
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 
 @NoSqlEmbeddable
 public class Email {
@@ -24,6 +25,7 @@ public class Email {
 	@NoSqlEmbedded
 	private Email email;
 
+	@NoSqlIndexed
 	private String name;
 	
 	public String getId() {

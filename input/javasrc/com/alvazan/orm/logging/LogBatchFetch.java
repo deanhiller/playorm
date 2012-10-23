@@ -13,8 +13,10 @@ public class LogBatchFetch implements BatchListener {
 	private long startTime;
 	private Integer batchSize;
 	private String cfAndIndex;
+	private ScanType findType;
 
-	public LogBatchFetch(String cfAndIndex, BatchListener l, Integer batchSize) {
+	public LogBatchFetch(String cfAndIndex, BatchListener l, Integer batchSize, ScanType findType) {
+		this.findType = findType;
 		this.cfAndIndex = cfAndIndex;
 		this.listener = l;
 		this.batchSize = batchSize;
@@ -34,10 +36,28 @@ public class LogBatchFetch implements BatchListener {
 			if(batchSize != null)
 				bSize = batchSize+"";
 			long total = System.currentTimeMillis() - startTime;
-			log.info("[rawlogger]"+cfAndIndex+" Fetching batch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			logInfo(numFetched, bSize, total);
 		}
 		if(listener != null)
 			listener.afterFetchingNextBatch(numFetched);
 	}
 
+	private void logInfo(int numFetched, String bSize, long total) {
+		switch (findType) {
+		case FIND:
+			log.info("[rawlogger]"+cfAndIndex+" Find took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			break;
+		case COLUMN_SLICE:
+			log.info("[rawlogger]"+cfAndIndex+" Column slice took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			break;
+		case RANGE_SLICE:
+			log.info("[rawlogger]"+cfAndIndex+" Index slice took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			break;
+		case NON_CONTIGUOUS:
+			log.info("[rawlogger]"+cfAndIndex+" Non-contiguous columns fetch took="+total+" ms for batchSize="+bSize+" numFetched="+numFetched);
+			break;
+		default:
+			break;
+		}
+	}
 }

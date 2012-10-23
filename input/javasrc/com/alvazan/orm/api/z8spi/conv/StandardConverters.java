@@ -146,6 +146,9 @@ public class StandardConverters {
 	}
 	
 	public static String convertToString(Object data) {
+		if(data == null)
+			return null;
+		
 		Class clazz = data.getClass();
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)

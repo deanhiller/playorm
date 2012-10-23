@@ -54,7 +54,7 @@ public class TypedColumn {
 		return strName+many.convertTypeToString(objVal);	
 	}
 	
-	public String getName(Class<?> type) {
+	public String getNameAsString(Class<?> type) {
 		if(columnMeta != null)
 			throw new IllegalArgumentException("This is defined in schema, call getName() instead");
 		
@@ -91,9 +91,16 @@ public class TypedColumn {
 		return StandardConverters.convertToString(value);
 	}
 	
+	public String getValueAsString(Class clazz) {
+		Object obj = StandardConverters.convertFromBytes(clazz, value);
+		return StandardConverters.convertToString(obj);
+	}
+
+	@Deprecated
 	public BigDecimal getValueAsBigDecimal() {
 		return StandardConverters.convertFromBytes(BigDecimal.class, value);
 	}
+	@Deprecated
 	public BigInteger getValueAsBigInteger() {
 		return StandardConverters.convertFromBytes(BigInteger.class, value);
 	}

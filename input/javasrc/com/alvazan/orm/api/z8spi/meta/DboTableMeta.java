@@ -139,7 +139,7 @@ public class DboTableMeta {
 			logMsg+=cl+",";
 			cl = cl.getParent();
 		}
-		log.info("classloaders that proxies class exists in="+logMsg+"}");
+		log.info(prefix+"classloaders that proxies class exists in="+logMsg+"}");
 	}
 
 	public String getRealColumnFamily() {
@@ -221,7 +221,9 @@ public class DboTableMeta {
 
 	@Override
 	public String toString() {
-		return "[tablename="+columnFamily+" indexedcolumns="+nameToField.values()+" pk="+idColumn+"]";
+		if(actualColFamily == null)
+			return "[tablename="+columnFamily+"]";
+		return "[tablename="+columnFamily+"/"+actualColFamily+"]";
 	}
 
 	public DboColumnIdMeta getIdColumnMeta() {

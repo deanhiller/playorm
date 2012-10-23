@@ -138,7 +138,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
-			list = new LogBatchFetch("basic column slice", l, batchSize);
+			list = new LogBatchFetch("basic column slice", l, batchSize, ScanType.COLUMN_SLICE);
 		}
 		
 		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list, mgr);
@@ -151,7 +151,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan(info, from, to, batchSize);
-			list = new LogBatchFetch(cfAndIndex, l, batchSize);
+			list = new LogBatchFetch(cfAndIndex, l, batchSize, ScanType.RANGE_SLICE);
 		}
 		return session.scanIndex(info, from, to, batchSize, list, mgr);
 	}
@@ -161,7 +161,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
 			String cfAndIndex = logColScan2(scanInfo, values);
-			list = new LogBatchFetch(cfAndIndex, l, null);
+			list = new LogBatchFetch(cfAndIndex, l, null, ScanType.NON_CONTIGUOUS);
 		}
 
 		AbstractCursor<IndexColumn> cursor = session.scanIndex(scanInfo, values, list, mgr);
@@ -297,7 +297,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		Cache cache = CacheThreadLocal.getCache();
 		
 		if(log.isInfoEnabled()) {
-			list = new LogBatchFetch("CF="+colFamily, l, batchSize);
+			list = new LogBatchFetch("CF="+colFamily, l, batchSize, ScanType.FIND);
 		}
 		
 		if(cache == null)
