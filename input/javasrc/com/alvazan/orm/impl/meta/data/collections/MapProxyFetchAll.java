@@ -35,7 +35,7 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 	private Set<V> originals = new HashSet<V>();
 	private boolean removeAll;
 	private Object owner;
-	private Field field;
+	private String field;
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static MapProxyFetchAll create(Object owner, NoSqlSession session, MetaAbstractClass classMeta,
@@ -44,7 +44,8 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 	}
 	private MapProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<V> classMeta,
 			List<byte[]> keys, Field fieldForKey, Field field) {
-		this.field = field;
+		this.field = field.getDeclaringClass().getSimpleName();
+		this.field += "."+field.getName();
 		this.session = session;
 		this.classMeta = classMeta;
 		this.keys = keys;
@@ -64,6 +65,7 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
 		String name = getClass().getSimpleName();
+		
 		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
 		while(true) {
 			Holder<KeyValue<Row>> holder = rows.nextImpl();

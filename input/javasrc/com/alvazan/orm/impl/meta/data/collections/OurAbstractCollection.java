@@ -41,14 +41,16 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
 
 	private Object owner;
-	private Field field;
+	private String field;
 	
     public OurAbstractCollection(Object owner, NoSqlSession session2, MetaAbstractClass<T> classMeta2, List<byte[]> keys, Field field) {
 		this.session = session2;
 		this.metaClass = classMeta2;
 		this.owner = owner;
 		this.keys = keys;
-		this.field = field;
+		
+		this.field = field.getDeclaringClass().getSimpleName();
+		this.field += "."+field.getName();
 	}
     
 	protected abstract Collection<Holder<T>> getHolders();
