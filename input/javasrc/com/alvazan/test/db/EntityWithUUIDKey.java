@@ -8,7 +8,7 @@ import com.eaio.uuid.UUID;
 @NoSqlEntity
 public class EntityWithUUIDKey {
 
-	@NoSqlId(usegenerator=false)
+	@NoSqlId
 	private UUID id;
 	
 	private String something;
