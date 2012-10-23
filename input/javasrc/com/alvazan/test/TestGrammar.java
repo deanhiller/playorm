@@ -6,12 +6,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.impl.bindings.ProductionBindings;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 import com.alvazan.orm.parser.antlr.InfoForWiring;
 import com.alvazan.orm.parser.antlr.MetaFacade;
 import com.alvazan.orm.parser.antlr.ParseQueryException;
 import com.alvazan.orm.parser.antlr.ScannerSql;
+import com.eaio.uuid.UUID;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -28,6 +30,15 @@ public class TestGrammar {
 		wiring = new InfoForWiring("<thequery>", null);
 		facade = new MockFacade();
 	}
+	
+	@Test
+	public void testConverter() {
+		UUID uuid = new UUID();
+		String val = StandardConverters.convertToString(uuid);
+		UUID uuid2 = StandardConverters.convertFromString(UUID.class, val);
+		Assert.assertEquals(uuid, uuid2);
+	}
+	
 	//@Test
 	public void testBetween() {
 		String sql = "select p FROM MyTable as p where p.leftside between :asfd and :ff";

@@ -11,6 +11,7 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
 import com.alvazan.orm.api.z8spi.conv.Converters.BaseConverter;
+import com.eaio.uuid.UUID;
 
 @SuppressWarnings("rawtypes")
 public class StandardConverters {
@@ -41,6 +42,7 @@ public class StandardConverters {
 		stdConverters.put(LocalDateTime.class, Converters.LOCAL_DATE_TIME);
 		stdConverters.put(LocalDate.class, Converters.LOCAL_DATE);
 		stdConverters.put(LocalTime.class, Converters.LOCAL_TIME);
+		stdConverters.put(UUID.class, Converters.UUID_CONVERTER);
 		
 		storageTypes.put(byte[].class, StorageTypeEnum.BYTES);
 		storageTypes.put(Long.class, StorageTypeEnum.INTEGER);
@@ -57,6 +59,7 @@ public class StandardConverters {
 		storageTypes.put(LocalDateTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalDate.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(UUID.class, StorageTypeEnum.BYTES);
 	}
 
 	public static BaseConverter get(Class type) {
@@ -156,13 +159,14 @@ public class StandardConverters {
 		return converter.convertToString(data);
 	}
 	
-	public static Object convertFromString(Class<?> clazz, String data) {
+	@SuppressWarnings("unchecked")
+	public static <T> T convertFromString(Class<T> clazz, String data) {
 		if(data == null)
 			return null;
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
-		return converter.convertStringToType(data);
+		return (T) converter.convertStringToType(data);
 	}
 	
 	public static StorageTypeEnum getStorageType(Class fieldType) {

@@ -16,6 +16,7 @@
 <package name="inject" package="javax.inject" needdeclarations="false"/>
 <package name="commons" package="org.apache.commons" needdeclarations="false" subpackages="include"/>
 <package name="jodatime" package="org.joda" needdeclarations="false" subpackages="include"/>
+<package name="uuid" package="com.eaio" needdeclarations="false" subpackages="include"/>
 
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>

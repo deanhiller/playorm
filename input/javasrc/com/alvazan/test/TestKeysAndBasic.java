@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+
+
 import org.joda.time.LocalDateTime;
 import org.junit.After;
 import org.junit.Assert;
@@ -11,6 +13,8 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.EntityWithDateTimeKey;
 import com.alvazan.test.db.EntityWithIntKey;
+import com.alvazan.test.db.EntityWithUUIDKey;
+import com.eaio.uuid.UUID;
 
 public class TestKeysAndBasic {
 
@@ -59,5 +63,19 @@ public class TestKeysAndBasic {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		EntityWithDateTimeKey entity = mgr2.find(EntityWithDateTimeKey.class, k.getId());
 		Assert.assertEquals(k.getSomething(), entity.getSomething());
+	}
+	
+	@Test
+	public void testUUIDKey() {
+		EntityWithUUIDKey enUID = new EntityWithUUIDKey();
+		enUID.setId(new UUID());
+		enUID.setSomething("testingUUIDconverter");
+		
+		mgr.put(enUID);
+		mgr.flush();
+		
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		EntityWithUUIDKey entity = mgr2.find(EntityWithUUIDKey.class, enUID.getId());
+		Assert.assertEquals(enUID.getSomething(), entity.getSomething());
 	}
 }

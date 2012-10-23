@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+    This original file comes from http://buildtemplate.sourceforge.net
+    All the ant jars, emma, ant-contrib also come from the version
+    that buildtemplate currently has.  buildtemplate is a quick start
+    for creating a java project.
+    
+	Run "ant -projecthelp" to view all the possible targets and descriptions
+-->
+<project name="std_buildrelease" default="testrelease" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant">
+
+	<property name="version.filename" value="version.properties"/>
+    <property name="version.file.path" value="input/version/${version.filename}" />
+
+	<!-- Now allow any of the properties to be overridden -->
+	<property file="${user.home}/ant.properties" />
+	<property file="bldfiles/ant.properties" />
+	<property file="bldfiles/directory.properties" />
+	<property file="${version.file.path}"/>
+ 
+	
+	<property name="ivy.jar.dir" value="${tool.dir}/ivy"/>
+
+	<target name="install-ivy"  description="--&gt; install ivy">
+		<path id="ivy.lib.path">
+	        <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
+	    </path>
+	    <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+	</target>    		
+	
+	<target name="credentials">
+		<input message="Please enter oss-username:" addproperty="ossuser"/>
+		<input message="Please enter oss-password:" addproperty="osspasswd"/>
+	</target>
+	    
+	<target name="resolve" depends="install-ivy, credentials">
+		<ivy:configure file="bldfiles/ivysettings.xml" />        
+		<ivy:resolve file="bldfiles/ivy.xml"/>
+	</target>
+		
+
+	<target name="publish" depends="resolve">
+	   	<!-- Generate the Maven POM this is done in main build.xml-->
+	   	<!-- <ivy:makepom ivyfile="bldfiles/ivy.xml" pomfile="${libinclude}/playorm.pom" templatefile="bldfiles/pom-template"/> -->	    	
+	   	<ivy:publish resolver="nexus-staging" overwrite="true" publishivy="false" artifactspattern="${libinclude}/[artifact](-[classifier]).[ext]">	   	
+	   		<artifact name="${name}" ext="pom" type="pom"/>
+	   		<artifact name="${name}" ext="jar" type="jar"/>
+	   		<artifact name="${name}" ext="jar" type="source" classifier="sources"/>
+	   		<artifact name="${name}" ext="jar" type="javadoc" classifier="javadoc"/>
+	   	</ivy:publish>
+	</target>	
+	<target name="testrelease" depends="publish" description="This target should be run before release.  It runs publish" />	
+</project>
+
