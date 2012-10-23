@@ -21,24 +21,28 @@ public abstract class Bootstrap {
 	public static final String SPI_IMPL = "nosql.spi.implementation";
 	
 	public synchronized static NoSqlEntityManagerFactory create(Map<String, Object> properties) {
+		return create(properties, Bootstrap.class.getClassLoader());
+	}
+	
+	public synchronized static NoSqlEntityManagerFactory create(Map<String, Object> properties, ClassLoader cl) {
 		String type = (String) properties.get(TYPE);
 		DbTypeEnum dbType;
 		if("inmemory".equals(type)) {
 			dbType = DbTypeEnum.IN_MEMORY;
 		} else if("cassandra".equals(type)) {
 			dbType = DbTypeEnum.CASSANDRA;
-		} else
-			throw new IllegalArgumentException("NoSql type="+TYPE+" not supported. Read Bootstrap.java for possible values");
-		
-		if(dbType == DbTypeEnum.CASSANDRA) {
+			
 			String clusterName = (String) properties.get(CASSANDRA_CLUSTERNAME);
 			String keyspace = (String) properties.get(CASSANDRA_KEYSPACE);
 			String seeds = (String) properties.get(CASSANDRA_SEEDS);
 			if(clusterName == null || keyspace == null || seeds == null)
 				throw new IllegalArgumentException("Must supply the nosql.cassandra.* properties.  Read Bootstrap.java for values");
 			createAndAddBestCassandraConfiguration(properties, clusterName, keyspace, seeds);
-		}
-		return create(dbType, properties);
+			
+		} else
+			throw new IllegalArgumentException("NoSql type="+TYPE+" not supported. Read Bootstrap.java for possible values");
+		
+		return create(dbType, properties, null, cl);		
 	}
 	
 	public synchronized static NoSqlEntityManagerFactory create(DbTypeEnum type, Map<String, Object> properties) {

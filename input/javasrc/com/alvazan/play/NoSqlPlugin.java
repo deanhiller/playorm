@@ -74,7 +74,6 @@ public class NoSqlPlugin extends PlayPlugin {
         if(StringUtils.isEmpty(prop)) 
         	throw new IllegalArgumentException("nosql.db property must be defined");
 
-		DbTypeEnum type = DbTypeEnum.IN_MEMORY;
 		if("cassandra".equalsIgnoreCase(prop)) {
 			String clusterName = Play.configuration.getProperty("nosql.cassandra.clustername");
 			String keyspace = Play.configuration.getProperty("nosql.cassandra.keyspace");
@@ -85,7 +84,6 @@ public class NoSqlPlugin extends PlayPlugin {
 				throw new IllegalArgumentException("property nosql.cassandra.keyspace is required if using cassandra");
 			else if(seeds == null)
 				throw new IllegalArgumentException("property nosql.cassandra.seeds is required if using cassandra");
-			type = DbTypeEnum.CASSANDRA;
 		}
 		
         Map<String, Object> props = new HashMap<String, Object>();
@@ -94,7 +92,7 @@ public class NoSqlPlugin extends PlayPlugin {
         
         log.info("Initializing PlayORM...");
 
-        NoSqlEntityManagerFactory factory = Bootstrap.create(type, props, null, Play.classloader);
+        NoSqlEntityManagerFactory factory = Bootstrap.create(props, Play.classloader);
         NoSql.setEntityManagerFactory(factory);
 	}
 
