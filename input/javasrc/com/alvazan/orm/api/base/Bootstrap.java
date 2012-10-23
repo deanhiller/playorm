@@ -40,7 +40,7 @@ public abstract class Bootstrap {
 			createAndAddBestCassandraConfiguration(properties, clusterName, keyspace, seeds);
 			
 		} else
-			throw new IllegalArgumentException("NoSql type="+TYPE+" not supported. Read Bootstrap.java for possible values");
+			throw new IllegalArgumentException("NoSql type="+type+" not supported. Read Bootstrap.java for possible values");
 		
 		return create(dbType, properties, null, cl);		
 	}

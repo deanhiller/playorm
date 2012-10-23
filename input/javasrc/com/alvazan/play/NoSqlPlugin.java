@@ -20,6 +20,7 @@ import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.google.common.collect.Multiset.Entry;
 
 public class NoSqlPlugin extends PlayPlugin {
 
@@ -70,25 +71,13 @@ public class NoSqlPlugin extends PlayPlugin {
         if (classes.isEmpty())
             return;
 
-        String prop = Play.configuration.getProperty("nosql.db");
-        if(StringUtils.isEmpty(prop)) 
-        	throw new IllegalArgumentException("nosql.db property must be defined");
-
-		if("cassandra".equalsIgnoreCase(prop)) {
-			String clusterName = Play.configuration.getProperty("nosql.cassandra.clustername");
-			String keyspace = Play.configuration.getProperty("nosql.cassandra.keyspace");
-			String seeds = Play.configuration.getProperty("nosql.cassandra.seeds");
-			if(clusterName == null)
-				throw new IllegalArgumentException("property nosql.cassandra.clustername is required if using cassandra");
-			else if(keyspace == null)
-				throw new IllegalArgumentException("property nosql.cassandra.keyspace is required if using cassandra");
-			else if(seeds == null)
-				throw new IllegalArgumentException("property nosql.cassandra.seeds is required if using cassandra");
-		}
-		
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
         props.put(Bootstrap.AUTO_CREATE_KEY, "create");
+        
+        for(java.util.Map.Entry<Object, Object> entry : Play.configuration.entrySet()) {
+        	props.put((String) entry.getKey(), entry.getValue());
+        }
         
         log.info("Initializing PlayORM...");
 
