@@ -156,13 +156,14 @@ public class StandardConverters {
 		return converter.convertToString(data);
 	}
 	
-	public static Object convertFromString(Class<?> clazz, String data) {
+	@SuppressWarnings("unchecked")
+	public static <T> T convertFromString(Class<T> clazz, String data) {
 		if(data == null)
 			return null;
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
 			throw new IllegalArgumentException("Type not supported at this time="+clazz);		
-		return converter.convertStringToType(data);
+		return (T) converter.convertStringToType(data);
 	}
 	
 	public static StorageTypeEnum getStorageType(Class fieldType) {
