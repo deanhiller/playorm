@@ -31,15 +31,13 @@ public class PlayORMExample {
 		createTestData();
 		processSQL(args);
 	}
-	
+	/**
+     * 
+     * Process the SQL query which is inserted as an command line arguments 
+     */
 	private static void processSQL(String[] args){
-		StringBuilder builder = new StringBuilder();
-		for(String s : args) {
-		    builder.append(s);
-		    builder.append(" ");
-		}
 		NoSqlTypedSession ntsession = mgr.getTypedSession();
-        QueryResult result = ntsession.createQueryCursor(builder.toString(), 50);
+        QueryResult result = ntsession.createQueryCursor(args[0], 50);
         Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
         processBatch(cursor);
 	}
@@ -47,9 +45,9 @@ public class PlayORMExample {
      * 
      * Print all the values inside the cursor 
      */
-    private static void processBatch(Cursor<List<TypedRow>> rowsIter) {
-        while(rowsIter.next()) {
-            List<TypedRow> joinedRow = rowsIter.getCurrent();
+    private static void processBatch(Cursor<List<TypedRow>> cursor) {
+        while(cursor.next()) {
+            List<TypedRow> joinedRow = cursor.getCurrent();
             for(TypedRow r: joinedRow) {
                 if (r!=null){            	
                     DboTableMeta meta = r.getView().getTableMeta();
