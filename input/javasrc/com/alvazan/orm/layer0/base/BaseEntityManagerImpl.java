@@ -325,4 +325,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		return typedSession;
 	}
 
+	@Override
+	public void clear() {
+		session.clear();
+	}
+
 }

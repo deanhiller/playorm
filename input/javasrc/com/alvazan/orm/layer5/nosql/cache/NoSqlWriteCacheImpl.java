@@ -166,4 +166,8 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	public void setOrmSessionForMeta(MetaLookup session) {
 		this.ormSession = session;
 	}
+
+	@Override
+	public void clear() {
+	}
 }

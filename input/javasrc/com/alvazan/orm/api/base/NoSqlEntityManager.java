@@ -110,6 +110,12 @@ public interface NoSqlEntityManager {
 	 */
 	public void flush();
 	
+	/**
+	 * Clears the cache in situations where you just load way tooooooo much stuff and need to free up
+	 * some memory.
+	 */
+	public void clear();
+	
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery);
 	
 	/**

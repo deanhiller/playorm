@@ -217,4 +217,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		return session.scanIndex(scanInfo, values);
 	}
 
+	@Override
+	public void clear() {
+		cache.clear();
+	}
+
 }

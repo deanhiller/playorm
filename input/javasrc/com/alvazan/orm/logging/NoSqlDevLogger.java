@@ -106,4 +106,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 		return session.scanIndex(scanInfo, values);
 	}
 
+	@Override
+	public void clear() {
+	}
+
 }

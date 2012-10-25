@@ -40,6 +40,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public void sendChanges(List<Action> actions, MetaLookup ormFromAbove) {
+		if(actions.size() > 10000)
+			log.warn("You sure you want to send 10,000 actions in one flush....consider doing and batches and calling mgr.clear to clear out the cache every batch");
 		long time = 0;
 		if(log.isInfoEnabled()) {
 			logInformation(actions);

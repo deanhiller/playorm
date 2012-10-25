@@ -57,6 +57,8 @@ public interface NoSqlSession {
 	
 	public void flush();
 
+	public void clear();
+	
 	public void clearDb();
 
 	/**
