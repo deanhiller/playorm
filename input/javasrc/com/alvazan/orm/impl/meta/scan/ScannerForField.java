@@ -50,8 +50,8 @@ import com.alvazan.orm.impl.meta.data.MetaEmbeddedSimple;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.impl.meta.data.MetaToManyField;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
+import com.alvazan.orm.impl.meta.data.MetaToManyField;
 
 @SuppressWarnings("rawtypes")
 public class ScannerForField {

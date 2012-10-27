@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,13 +14,11 @@ import play.data.binding.ParamNode;
 import play.data.binding.RootParamNode;
 
 import com.alvazan.orm.api.base.Bootstrap;
-import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.google.common.collect.Multiset.Entry;
 
 public class NoSqlPlugin extends PlayPlugin {
 
