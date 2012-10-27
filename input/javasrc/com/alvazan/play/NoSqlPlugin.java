@@ -20,6 +20,7 @@ import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
+import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.google.common.collect.Multiset.Entry;
 
 public class NoSqlPlugin extends PlayPlugin {
@@ -47,7 +48,8 @@ public class NoSqlPlugin extends PlayPlugin {
         
         //Read the entity in so that this entity is used instead...
     	Object o = em.find(clazz, theId);
-    	
+    	if(o == null)
+    		throw new RowNotFoundException("Row with rowkey="+theId+" was not found, but your page posted this id to lookup the row of class type="+clazz.getSimpleName());
     	return NoSqlModel.edit(rootParamNode, name, o, annotations);
     }
 
