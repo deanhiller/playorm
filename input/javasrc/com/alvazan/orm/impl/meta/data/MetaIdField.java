@@ -19,6 +19,7 @@ import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
+import com.eaio.uuid.UUID;
 
 //NOTE: T is the entity type NOT the type of the id!!!
 public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
@@ -98,8 +99,11 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 //						" are using a primitive for your key which is not a good idea either if you are going to use a generator(use Integer or String or Long instead)");
 			return id;
 		}
-		
-		Object newId = generator.generateNewKey(entity);
+		Object newId;
+		if (field.getType().equals(UUID.class))
+			newId = new UUID();
+		else 
+			newId = generator.generateNewKey(entity);
 		ReflectionUtil.putFieldValue(entity, field, newId);
 		return newId;
 	}
