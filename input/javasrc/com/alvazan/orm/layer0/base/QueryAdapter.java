@@ -106,6 +106,11 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Cursor<KeyValue<T>> getResults() {
+		return getResults(false);
+	}
+	
+	@Override
+	public Cursor<KeyValue<T>> getResults(boolean cacheResults) {
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
 		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews);
 		
@@ -117,7 +122,7 @@ public class QueryAdapter<T> implements Query<T> {
 		Iterable<byte[]> keys = new IterableCursorProxy(mainView, indice);
 		
 		String query = meta.getQuery();
-		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, batchSize);
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, cacheResults, batchSize);
 
 		return results;
 	}
@@ -181,7 +186,12 @@ public class QueryAdapter<T> implements Query<T> {
 
 	@Override
 	public Iterable<KeyValue<T>> getResultsIter() {
-		Cursor<KeyValue<T>> cursor = getResults();
+		return getResultsIter(false);
+	}
+	
+	@Override
+	public Iterable<KeyValue<T>> getResultsIter(boolean cacheResults) {
+		Cursor<KeyValue<T>> cursor = getResults(cacheResults);
 		Iterable<KeyValue<T>> proxy = new IterableProxy<KeyValue<T>>(cursor);
 		return proxy;
 	}

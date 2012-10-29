@@ -64,8 +64,8 @@ public class NoSqlDevLogger implements NoSqlSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta cf,
-			Iterable<byte[]> noSqlKeys, boolean skipCache, Integer batchSize) {
-		return session.find(cf, noSqlKeys, skipCache, batchSize);
+			Iterable<byte[]> noSqlKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
+		return session.find(cf, noSqlKeys, skipCache, cacheResults, batchSize);
 	}
 	
 	@Override

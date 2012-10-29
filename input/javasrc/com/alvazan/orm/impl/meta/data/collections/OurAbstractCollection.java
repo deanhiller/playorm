@@ -64,7 +64,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
 		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
 		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
 		int counter = 0;

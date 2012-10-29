@@ -63,7 +63,7 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		DboTableMeta metaDbo = classMeta.getMetaDbo();
 		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
 		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, null);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
 		
 		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
