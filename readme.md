@@ -4,9 +4,9 @@
 
 For paid support send an email to dean at alvazan.com. We support clients in Asia, Europe, South and North America.
 
-For training in the US as low as 200/student, feel free to contact us as well.
+For training in the US, feel free to contact us as well.
 
-***Developers***: Please help us by encouraging those people with the money to utilize our support and/or training as we use the money to create a better product for you and the more we can split the cost between many companies, the cheaper it is to add more and more features.
+***Developers***: Please help us by encouraging those people with the money to utilize our support and/or training as we use the money to create a better product for you and the more we can split the cost between many companies, the cheaper it is to add more and more features.  Also, please write a blog or link to us...we can always use more marketing and don't forget to star our github project ;).  Even in open source, marketing helps the project become much better for your use.
 
 Recently, We are working more and more on matching any model you throw at us.  We want to work with the part of your data that is structured and allow you to still have tons of unstructured data.
 

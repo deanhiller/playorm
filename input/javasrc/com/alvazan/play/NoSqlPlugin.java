@@ -102,4 +102,19 @@ public class NoSqlPlugin extends PlayPlugin {
         NoSqlEntityManager manager = NoSql.getEntityManagerFactory().createEntityManager();
         NoSql.createContext(manager);
     }
+    
+    @Override
+    public void afterInvocation() {
+    	NoSql.clearContext();
+    }
+
+    @Override
+    public void onInvocationException(Throwable e) {
+    	NoSql.clearContext();
+    }
+
+    @Override
+    public void invocationFinally() {
+    	NoSql.clearContext();
+    }
 }
