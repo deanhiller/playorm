@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 public class UniqueKeyGenerator implements KeyGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(UniqueKeyGenerator.class);
-	private static final String IP_ADDRESS;
+	private static final String HOST_NAME;
 
 	private static long lastTimeStamp;
 	
@@ -33,7 +33,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		lastTimeStamp = System.currentTimeMillis() - baseTime;
 		
 		try {
-			IP_ADDRESS = createHostName();
+			HOST_NAME = createHostName();
 		} catch(Throwable e) {
 			log.warn("Could not create a ip needed for unique key gen.\n" +
 					"PLEASE if you are on linux configure it properly and\n" +
@@ -53,7 +53,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	
 	public static synchronized String generateKey() {
 		long time = lastTimeStamp++;
-		return time+":"+IP_ADDRESS;
+		return time+":"+HOST_NAME;
 	}
 
 	private static String createHostName() throws UnknownHostException {
@@ -71,4 +71,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return address;
 	}
 
+	public String getHostname() {
+		return HOST_NAME;
+	}
 }
