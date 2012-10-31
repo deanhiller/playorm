@@ -106,6 +106,12 @@ public class DboTableMeta {
 		NAME_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z_0-9]*");
 	}
 	
+	public static boolean isValidTableName(String colName) {
+		if(DboTableMeta.NAME_PATTERN.matcher(colName).matches())
+			return true;
+		return false;
+	}
+	
 	private static Proxy testInstanceCreation(Class<?> clazz) {
 		try {
 			Proxy inst = (Proxy) clazz.newInstance();

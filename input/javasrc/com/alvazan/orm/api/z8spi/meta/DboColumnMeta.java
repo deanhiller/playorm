@@ -80,6 +80,12 @@ public abstract class DboColumnMeta {
 		this.columnName = colName;
 	}
 
+	public static boolean isValidColumnName(String colName) {
+		if(DboTableMeta.NAME_PATTERN.matcher(colName).matches())
+			return true;
+		return false;
+	}
+	
 	public abstract boolean isPartitionedByThisColumn();
 
 	public abstract String getIndexTableName();
