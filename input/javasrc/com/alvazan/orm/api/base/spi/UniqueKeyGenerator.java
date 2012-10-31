@@ -71,7 +71,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return address;
 	}
 
-	public String getHostname() {
+	public static String getHostname() {
 		return HOST_NAME;
 	}
 }
