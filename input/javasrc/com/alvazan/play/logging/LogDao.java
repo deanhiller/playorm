@@ -85,6 +85,8 @@ public class LogDao {
 					break;
 			}
 			
+			mgr.clear();
+			
 			Cursor<KeyValue<LogEvent>> cursor = mgr.findAll(LogEvent.class, keys);
 			IterableProxy<KeyValue<LogEvent>> iter = new IterableProxy<KeyValue<LogEvent>>(cursor);
 			event = iter.iterator();
