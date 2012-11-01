@@ -1,5 +1,6 @@
 package com.alvazan.play.logging;
 
+import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -9,9 +10,10 @@ import java.util.concurrent.TimeUnit;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.spi.AppenderAttachable;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
 
-public class AsyncAppender extends AppenderBase<ILoggingEvent> {
+public class AsyncAppender extends AppenderBase<ILoggingEvent> implements AppenderAttachable<ILoggingEvent> {
 
 	private AppenderAttachableImpl<ILoggingEvent> aai = new AppenderAttachableImpl<ILoggingEvent>();
 	private int appenderCount;
@@ -84,4 +86,28 @@ public class AsyncAppender extends AppenderBase<ILoggingEvent> {
 			}
 		}
 	}
+	
+	public Iterator<Appender<ILoggingEvent>> iteratorForAppenders() {
+		return aai.iteratorForAppenders();
+	}
+
+	public Appender<ILoggingEvent> getAppender(String name) {
+		return aai.getAppender(name);
+	}
+
+	public boolean isAttached(Appender<ILoggingEvent> appender) {
+		return aai.isAttached(appender);
+	}
+
+	public void detachAndStopAllAppenders() {
+		aai.detachAndStopAllAppenders();
+	}
+
+	public boolean detachAppender(Appender<ILoggingEvent> appender) {
+		return aai.detachAppender(appender);
+	}
+
+	public boolean detachAppender(String name) {
+		return aai.detachAppender(name);
+	}	
 }
