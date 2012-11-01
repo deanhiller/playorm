@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
  */
 public class UniqueKeyGenerator implements KeyGenerator {
 
-	private static final Logger log = LoggerFactory.getLogger(UniqueKeyGenerator.class);
 	private static final String HOST_NAME;
 
 	private static long lastTimeStamp;
@@ -35,14 +34,12 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		try {
 			HOST_NAME = createHostName();
 		} catch(Throwable e) {
-			log.warn("Could not create a ip needed for unique key gen.\n" +
+			throw new RuntimeException("Could not create a ip needed for unique key gen.\n" +
 					"PLEASE if you are on linux configure it properly and\n" +
 					" run this simple code to test(this code fails right" +
 					" now returning localhost instead of the hostname!!!)\n" +
 					"InetAddress local = InetAddress.getLocalHost();\n" +
 					"String hostname = local.getHostName();", e);
-			
-			throw new RuntimeException(e);
 		}
 	}
 	

@@ -51,6 +51,16 @@ public class CassandraAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 	}
 
 	@Override
+	public void start() {
+		if (appenderCount == 0) {
+			addError("No attached appenders found.");
+			return;
+		}
+		
+		super.start();
+	}
+	
+	@Override
 	protected void append(ILoggingEvent evt) {
 		if(factory == null) {
 			aai.appendLoopOnAppenders(evt);

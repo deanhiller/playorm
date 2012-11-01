@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
+import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.layer3.typed.IterableProxy;
@@ -12,6 +13,9 @@ import com.alvazan.orm.layer3.typed.IterableProxy;
 public class LogDao {
 
 	public static Iterable<LogEvent> fetchAllLogs(NoSqlEntityManager mgr, List<String> serverNames, int maxCount, int batchSize) {
+		String host = UniqueKeyGenerator.getHostname();
+		if(!serverNames.contains(host))
+			serverNames.add(host);
 		return new LogIter(mgr, serverNames, maxCount, batchSize);
 	}
 	
