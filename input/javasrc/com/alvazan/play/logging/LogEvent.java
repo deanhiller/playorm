@@ -1,4 +1,4 @@
-package com.alvazan.play.appenders;
+package com.alvazan.play.logging;
 
 import org.joda.time.LocalDateTime;
 

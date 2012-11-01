@@ -1,4 +1,4 @@
-package com.alvazan.play.appenders;
+package com.alvazan.play.logging;
 
 import java.util.ArrayList;
 import java.util.List;

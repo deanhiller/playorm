@@ -1,4 +1,4 @@
-package com.alvazan.play.appenders;
+package com.alvazan.play.logging;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.RejectedExecutionHandler;

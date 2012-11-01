@@ -19,7 +19,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.play.appenders.CassandraAppender;
+import com.alvazan.play.logging.CassandraAppender;
 
 public class NoSqlPlugin extends PlayPlugin {
 
