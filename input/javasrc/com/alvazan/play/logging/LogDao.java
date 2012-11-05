@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.joda.time.LocalDateTime;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -24,6 +26,75 @@ public class LogDao {
 		if(!serverNames.contains(host))
 			serverNames.add(host);
 		return new LogIterator(mgr, serverNames, batchSize);
+	}
+	
+	public static Cursor<KeyValue<LogEvent>> fetchLatestLogs(NoSqlEntityManager mgr, int count) {
+		ServersThatLog servers = NoSql.em().find(ServersThatLog.class, ServersThatLog.THE_ONE_KEY);
+		
+		List<String> serverNames = new ArrayList<String>();
+		String serverName = null;
+		if(servers != null) {
+			serverNames = servers.getServers();
+			serverName = servers.getServers().get(0);
+		}
+		
+		Integer index = null;
+		int row = 0;
+		Answer t = new Answer(null, row);
+		do {
+			findLatestRow(mgr, serverName, t);
+			index = t.getAnswer();
+			row = t.getRow();
+		} while(index == null);
+		
+		int min = Math.max(0, index-count);
+		int max = index;
+		List<String> keys = createKeys(serverNames, min, max);
+		return mgr.findAll(LogEvent.class, keys);
+	}
+
+	private static List<String> createKeys(List<String> serverNames, int min, int max) {
+		List<String> keys = new ArrayList<String>();
+		for(int i = min; i < max; i++) {
+			for(String name : serverNames) {
+				String newName = name+i;
+				keys.add(newName);
+			}
+		}
+		return keys;
+	}
+
+	private static void findLatestRow(NoSqlEntityManager mgr, String serverName, Answer ans) {
+		int row = ans.getRow();
+		List<String> keys = new ArrayList<String>();
+		for(int i = row; i < 200+row; i++) {
+			String name = serverName + i;
+			keys.add(name);
+		}
+		mgr.clear();
+
+		Cursor<KeyValue<LogEvent>> cursor = mgr.findAll(LogEvent.class, keys);
+		
+		long time = 0;
+		LocalDateTime current = new LocalDateTime(time);
+		
+		while(cursor.next()) {
+			KeyValue<LogEvent> kv = cursor.getCurrent();
+			LogEvent value = kv.getValue();
+			if(value == null) {
+				ans.setAnswer(row);
+				return;
+			}
+			LocalDateTime t1 = value.getTime();
+			if(current.isAfter(t1)) {
+				ans.setAnswer(row);
+				return;
+			}
+			current = t1;
+			row++;
+		}
+		
+		ans.setRow(row);
 	}
 	
 	private static Iterable<KeyValue<LogEvent>> fetchSessionLogs(NoSqlEntityManager mgr, String sessionId, int numDigits) {
@@ -105,16 +176,8 @@ public class LogDao {
 //		}
 
 		private void fetchNewBatch() {
-			List<String> keys = new ArrayList<String>();
-			int initialCounter = counter;
-			for(; counter < initialCounter+batchSize; counter++) {
-				int postfix = counter;
-				for(String name : serverNames) {
-					String newName = name+postfix;
-					keys.add(newName);
-				}
-			}
-			
+			List<String> keys = createKeys(serverNames, counter, counter+batchSize);
+			counter = counter+batchSize;
 			mgr.clear();
 			
 			event = (AbstractCursor<KeyValue<LogEvent>>) mgr.findAll(LogEvent.class, keys);

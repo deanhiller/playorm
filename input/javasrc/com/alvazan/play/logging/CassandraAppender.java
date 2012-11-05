@@ -141,6 +141,7 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 		ServersThatLog log = new ServersThatLog();
 		log.setId(ServersThatLog.THE_ONE_KEY);
 		log.getServers().add(hostname);
+		mgr.put(log);
 		
 		mgr.flush();
 		mgr.clear();
