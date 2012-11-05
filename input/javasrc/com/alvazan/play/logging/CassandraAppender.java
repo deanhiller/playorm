@@ -84,10 +84,8 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 		LocalDateTime t = new LocalDateTime(evt.getTimeStamp());
 		logEvt.setTime(t);
 
-		logEvt.setServerName(hostname);
-
 		Map<String, String> map = evt.getMDCPropertyMap();
-		String sid = map.get("sid");
+		String sid = map.get("sessionid");
 		logEvt.setSessionId(sid, 2);
 		String user = map.get("user");
 		logEvt.setUser(user);
@@ -101,7 +99,7 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 			counter = 0;
 
 		String id = hostname + counter;
-		logEvt.setId(id);
+		logEvt.setId(hostname, counter);
 		inMemoryBuffer.add(logEvt);
 
 		counter++;
@@ -113,17 +111,24 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 	}
 
 	public String fullDump(ILoggingEvent evt) {
-		IThrowableProxy proxy = evt.getThrowableProxy();
-
-		StringBuilder builder = new StringBuilder();
-		for (StackTraceElementProxy step : proxy
-				.getStackTraceElementProxyArray()) {
-			String string = step.toString();
-			builder.append(CoreConstants.TAB).append(string);
-			ThrowableProxyUtil.subjoinPackagingData(builder, step);
-			builder.append(CoreConstants.LINE_SEPARATOR);
+		try {
+			IThrowableProxy proxy = evt.getThrowableProxy();
+			if(proxy == null)
+				return null;
+			
+			StringBuilder builder = new StringBuilder();
+			for (StackTraceElementProxy step : proxy
+					.getStackTraceElementProxyArray()) {
+				String string = step.toString();
+				builder.append(CoreConstants.TAB).append(string);
+				ThrowableProxyUtil.subjoinPackagingData(builder, step);
+				builder.append(CoreConstants.LINE_SEPARATOR);
+			}
+			return builder.toString();
+		} catch(Exception e) {
+			addError("exception trying to log exception", e);
+			return "exception parsing exception";
 		}
-		return builder.toString();
 	}
 
 	public void flushEvents() {
@@ -133,6 +138,10 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 			mgr.put(evt);
 		}
 
+		ServersThatLog log = new ServersThatLog();
+		log.setId(ServersThatLog.THE_ONE_KEY);
+		log.getServers().add(hostname);
+		
 		mgr.flush();
 		mgr.clear();
 	}

@@ -1,111 +1,137 @@
 package com.alvazan.play.logging;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.spi.UniqueKeyGenerator;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
-import com.alvazan.orm.layer3.typed.IterableProxy;
+import com.alvazan.play.NoSql;
 
 public class LogDao {
 
-	public static Iterable<LogEvent> fetchAllLogs(NoSqlEntityManager mgr, List<String> serverNames, int maxCount, int batchSize) {
+	public static Cursor<LogEvent> fetchAllLogs(NoSqlEntityManager mgr, int batchSize) {
+		ServersThatLog servers = NoSql.em().find(ServersThatLog.class, ServersThatLog.THE_ONE_KEY);
+		
+		List<String> serverNames = new ArrayList<String>();
+		if(servers != null)
+			serverNames = servers.getServers();
+		
 		String host = UniqueKeyGenerator.getHostname();
 		if(!serverNames.contains(host))
 			serverNames.add(host);
-		return new LogIter(mgr, serverNames, maxCount, batchSize);
+		return new LogIterator(mgr, serverNames, batchSize);
 	}
 	
-	public static Iterable<KeyValue<LogEvent>> fetchSessionLogs(NoSqlEntityManager mgr, String sessionId, int numDigits) {
+	private static Iterable<KeyValue<LogEvent>> fetchSessionLogs(NoSqlEntityManager mgr, String sessionId, int numDigits) {
 		return LogEvent.findBySession(mgr, sessionId, numDigits);
 	}
-	
-	private static class LogIter implements Iterable<LogEvent> {
-		private NoSqlEntityManager mgr;
-		private List<String> serverNames;
-		private int maxCount;
-		private int batchSize;
 
-		public LogIter(NoSqlEntityManager mgr, List<String> serverNames,
-				int maxCount, int batchSize) {
-			this.mgr = mgr;
-			this.serverNames = serverNames;
-			this.maxCount = maxCount;
-			this.batchSize = batchSize;
+	public static List<LogEvent> fetchOrderedSessionLogs(NoSqlEntityManager mgr, String sessionId, int numDigits) {
+		Iterable<KeyValue<LogEvent>> iter = fetchSessionLogs(mgr, sessionId, numDigits);
+		
+		List<LogEvent> events = new ArrayList<LogEvent>();
+		for(KeyValue<LogEvent> evts : iter) {
+			if(evts.getValue() != null) {
+				events.add(evts.getValue());
+			}
 		}
-
-		@Override
-		public Iterator<LogEvent> iterator() {
-			return new LogIterator(mgr, serverNames, maxCount, batchSize);
-		}
+		
+		Collections.sort(events, new ByDate());
+		
+		return events;
 	}
 	
-	private static class LogIterator implements Iterator<LogEvent> {
+	private static class LogIterator extends AbstractCursor<LogEvent> {
 
 		private NoSqlEntityManager mgr;
 		private List<String> serverNames;
-		private int maxCount;
 		private int batchSize;
-		private Iterator<KeyValue<LogEvent>> event = null;
+		private AbstractCursor<KeyValue<LogEvent>> event = null;
 		private int counter = 0;
-		private LogEvent nextVal;
 		
-		public LogIterator(NoSqlEntityManager mgr, List<String> serverNames,
-				int maxCount, int batchSize) {
+		public LogIterator(NoSqlEntityManager mgr, List<String> serverNames, int batchSize) {
 			this.mgr = mgr;
 			this.serverNames = serverNames;
-			this.maxCount = maxCount;
 			this.batchSize = batchSize;
 		}
 
 		@Override
-		public boolean hasNext() {
-			if(counter > maxCount)
-				return false;
-			
-			fetchBatch();
-			if(!event.hasNext())
-				return false;
-			KeyValue<LogEvent> next = event.next();
-			if(next.getValue() == null)
-				return false;
-			nextVal = next.getValue();
-			return true;
+		public void beforeFirst() {
+			counter = 0;
+			fetchNewBatch();
 		}
 
-		private void fetchBatch() {
-			if(event != null && event.hasNext())
-				return;
+		@Override
+		public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<LogEvent> nextImpl() {
+			if(event == null)
+				fetchNewBatch();
 			
+			Holder<KeyValue<LogEvent>> nextImpl = event.nextImpl();
+			if(nextImpl == null) {
+				fetchNewBatch();
+				nextImpl = event.nextImpl();
+			}
+			
+			if(nextImpl == null)
+				return null;
+			KeyValue<LogEvent> kv = nextImpl.getValue();
+			if(kv.getValue() == null)
+				return null;
+			
+			return new Holder<LogEvent>(kv.getValue());
+		}
+		
+//		@Override
+//		public boolean hasNext() {
+//			log.info("has next being called");
+//			if(nextVal != null)
+//				return true;
+//			else if(counter > maxCount)
+//				return false;
+//			
+//			log.info("fetch batch maybe");
+//			fetchBatch();
+//			if(!event.hasNext())
+//				return false;
+//			KeyValue<LogEvent> next = event.next();
+//			if(next.getValue() == null)
+//				return false;
+//			nextVal = next.getValue();
+//			return true;
+//		}
+
+		private void fetchNewBatch() {
 			List<String> keys = new ArrayList<String>();
-			for(String name : serverNames) {
-				String newName = name+counter;
-				keys.add(newName);
-				counter++;
-				if(counter % batchSize == 0 || counter > maxCount)
-					break;
+			int initialCounter = counter;
+			for(; counter < initialCounter+batchSize; counter++) {
+				int postfix = counter;
+				for(String name : serverNames) {
+					String newName = name+postfix;
+					keys.add(newName);
+				}
 			}
 			
 			mgr.clear();
 			
-			Cursor<KeyValue<LogEvent>> cursor = mgr.findAll(LogEvent.class, keys);
-			IterableProxy<KeyValue<LogEvent>> iter = new IterableProxy<KeyValue<LogEvent>>(cursor);
-			event = iter.iterator();
+			event = (AbstractCursor<KeyValue<LogEvent>>) mgr.findAll(LogEvent.class, keys);
 		}
 
-		@Override
-		public LogEvent next() {
-			if(!hasNext())
-				throw new IllegalStateException("no more elements, check hasNext first");
-			return nextVal;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("not supported");
-		}
+//		@Override
+//		public LogEvent next() {
+//			if(!hasNext())
+//				throw new IllegalStateException("no more elements, check hasNext first");
+//			LogEvent temp = nextVal;
+//			nextVal = null;
+//			return temp;
+//		}
+//
+//		@Override
+//		public void remove() {
+//			throw new UnsupportedOperationException("not supported");
+//		}
 	}
 }

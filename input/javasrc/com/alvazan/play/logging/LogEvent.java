@@ -1,5 +1,7 @@
 package com.alvazan.play.logging;
 
+import java.util.Random;
+
 import org.joda.time.LocalDateTime;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
@@ -22,6 +24,8 @@ public class LogEvent {
 	
 	private String serverName;
 	
+	private int index;
+	
 	private String threadName;
 	
 	@NoSqlPartitionByThisField
@@ -40,12 +44,24 @@ public class LogEvent {
 
 	private String stackTrace;
 	
+	private static Random r = new Random(System.currentTimeMillis());
+	
 	public String getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	private void setId(String id) {
 		this.id = id;
+	}
+	
+	public void setId(String serverName, int index) {
+		this.id = serverName+index;
+		this.serverName = serverName;
+		this.index = index;
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 
 	public String getStackTrace() {
@@ -83,6 +99,10 @@ public class LogEvent {
 	}
 
 	private static String parse(String sessionId2, int numDigits) {
+		if(sessionId2 == null) {
+			double max = Math.pow(10, numDigits);
+			return ""+r.nextInt((int) max);
+		}
 		return 	sessionId2.substring(sessionId2.length()-numDigits);
 	}
 
@@ -116,10 +136,6 @@ public class LogEvent {
 
 	public String getServerName() {
 		return serverName;
-	}
-
-	public void setServerName(String serverName) {
-		this.serverName = serverName;
 	}
 
 	public String getThreadName() {
