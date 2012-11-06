@@ -51,7 +51,7 @@ public class TypedColumn {
 		
 		DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
 		Object objVal = many.convertFromStorage2(subName);
-		return strName+many.convertTypeToString(objVal);	
+		return strName+"."+many.convertTypeToString(objVal);
 	}
 	
 	public String getNameAsString(Class<?> type) {
