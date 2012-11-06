@@ -151,7 +151,7 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 		NoSqlEntityManager mgr = factory.createEntityManager();
 
 		for (LogEvent evt : inMemoryBuffer) {
-			mgr.put(evt);
+			mgr.put(evt, false);
 		}
 
 		ServersThatLog log = new ServersThatLog();
