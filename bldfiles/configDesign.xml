@@ -92,8 +92,7 @@
 <package name="playplugin" package="com.alvazan.play" subpackages="include">
 	<depends>allapis</depends>
 	<depends>playframework</depends>
-        <depends>logback</depends>
-        <depends>typedlayer</depends>
+    <depends>logback</depends>
 </package>
 
 <package name="base" package="com.alvazan.orm.layer0.base">
