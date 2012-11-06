@@ -21,6 +21,9 @@ public class MDCLevelFilter extends MatchingFilter {
 			return FilterReply.NEUTRAL;
 		}
 
+		if(CassandraAppender.isInTryCatch())
+			return onMatch;
+		
 		String value = MDC.get(mdcFilter);
 		if (this.value.equals(value)) {
 			if(level.levelInt <= this.level.levelInt)

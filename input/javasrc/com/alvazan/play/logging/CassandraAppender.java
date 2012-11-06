@@ -13,6 +13,7 @@ import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.classic.spi.ThrowableProxyUtil;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Context;
 import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.spi.AppenderAttachable;
 import ch.qos.logback.core.spi.AppenderAttachableImpl;
@@ -28,16 +29,21 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 	private int appenderCount;
 	private static String hostname = UniqueKeyGenerator.getHostname();
 	private int maxLogsEachServer = 100000;
-	private int batchSize = 10;
+	private int batchSize = 50;
 	private int counter;
 	private List<LogEvent> inMemoryBuffer = new ArrayList<LogEvent>();
 
 	private int errorCount = 0;
+	private static boolean inTryCatch;
 
 	private static NoSqlEntityManagerFactory factory;
 
 	public static void setFactory(NoSqlEntityManagerFactory f) {
 		factory = f;
+	}
+	
+	public static boolean isInTryCatch() {
+		return inTryCatch;
 	}
 
 	public void addAppender(Appender<ILoggingEvent> newAppender) {
@@ -73,7 +79,8 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 				addError("You really need to call CassandraAppender.setFactory to use the Cassandra appender");
 			}
 			return;
-		}
+		} else if(inTryCatch)
+			return; //don't log while in try catch
 
 		LogEvent logEvt = new LogEvent();
 		logEvt.setLevel("" + evt.getLevel());
@@ -95,6 +102,7 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 	}
 
 	private synchronized void insert(LogEvent logEvt) {
+		
 		if (counter > maxLogsEachServer)
 			counter = 0;
 
@@ -130,8 +138,16 @@ public class CassandraAppender extends AppenderBase<ILoggingEvent> implements
 			return "exception parsing exception";
 		}
 	}
-
+	
 	public void flushEvents() {
+		try {
+			inTryCatch = true;
+			flushEventsImpl();
+		} finally {
+			inTryCatch = false;
+		}
+	}
+	public void flushEventsImpl() {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 
 		for (LogEvent evt : inMemoryBuffer) {
