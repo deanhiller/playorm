@@ -348,13 +348,16 @@ public class DboTableMeta {
 		}
 		
 		for(Column c : row.getColumns()) {
-			byte[] name = c.getName();
-			String strName = StandardConverters.convertFromBytes(String.class, name);
-			if(this.nameToField.get(strName) != null)
-				continue;
-			
-			inst.addColumn(c.getName(), c.getValue(), c.getTimestamp());
-		}
+            byte[] name = c.getName();
+            String strName = StandardConverters.convertFromBytes(String.class, name);
+            boolean colmetaAlreadyExists = false;
+            for(DboColumnMeta column : this.nameToField.values()) {
+                if (strName.contains(column.getColumnName()))
+                    colmetaAlreadyExists = true;
+            }
+            if (!colmetaAlreadyExists)
+            inst.addColumn(c.getName(), c.getValue(), c.getTimestamp());
+        }
 	}
 
 	public List<DboColumnMeta> getIndexedColumns() {

@@ -25,7 +25,7 @@ public class TypedRow {
 	public TypedRow(int i) {}
 
 	public void addColumn(DboColumnToManyMeta colMeta, byte[] fullName, byte[] namePrefix, byte[] fk, byte[] value, Long timestamp) {
-		TypedColumn c = new TypedColumn(colMeta, fullName, namePrefix, value, timestamp);
+		TypedColumn c = new TypedColumn(colMeta, namePrefix, fk, value, timestamp);
 		ByteArray b = new ByteArray(fullName);
 		columns.put(b, c);
 	}
