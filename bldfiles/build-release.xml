@@ -7,7 +7,7 @@
     
 	Run "ant -projecthelp" to view all the possible targets and descriptions
 -->
-<project name="std_buildrelease" default="testrelease" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="std_buildrelease" default="testrelease" basedir=".." xmlns:ivy="antlib:org.apache.ivy.ant" xmlns:openpgp="antlib:org.apache.commons.openpgp.ant"> 
 
 	<property name="version.filename" value="version.properties"/>
     <property name="version.file.path" value="input/version/${version.filename}" />
@@ -26,22 +26,37 @@
 	        <fileset dir="${ivy.jar.dir}" includes="*.jar"/>
 	    </path>
 	    <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
-	</target>    		
+	</target>
 	
-	<target name="credentials">
+	<target name="pgpcredentials">
+		<input message="Please enter pgp-key id:" addproperty="pgpkeyid"/>
+		<input message="Please enter pgp-password:" addproperty="pgppasswd"/>
+	</target>
+
+	<target name="openpgpsigner"  depends="pgpcredentials" description="For signing the artefacts">
+		<path id="openpgp.lib.path">
+			<fileset dir="${tool.dir}/ant-pgp" includes="*.jar"/>
+		</path>
+		<taskdef resource="org/apache/commons/openpgp/ant/antlib.xml" uri="antlib:org.apache.commons.openpgp.ant" classpathref="openpgp.lib.path"/>
+		<openpgp:signer secring="${tool.dir}/ant-pgp/secring.gpg" pubring="${tool.dir}/ant-pgp/pubring.gpg" password="${pgppasswd}" keyid="${pgpkeyid}" asciiarmor="true">
+			<fileset dir="${libinclude}">
+				<include name="*.*" />
+			</fileset>
+		</openpgp:signer>
+    </target>
+
+	<target name="osscredentials" depends="openpgpsigner">
 		<input message="Please enter oss-username:" addproperty="ossuser"/>
 		<input message="Please enter oss-password:" addproperty="osspasswd"/>
 	</target>
 	    
-	<target name="resolve" depends="install-ivy, credentials">
+	<target name="resolve" depends="install-ivy, osscredentials">
 		<ivy:configure file="bldfiles/ivysettings.xml" />        
 		<ivy:resolve file="bldfiles/ivy.xml"/>
 	</target>
 		
 
 	<target name="publish" depends="resolve">
-	   	<!-- Generate the Maven POM this is done in main build.xml-->
-	   	<!-- <ivy:makepom ivyfile="bldfiles/ivy.xml" pomfile="${libinclude}/playorm.pom" templatefile="bldfiles/pom-template"/> -->	    	
 	   	<ivy:publish resolver="nexus-staging" overwrite="true" publishivy="false" artifactspattern="${libinclude}/[artifact](-[classifier]).[ext]">	   	
 	   		<artifact name="${name}" ext="pom" type="pom"/>
 	   		<artifact name="${name}" ext="jar" type="jar"/>
@@ -49,6 +64,6 @@
 	   		<artifact name="${name}" ext="jar" type="javadoc" classifier="javadoc"/>
 	   	</ivy:publish>
 	</target>	
-	<target name="testrelease" depends="publish" description="This target should be run before release.  It runs publish" />	
+	<target name="testrelease" depends="publish" description="This target should be run before release. It runs publish" />
 </project>
 
