@@ -16,6 +16,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
+* If you use our jar in eclipse, we have it setup so when you step into any function of PlayOrm, it jumps to the source magically for you so you can step through our code if you ever desire
 * @NoSqlEmbedded for List&gt;Integer&lt;, List&gt;LocaDate&lt;, List&gt;String&lt;, etc. etc. (something NOT in JPA)
 * Just added support for Entity has a Cursor instead of List which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
@@ -41,6 +42,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
 * support for joda-time LocalDateTime, LocalDate, LocalTime which works way better than java's Date object and is less buggy than java's Date and Calendar objects
 * Command Line tool
+* CassandraAppender for logback logging so you can have your webtier log to cassandra and view web logs all aggregated in a central location
 
 
 ### Features soon to be added
