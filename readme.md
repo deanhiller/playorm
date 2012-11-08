@@ -21,20 +21,20 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
-* Typical query support of <=, <, >, >= and = and no limitations here
-* Typical query support of AND and OR as well as parenthesis 
+* Typical query support of [ <=, <, >, >= and = and no limitations here] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
+* Typical query support of [AND and OR as well as parenthesis ] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
 * [Inner Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
 * Left Outer Join support
 * Return Database cursor on query
-* OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
+* [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
-* Includes it's own in-memory database for TDD in your unit tests!!!!!
+* Includes it's own [in-memory database for TDD] (https://github.com/deanhiller/playorm#note-on-test-driven-development) in your unit tests!!!!!
 * [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)t
-* logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
+* [logging interface] (https://github.com/deanhiller/playorm/wiki/Logging-to-know-for-your-benefit) below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
 * Log all your webservers logs to a fixed number of rows in cassandra so you can have one view into your webserver logs
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
