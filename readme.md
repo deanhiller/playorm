@@ -28,7 +28,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * Return Database cursor on query
 * OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
-* Inheritance class heirarchy in one table is supported like hibernate
+* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * first level read cache
 * Automatically creates ColumnFamilies at runtime
@@ -39,8 +39,8 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 * IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
-* support for joda-time LocalDateTime, LocalDate, LocalTime which works way better than java's Date object and is less buggy than java's Date and Calendar objects
-* Command Line tool
+* [support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
+* [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
 
 
 ### Features soon to be added
