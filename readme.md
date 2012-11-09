@@ -35,13 +35,13 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
 * [logging interface] (https://github.com/deanhiller/playorm/wiki/Logging-to-know-for-your-benefit) below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
 * Log all your webservers logs to a fixed number of rows in cassandra so you can have one view into your webserver logs
-* A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
+* [A raw interface] (https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage#The-Raw-Typed-Interface) using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 * IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
 * [Support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
 * [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
-* [Support for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
-* [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
+* [A plugin for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
+* [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own custom converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
 
 
 ### Features soon to be added
@@ -100,7 +100,7 @@ So what about the denormalization hype in noSQL?  Well, be careful.  I was on on
 
 ### Now, Joins
 
-*INNER JOIN*
+**INNER JOIN**
 
 Taking our previous example of the 100k partitions, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those 100k partitions
 
@@ -119,7 +119,7 @@ query.setParameter("partId", null);  //Here we are saying to use the 'null' part
 List<Activity> activity = query.getResultList();
 ```
 
-*LEFT OUTER JOIN*
+**LEFT OUTER JOIN**
 
 In continuation of above code, we can have NoSqlQuery again that would be on our Activity.java class
 
