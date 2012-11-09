@@ -23,8 +23,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
 * Typical query support of [ <=, <, >, >= and = and no limitations here] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
 * Typical query support of [AND and OR as well as parenthesis ] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
-* [Inner Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
-* Left Outer Join support
+* [Inner Join and Left Outer Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
 * Return Database cursor on query
 * [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
 * support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
@@ -99,7 +98,7 @@ So what about the denormalization hype in noSQL?  Well, be careful.  I was on on
 
 ### Now, Joins
 
-As of 9/1/12 we only support INNER JOIN and will add LEFT OUTER soon.
+*INNER JOIN*
 
 Taking our previous example of the 100k partitions, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those 100k partitions
 
@@ -108,6 +107,25 @@ Taking our previous example of the 100k partitions, let's say we have a table wi
 
 @NoSqlQuery(name="findWithJoinQuery", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t "+
 "INNER JOIN t.activityTypeInfo as i WHERE i.type = :type and t.numShares < :shares"),
+
+//NOW, we run the simple query
+Query query = entityMgr.getNamedQuery("findWithJoinQuery");
+query.setParameter("type", 5); 
+query.setParameter("shares", 28); 
+query.setParameter("partId", null);  //Here we are saying to use the 'null' partition
+                                     //Where any activities with no account will end up
+List<Activity> activity = query.getResultList();
+```
+
+*LEFT OUTER JOIN*
+
+In continuation of above code, we can have NoSqlQuery again that would be on our Activity.java class
+
+
+```
+
+@NoSqlQuery(name="findWithJoinQuery", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t "+
+"LEFT JOIN t.activityTypeInfo as i WHERE i.type = :type and t.numShares < :shares"),
 
 //NOW, we run the simple query
 Query query = entityMgr.getNamedQuery("findWithJoinQuery");
