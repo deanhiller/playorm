@@ -26,11 +26,11 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [Inner Join and Left Outer Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
 * Return Database cursor on query. [See an example how it works] (https://github.com/deanhiller/playorm/wiki/An-example-to-begin-with-PlayOrm)
 * [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
-* support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
+* Support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
-* first level read cache
-* Automatically creates ColumnFamilies at runtime. [See this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to see how easy it is to create an entity using Playorm
+* First level read cache
+* Automatically creates ColumnFamilies at runtime. [Check this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to know how easy it is to create an entity using Playorm
 * Includes it's own [in-memory database for TDD] (https://github.com/deanhiller/playorm#note-on-test-driven-development) in your unit tests!!!!!
 * [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
 * [logging interface] (https://github.com/deanhiller/playorm/wiki/Logging-to-know-for-your-benefit) below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
@@ -38,8 +38,10 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
 * An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
 * IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
-* [support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
+* [Support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
 * [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
+* [Support for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
+* [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
 
 
 ### Features soon to be added
