@@ -24,7 +24,7 @@ public class CmdHelp {
 			println("Format(non-partitioned table): VIEWINDEX /<Column Family>/<Indexed Column>");
 			println("Format(partitioned table): VIEWINDEX /<Column Family>/<Indexed Column>/<Partitioned by>/<Partition Id>");
 			println("");
-			println("Example: INDEXVIEW /Activity/trade/byAccount/56748321");
+			println("Example: VIEWINDEX /Activity/trade/byAccount/56748321");
 			println("");
 		} else if("REINDEX".equalsIgnoreCase(command)) {
 			println("Rebuilds an index.  This will remove duplicate rowkeys in an index AND if a row no longer exists it");

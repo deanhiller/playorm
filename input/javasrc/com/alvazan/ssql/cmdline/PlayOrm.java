@@ -149,7 +149,7 @@ public class PlayOrm {
 			println("Commands:");
 			println("SELECT           Selects dataset matching expression.  type 'help SELECT' for more info");
 			println("PARTITIONS       Selects dataset matching expression in a partition.  type 'help PARTITIONS for more info");
-			println("VIEWINDEX        Views an index.  type 'help INDEXVIEW' for more info");
+			println("VIEWINDEX        Views an index.  type 'help VIEWINDEX' for more info");
 			println("REINDEX          Rebuild a particular index.  type 'help REINDEX' for more info");
 			println("CREATE TABLE     Not in yet");
 			println("INSERT           Not in yet");
