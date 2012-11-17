@@ -16,7 +16,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
-* @NoSqlEmbedded for List&gt;Integer&lt;, List&gt;LocaDate&lt;, List&gt;String&lt;, etc. etc. (something NOT in JPA)
+* [@NoSqlEmbedded for List&lt;Integer&gt;, List&lt;LocaDate&gt;, List&lt;String&gt;,](https://github.com/deanhiller/playorm/wiki/@NoSqlEmbedded-for-Integer,-LocalDate-and-String-list) etc. etc. (something NOT in JPA)
 * Just added support for Entity has a Cursor instead of List which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
