@@ -26,7 +26,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [Inner Join and Left Outer Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
 * Return Database cursor on query. [See an example how it works] (https://github.com/deanhiller/playorm/wiki/An-example-to-begin-with-PlayOrm)
 * [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
-* Support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
+* [Support of a findAll(Class c, List<Object> keys)](https://github.com/deanhiller/playorm/wiki/Support-for-retrieving-many-entities-in-parallel) as is typical in nosql to parallel the reads
 * [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * [First level read cache] (https://github.com/deanhiller/playorm/wiki/Caching-in-Playorm)
