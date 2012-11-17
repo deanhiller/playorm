@@ -29,7 +29,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * Support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
 * [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
-* First level read cache
+* [First level read cache] (https://github.com/deanhiller/playorm/wiki/Caching-in-Playorm)
 * Automatically creates ColumnFamilies at runtime. [Check this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to know how easy it is to create an entity using Playorm
 * Includes it's own [in-memory database for TDD] (https://github.com/deanhiller/playorm#note-on-test-driven-development) in your unit tests!!!!!
 * [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
