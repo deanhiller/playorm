@@ -44,6 +44,7 @@ public class CachedMeta {
 				return dboTableMeta;
 			
 			DboTableMeta table = mgr.find(DboTableMeta.class, colFamily);
+			counter++;
 			if(table == null)
 				throw new RuntimeException("table="+colFamily+" was not found");
 			//We don't want lots of threads writing data into this structure as it reads from the database so instead
