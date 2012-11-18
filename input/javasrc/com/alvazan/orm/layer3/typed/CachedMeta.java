@@ -22,6 +22,7 @@ public class CachedMeta {
 	private static final Logger log = LoggerFactory.getLogger(CachedMeta.class);
 	private Map<String, DboTableMeta> cachedMeta = new HashMap<String, DboTableMeta>();
 	private NoSqlEntityManager mgr;
+	private int counter  = 0;
 	
 	public void init(NoSqlEntityManagerFactory factory) {
 		mgr = factory.createEntityManager();
@@ -59,6 +60,12 @@ public class CachedMeta {
 			}
 	
 			cachedMeta.put(colFamily, table);
+			
+			if(counter >= 100) {
+				counter = 0;
+				mgr.clear(); //clear the cache, it's not needed for a while
+			}
+			
 			return table;
 		}
 	}
