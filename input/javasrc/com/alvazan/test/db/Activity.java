@@ -33,6 +33,7 @@ import com.eaio.uuid.UUID;
 	@NoSqlQuery(name="findByName", query="select * FROM TABLE as e WHERE e.name=:name"),
 	@NoSqlQuery(name="findByNumTimes", query="select * FROM TABLE as e WHERE e.numTimes=:numTimes"),
 	@NoSqlQuery(name="findByFloat", query="select * FROM TABLE as e WHERE e.myFloat=:myFloat"),
+	@NoSqlQuery(name="findById", query="select * FROM TABLE as e WHERE e.id=:id"),
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
 	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
 	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date")
@@ -211,7 +212,13 @@ public class Activity {
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList(0, null);
 	}
-	
+
+	public static List<Activity> findById(NoSqlEntityManager mgr, String id) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findById");
+		query.setParameter("id", id);
+		return query.getResultList(0, null);
+	}
+
 	public static List<Activity> findWithAnd(NoSqlEntityManager mgr, String name, long numTimes) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithAnd");
 		query.setParameter("name", name);

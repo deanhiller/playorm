@@ -239,5 +239,32 @@ public class TestIndexes {
 		return all;
 	}
 
+	@Test
+	public void testForQueryOnPrimaryKey() {
+		Activity act = new Activity("act1");
+		act.setName("hello");
+		act.setUniqueColumn("notunique");
+		act.setNumTimes(5);
+		mgr.put(act);
+
+		Activity act2 = new Activity("act2");
+		act2.setUniqueColumn(act.getUniqueColumn());
+		act2.setName("hello");
+		act2.setNumTimes(4);
+		mgr.put(act2);
+
+		Activity act3 = new Activity("act3");
+		act3.setUniqueColumn("isunique");
+		act3.setName("hellossss");
+		act3.setNumTimes(8);
+		mgr.put(act3);
+
+		mgr.flush();
+
+		List<Activity> activities = Activity.findById(mgr,"act1");
+		Assert.assertEquals(1, activities.size());
+		Activity activity = activities.get(0);
+		Assert.assertEquals(act.getName(), activity.getName());
+	}
 
 }
