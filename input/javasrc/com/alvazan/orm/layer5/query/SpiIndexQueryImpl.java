@@ -176,35 +176,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		
 		if(info.isIndexed()) {
 			//its an indexed column
-			AbstractCursor<IndexColumn> scan;
-			if(root.getType() == NoSqlLexer.EQ) {
-				byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
-				Key key = new Key(data, true);
-				scan = session.scanIndex(scanInfo, key, key, batchSize);
-			} else if(root.getType() == NoSqlLexer.GT
-					|| root.getType() == NoSqlLexer.GE
-					|| root.getType() == NoSqlLexer.LT
-					|| root.getType() == NoSqlLexer.LE
-					|| root.isInBetweenExpression()) {
-				Key from = null;
-				Key to = null;
-				if(root.isInBetweenExpression()) {
-					ExpressionNode node = root.getGreaterThan();
-					ExpressionNode node2 = root.getLessThan();
-					from = createLeftKey(node, info);
-					to = createRightKey(node2, info);
-				} else if(root.getType() == NoSqlLexer.GT
-						|| root.getType() == NoSqlLexer.GE) {
-					from = createLeftKey(root, info);
-				} else if(root.getType() == NoSqlLexer.LT) {
-					to = createRightKey(root, info);
-				} else
-					throw new UnsupportedOperationException("not done yet here");
-					scan = session.scanIndex(scanInfo, from, to, batchSize);
-			} else
-				throw new UnsupportedOperationException("not supported yet. type="+root.getType());
-			DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
-			return processKeys;
+			return processIndexColumn(root, scanInfo, viewInfo, info);
 		} else if (info.getOwner().getIdColumnMeta().getColumnName().equals(info.getColumnName())) {
 			//its a non-indexed primary key
 			AbstractCursor<KeyValue<Row>> scan;
@@ -220,6 +192,38 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			return processKeys;
 		} else
 			throw new IllegalArgumentException("You cannot have '"+info.getColumnName() + "' in your sql query since "+info.getColumnName()+" is neither a Primary Key nor a column with @Index annotation on the field in the entity");			
+	}
+
+	private DirectCursor<IndexColumnInfo> processIndexColumn(ExpressionNode root, ScanInfo scanInfo, ViewInfoImpl viewInfo, DboColumnMeta info) {
+		AbstractCursor<IndexColumn> scan;
+		if(root.getType() == NoSqlLexer.EQ) {
+			byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
+			Key key = new Key(data, true);
+			scan = session.scanIndex(scanInfo, key, key, batchSize);
+		} else if(root.getType() == NoSqlLexer.GT
+				|| root.getType() == NoSqlLexer.GE
+				|| root.getType() == NoSqlLexer.LT
+				|| root.getType() == NoSqlLexer.LE
+				|| root.isInBetweenExpression()) {
+			Key from = null;
+			Key to = null;
+			if(root.isInBetweenExpression()) {
+				ExpressionNode node = root.getGreaterThan();
+				ExpressionNode node2 = root.getLessThan();
+				from = createLeftKey(node, info);
+				to = createRightKey(node2, info);
+			} else if(root.getType() == NoSqlLexer.GT
+					|| root.getType() == NoSqlLexer.GE) {
+				from = createLeftKey(root, info);
+			} else if(root.getType() == NoSqlLexer.LT) {
+				to = createRightKey(root, info);
+			} else
+				throw new UnsupportedOperationException("not done yet here");
+			scan = session.scanIndex(scanInfo, from, to, batchSize);
+		} else
+			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
+		DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
+		return processKeys;
 	}
 
 	private Key createRightKey(ExpressionNode node, DboColumnMeta info) {
