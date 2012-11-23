@@ -132,7 +132,7 @@ public class ScannerForField {
 		return new IllegalArgumentException("No converter found for field='"+field.getName()+"' in class="
 				+field.getDeclaringClass()+".  You need to either add one of the @*ToOne annotations, @Embedded, @Transient " +
 						"or add your own converter calling EntityMgrFactory.setup(Map<Class, Converter>) which " +
-						"will then work for all fields of that type OR add @Column(customConverter=YourConverter.class)" +
+						"will then work for all fields of that type OR add @NoSqlConverter(converter=YourConverter.class)" +
 						" or finally if we missed a standard converter, we need to add it in file InspectorField.java" +
 						" in the constructor and it is trivial code(and we can copy the existing pattern)");
 	}
