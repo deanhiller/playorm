@@ -28,9 +28,8 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 
 	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
-	private final DboColumnToManyMeta metaDbo = new DboColumnToManyMeta();
+	private DboColumnToManyMeta metaDbo = new DboColumnToManyMeta();
 	
-	@Override
 	public DboColumnMeta getMetaDbo() {
 		return metaDbo;
 	}
@@ -138,8 +137,11 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void translateToColumnMap(OWNER entity, RowToPersist row) {
+		
+		
 		Map mapOfProxies = (Map) ReflectionUtil.fetchFieldValue(entity, field);
-		Collection<PROXY> toBeAdded = mapOfProxies.values();
+		Collection collection = mapOfProxies.values();
+		Collection<PROXY> toBeAdded = collection;
 		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
 		if(mapOfProxies instanceof MapProxyFetchAll) {
 			MapProxyFetchAll mapProxy = (MapProxyFetchAll) mapOfProxies;
@@ -159,14 +161,12 @@ public final class MetaToManyField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		
 		//now process all the existing columns (we can add same entity as many times as we like and it does not
 		//get duplicated)
-		if (toBeAdded != null) {
-			for(PROXY proxy : toBeAdded) {
-				byte[] name = formTheName(proxy);
-				Column c = new Column();
-				c.setName(name);
+		for(PROXY proxy : toBeAdded) {
+			byte[] name = formTheName(proxy);
+			Column c = new Column();
+			c.setName(name);
 			
-				row.getColumns().add(c);
-			}
+			row.getColumns().add(c);
 		}
 	}
 	
