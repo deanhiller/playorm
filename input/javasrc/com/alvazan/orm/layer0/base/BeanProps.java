@@ -1,6 +1,7 @@
 package com.alvazan.orm.layer0.base;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,8 +31,10 @@ public class BeanProps {
 		
 		for(Field f : fields) {
 			f.setAccessible(true);
-			Object value = f.get(src);
-			f.set(dest, value);
+			if (!Modifier.isFinal(f.getModifiers())) {
+				Object value = f.get(src);
+				f.set(dest, value);
+			}
 		}
 	}
 	
