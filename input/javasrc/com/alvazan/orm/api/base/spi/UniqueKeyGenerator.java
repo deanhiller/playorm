@@ -48,7 +48,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	
 	public static synchronized String generateKey() {
 		long time = lastTimeStamp++;
-		return time+":"+HOST_NAME;
+		return time+"."+HOST_NAME;
 	}
 
 	private static String createHostName() throws UnknownHostException {
