@@ -536,7 +536,10 @@ public class ScannerSql {
 						+ metaClass.getColumnFamily()+" potential columns are="+names+"  rowkey col="+colMeta.getColumnName());
 			}
 		}
-
+		
+		if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @NoSqlIndexed annotation on the field in the entity");
+		
 		wiring.addEagerlyJoinedView(tableInfo);
 		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
 		attributeNode2.setState(attr, textInSql);
