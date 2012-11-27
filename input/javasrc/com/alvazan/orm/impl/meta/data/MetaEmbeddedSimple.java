@@ -82,6 +82,8 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 		RowToPersist row = info.getRow();
 		
 		Collection<T> values = (Collection<T>) ReflectionUtil.fetchFieldValue(entity, field);
+		if (values == null)
+			values = new ArrayList<T>();
 		Collection<T> toBeAdded = values; //all values in the list get added if not an OurAbstractCollection
 		Collection<T> toBeRemoved = new ArrayList<T>();
 		if(values instanceof SimpleAbstractCollection) {
