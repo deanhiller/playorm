@@ -537,8 +537,6 @@ public class ScannerSql {
 			}
 		}
 		
-		if(!colMeta.isIndexed())
-			throw new IllegalArgumentException("You cannot have '"+textInSql+"' in your sql query since "+columnName+" has no @NoSqlIndexed annotation on the field in the entity");
 		
 		wiring.addEagerlyJoinedView(tableInfo);
 		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
