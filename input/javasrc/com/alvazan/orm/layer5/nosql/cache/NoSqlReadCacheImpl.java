@@ -100,11 +100,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
-		Cache c = this;
-		if(skipCache) {
-			c = new EmptyCache(this);
-		}
+			Iterable<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
+		Cache c = new EmptyCache(this, skipCache, cacheResults);
 		
 		//NOTE: I would put a finally to clear out the threadlocal normally BUT sometimes log statements may
 		//cause further finds to be called which come in here as well and on their way BACK up the stack, they set
@@ -112,7 +109,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		CacheThreadLocal.setCache(c);
 
 		//A layer below will read the thread local and pass it to lowest layer to use
-		AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, batchSize);
+		AbstractCursor<KeyValue<Row>> rowsFromDb = session.find(colFamily, rowKeys, skipCache, cacheResults, batchSize);
 		return rowsFromDb;
 	}
 	

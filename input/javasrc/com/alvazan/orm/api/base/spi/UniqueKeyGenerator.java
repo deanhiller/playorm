@@ -4,8 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.joda.time.LocalDateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -22,8 +20,7 @@ import org.slf4j.LoggerFactory;
  */
 public class UniqueKeyGenerator implements KeyGenerator {
 
-	private static final Logger log = LoggerFactory.getLogger(UniqueKeyGenerator.class);
-	private static final String IP_ADDRESS;
+	private static final String HOST_NAME;
 
 	private static long lastTimeStamp;
 	
@@ -33,16 +30,14 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		lastTimeStamp = System.currentTimeMillis() - baseTime;
 		
 		try {
-			IP_ADDRESS = createHostName();
+			HOST_NAME = createHostName();
 		} catch(Throwable e) {
-			log.warn("Could not create a ip needed for unique key gen.\n" +
+			throw new RuntimeException("Could not create a ip needed for unique key gen.\n" +
 					"PLEASE if you are on linux configure it properly and\n" +
 					" run this simple code to test(this code fails right" +
 					" now returning localhost instead of the hostname!!!)\n" +
 					"InetAddress local = InetAddress.getLocalHost();\n" +
 					"String hostname = local.getHostName();", e);
-			
-			throw new RuntimeException(e);
 		}
 	}
 	
@@ -53,7 +48,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	
 	public static synchronized String generateKey() {
 		long time = lastTimeStamp++;
-		return time+":"+IP_ADDRESS;
+		return time+"."+HOST_NAME;
 	}
 
 	private static String createHostName() throws UnknownHostException {
@@ -71,4 +66,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return address;
 	}
 
+	public static String getHostname() {
+		return HOST_NAME;
+	}
 }

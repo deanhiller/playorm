@@ -22,6 +22,7 @@ public class CachedMeta {
 	private static final Logger log = LoggerFactory.getLogger(CachedMeta.class);
 	private Map<String, DboTableMeta> cachedMeta = new HashMap<String, DboTableMeta>();
 	private NoSqlEntityManager mgr;
+	private int counter  = 0;
 	
 	public void init(NoSqlEntityManagerFactory factory) {
 		mgr = factory.createEntityManager();
@@ -43,6 +44,7 @@ public class CachedMeta {
 				return dboTableMeta;
 			
 			DboTableMeta table = mgr.find(DboTableMeta.class, colFamily);
+			counter++;
 			if(table == null)
 				throw new RuntimeException("table="+colFamily+" was not found");
 			//We don't want lots of threads writing data into this structure as it reads from the database so instead
@@ -59,6 +61,12 @@ public class CachedMeta {
 			}
 	
 			cachedMeta.put(colFamily, table);
+			
+			if(counter >= 100) {
+				counter = 0;
+				mgr.clear(); //clear the cache, it's not needed for a while
+			}
+			
 			return table;
 		}
 	}

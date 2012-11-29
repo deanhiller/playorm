@@ -168,7 +168,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		Iterable<byte[]> virtKeys = new IterToVirtual(meta, noSqlKeys);
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
-		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, virtKeys, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, virtKeys, true, false, batchSize);
 		if(keys != null)
 			return new CursorTypedResp<T>(meta, keys, rows2);
 		else

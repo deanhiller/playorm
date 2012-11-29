@@ -119,7 +119,7 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(virtKey);
 
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, rowKeys, false, null);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, rowKeys, false, true, null);
 		Holder<KeyValue<Row>> holder = rows.nextImpl();
 		if(holder == null)
 			throw new RowNotFoundException("row for type="+classMeta.getMetaClass().getName()+" not found for key="+entityId);

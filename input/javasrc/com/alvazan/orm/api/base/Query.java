@@ -20,12 +20,27 @@ public interface Query<T> {
 	 * @return
 	 */
 	public Cursor<KeyValue<T>> getResults();
+	/**
+	 * getResults caches results returned as you iterate over them BUT if you are going to stream 1000's of results
+	 * to someone, you an skip caching results so memory does not build up using this method...
+	 * @param skipCache 
+	 * @return
+	 */
+	public Cursor<KeyValue<T>> getResults(boolean cacheResults);
 	
 	/**
 	 * Wraps the cursor in a nice hasNext/next Iterable
 	 * @return
 	 */
 	public Iterable<KeyValue<T>> getResultsIter();
+	
+	/**
+	 * getResults caches results returned as you iterate over them BUT if you are going to stream 1000's of results
+	 * to someone, you can skip caching results so memory does not build up using this method...
+	 * @param skipCache 
+	 * @return
+	 */
+	public Iterable<KeyValue<T>> getResultsIter(boolean cacheResults);
 	
 	public T getSingleObject();
 	

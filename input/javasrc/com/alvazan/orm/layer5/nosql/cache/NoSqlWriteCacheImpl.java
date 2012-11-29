@@ -90,15 +90,15 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, boolean skipCache, Integer batchSize) {
+			Iterable<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
 		int size = 500;
 		if(batchSize != null)
 			size = batchSize;
 		return rawSession.find(colFamily, rowKeys, null, size, null, ormSession);
 	}
 	
-	public List<Row> find(DboTableMeta colFamily, List<byte[]> keys) {
-		AbstractCursor<KeyValue<Row>> results = find(colFamily, keys, false, null);
+	private List<Row> find(DboTableMeta colFamily, List<byte[]> keys, boolean cacheResults) {
+		AbstractCursor<KeyValue<Row>> results = find(colFamily, keys, false, cacheResults, null);
 		List<Row> rows = new ArrayList<Row>();
 		while(true) {
 			Holder<KeyValue<Row>> holder = results.nextImpl();
@@ -114,7 +114,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		List<byte[]> rowKeys = new ArrayList<byte[]>();
 		rowKeys.add(rowKey);
 		//log.debug("cf="+colFamily+" finding the key="+new ByteArray(rowKey));
-		List<Row> rows = find(colFamily, rowKeys);
+		List<Row> rows = find(colFamily, rowKeys, true);
 		return rows.get(0);
 	}
 

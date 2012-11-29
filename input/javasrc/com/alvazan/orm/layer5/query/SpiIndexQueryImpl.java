@@ -1,13 +1,18 @@
 package com.alvazan.orm.layer5.query;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.Key;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
@@ -169,6 +174,27 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		ScanInfo scanInfo = createScanInfo(viewInfo, info);
 		alreadyJoinedViews.add(viewInfo);
 		
+		if(info.isIndexed()) {
+			//its an indexed column
+			return processIndexColumn(root, scanInfo, viewInfo, info);
+		} else if (info.getOwner().getIdColumnMeta().getColumnName().equals(info.getColumnName())) {
+			//its a non-indexed primary key
+			AbstractCursor<KeyValue<Row>> scan;
+			if(root.getType() == NoSqlLexer.EQ) {
+				byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
+				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
+				List<byte[]> keyList= new ArrayList<byte[]>();
+				keyList.add(virtualkey);
+				scan = session.find(info.getOwner(), keyList, false, true, batchSize);
+			} else
+				throw new UnsupportedOperationException("Other operations not supported yet for Primary Key. Use @NoSQLIndexed for Primary Key.type="+root.getType());
+			DirectCursor<IndexColumnInfo> processKeys = processKeysforPK(viewInfo, info, scan);
+			return processKeys;
+		} else
+			throw new IllegalArgumentException("You cannot have '"+info.getColumnName() + "' in your sql query since "+info.getColumnName()+" is neither a Primary Key nor a column with @Index annotation on the field in the entity");			
+	}
+
+	private DirectCursor<IndexColumnInfo> processIndexColumn(ExpressionNode root, ScanInfo scanInfo, ViewInfoImpl viewInfo, DboColumnMeta info) {
 		AbstractCursor<IndexColumn> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
 			byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
@@ -193,12 +219,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 				to = createRightKey(root, info);
 			} else
 				throw new UnsupportedOperationException("not done yet here");
-			
 			scan = session.scanIndex(scanInfo, from, to, batchSize);
-			
-		} else 
+		} else
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
-
 		DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
 		return processKeys;
 	}
@@ -225,6 +248,11 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 
 	private DirectCursor<IndexColumnInfo> processKeys(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<IndexColumn> scan) {
 		DirectCursor<IndexColumnInfo> cursor = new CursorSimpleTranslator(viewInfo, info, scan);
+		return new CachingCursor<IndexColumnInfo>(cursor);
+	}
+
+	private DirectCursor<IndexColumnInfo> processKeysforPK(ViewInfo viewInfo, DboColumnMeta info, AbstractCursor<KeyValue<Row>> scan) {
+		DirectCursor<IndexColumnInfo> cursor = new CursorForPrimaryKey(viewInfo, info, scan);
 		return new CachingCursor<IndexColumnInfo>(cursor);
 	}
 

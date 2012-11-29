@@ -4,9 +4,9 @@
 
 For paid support send an email to dean at alvazan.com. We support clients in Asia, Europe, South and North America.
 
-For training in the US as low as 200/student, feel free to contact us as well.
+For training in the US, feel free to contact us as well.
 
-***Developers***: Please help us by encouraging those people with the money to utilize our support and/or training as we use the money to create a better product for you and the more we can split the cost between many companies, the cheaper it is to add more and more features.
+***Developers***: Please help us by encouraging those people with the money to utilize our support and/or training as we use the money to create a better product for you and the more we can split the cost between many companies, the cheaper it is to add more and more features.  Also, please write a blog or link to us...we can always use more marketing and don't forget to star our github project ;).  Even in open source, marketing helps the project become much better for your use.
 
 Recently, We are working more and more on matching any model you throw at us.  We want to work with the part of your data that is structured and allow you to still have tons of unstructured data.
 
@@ -16,30 +16,32 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
-* @NoSqlEmbedded for List&gt;Integer&lt;, List&gt;LocaDate&lt;, List&gt;String&lt;, etc. etc. (something NOT in JPA)
-* Just added support for Entity has a Cursor instead of List which is lazy read to prevent out of memory on VERY wide rows
+* [@NoSqlEmbedded for List&lt;Integer&gt;, List&lt;LocaDate&gt;, List&lt;String&gt;,](https://github.com/deanhiller/playorm/wiki/@NoSqlEmbedded-for-Integer,-LocalDate-and-String-list) etc. etc. (something NOT in JPA)
+* In Playorm, [Entity can have a Cursor instead of List](https://github.com/deanhiller/playorm/wiki/Support-for-cursor-in-an-Entity-for-very-wide-rows) which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
-* Typical query support of <=, <, >, >= and = and no limitations here
-* Typical query support of AND and OR as well as parenthesis 
-* [Inner Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
-* Left Outer Join support
-* Return Database cursor on query
-* OneToMany, ManyToMany, OneToOne, and ManyToOne but the ToMany's are nosql fashion not like RDBMS
-* support of a findAll(Class c, List<Object> keys) as is typical in nosql to parallel the reads
-* Inheritance class heirarchy in one table is supported like hibernate
+* Typical query support of [ <=, <, >, >= and = and no limitations here] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
+* Typical query support of [AND and OR as well as parenthesis ] (https://github.com/deanhiller/playorm/wiki/SJQL-Support)
+* [Inner Join and Left Outer Join support](https://github.com/deanhiller/playorm#now-joins) (Must keep your very very large tables partitioned so you get very fast access times here)
+* Return Database cursor on query. [See an example how it works] (https://github.com/deanhiller/playorm/wiki/An-example-to-begin-with-PlayOrm)
+* [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
+* [Support of a findAll(Class c, List<Object> keys)](https://github.com/deanhiller/playorm/wiki/Support-for-retrieving-many-entities-in-parallel) as is typical in nosql to parallel the reads
+* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
-* first level read cache
-* Automatically creates ColumnFamilies at runtime
-* Includes it's own in-memory database for TDD in your unit tests!!!!!
-* [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)t
-* logging interface below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
-* A raw interface using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
-* An ad-hoc query interface that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
-* IF you have some noSQL data and some Relational data, store your relational data in noSQL now and just maintain one database in production!!!
-* support for joda-time LocalDateTime, LocalDate, LocalTime which works way better than java's Date object and is less buggy than java's Date and Calendar objects
-* Command Line tool
+* [First level read cache] (https://github.com/deanhiller/playorm/wiki/Caching-in-Playorm)
+* Automatically creates ColumnFamilies at runtime. [Check this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to know how easy it is to create an entity using Playorm
+* Includes it's own [in-memory database for TDD] (https://github.com/deanhiller/playorm#note-on-test-driven-development) in your unit tests!!!!!
+* [Saves you MORE data storage compared to other solutions](https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage)
+* [logging interface] (https://github.com/deanhiller/playorm/wiki/Logging-to-know-for-your-benefit) below the first level cache so you can see the raw operations on cassandra and optimize just like when you use hibernate's logging
+* Log all your webservers logs to a fixed number of rows in cassandra so you can have one view into your webserver logs
+* [A raw interface] (https://github.com/deanhiller/playorm/wiki/An-important-note-on-storage#The-Raw-Typed-Interface) using only BigDecimal, BigInteger, and String types which is currently used to upload user defined datasets through a web interface(and we wire that into generating meta data so they can ad-hoc query on the nosql system)
+* [An ad-hoc query interface] (https://github.com/deanhiller/playorm/wiki/A-basic-ad-hoc-query-example) that can query on any table that was from an Entity object.  To us on other tables, you can also code up and save DboTableMeta objects and the ad-hoc query interface gets you query support into those tables
+* If you have some noSQL data and some Relational data, use Playorm and store your relational data in noSQL now and just maintain one database in production! As Playorm supports [SQL] (https://github.com/deanhiller/playorm/wiki/SJQL-Support), and many relations like [*ToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) and [*ToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany)
+* [Support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
+* [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
+* [A plugin for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
+* [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own custom converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
 
 
 ### Features soon to be added
@@ -98,7 +100,7 @@ So what about the denormalization hype in noSQL?  Well, be careful.  I was on on
 
 ### Now, Joins
 
-As of 9/1/12 we only support INNER JOIN and will add LEFT OUTER soon.
+**INNER JOIN**
 
 Taking our previous example of the 100k partitions, let's say we have a table with no more than 10,000 rows called ActivityTypeInfo which has a column vendor as well as many other columns.  Let's also say our Activity has a column ActivityTypeInfoId for our join.  Now we could do a join like so with any of those 100k partitions
 
@@ -107,6 +109,25 @@ Taking our previous example of the 100k partitions, let's say we have a table wi
 
 @NoSqlQuery(name="findWithJoinQuery", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t "+
 "INNER JOIN t.activityTypeInfo as i WHERE i.type = :type and t.numShares < :shares"),
+
+//NOW, we run the simple query
+Query query = entityMgr.getNamedQuery("findWithJoinQuery");
+query.setParameter("type", 5); 
+query.setParameter("shares", 28); 
+query.setParameter("partId", null);  //Here we are saying to use the 'null' partition
+                                     //Where any activities with no account will end up
+List<Activity> activity = query.getResultList();
+```
+
+**LEFT OUTER JOIN**
+
+In continuation of above code, we can have NoSqlQuery again that would be on our Activity.java class
+
+
+```
+
+@NoSqlQuery(name="findWithJoinQuery", query="PARTITIONS t(:partId) SELECT t FROM TABLE as t "+
+"LEFT JOIN t.activityTypeInfo as i WHERE i.type = :type and t.numShares < :shares"),
 
 //NOW, we run the simple query
 Query query = entityMgr.getNamedQuery("findWithJoinQuery");

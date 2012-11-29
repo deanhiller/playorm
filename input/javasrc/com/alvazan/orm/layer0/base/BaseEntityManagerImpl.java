@@ -146,16 +146,16 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		
 		//we pass in null for batch size such that we do infinite size or basically all keys passed into this method in one
 		//shot
-		return findAllImpl2(meta, iter, null, null);
+		return findAllImpl2(meta, iter, null, true, null);
 	}
 	
-	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, Integer batchSize) {
+	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, boolean cacheResults, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
 		Iterable<byte[]> virtKeys = new IterToVirtual(meta.getMetaDbo(), iter);
 		boolean skipCache = query != null;
-		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), virtKeys, skipCache, batchSize);
+		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), virtKeys, skipCache, cacheResults, batchSize);
 		return new CursorRow<T>(session, meta, cursor, query);
 	}
 

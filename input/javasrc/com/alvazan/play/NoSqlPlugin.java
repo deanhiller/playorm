@@ -19,6 +19,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.exc.RowNotFoundException;
+import com.alvazan.play.logging.CassandraAppender;
 
 public class NoSqlPlugin extends PlayPlugin {
 
@@ -82,6 +83,7 @@ public class NoSqlPlugin extends PlayPlugin {
 
         NoSqlEntityManagerFactory factory = Bootstrap.create(props, Play.classloader);
         NoSql.setEntityManagerFactory(factory);
+        CassandraAppender.setFactory(factory);
 	}
 
 	@Override
@@ -89,7 +91,8 @@ public class NoSqlPlugin extends PlayPlugin {
 		log.info("stopping PlayOrm");
 		if(NoSql.getEntityManagerFactory() == null)
 			return;
-		
+
+		CassandraAppender.setFactory(null);
 		NoSql.getEntityManagerFactory().close();
 		NoSql.setEntityManagerFactory(null);
 	}
@@ -101,5 +104,20 @@ public class NoSqlPlugin extends PlayPlugin {
 
         NoSqlEntityManager manager = NoSql.getEntityManagerFactory().createEntityManager();
         NoSql.createContext(manager);
+    }
+    
+    @Override
+    public void afterInvocation() {
+    	NoSql.clearContext();
+    }
+
+    @Override
+    public void onInvocationException(Throwable e) {
+    	NoSql.clearContext();
+    }
+
+    @Override
+    public void invocationFinally() {
+    	NoSql.clearContext();
     }
 }
