@@ -536,7 +536,8 @@ public class ScannerSql {
 						+ metaClass.getColumnFamily()+" potential columns are="+names+"  rowkey col="+colMeta.getColumnName());
 			}
 		}
-
+		
+		
 		wiring.addEagerlyJoinedView(tableInfo);
 		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
 		attributeNode2.setState(attr, textInSql);
