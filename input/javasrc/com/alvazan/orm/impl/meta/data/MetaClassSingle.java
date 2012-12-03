@@ -131,7 +131,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 			partitionColumns.add(field);
 	}
 	
-	public MetaField<T> getMetaFieldByCol(String columnName){
+	public MetaField<T> getMetaFieldByCol(Class clazz, String columnName){
 		if(idField.getColumnName().equals(columnName))
 			return idField;
 		return columnNameToField.get(columnName);

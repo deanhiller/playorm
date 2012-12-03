@@ -193,7 +193,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads
 		QueryAdapter<T> adapter = adapterFactory.get();
-		adapter.setup(metaClass, metaQuery, spiAdapter, this);
+		adapter.setup(metaClass, metaQuery, spiAdapter, this, forEntity);
 		return adapter;
 	}
 	

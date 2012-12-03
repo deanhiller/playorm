@@ -35,7 +35,7 @@ public interface MetaClass<T> {
 
 	List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey);
 
-	MetaField<T> getMetaFieldByCol(String columnName);
+	MetaField<T> getMetaFieldByCol(Class targetSubclass, String columnName);
 
 	boolean isPartitioned();
 

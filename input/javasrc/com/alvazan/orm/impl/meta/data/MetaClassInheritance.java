@@ -116,8 +116,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public MetaField<T> getMetaFieldByCol(String columnName) {
-		throw new UnsupportedOperationException("not done yet");
+	public MetaField<T> getMetaFieldByCol(Class c, String columnName) {
+		String type = classToType.get(c);
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
+		return metaSingle.getMetaFieldByCol(c, columnName);
 	}
 
 	@Override

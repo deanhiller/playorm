@@ -59,6 +59,27 @@ public class TestInheritanceSingleTable {
 	}
 	
 	@Test
+	public void testQueryWithParam() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setName("dean");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setDescription("dean");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
+		mgr.put(toMany);
+		
+		mgr.flush();
+		
+		InheritanceSub1 result = InheritanceSub1.findByName(mgr, common.getName());
+		Assert.assertNotNull(result);
+		Assert.assertEquals(common.getDiff(), result.getDiff());
+	}
+	
+	@Test
 	public void testBasicMultipleClasses() {
 		InheritanceSub1 common = new InheritanceSub1();
 		common.setName("xxxx");
