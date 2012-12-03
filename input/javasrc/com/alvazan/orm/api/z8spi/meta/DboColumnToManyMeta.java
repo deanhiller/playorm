@@ -35,7 +35,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	
 	@Override
 	public String getIndexTableName() {
-		StorageTypeEnum storageType = fkToColumnFamily.getIdColumnMeta().getStorageType();
+		DboColumnIdMeta idMeta = fkToColumnFamily.getIdColumnMeta();
+		StorageTypeEnum storageType = idMeta.getStorageType();
 		return storageType.getIndexTableName();
 	}
 	
