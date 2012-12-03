@@ -290,6 +290,7 @@ public class ScannerForField {
 				throw new RuntimeException("type="+entityType+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 			theSuperclass = findSuperclassWithNoSqlEntity(entityType);
+			type = theSuperclass;
 			runOtherSuperclassChecks(entityType, field, theSuperclass);		
 //			throw new RuntimeException("You have entityType="+entityType.getName()+" so that class needs the NoSqlEntity annotation" +
 //					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName()+" (or your wrote in the wrong entityType??)");
@@ -302,7 +303,7 @@ public class ScannerForField {
 			//created yet, oh joy...so we findOrCreate and the shell will be filled in when processing
 			//that @NoSqlEntity when it scans the subclasses.
 			MetaClassInheritance meta = (MetaClassInheritance) fkMeta;
-			fkMeta = meta.findOrCreate(type, theSuperclass);
+			fkMeta = meta.findOrCreate(entityType, theSuperclass);
 		}
 		
 		if(field.getType().equals(CursorToMany.class)) {
@@ -380,7 +381,7 @@ public class ScannerForField {
 				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
-			//type = theSuperclass;
+			type = theSuperclass;
 			runOtherSuperclassChecks(field.getType(), field, theSuperclass);
 			
 		} else if(field.getType().isAnnotationPresent(NoSqlInheritance.class)){
