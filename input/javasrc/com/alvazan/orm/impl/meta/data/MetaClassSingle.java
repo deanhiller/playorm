@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
-import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
