@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.List;
 
+import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
@@ -16,6 +17,7 @@ import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.impl.meta.data.collections.ToOneProviderProxy;
 
 public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
@@ -37,15 +39,26 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		String columnName = getColumnName();
 		byte[] colBytes = StandardConverters.convertToBytes(columnName);
 		Column column = row.getColumn(colBytes);
-		
 		if(column == null) {
 			column = new Column();
 		}
 		
-		Object proxy = convertIdToProxy(row, column.getValue(), session);
+		Object proxy;
+		if(field.getType().equals(ToOneProvider.class))
+			proxy = translateFromToProxy(row, column.getValue(), session);
+		else {
+			proxy = convertIdToProxy(row, column.getValue(), session);
+		}
+		
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
+	private Object translateFromToProxy(Row row, byte[] value,
+			NoSqlSession session) {
+		ToOneProvider<PROXY> toOne = new ToOneProviderProxy(classMeta, value, session);
+		return toOne;
+	}
+
 	@SuppressWarnings("unchecked")
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
@@ -55,6 +68,10 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		row.getColumns().add(col);
 		
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
+		
+		if(value instanceof ToOneProvider)
+			value = (PROXY) ((ToOneProvider)value).get();
+		
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
 		byte[] byteVal = classMeta.convertEntityToId(value);

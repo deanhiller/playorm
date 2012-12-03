@@ -2,7 +2,7 @@ package com.alvazan.orm.api.base;
 
 public class ToOneProvider<T> {
 
-	private T inst;
+	protected T inst;
 	
 	public T get() {
 		return inst;

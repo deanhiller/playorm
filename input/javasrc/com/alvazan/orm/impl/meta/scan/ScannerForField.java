@@ -385,7 +385,8 @@ public class ScannerForField {
 					"and then your getter should just be return provider.get() and the setter should be provider.set(yourInst) and all" +
 					"will be fine with the world");
 		} else if(field.getType() == ToOneProvider.class) {
-			throw new UnsupportedOperationException("I can quickly add this one if you need");
+			ParameterizedType genType = (ParameterizedType) field.getGenericType();
+			type = (Class) genType.getActualTypeArguments()[0];
 		}
 		
 		MetaProxyField metaField = metaProxyProvider.get();

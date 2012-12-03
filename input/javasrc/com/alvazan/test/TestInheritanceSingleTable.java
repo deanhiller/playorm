@@ -12,6 +12,7 @@ import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.InheritanceSuper;
 import com.alvazan.test.db.InheritanceToMany;
+import com.alvazan.test.db.InheritanceToOne;
 import com.alvazan.test.db.InheritanceToOneSpecific;
 
 public class TestInheritanceSingleTable {
@@ -85,40 +86,39 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(common.getName(), subResult1.getName());		
 	}
 	
-	//Special case, not done with this one yet...
-	//@Test
+	@Test
 	public void testToOneRelationship() {
-//		InheritanceSub1 common = new InheritanceSub1();
-//		common.setLastName("hiller");
-//		common.setName("xxxx");
-//		common.setDiff("diff");
-//		common.setNum(56);
-//		mgr.put(common);
-//		
-//		InheritanceSub2 toMany = new InheritanceSub2();
-//		toMany.setLastName("smith");
-//		toMany.setName("werew");
-//		toMany.setNum(78);
-//		toMany.setNumBalls(33);
-//		mgr.put(toMany);
-//		
-//		InheritanceToOne ent1 = new InheritanceToOne();
-//		ent1.setInheritance(common);
-//		
-//		InheritanceToOne ent2 = new InheritanceToOne();
-//		ent2.setInheritance(toMany);
-//		
-//		mgr.put(ent1);
-//		mgr.put(ent2);
-//		
-//		mgr.flush();
-//		
-//		InheritanceToOne result1 = mgr.find(InheritanceToOne.class, ent1.getId());
-//		Assert.assertTrue(result1.getInheritance() instanceof InheritanceSub1);
-//		Assert.assertEquals(common.getNum(), result1.getInheritance().getNum());
-//		InheritanceSub1 subResult1 = (InheritanceSub1) result1.getInheritance();
-//		Assert.assertEquals(common.getDiff(), subResult1.getDiff());
-//		Assert.assertEquals(common.getName(), subResult1.getName());
+		InheritanceSub1 sub1 = new InheritanceSub1();
+		sub1.setLastName("hiller");
+		sub1.setName("xxxx");
+		sub1.setDiff("diff");
+		sub1.setNum(56);
+		mgr.put(sub1);
+		
+		InheritanceSub2 sub2 = new InheritanceSub2();
+		sub2.setLastName("smith");
+		sub2.setName("werew");
+		sub2.setNum(78);
+		sub2.setNumBalls(33);
+		mgr.put(sub2);
+		
+		InheritanceToOne ent1 = new InheritanceToOne();
+		ent1.setInheritance(sub1);
+		
+		InheritanceToOne ent2 = new InheritanceToOne();
+		ent2.setInheritance(sub2);
+		
+		mgr.put(ent1);
+		mgr.put(ent2);
+		
+		mgr.flush();
+		
+		InheritanceToOne result1 = mgr.find(InheritanceToOne.class, ent1.getId());
+		Assert.assertTrue(result1.getInheritance() instanceof InheritanceSub1);
+		Assert.assertEquals(sub1.getNum(), result1.getInheritance().getNum());
+		InheritanceSub1 subResult1 = (InheritanceSub1) result1.getInheritance();
+		Assert.assertEquals(sub1.getDiff(), subResult1.getDiff());
+		Assert.assertEquals(sub1.getName(), subResult1.getName());
 		
 		
 	}
