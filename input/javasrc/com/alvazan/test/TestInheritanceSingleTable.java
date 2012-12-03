@@ -12,6 +12,7 @@ import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.InheritanceSuper;
 import com.alvazan.test.db.InheritanceToMany;
+import com.alvazan.test.db.InheritanceToManySpecific;
 import com.alvazan.test.db.InheritanceToOne;
 import com.alvazan.test.db.InheritanceToOneSpecific;
 
@@ -62,6 +63,37 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(toMany.getName(), ((InheritanceSub2)many).getName());
 	}
 
+	@Test
+	public void testToManyRelatipnshipSpecific() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setLastName("hiller");
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub1 common2 = new InheritanceSub1();
+		common2.setLastName("were");
+		common2.setName("wwww");
+		common2.setDiff("wwww");
+		common2.setNum(56);
+		mgr.put(common2);
+		
+		InheritanceToManySpecific ent1 = new InheritanceToManySpecific();
+		ent1.addSomething(common);
+		ent1.addSomething(common2);
+		
+		mgr.put(ent1);
+		
+		mgr.flush();
+		
+		InheritanceToManySpecific result1 = mgr.find(InheritanceToManySpecific.class, ent1.getId());
+		Assert.assertEquals(2, result1.getInheritance().size());
+		InheritanceSub1 sub1 = result1.getInheritance().get(0);
+		//read the other row in
+		sub1.getName();
+	}
+	
 	@Test
 	public void testToOneRelatipnshipSpecific() {
 		InheritanceSub1 common = new InheritanceSub1();

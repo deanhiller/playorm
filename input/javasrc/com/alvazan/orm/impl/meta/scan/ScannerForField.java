@@ -281,11 +281,30 @@ public class ScannerForField {
 	private MetaField processToMany(MetaClassSingle<?> ownerMeta, DboTableMeta t, Field field, String colName, Class entityType, Field fieldForKey) {
 		//at this point we only need to verify that 
 		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
-		if(!entityType.isAnnotationPresent(NoSqlEntity.class))
-			throw new RuntimeException("You have entityType="+entityType.getName()+" so that class needs the NoSqlEntity annotation" +
-					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName()+" (or your wrote in the wrong entityType??)");
-
-		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(entityType);
+		Class<?> theSuperclass = null;
+		Class<?> type = entityType;
+		//at this point we only need to verify that 
+		//the class referred has the @NoSqlEntity tag so it is picked up by scanner at a later time
+		if(!entityType.isAnnotationPresent(NoSqlEntity.class)) {
+			if(!entityType.isAnnotationPresent(NoSqlDiscriminatorColumn.class))
+				throw new RuntimeException("type="+entityType+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
+					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
+			theSuperclass = findSuperclassWithNoSqlEntity(entityType);
+			runOtherSuperclassChecks(entityType, field, theSuperclass);		
+//			throw new RuntimeException("You have entityType="+entityType.getName()+" so that class needs the NoSqlEntity annotation" +
+//					" since field has OneToMany annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName()+" (or your wrote in the wrong entityType??)");
+		}
+		
+		MetaAbstractClass<?> fkMeta = metaInfo.findOrCreate(type);
+		
+		if(theSuperclass != null) {
+			//we need to swap the classMeta to the more specific class meta which may have not been 
+			//created yet, oh joy...so we findOrCreate and the shell will be filled in when processing
+			//that @NoSqlEntity when it scans the subclasses.
+			MetaClassInheritance meta = (MetaClassInheritance) fkMeta;
+			fkMeta = meta.findOrCreate(type, theSuperclass);
+		}
+		
 		if(field.getType().equals(CursorToMany.class)) {
 			MetaCursorField metaField = metaCursorProvider.get();
 			metaField.setup(t, field, colName, ownerMeta, fkMeta);
@@ -361,19 +380,9 @@ public class ScannerForField {
 				throw new RuntimeException("type="+field.getType()+" needs the NoSqlEntity annotation(or a NoSqlDiscriminatorColumn if it is a subclass of an entity)" +
 					" since field has *ToOne annotation.  field="+field.getDeclaringClass().getName()+"."+field.getName());
 			theSuperclass = findSuperclassWithNoSqlEntity(field.getType());
-			type = theSuperclass;
-			if(log.isDebugEnabled())
-				log.debug("superclass with @NoSqlEntity="+theSuperclass);
-			if(theSuperclass == null)
-				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
-						"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");
-			NoSqlInheritance anno = theSuperclass.getAnnotation(NoSqlInheritance.class);
-			if(anno == null)
-				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn but as we go " +
-						"up the superclass tree, none of the classes are annotated with NoSqlInheritance");
-			else if(!classExistsInList(anno, field.getType()))
-				throw new RuntimeException("type="+field.getType()+" has a NoSqlDiscriminatorColumn and has a super class with NoSqlEntity and NoSqlInheritance but is not listed" +
-						"in the NoSqlInheritance tag as one of the subclasses to scan.  Please add it");
+			//type = theSuperclass;
+			runOtherSuperclassChecks(field.getType(), field, theSuperclass);
+			
 		} else if(field.getType().isAnnotationPresent(NoSqlInheritance.class)){
 			throw new IllegalArgumentException("Okay, so here is the deal.  You have a ToOne relationship defined with an " +
 					"Abstract class that has N number of subclasses.  I do not know which subclass to create a " +
@@ -402,6 +411,21 @@ public class ScannerForField {
 		
 		metaField.setup(t, field, colName, classMeta, isIndexed, isPartitionedBy);
 		return metaField;
+	}
+
+	private void runOtherSuperclassChecks(Class entityType, Field field, Class<?> theSuperclass) {
+		if(log.isDebugEnabled())
+			log.debug("superclass with @NoSqlEntity="+theSuperclass);
+		if(theSuperclass == null)
+			throw new RuntimeException("type="+entityType+" has a NoSqlDiscriminatorColumn but as we go " +
+					"up the superclass tree, none of the classes are annotated with NoSqlEntity, please add that annotation");
+		NoSqlInheritance anno = theSuperclass.getAnnotation(NoSqlInheritance.class);
+		if(anno == null)
+			throw new RuntimeException("type="+entityType+" has a NoSqlDiscriminatorColumn but as we go " +
+					"up the superclass tree, none of the classes are annotated with NoSqlInheritance");
+		else if(!classExistsInList(anno, entityType))
+			throw new RuntimeException("type="+entityType+" has a NoSqlDiscriminatorColumn and has a super class with NoSqlEntity and NoSqlInheritance but is not listed" +
+					"in the NoSqlInheritance tag as one of the subclasses to scan.  Please add it");
 	}
 
 	@SuppressWarnings("unused")
