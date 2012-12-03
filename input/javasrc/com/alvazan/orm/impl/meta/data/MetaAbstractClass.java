@@ -24,7 +24,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	
 	protected MetaIdField<T> idField;
 	
-	private Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
+	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 	
 	public void setMetaDbo(DboTableMeta metaDbo) {
 		this.metaDbo = metaDbo;
@@ -90,13 +90,13 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		return metaDbo;
 	}
 	
-	public SpiMetaQuery getNamedQuery(String name) {
+	public SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name) {
 		SpiMetaQuery query = queryInfo.get(name);
 		if(query == null)
-			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+this.metaClass.getName());
+			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+getMetaClass().getName());
 		return query;
 	}
-
+	
 	public void addQuery(String name, SpiMetaQuery metaQuery) {
 		queryInfo.put(name, metaQuery);
 	}

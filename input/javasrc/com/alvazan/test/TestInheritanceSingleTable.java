@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +39,26 @@ public class TestInheritanceSingleTable {
 	}
 
 	@Test
+	public void testSpecificQuery() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setName("dean");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setDescription("dean");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
+		mgr.put(toMany);
+		
+		mgr.flush();
+		
+		List<InheritanceSub1> results = InheritanceSub1.findAll(mgr);
+		Assert.assertEquals(1, results.size());
+	}
+	
+	@Test
 	public void testBasicMultipleClasses() {
 		InheritanceSub1 common = new InheritanceSub1();
 		common.setName("xxxx");
@@ -45,7 +67,7 @@ public class TestInheritanceSingleTable {
 		mgr.put(common);
 		
 		InheritanceSub2 toMany = new InheritanceSub2();
-		toMany.setName("werew");
+		toMany.setDescription("werew");
 		toMany.setNum(78);
 		toMany.setNumBalls(33);
 		mgr.put(toMany);
@@ -60,7 +82,7 @@ public class TestInheritanceSingleTable {
 		InheritanceSuper many = mgr.find(InheritanceSuper.class, toMany.getId());
 		Assert.assertTrue(InheritanceSub2.class.isAssignableFrom(many.getClass()));
 		Assert.assertEquals(toMany.getNum(), many.getNum());
-		Assert.assertEquals(toMany.getName(), ((InheritanceSub2)many).getName());
+		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)many).getDescription());
 	}
 
 	@Test
@@ -129,7 +151,7 @@ public class TestInheritanceSingleTable {
 		
 		InheritanceSub2 sub2 = new InheritanceSub2();
 		sub2.setLastName("smith");
-		sub2.setName("werew");
+		sub2.setDescription("werew");
 		sub2.setNum(78);
 		sub2.setNumBalls(33);
 		mgr.put(sub2);
@@ -166,7 +188,7 @@ public class TestInheritanceSingleTable {
 		
 		InheritanceSub2 toMany = new InheritanceSub2();
 		toMany.setLastName("smith");
-		toMany.setName("werew");
+		toMany.setDescription("werew");
 		toMany.setNum(78);
 		toMany.setNumBalls(33);
 		mgr.put(toMany);
@@ -187,6 +209,6 @@ public class TestInheritanceSingleTable {
 		InheritanceSuper sub2 = newRel.getNameToEntity().get(toMany.getLastName());
 		Assert.assertEquals(toMany.getId(), sub2.getId());
 		Assert.assertEquals(toMany.getNum(), sub2.getNum());
-		Assert.assertEquals(toMany.getName(), ((InheritanceSub2)sub2).getName());
+		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)sub2).getDescription());
 	}
 }

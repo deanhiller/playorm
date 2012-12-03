@@ -23,7 +23,7 @@ public interface MetaClass<T> {
 
 	boolean hasIndexedField();
 
-	SpiMetaQuery getNamedQuery(String name);
+	SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name);
 
 	KeyValue<T> translateFromRow(Row row, NoSqlSession session);
 

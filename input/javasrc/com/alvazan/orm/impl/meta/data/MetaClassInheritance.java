@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
@@ -35,6 +37,19 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	
 	public String getDiscriminatorColumnName() {
 		return discriminatorColumnName;
+	}
+	
+	public Collection<MetaClassSingle<T>> fetchSubclassList() {
+		return dbTypeToMeta.values();
+	}
+	
+	public SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name) {
+		if(clazz.equals(getMetaClass()))
+			return super.getNamedQuery(clazz, name);
+		
+		String type = classToType.get(clazz);
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
+		return metaSingle.getNamedQuery(clazz, name);
 	}
 	
 	@SuppressWarnings("unchecked")
