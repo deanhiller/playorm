@@ -1,5 +1,8 @@
 ## Support
 
+***NOTE*** PlayOrm is really PlayONM or object to NoSql mapping as it is more one to one with NoSQL than JPA is utilizing many of the wide row and
+other NoSql patterns on your behalf.  Otherwise, those patterns are quite a bit of work.
+
 ``` We answer questions on stackoverflow, so just tag the question with "playOrm".```
 
 For paid support send an email to dean at alvazan.com. We support clients in Asia, Europe, South and North America.
@@ -16,7 +19,9 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
+* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [@NoSqlEmbedded for List&lt;Integer&gt;, List&lt;LocaDate&gt;, List&lt;String&gt;,](https://github.com/deanhiller/playorm/wiki/@NoSqlEmbedded-for-Integer,-LocalDate-and-String-list) etc. etc. (something NOT in JPA)
+* Support for queries on subclasses AND indices are only the size of the number of subclasses in the table as well so indices are kept small.
 * In Playorm, [Entity can have a Cursor instead of List](https://github.com/deanhiller/playorm/wiki/Support-for-cursor-in-an-Entity-for-very-wide-rows) which is lazy read to prevent out of memory on VERY wide rows
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
@@ -27,7 +32,6 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * Return Database cursor on query. [See an example how it works] (https://github.com/deanhiller/playorm/wiki/An-example-to-begin-with-PlayOrm)
 * [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
 * [Support of a findAll(Class c, List<Object> keys)](https://github.com/deanhiller/playorm/wiki/Support-for-retrieving-many-entities-in-parallel) as is typical in nosql to parallel the reads
-* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * [First level read cache] (https://github.com/deanhiller/playorm/wiki/Caching-in-Playorm)
 * Automatically creates ColumnFamilies at runtime. [Check this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to know how easy it is to create an entity using Playorm
