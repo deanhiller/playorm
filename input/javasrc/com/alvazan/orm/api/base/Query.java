@@ -27,6 +27,14 @@ public interface Query<T> {
 	 * @return
 	 */
 	public Cursor<KeyValue<T>> getResults(boolean cacheResults);
+
+	/**
+	 * Only done when you have queries on a subclass in inheritance tables.  Then if you do a select all, you probably should
+	 * supply the index to read from to select all the entries.
+	 * @param indexedColumn
+	 * @return
+	 */
+	public Cursor<KeyValue<T>> getResults(String indexedColumn);
 	
 	/**
 	 * Wraps the cursor in a nice hasNext/next Iterable

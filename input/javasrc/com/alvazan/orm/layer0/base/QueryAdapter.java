@@ -110,11 +110,20 @@ public class QueryAdapter<T> implements Query<T> {
 	public Cursor<KeyValue<T>> getResults() {
 		return getResults(false);
 	}
+
+	@Override
+	public Cursor<KeyValue<T>> getResults(String indexedColumn) {
+		return getResults(false, indexedColumn);
+	}
 	
 	@Override
 	public Cursor<KeyValue<T>> getResults(boolean cacheResults) {
+		return getResults(cacheResults, null);
+	}
+	
+	private Cursor<KeyValue<T>> getResults(boolean cacheResults, String indexedColumn) {
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
-		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews, indexedColumn);
 		
 		//DirectCursor<IndexColumnInfo> debugCursor = new DebugCursor(indice);
 		

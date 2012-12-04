@@ -57,19 +57,19 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	@Override
-	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews) {
+	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		if(alreadyJoinedViews == null || alreadyJoinedViews.size() != 0)
 			throw new IllegalArgumentException("You must pass us a non-null Set that is EMPTY and not null");
-		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews, indexedColumn);
 		return cursor;
 	}
 	
-	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews) {
+	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
-			DboColumnMeta metaCol = tableMeta.getAnyIndex();
+			DboColumnMeta metaCol = tableMeta.getAnyIndex(indexedColumn);
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
 
 			alreadyJoinedViews.add(tableInfo);

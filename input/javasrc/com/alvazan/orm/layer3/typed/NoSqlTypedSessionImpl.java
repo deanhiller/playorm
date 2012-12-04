@@ -220,7 +220,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		spiQueryAdapter.setBatchSize(batchSize);
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
-		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews, null);
 
 		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize);
 		

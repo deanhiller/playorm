@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.InheritanceSuper;
@@ -54,8 +56,15 @@ public class TestInheritanceSingleTable {
 		
 		mgr.flush();
 		
-		List<InheritanceSub1> results = InheritanceSub1.findAll(mgr);
-		Assert.assertEquals(1, results.size());
+		Cursor<KeyValue<InheritanceSub1>> results = InheritanceSub1.findAll(mgr);
+		int size = 0;
+		InheritanceSub1 sub1 = null;
+		while(results.next()) {
+			sub1 = results.getCurrent().getValue();
+			size++;
+		}
+		Assert.assertEquals(1, size);
+		Assert.assertEquals(common.getDiff(), sub1.getDiff());
 	}
 	
 	@Test

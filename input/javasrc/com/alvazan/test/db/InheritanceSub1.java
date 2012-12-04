@@ -8,6 +8,8 @@ import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 @NoSqlDiscriminatorColumn(value="sub1")
 @NoSqlQueries({
@@ -37,9 +39,9 @@ public class InheritanceSub1 extends InheritanceSuper {
 		this.diff = diff;
 	}
 	
-	public static List<InheritanceSub1> findAll(NoSqlEntityManager mgr) {
+	public static Cursor<KeyValue<InheritanceSub1>> findAll(NoSqlEntityManager mgr) {
 		Query<InheritanceSub1> query = mgr.createNamedQuery(InheritanceSub1.class, "findAll");
-		return query.getResultList(0, 50);
+		return query.getResults("name");
 	}
 
 	public static InheritanceSub1 findByName(NoSqlEntityManager mgr, String name) {
