@@ -37,7 +37,7 @@ public class TestInheritanceSingleTable {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase(true);
 	}
-
+	
 	@Test
 	public void testSpecificQuery() {
 		InheritanceSub1 common = new InheritanceSub1();

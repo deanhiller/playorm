@@ -67,7 +67,11 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		if(metaSingle != null)
 			return metaSingle;
 		
+		
 		metaSingle = classMetaProvider.get();
+		//All the subclasses need to share the same meta Dbo object!!!! as it is one table for the
+		//whole class heirarchy
+		metaSingle.setSharedMetaDbo(getMetaDbo());
 		dbTypeToMeta.put(columnValue, metaSingle);
 		classToType.put(clazz, columnValue);
 		return metaSingle;

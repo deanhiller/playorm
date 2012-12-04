@@ -14,7 +14,7 @@ import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 
-	private DboTableMeta metaDbo = new DboTableMeta();
+	protected DboTableMeta metaDbo = new DboTableMeta();
 	
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
@@ -25,10 +25,6 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	protected MetaIdField<T> idField;
 	
 	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
-	
-	public void setMetaDbo(DboTableMeta metaDbo) {
-		this.metaDbo = metaDbo;
-	}
 	
 	public Object fetchId(T entity) {
 		if(entity == null)

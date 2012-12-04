@@ -3,9 +3,12 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.alvazan.orm.api.base.CursorToMany;
+import com.alvazan.orm.api.base.CursorToManyImpl;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 
 @NoSqlEntity
 public class InheritanceToManySpecific {
@@ -16,6 +19,9 @@ public class InheritanceToManySpecific {
 	@NoSqlManyToMany
 	private List<InheritanceSub1> inheritance = new ArrayList<InheritanceSub1>();
 
+	@NoSqlOneToMany
+	private CursorToMany<InheritanceSub1> anotherSet = new CursorToManyImpl<InheritanceSub1>();
+	
 	public String getId() {
 		return id;
 	}
