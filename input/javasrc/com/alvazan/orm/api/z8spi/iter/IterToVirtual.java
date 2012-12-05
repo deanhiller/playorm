@@ -20,6 +20,11 @@ public class IterToVirtual implements Iterable<byte[]> {
 		return new IteratorToVirtual(meta, noSqlKeys.iterator());
 	}
 	
+	@Override
+	public String toString() {
+		return "KeyToVirtualTranslator[childKeyIter="+noSqlKeys+"]";
+	}
+
 	private static class IteratorToVirtual implements Iterator<byte[]> {
 
 		private Iterator<byte[]> iterator;

@@ -3,6 +3,7 @@ package com.alvazan.orm.api.z8spi.iter;
 import java.util.Iterator;
 
 
+
 public class ProxyTempCursor<T> extends AbstractCursor<T> {
 
 	private Iterable<T> iterable;
@@ -13,6 +14,14 @@ public class ProxyTempCursor<T> extends AbstractCursor<T> {
 		beforeFirst();
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "ProxyTempCursor["+tabs+iterable+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	@Override
 	public void beforeFirst() {
 		iterator = iterable.iterator();

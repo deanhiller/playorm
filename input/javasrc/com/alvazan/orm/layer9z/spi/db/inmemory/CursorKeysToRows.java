@@ -130,5 +130,9 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 			return null;
 		return table.getRow(key);
 	}
-	
+
+	@Override
+	public String toString() {
+		return "ReadRowsFromInMemDb[keyIterator="+rowKeys+"]";
+	}
 }

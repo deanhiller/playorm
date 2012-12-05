@@ -8,6 +8,7 @@ import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
 /** 
  * After iterating through any node that only contains less than 500 results, we will not go back
@@ -26,6 +27,14 @@ public class CachingCursor<T> implements DirectCursor<IndexColumnInfo> {
 	public CachingCursor(DirectCursor<IndexColumnInfo> cursor) {
 		Precondition.check(cursor, "cursor");
 		this.cursor = cursor;
+	}
+
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CachingCursor["+tabs+cursor+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
 
 	@Override

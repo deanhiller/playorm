@@ -61,5 +61,10 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		
 		return keyVal;
 	}
+
+	@Override
+	public String toString() {
+		return "RowToEntity["+cursor+"]";
+	}
 	
 }

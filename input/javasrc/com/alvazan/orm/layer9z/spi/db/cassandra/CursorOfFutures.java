@@ -26,6 +26,11 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 		this.batchListener = listener;
 		beforeFirst();
 	}
+	
+	@Override
+	public String toString() {
+		return "CursorOfFutures["+theOneBatch+"]";
+	}
 
 	@Override
 	public void beforeFirst() {
