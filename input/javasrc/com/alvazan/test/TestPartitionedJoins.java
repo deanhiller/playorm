@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.test.db.AAPartitionedTrade;
 import com.alvazan.test.db.PartSecurity;
+import com.alvazan.test.db.PartitionedTrade;
 
 public class TestPartitionedJoins {
 
@@ -43,7 +43,7 @@ public class TestPartitionedJoins {
 		putEntities();
 		
 		long start = System.currentTimeMillis();
-		List<AAPartitionedTrade> trades = AAPartitionedTrade.findInPartition(mgr, 5, "one", null);
+		List<PartitionedTrade> trades = PartitionedTrade.findInPartition(mgr, 5, "one", null);
 		long total = System.currentTimeMillis()-start;
 		log.info("TOTAL time="+total+" ms");
 		Assert.assertEquals(2, trades.size());
@@ -54,7 +54,7 @@ public class TestPartitionedJoins {
 	public void testLeftOuterJoin() {
 		putEntities();
 		
-		List<AAPartitionedTrade> trades = AAPartitionedTrade.findLeftOuter(mgr, 5, "one", null);
+		List<PartitionedTrade> trades = PartitionedTrade.findLeftOuter(mgr, 5, "one", null);
 		Assert.assertEquals(3, trades.size());
 	}
 	
@@ -77,7 +77,7 @@ public class TestPartitionedJoins {
 		mgr.flush();
 
 		//This trade has no account so is in the null partition of accounts
-		AAPartitionedTrade trade1 = new AAPartitionedTrade();
+		PartitionedTrade trade1 = new PartitionedTrade();
 		trade1.setId("t1");
 		trade1.setSecurity(sec);
 		trade1.setNumShares(5);
@@ -85,26 +85,26 @@ public class TestPartitionedJoins {
 		
 		mgr.flush();
 		
-		AAPartitionedTrade trade2 = new AAPartitionedTrade();
+		PartitionedTrade trade2 = new PartitionedTrade();
 		trade2.setId("t2");
 		trade2.setSecurity(sec);
 		trade2.setNumShares(6);
 		mgr.put(trade2);
 
-		AAPartitionedTrade trade3 = new AAPartitionedTrade();
+		PartitionedTrade trade3 = new PartitionedTrade();
 		trade3.setId("t3");
 		trade3.setSecurity(sec3);
 		trade3.setNumShares(5);
 		mgr.put(trade3);
 
 		//has null security
-		AAPartitionedTrade trade4 = new AAPartitionedTrade();
+		PartitionedTrade trade4 = new PartitionedTrade();
 		trade4.setId("t4");
 		trade4.setNumShares(5);
 		mgr.put(trade4);
 		
 		//has security 2 not one
-		AAPartitionedTrade trade5 = new AAPartitionedTrade();
+		PartitionedTrade trade5 = new PartitionedTrade();
 		trade5.setId("t5");
 		trade5.setSecurity(sec2);
 		trade5.setNumShares(5);

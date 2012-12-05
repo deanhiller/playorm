@@ -11,9 +11,9 @@ import org.junit.Test;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.test.db.AAPartitionedTrade;
 import com.alvazan.test.db.PartAccount;
 import com.alvazan.test.db.PartitionedSingleTrade;
+import com.alvazan.test.db.PartitionedTrade;
 
 public class TestPartitioning {
 
@@ -86,22 +86,22 @@ public class TestPartitioning {
 		acc.setBusinessName("biz2");
 		acc.setSomeNumber(6);
 		
-		AAPartitionedTrade trade = new AAPartitionedTrade();
+		PartitionedTrade trade = new PartitionedTrade();
 		trade.setAccount(acc);
 		trade.setSecurityName("qwer");
 		trade.setUniqueColumn("first");
 		
-		AAPartitionedTrade trade2 = new AAPartitionedTrade();
+		PartitionedTrade trade2 = new PartitionedTrade();
 		trade2.setAccount(acc);
 		trade2.setSecurityName("asdf");
 		trade2.setUniqueColumn("first");
 		
-		AAPartitionedTrade trade3 = new AAPartitionedTrade();
+		PartitionedTrade trade3 = new PartitionedTrade();
 		trade3.setAccount(acc);
 		trade3.setSecurityName("asdf");
 		trade3.setUniqueColumn("asdfdsf");
 		
-		AAPartitionedTrade trade4 = new AAPartitionedTrade();
+		PartitionedTrade trade4 = new PartitionedTrade();
 		trade4.setAccount(acc2);
 		trade4.setSecurityName("asdf");
 		trade4.setUniqueColumn("asdfdsf");
@@ -118,7 +118,7 @@ public class TestPartitioning {
 
 		mgr.flush();
 		
-		List<AAPartitionedTrade> tradesInAcc1Partition = AAPartitionedTrade.findByUnique(mgr, trade.getUniqueColumn(), acc);
+		List<PartitionedTrade> tradesInAcc1Partition = PartitionedTrade.findByUnique(mgr, trade.getUniqueColumn(), acc);
 		
 		Assert.assertEquals(2, tradesInAcc1Partition.size());
 		

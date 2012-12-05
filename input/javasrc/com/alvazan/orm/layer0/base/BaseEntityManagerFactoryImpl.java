@@ -23,6 +23,8 @@ import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
+import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.scan.ScannerForField;
 import com.alvazan.orm.layer3.typed.CachedMeta;
@@ -150,6 +152,15 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 			log.info("["+classMeta.getMetaClass().getSimpleName()+"]parsing query="+query.name()+" query="+query.query());
 			SpiMetaQuery metaQuery = createQueryAndAdd(classMeta, query);
 			classMeta.addQuery(query.name(), metaQuery);
+		}
+		
+		if(classMeta instanceof MetaClassInheritance) {
+			MetaClassInheritance parentMeta = (MetaClassInheritance) classMeta;
+			@SuppressWarnings("unchecked")
+			Collection<MetaClassSingle> subMetas = parentMeta.fetchSubclassList();
+			for(MetaClassSingle meta : subMetas) {
+				setupQueryStuff(meta);
+			}
 		}
 	}
 

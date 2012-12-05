@@ -1,5 +1,8 @@
 ## Support
 
+***NOTE*** PlayOrm is really PlayONM or object to NoSql mapping as it is more one to one with NoSQL than JPA is utilizing many of the wide row and
+other NoSql patterns on your behalf.  Otherwise, those patterns are quite a bit of work.
+
 ``` We answer questions on stackoverflow, so just tag the question with "playOrm".```
 
 For paid support send an email to dean at alvazan.com. We support clients in Asia, Europe, South and North America.
@@ -16,8 +19,10 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 ## PlayOrm Feature List
 
+* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [@NoSqlEmbedded for List&lt;Integer&gt;, List&lt;LocaDate&gt;, List&lt;String&gt;,](https://github.com/deanhiller/playorm/wiki/@NoSqlEmbedded-for-Integer,-LocalDate-and-String-list) etc. etc. (something NOT in JPA)
-* In Playorm, [Entity can have a Cursor instead of List](https://github.com/deanhiller/playorm/wiki/Support-for-cursor-in-an-Entity-for-very-wide-rows) which is lazy read to prevent out of memory on VERY wide rows
+* Support for queries on subclasses AND indices are only the size of the number of subclasses in the table as well so indices are kept small.
+* In Playorm, [Entity can have a Cursor instead of List](https://github.com/deanhiller/playorm/wiki/Support-for-cursor-in-an-Entity-for-very-wide-rows) which is lazy read to prevent out of memory on VERY wide rows(another noSQL pattern not found in JPA)
 * [PlayOrm Queries use way less resources from cassandra cluster than CQL queries](https://github.com/deanhiller/playorm/wiki/Fast-Scalable-Queries)
 * [Scalabla JQL(SJQL)](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) supported which is modified JQL that scales(SQL doesn't scale well)
 * [Partitioning](https://github.com/deanhiller/playorm#virtual-databases-and-index-partitioning) so you can query a one trillion row table in just ms with SJQL(Scalable Java Query Language)
@@ -27,7 +32,6 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * Return Database cursor on query. [See an example how it works] (https://github.com/deanhiller/playorm/wiki/An-example-to-begin-with-PlayOrm)
 * [OneToMany, ManyToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany), [OneToOne, and ManyToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) but the ToMany's are nosql fashion not like RDBMS
 * [Support of a findAll(Class c, List<Object> keys)](https://github.com/deanhiller/playorm/wiki/Support-for-retrieving-many-entities-in-parallel) as is typical in nosql to parallel the reads
-* [Inheritance class heirarchy in one table] (https://github.com/deanhiller/playorm/wiki/A-basic-inheritance-example) is supported like hibernate
 * [flush() support](https://github.com/deanhiller/playorm#flush) - We protect you from failures!!!
 * [First level read cache] (https://github.com/deanhiller/playorm/wiki/Caching-in-Playorm)
 * Automatically creates ColumnFamilies at runtime. [Check this example] (https://github.com/deanhiller/playorm/wiki/Create-your-first-Entity) to know how easy it is to create an entity using Playorm
@@ -65,7 +69,9 @@ We believe TDD to be very important and believe in more component testing than F
 
 If a DBMS could be on multiple nodes, what is the one major issue with scalability for the DBMS?  Think about it.  As a table reaches 1 trillion rows, what is the issue?  The issue is your index size has grown to a point that inserts and removes and queries take too long.  We want SMALLER indices.  This is where partitioning comes in.  Most OLTP shops have many customers and want to keep adding customers.  That customer id is a great way to partition your data and still be able to do joins in what we call Scalable SQL or Scalable JQL
 
-We explored this concept and succeeded in two spaces already which is why we are developing this solution(this solution is live in production with our first client as well).  First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your noSql store.  Now, let's say we had 1 billion rows in the activity table and 100k accounts and we decide to partition our activity table by the account.  This means we end up with 100k partitions(This means on average 10000 activities in each partition ).  With that design in mind, let's code....
+We explored this concept and succeeded in two spaces which is why we created this solution.  Now this solution is being run by quite a few clients in different contexts and we are adding more and more features via their specific requests.
+
+First imagine a simple system of performance accounting and reporting and you have an Account table with Activities in your noSql store.  Now, let's say we had 1 billion rows in the activity table and 100k accounts and we decide to partition our activity table by the account.  This means we end up with 100k partitions(This means on average 10000 activities in each partition ).  With that design in mind, let's code....
 
 ```
 //First, on the Activity.java, you will have a NoSqlQuery like so

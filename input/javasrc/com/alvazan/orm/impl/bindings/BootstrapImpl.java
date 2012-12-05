@@ -75,9 +75,10 @@ public class BootstrapImpl extends Bootstrap {
 	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setMaxConnsPerHost(2)
+	        .setMaxConnsPerHost(20)
 	        .setInitConnsPerHost(2)
 	        .setSeeds(seeds2)
+	        .setConnectTimeout(10000)
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
 		

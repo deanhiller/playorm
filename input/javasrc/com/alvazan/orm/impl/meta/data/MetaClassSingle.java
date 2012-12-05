@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.PartitionTypeInfo;
@@ -32,6 +33,10 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	private List<MetaField<T>> indexedColumns = new ArrayList<MetaField<T>>();
 	
 	private List<MetaField<T>> partitionColumns = new ArrayList<MetaField<T>>();
+	
+	public void setSharedMetaDbo(DboTableMeta metaDbo) {
+		this.metaDbo = metaDbo;
+	}
 	
 	public KeyValue<T> translateFromRow(Row row, NoSqlSession session) {
 		byte[] virtual = row.getKey();
@@ -131,7 +136,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 			partitionColumns.add(field);
 	}
 	
-	public MetaField<T> getMetaFieldByCol(String columnName){
+	public MetaField<T> getMetaFieldByCol(Class clazz, String columnName){
 		if(idField.getColumnName().equals(columnName))
 			return idField;
 		return columnNameToField.get(columnName);

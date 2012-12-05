@@ -186,14 +186,14 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
-		SpiMetaQuery metaQuery = metaClass.getNamedQuery(namedQuery);
+		SpiMetaQuery metaQuery = metaClass.getNamedQuery(forEntity, namedQuery);
 		
 		SpiQueryAdapter spiAdapter = metaQuery.createQueryInstanceFromQuery(session);
 		
 		//We cannot return MetaQuery since it is used by all QueryAdapters and each QueryAdapter
 		//runs in a different thread potentially while MetaQuery is one used by all threads
 		QueryAdapter<T> adapter = adapterFactory.get();
-		adapter.setup(metaClass, metaQuery, spiAdapter, this);
+		adapter.setup(metaClass, metaQuery, spiAdapter, this, forEntity);
 		return adapter;
 	}
 	
