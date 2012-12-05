@@ -104,6 +104,8 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	@SuppressWarnings({ "unchecked" })
 	private void translateToColumnList(TypedRow entity, RowToPersist row) {
 		TypedColumn column = entity.getColumn(getColumnName());
+		if (column == null)
+			return;
 		Object valueObj = column.getValue();
 		if(!(valueObj instanceof Collection))
 			throw new IllegalArgumentException("For column family="+this.owner.getColumnFamily()+" you passed in a row and column value for column="+getColumnName()+" must inherit from Collection and does not(for this column as it is a ToMany column)");

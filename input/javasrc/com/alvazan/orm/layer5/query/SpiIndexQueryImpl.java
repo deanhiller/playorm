@@ -283,5 +283,5 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new IllegalArgumentException("batchSize must be 1 or greater, but really, please don't use 1, use something like 500(the default anyways)");
 		this.batchSize = batchSize;
 	}
-	
+
 }

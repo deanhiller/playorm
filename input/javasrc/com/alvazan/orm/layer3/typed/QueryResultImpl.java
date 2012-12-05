@@ -72,4 +72,8 @@ public class QueryResultImpl implements QueryResult {
 		return proxy;
 	}
 	
+	public SpiMetaQuery getMetaQuery() {
+		return metaQuery;
+	}
+
 }

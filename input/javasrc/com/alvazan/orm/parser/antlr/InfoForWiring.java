@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class InfoForWiring {
@@ -19,6 +20,7 @@ public class InfoForWiring {
 	private boolean selectStarDefined;
 	private String query;
 	private ExpressionNode astTree;
+	private List<TypedColumn> updateList;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private DboTableMeta metaQueryTargetTable;
 	private List<ViewInfo> targetViews = new ArrayList<ViewInfo>();
@@ -115,4 +117,11 @@ public class InfoForWiring {
 		return eagerlyJoinedViews;
 	}
 
+	public void setUpdateList(List<TypedColumn> updateList) {
+		this.updateList = updateList;
+	}
+
+	public List<TypedColumn>  getUpdateList() {
+		return updateList;
+	}
 }
