@@ -64,13 +64,15 @@ public class NoSqlPlugin extends PlayPlugin {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public void onApplicationStart() {
-        if (NoSql.getEntityManagerFactory() != null)
-        	return;
-        
         List<Class> classes = Play.classloader.getAnnotatedClasses(NoSqlEntity.class);
         if (classes.isEmpty())
             return;
-
+        else if (NoSql.getEntityManagerFactory() != null) {
+        	NoSqlEntityManagerFactory factory = NoSql.getEntityManagerFactory();
+        	factory.rescan(classes, Play.classloader);
+        	return;
+        }
+        
         Map<String, Object> props = new HashMap<String, Object>();
         props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
         props.put(Bootstrap.AUTO_CREATE_KEY, "create");
@@ -89,12 +91,6 @@ public class NoSqlPlugin extends PlayPlugin {
 	@Override
 	public void onApplicationStop() {
 		log.info("stopping PlayOrm");
-		if(NoSql.getEntityManagerFactory() == null)
-			return;
-
-		CassandraAppender.setFactory(null);
-		NoSql.getEntityManagerFactory().close();
-		NoSql.setEntityManagerFactory(null);
 	}
 	
     @Override
