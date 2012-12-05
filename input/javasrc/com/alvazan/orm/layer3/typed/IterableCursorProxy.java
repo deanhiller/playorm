@@ -9,6 +9,7 @@ import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IterableCursorProxy implements Iterable<byte[]> {
@@ -23,6 +24,14 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 		this.view = view;
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "IterableCursorProxy(proxyQueryCursorWithIterable)["+tabs+cursor+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	@Override
 	public Iterator<byte[]> iterator() {
 		cursor.beforeFirst();

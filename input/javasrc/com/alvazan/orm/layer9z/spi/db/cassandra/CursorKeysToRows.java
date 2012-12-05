@@ -15,6 +15,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
@@ -45,6 +46,14 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		this.list = list;
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorKeysToRows(pullFromKeyCursorFindRows)["+tabs+rowKeys+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	public void setupMore(Keyspace keyspace, DboTableMeta cf, Info info, Cache cache) {
 		if(cache == null || keyspace == null || cf == null | info == null)
 			throw new IllegalArgumentException("no params can be null but one was null");

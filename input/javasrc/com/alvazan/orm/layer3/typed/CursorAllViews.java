@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -36,6 +37,14 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		this.eagerlyJoinedViews = metaQuery.getViewsEagerJoin();
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorAllViews(mergingcursor)["+tabs+cursor+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	@Override
 	public void beforeFirst() {
 		cachedCursors = new EmptyCursor<List<TypedRow>>();

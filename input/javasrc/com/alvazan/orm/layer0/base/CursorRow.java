@@ -5,6 +5,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 
@@ -64,7 +65,10 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 
 	@Override
 	public String toString() {
-		return "RowToEntity["+cursor+"]";
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorRow(rowToEntity)["+tabs+cursor+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
 	
 }

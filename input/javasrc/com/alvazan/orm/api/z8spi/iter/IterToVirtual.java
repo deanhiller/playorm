@@ -22,9 +22,12 @@ public class IterToVirtual implements Iterable<byte[]> {
 	
 	@Override
 	public String toString() {
-		return "KeyToVirtualTranslator[childKeyIter="+noSqlKeys+"]";
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "IterToVirtual(keyToVirtualKeyTranslator)["+tabs+noSqlKeys+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
-
+	
 	private static class IteratorToVirtual implements Iterator<byte[]> {
 
 		private Iterator<byte[]> iterator;
