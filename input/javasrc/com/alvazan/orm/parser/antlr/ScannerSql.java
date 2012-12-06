@@ -2,6 +2,7 @@ package com.alvazan.orm.parser.antlr;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -21,6 +22,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 
 public class ScannerSql {
 
@@ -91,6 +93,9 @@ public class ScannerSql {
 		case NoSqlLexer.SELECT_CLAUSE:
 			compileSelectClause(tree, wiring);
 			break;
+		case NoSqlLexer.TABLE_CLAUSE:
+			compileTableClause(tree, wiring, facade);
+			break;
 		case NoSqlLexer.WHERE:
 			//We should try to get rid of the where token in the grammar so we don't need 
 			//this line of code here....
@@ -99,7 +104,12 @@ public class ScannerSql {
 			compileExpression(node, wiring, facade);
 			wiring.setAstTree(node);
 			break;
-
+		case NoSqlLexer.UPDATE_CLAUSE:
+			compileUpdateClause(tree, wiring, facade);
+			break;
+		case NoSqlLexer.UPDATE:
+			processUpdate(tree, wiring, facade);
+			break;
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
@@ -292,7 +302,45 @@ public class ScannerSql {
 			}
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> void compileUpdateClause(CommonTree tree,
+			InfoForWiring wiring, MetaFacade facade) {
+		List<TypedColumn> updateList = new ArrayList<TypedColumn>(); 
+		List<CommonTree> childrenList = tree.getChildren();
+		for (CommonTree child : childrenList) {
+			ExpressionNode node = new ExpressionNode(child);
+			compileExpression(node, wiring, facade);
+			TypeInfo columnTypeInfo = processSide(node.getChild(ChildSide.LEFT), wiring, null, facade);
+			byte[] value = retrieveValue(columnTypeInfo.getColumnInfo(), node.getChild(ChildSide.RIGHT));
+			TypedColumn columnforUpdate = new TypedColumn(columnTypeInfo.getColumnInfo(), columnTypeInfo.getColumnInfo().getColumnNameAsBytes(), value, null);
+			updateList.add(columnforUpdate);
+		}
+		wiring.setUpdateList(updateList);
+	}
 
+	@SuppressWarnings("unchecked")
+	private <T> void compileTableClause(CommonTree tree,
+			InfoForWiring wiring, MetaFacade facade) {
+		List<CommonTree> childrenList = tree.getChildren();
+		if (childrenList == null)
+			return;
+		for (CommonTree child : childrenList) {
+			int type = child.getType();
+			switch (type) {
+			case NoSqlLexer.TABLE_NAME:
+				loadTableIntoWiringInfo(wiring, child, facade);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	private <T> void processUpdate(CommonTree tree,
+			InfoForWiring wiring, MetaFacade facade) {
+		// NEed to re-visit again if Update can really be done here
+	}
 	// the alias part is silly due to not organize right in .g file
 	@SuppressWarnings({ "unchecked" })
 	private static <T> void parseSelectResults(CommonTree tree,
@@ -537,7 +585,6 @@ public class ScannerSql {
 			}
 		}
 		
-		
 		wiring.addEagerlyJoinedView(tableInfo);
 		StateAttribute attr = new StateAttribute(tableInfo, colMeta, textInSql); 
 		attributeNode2.setState(attr, textInSql);
@@ -567,5 +614,14 @@ public class ScannerSql {
 		
 		parameterNode2.setState(parameter, ":"+parameter);
 		return null;
-	}	
+	}
+
+	private byte[] retrieveValue(DboColumnMeta info, ExpressionNode node) {
+		if(node.isConstant()) {
+			Object constant = node.getState();
+			return info.convertToStorage2(constant);
+		} else 
+			throw new UnsupportedOperationException("type not supported="+node.getType());
+	}
+
 }

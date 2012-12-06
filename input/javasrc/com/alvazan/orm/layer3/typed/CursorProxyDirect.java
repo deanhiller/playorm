@@ -4,6 +4,7 @@ import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
 public class CursorProxyDirect implements Cursor<IndexColumnInfo> {
 
@@ -12,6 +13,14 @@ public class CursorProxyDirect implements Cursor<IndexColumnInfo> {
 
 	public CursorProxyDirect(DirectCursor<IndexColumnInfo> iter) {
 		this.iter = iter;
+	}
+
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorProxyDirect["+tabs+iter+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
 
 	@Override

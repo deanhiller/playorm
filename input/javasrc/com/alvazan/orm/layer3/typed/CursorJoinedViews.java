@@ -13,6 +13,11 @@ class CursorJoinedViews extends AbstractCursor<List<TypedRow>> {
 	private List<DirectCursor<KeyValue<TypedRow>>> cursors;
 	private List<ViewInfo> views;
 	
+	@Override
+	public String toString() {
+		return "CursorForTypeRowJoin["+cursors+"]";
+	}
+
 	public CursorJoinedViews(List<DirectCursor<KeyValue<TypedRow>>> cursors2, List<ViewInfo> views2) {
 		this.cursors = cursors2;
 		this.views = views2;

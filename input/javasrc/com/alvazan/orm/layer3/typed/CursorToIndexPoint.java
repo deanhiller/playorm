@@ -3,6 +3,7 @@ package com.alvazan.orm.layer3.typed;
 import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 
@@ -19,6 +20,14 @@ public class CursorToIndexPoint extends AbstractCursor<IndexPoint> {
 		this.indCol = indCol;
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorToIndexPoint["+tabs+indCol+tabs+valueMeta+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	@Override
 	public void beforeFirst() {
 		indCol.beforeFirst();

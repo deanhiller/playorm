@@ -8,6 +8,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
@@ -30,6 +31,15 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 		this.leftResults = leftResults;
 		this.rightResults = rightResults;
 	}
+
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorForAnd["+tabs+leftResults+","+tabs+rightResults+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+
 
 	@Override
 	public Holder<IndexColumnInfo> nextImpl() {

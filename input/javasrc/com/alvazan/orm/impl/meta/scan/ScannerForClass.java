@@ -228,8 +228,13 @@ public class ScannerForClass {
 		if(!field.isAnnotationPresent(NoSqlId.class))
 			return false;
 		
-		if(metaClass.getIdField() != null)
-			throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass");
+		if(metaClass.getIdField() != null) {
+			Field existingField = metaClass.getIdField().getField();
+			if(field.equals(existingField))
+				return true; // we already processed it
+			else
+				throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass");
+		}
 		
 		MetaIdField idField = inspectorField.processId(metaDbo, field, metaClass);
 		metaClass.setIdField(idField);
