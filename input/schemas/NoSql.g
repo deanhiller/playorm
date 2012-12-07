@@ -101,10 +101,12 @@ resultList
 columnList:	simpleColumn (COMMA! simpleColumn)* | aliasedColumn (COMMA! aliasedColumn)*;
 
 // UPDATE statement
-updateStatement: UPDATE tableClause updateClause (whereClause)+ -> tableClause (whereClause)+ updateClause UPDATE;
+updateStatement: UPDATE tableClause (joinClause)? updateClause (whereClause)+ -> tableClause (joinClause)? (whereClause)+ updateClause UPDATE;
 tableClause: table -> ^(TABLE_CLAUSE table);
 updateClause: SET LPAREN updateCondition (COMMA updateCondition)* RPAREN -> ^(UPDATE_CLAUSE updateCondition (updateCondition)*);
 updateCondition:  column EQ^ value;
+
+
 
 //PARTITONS CLAUSE SPECIFIC STUFF (for adhoc queries ONLY!!!!)
 partitionClause: PARTITIONS partitionList -> ^(PARTITIONS_CLAUSE partitionList);
