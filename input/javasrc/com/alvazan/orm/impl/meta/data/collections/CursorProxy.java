@@ -104,7 +104,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		
 		DboTableMeta metaDbo = proxyMeta.getMetaDbo();
 		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keyList);
-		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, true, true, batchSize);
+		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, true, false, batchSize);
 		
 		int counter = 0;
 		while(true) {
