@@ -142,7 +142,7 @@ public class ScannerForClass {
 			Proxy inst = (Proxy) clazz.newInstance();
 			return inst;
 		} catch (InstantiationException e) {
-			throw new RuntimeException("Could not create proxy for type="+clazz, e);
+			throw new RuntimeException("ARE YOU missing a default constructor on this class.  We Could not create proxy for type="+clazz, e);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException("Could not create proxy for type="+clazz, e);
 		}

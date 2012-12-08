@@ -33,12 +33,12 @@ public class Holder<T> {
 	}
 	public Holder(MetaAbstractClass<T> metaClass, T value) {
 		this.metaClass = metaClass;
-		hasValue = true;
 		this.value = value;
-		Class<? extends Object> classType = value.getClass();
-		if(metaClass.getMetaClass().isAssignableFrom(classType)) {
-			key = new ByteArray(metaClass.convertEntityToId(value));
-		}
+        Class<? extends Object> classType = value.getClass();
+        if(metaClass.getMetaClass().isAssignableFrom(classType)) {
+        	key = new ByteArray(metaClass.convertEntityToId(value));
+        }
+		hasValue = true;
 	}
 	public synchronized T getValue() {
 		if(!hasValue) {

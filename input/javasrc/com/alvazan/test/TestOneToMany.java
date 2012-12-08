@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.Email;
+import com.alvazan.test.db.EmailAccountXref;
 import com.alvazan.test.db.SomeEntity;
 import com.alvazan.test.db.User;
 
@@ -62,6 +63,36 @@ public class TestOneToMany {
 		
 		Assert.assertEquals("notexist", results.get(1).getKey());
 		Assert.assertNull(results.get(1).getValue());
+	}
+	
+	@Test
+	public void testMultipleXrefs() {
+		Account acc = new Account();
+		mgr.put(acc);
+		mgr.flush();
+		acc = mgr.find(Account.class, acc.getId());
+		
+		User user = new User();
+		user.setName("deab");
+		User user2 = new User();
+		user2.setName("bob");
+		
+		mgr.fillInWithKey(acc);
+		mgr.fillInWithKey(user);
+		mgr.fillInWithKey(user2);
+		
+		EmailAccountXref ref1 = new EmailAccountXref(user, acc);
+		EmailAccountXref ref2 = new EmailAccountXref(user2, acc);
+		
+		mgr.put(ref1);
+		mgr.put(ref2);
+		mgr.put(acc);
+		mgr.put(user);
+		
+		mgr.flush();
+		
+		Account result = mgr.find(Account.class, acc.getId());
+		Assert.assertEquals(2, result.getEmails().size());
 	}
 	
 	@Test

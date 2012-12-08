@@ -40,6 +40,9 @@ public class Account extends AccountSuper{
 	@NoSqlManyToMany
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	
+	@NoSqlOneToMany
+	private List<EmailAccountXref> emails = new ArrayList<EmailAccountXref>();
+	
 	public Account() {}
 	
 	public Account(String id ) {
@@ -107,6 +110,14 @@ public class Account extends AccountSuper{
 	public void addActivity(Activity act1) {
 		activities.add(act1);
 		activitiesCursor.addElement(act1);
+	}
+
+	public void addEmail(EmailAccountXref ref) {
+		this.emails.add(ref);
+	}
+
+	public List<EmailAccountXref> getEmails() {
+		return emails;
 	}
 	
 }

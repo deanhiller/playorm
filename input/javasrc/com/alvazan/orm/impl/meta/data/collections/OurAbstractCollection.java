@@ -38,7 +38,9 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private boolean cacheLoaded = false;
 
 	private boolean removeAll;
-	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
+	//cannot be a Set or we may get nullpointer as sometimes the key does not exist yet and doing
+	//key.hashCode results in null as adding to a HashSet will use hashCode and equals while List does not
+	protected List<Holder<T>> added = new ArrayList<Holder<T>>();
 
 	private Object owner;
 	private String field;
