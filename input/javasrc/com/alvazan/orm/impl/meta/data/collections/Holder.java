@@ -2,6 +2,7 @@ package com.alvazan.orm.impl.meta.data.collections;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
 
@@ -22,6 +23,7 @@ public class Holder<T> {
 	private MetaAbstractClass<T> metaClass;
 	private NoSqlSession session;
 	private CacheLoadCallback cacheLoadCallback;
+	private String keyAsStr;
 
 	public Holder(MetaAbstractClass<T> metaClass, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cb) {
 		if(session != null && cb != null)
@@ -36,9 +38,15 @@ public class Holder<T> {
 		this.value = value;
         Class<? extends Object> classType = value.getClass();
         if(metaClass.getMetaClass().isAssignableFrom(classType)) {
-        	key = new ByteArray(metaClass.convertEntityToId(value));
+        	byte[] idData = metaClass.convertEntityToId(value);
+        	setKey(idData);
         }
 		hasValue = true;
+	}
+	private void setKeyAsStr(byte[] idData) {
+		DboColumnIdMeta idMeta = metaClass.getIdField().getMetaIdDbo();
+		Object obj = idMeta.convertFromStorage2(idData);
+		keyAsStr = idMeta.convertTypeToString(obj);
 	}
 	public synchronized T getValue() {
 		if(!hasValue) {
@@ -57,6 +65,8 @@ public class Holder<T> {
 
 	public void setKey(byte[] key) {
 		this.key = new ByteArray(key);
+		if(key != null)
+			setKeyAsStr(key);
 	}
 
 	public byte[] getKey() {
@@ -89,4 +99,8 @@ public class Holder<T> {
 		return false;
 	}
 	
+	@Override
+	public String toString() {
+		return "HolderOf[key="+keyAsStr+",v="+value+"]";
+	}
 }
