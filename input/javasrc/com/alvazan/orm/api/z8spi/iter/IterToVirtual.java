@@ -53,5 +53,16 @@ public class IterToVirtual implements Iterable<byte[]> {
 		public void remove() {
 			throw new UnsupportedOperationException("not supported");
 		}
+		
+		@Override
+		public String toString() {
+			String tabs = StringLocal.getAndAdd();
+			String retVal = "IteratorToVirtual(keyToVirtualKeyTranslator)["+
+					tabs+iterator+
+					tabs+idMeta+
+					tabs+"]";
+			StringLocal.set(tabs.length());
+			return retVal;
+		}
 	}
 }

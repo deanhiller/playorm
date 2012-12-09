@@ -25,7 +25,7 @@ import com.netflix.astyanax.model.Rows;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
 import com.netflix.astyanax.query.RowSliceQuery;
 
-public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
+public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 
 	private Info info;
 	private Iterable<byte[]> rowKeys;
@@ -38,7 +38,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	private Cache cache;
 	private DboTableMeta cf;
 
-	public CursorKeysToRows(Iterable<byte[]> rowKeys, int batchSize,
+	public CursorKeysToRows2(Iterable<byte[]> rowKeys, int batchSize,
 			BatchListener list, Provider<Row> rowProvider) {
 		this.rowProvider = rowProvider;
 		this.rowKeys = rowKeys;
@@ -49,7 +49,10 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 	@Override
 	public String toString() {
 		String tabs = StringLocal.getAndAdd();
-		String retVal = "CursorKeysToRows(pullFromKeyCursorFindRows)["+tabs+rowKeys+tabs+"]";
+		String keys = ""+rowKeys;
+		if(rowKeys instanceof List)
+			keys = "List"+keys;
+		String retVal = "CursorKeysToRows2(cassandraFindRows)["+tabs+keys+tabs+"]";
 		StringLocal.set(tabs.length());
 		return retVal;
 	}

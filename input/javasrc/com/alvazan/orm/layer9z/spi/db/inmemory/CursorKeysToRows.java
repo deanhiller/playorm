@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
@@ -133,6 +134,13 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 
 	@Override
 	public String toString() {
-		return "ReadRowsFromInMemDb[keyIterator="+rowKeys+"]";
+		String tabs = StringLocal.getAndAdd();
+		String keys = ""+rowKeys;
+		if(rowKeys instanceof List)
+			keys = "List"+keys;
+		String retVal = "CursorKeysToRows(inmemoryRowLookup)["+tabs+keys+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
+	
 }

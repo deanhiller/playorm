@@ -27,7 +27,10 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 	@Override
 	public String toString() {
 		String tabs = StringLocal.getAndAdd();
-		String retVal = "IterableCursorProxy(proxyQueryCursorWithIterable)["+tabs+cursor+tabs+"]";
+		String retVal = "IterableCursorProxy(proxyQueryCursorWithIterable)["
+				+tabs+cursor
+				+tabs+view
+				+tabs+"]";
 		StringLocal.set(tabs.length());
 		return retVal;
 	}
@@ -47,7 +50,18 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 			this.view = view;
 			this.cursor = cursor2;
 		}
-
+		
+		@Override
+		public String toString() {
+			String tabs = StringLocal.getAndAdd();
+			String retVal = "IteratorCursorProxy(proxyQueryCursorWithIterable)["
+					+tabs+cursor
+					+tabs+view
+					+tabs+"]";
+			StringLocal.set(tabs.length());
+			return retVal;
+		}
+		
 		@Override
 		public IterHolder<byte[]> nextImpl() {
 			Holder<IndexColumnInfo> next = cursor.nextImpl();
