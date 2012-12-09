@@ -292,4 +292,22 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		}
 		return adds;
 	}
+	
+    public String toString() {
+    	String name = getClass().getSimpleName();
+        Iterator<T> i = iterator();
+		if (! i.hasNext())
+		    return name+"[]";
+	
+		StringBuilder sb = new StringBuilder();
+		sb.append(name);
+		sb.append('[');
+		for (;;) {
+		    T e = i.next();
+		    sb.append(e == this ? "(this Collection)" : e);
+		    if (! i.hasNext())
+			return sb.append(']').toString();
+		    sb.append(", ");
+		}
+    }
 }
