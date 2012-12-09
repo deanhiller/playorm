@@ -32,5 +32,9 @@ public abstract class AbstractCursor<T> implements DirectCursor<T>,Cursor<T> {
 		public T getValue() {
 			return value;
 		}
+		@Override
+		public String toString() {
+			return "HolderOf["+value+"]";
+		}
 	}
 }
