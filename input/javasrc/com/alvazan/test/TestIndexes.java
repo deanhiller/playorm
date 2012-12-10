@@ -265,6 +265,14 @@ public class TestIndexes {
 		Assert.assertEquals(1, activities.size());
 		Activity activity = activities.get(0);
 		Assert.assertEquals(act.getName(), activity.getName());
-	}
 
+		//Test for null row key
+		try {
+			@SuppressWarnings("unused")
+			List<Activity> activitiesForNull = Activity.findById(mgr, null);
+			Assert.fail("It should fail since row key cannot be NULL");
+		} catch (UnsupportedOperationException e) {
+			log.info("Pass the test that Rowky cannot be null");
+		}
+	}
 }
