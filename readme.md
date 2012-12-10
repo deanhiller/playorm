@@ -46,6 +46,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
 * [A plugin for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
 * [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own custom converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
+* @NoSqlIndexed on subclass fields that create smaller indexes(only subclasses in the index)
 
 
 ### Features soon to be added
