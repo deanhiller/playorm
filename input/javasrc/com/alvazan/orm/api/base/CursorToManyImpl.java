@@ -51,4 +51,8 @@ public class CursorToManyImpl<T> implements CursorToMany<T> {
 	public void addElement(T element) {
 		this.list.add(element);
 	}
+	
+	public List<T> getElementsToAdd() {
+		return list;
+	}
 }

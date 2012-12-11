@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.alvazan.orm.api.base.CursorToMany;
+import com.alvazan.orm.api.base.CursorToManyImpl;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -271,6 +272,40 @@ public class TestOneToMany {
 		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
 		Account theAccount = mgr3.find(Account.class, acc.getId());
+		
+		CursorToMany<Activity> cursor = theAccount.getActivitiesCursor();
+		int counter = 0;
+		while(cursor.next()) {
+			Activity current = cursor.getCurrent();
+			if(counter == 0)
+				Assert.assertEquals("dean", current.getName());
+			counter++;
+		}
+		
+		Assert.assertEquals(3, counter);
+	}
+	
+	@Test
+	public void testClearAfterAddForNewCursor() {
+		Account acc1 = new Account("acc1");
+		acc1.setName(ACCOUNT_NAME);
+		acc1.setUsers(5.0f);
+		
+		mgr.put(acc1);
+		mgr.flush();
+
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		
+		addAndSaveActivity1(mgr, acc1, "dean", "act1");
+		Assert.assertEquals(0, ((CursorToManyImpl<Activity>)acc1.getActivitiesCursor()).getElementsToAdd().size());
+		addAndSaveActivity1(mgr, acc1, "xxxx", "act2");
+		Assert.assertEquals(0, ((CursorToManyImpl<Activity>)acc1.getActivitiesCursor()).getElementsToAdd().size());
+		addAndSaveActivity1(mgr, acc1, "yyyy", "act3");
+		Assert.assertEquals(0, ((CursorToManyImpl<Activity>)acc1.getActivitiesCursor()).getElementsToAdd().size());
+
+		NoSqlEntityManager mgr3 = factory.createEntityManager();
+		//Now, we should have no activities in our account list
+		Account theAccount = mgr3.find(Account.class, acc1.getId());
 		
 		CursorToMany<Activity> cursor = theAccount.getActivitiesCursor();
 		int counter = 0;
