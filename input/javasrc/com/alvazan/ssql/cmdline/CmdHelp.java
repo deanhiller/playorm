@@ -51,7 +51,13 @@ public class CmdHelp {
 		} else if(command.startsWith("CREATE ")) {
 			processCreateHelp(command);
 		} else if("INSERT".equalsIgnoreCase(command)) {
-			System.out.println("not in yet");
+			println("not in yet");
+		} else if("UPDATE".equalsIgnoreCase(command)) {
+			println("Update dataset matching expression in a table");
+			println("");
+			println("Example: UPDATE table as t set(t.name=\"harry\") where a.id=55");
+			println("");
+			println("Example 2: UPDATE table set(name=\"harry\",account=\"account1\") where id=60");
 		}
 	}
 
