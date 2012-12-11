@@ -99,12 +99,14 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		for(PROXY p : elementsToAdd) {
 			translateToColumn(info, p);
 		}
+		elementsToAdd.clear();
 		
 		for(PROXY p : elementsToRemove) {
 			RowToPersist row = info.getRow();
 			IndexData data = fetchIndexData(info, p);
 			row.addIndexToRemove(data);
 		}
+		elementsToRemove.clear();
 	}
 
 	private void translateToColumn(InfoForIndex<OWNER> info, PROXY value) {
