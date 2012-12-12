@@ -78,8 +78,14 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public boolean hasIndexedField() {
-		throw new UnsupportedOperationException("not done yet");
+	public boolean hasIndexedField(T entity) {
+		Class clazz = entity.getClass();
+		if(entity instanceof Proxy) {
+			clazz = entity.getClass().getSuperclass();
+		}
+		String type = classToType.get(clazz);
+		MetaClassSingle<T> metaClassSingle = dbTypeToMeta.get(type);
+		return metaClassSingle.hasIndexedField(entity);
 	}
 
 	@Override
@@ -95,6 +101,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		MetaClassSingle<T> metaClassSingle = this.dbTypeToMeta.get(type);
 		return metaClassSingle;
 	}
+
 
 	@Override
 	public RowToPersist translateToRow(T entity) {
@@ -116,7 +123,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 
 	@Override
 	public List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey) {
-		throw new UnsupportedOperationException("not done yet");
+		Class clazz = proxy.getClass().getSuperclass();
+		String type = classToType.get(clazz);
+		MetaClassSingle<T> metaClassSingle = dbTypeToMeta.get(type);
+		return metaClassSingle.findIndexRemoves(proxy, rowKey);
 	}
 
 	@Override

@@ -299,7 +299,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		byte[] virtKey = idField.formVirtRowKey(rowKey);
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		
-		if(!metaClass.hasIndexedField()) {
+		if(!metaClass.hasIndexedField(entity)) {
 			session.remove(metaDbo, virtKey);
 			return;
 		} else if(!(entity instanceof NoSqlProxy)) {
