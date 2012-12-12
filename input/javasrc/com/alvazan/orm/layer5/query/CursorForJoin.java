@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.JoinType;
@@ -40,6 +41,20 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		this.rightResults = rightResults;
 	}
 	
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorForJoin["+
+				tabs+"rightCursor="+rightResults+
+				tabs+"rightView="+rightView+
+				tabs+"cachedCursorNewView="+cachedFromNewView+
+				tabs+"newView="+newView+
+				tabs+"cachedFRomRight="+cachedFromRightResults+
+				tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+
 	public void setScanInfo(ScanInfo scanInfo) {
 		this.scanInfo = scanInfo;
 	}

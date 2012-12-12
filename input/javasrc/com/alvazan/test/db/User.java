@@ -9,6 +9,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 
@@ -32,6 +33,9 @@ public class User {
 	
 	@NoSqlEmbedded
 	private List<Email> emails = new ArrayList<Email>();
+	
+	@NoSqlOneToMany
+	private List<EmailAccountXref> accounts = new ArrayList<EmailAccountXref>();
 	
 	public String getId() {
 		return id;
@@ -73,6 +77,14 @@ public class User {
 		this.emails = emails;
 	}
 
+	public void addAccount(EmailAccountXref ref) {
+		this.accounts.add(ref);
+	}
+
+	public List<EmailAccountXref> getAccounts() {
+		return accounts;
+	}
+	
 	public static User findByName(NoSqlEntityManager mgr, String name) {
 		Query<User> query = mgr.createNamedQuery(User.class, "findByName");
 		query.setParameter("name", name);

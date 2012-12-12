@@ -23,7 +23,7 @@ import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 	@NoSqlQuery(name="findAccount", query="PARTITIONS e('securityName', :secName) select *  FROM TABLE as e WHERE e.account = :account"),
 	@NoSqlQuery(name="findByUnique", query="PARTITIONS e('account', :acc) select * FROM TABLE as e WHERE e.uniqueColumn = :unique")
 })
-public class AAPartitionedTrade {
+public class PartitionedTrade {
 
 	@NoSqlId
 	private String id;
@@ -96,25 +96,25 @@ public class AAPartitionedTrade {
 		this.numShares = numShares;
 	}
 
-	public static List<AAPartitionedTrade> findInPartition(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
-		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findJoinOnNullPartition");
+	public static List<PartitionedTrade> findInPartition(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
+		Query<PartitionedTrade> query = mgr.createNamedQuery(PartitionedTrade.class, "findJoinOnNullPartition");
 		query.setParameter("shares", shares);
 		query.setParameter("type", type);
 		query.setParameter("partId", partitionId);
 		return query.getResultList(0, null);
 	}
 
-	public static List<AAPartitionedTrade> findLeftOuter(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
-		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findLeftOuter");
+	public static List<PartitionedTrade> findLeftOuter(NoSqlEntityManager mgr, int shares, String type, Account partitionId) {
+		Query<PartitionedTrade> query = mgr.createNamedQuery(PartitionedTrade.class, "findLeftOuter");
 		query.setParameter("shares", shares);
 		query.setParameter("type", type);
 		query.setParameter("partId", partitionId);
 		return query.getResultList(0, null);
 	}
 	
-	public static List<AAPartitionedTrade> findByUnique(NoSqlEntityManager mgr,
+	public static List<PartitionedTrade> findByUnique(NoSqlEntityManager mgr,
 			String uniqueColumn2, PartAccount acc) {
-		Query<AAPartitionedTrade> query = mgr.createNamedQuery(AAPartitionedTrade.class, "findByUnique");
+		Query<PartitionedTrade> query = mgr.createNamedQuery(PartitionedTrade.class, "findByUnique");
 		query.setParameter("unique", uniqueColumn2);
 		query.setParameter("acc", acc);
 		return query.getResultList(0, null);

@@ -14,7 +14,7 @@ import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
 public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 
-	private DboTableMeta metaDbo = new DboTableMeta();
+	protected DboTableMeta metaDbo = new DboTableMeta();
 	
 	private Class<T> metaClass;
 	//This is a dynamic class using NoSqlProxyImpl.java as the invocationhandler and
@@ -24,11 +24,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	
 	protected MetaIdField<T> idField;
 	
-	private Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
-	
-	public void setMetaDbo(DboTableMeta metaDbo) {
-		this.metaDbo = metaDbo;
-	}
+	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 	
 	public Object fetchId(T entity) {
 		if(entity == null)
@@ -90,13 +86,13 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		return metaDbo;
 	}
 	
-	public SpiMetaQuery getNamedQuery(String name) {
+	public SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name) {
 		SpiMetaQuery query = queryInfo.get(name);
 		if(query == null)
-			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+this.metaClass.getName());
+			throw new IllegalArgumentException("Named query="+name+" does not exist on type="+getMetaClass().getName());
 		return query;
 	}
-
+	
 	public void addQuery(String name, SpiMetaQuery metaQuery) {
 		queryInfo.put(name, metaQuery);
 	}

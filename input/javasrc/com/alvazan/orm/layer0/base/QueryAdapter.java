@@ -46,13 +46,15 @@ public class QueryAdapter<T> implements Query<T> {
 	private Integer batchSize = 500;
 	private MetaClass<T> mainMetaClass;
 	private ViewInfo mainView;
+	private Class targetSubclass;
 
-	public void setup(MetaClass<T> target, SpiMetaQuery metaQuery, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr) {
+	public void setup(MetaClass<T> target, SpiMetaQuery metaQuery, SpiQueryAdapter indexQuery, BaseEntityManagerImpl entityMgr, Class clazz) {
 		this.mainMetaClass = target;
 		this.meta = metaQuery;
 		this.indexQuery = indexQuery;
 		this.mgr = entityMgr;
 		this.mainView = metaQuery.getTargetViews().get(0);
+		this.targetSubclass = clazz;
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -71,7 +73,7 @@ public class QueryAdapter<T> implements Query<T> {
 		String colFamily = metaFieldDbo.getOwner().getColumnFamily();
 		String columnName = metaFieldDbo.getColumnName();
 		MetaClass metaClass = metaInfo.getMetaClass(colFamily);
-		MetaField metaField = metaClass.getMetaFieldByCol(columnName);
+		MetaField metaField = metaClass.getMetaFieldByCol(targetSubclass, columnName);
 		
 		Field field = metaField.getField();
 		Class fieldType = field.getType();
@@ -108,11 +110,20 @@ public class QueryAdapter<T> implements Query<T> {
 	public Cursor<KeyValue<T>> getResults() {
 		return getResults(false);
 	}
+
+	@Override
+	public Cursor<KeyValue<T>> getResults(String indexedColumn) {
+		return getResults(false, indexedColumn);
+	}
 	
 	@Override
 	public Cursor<KeyValue<T>> getResults(boolean cacheResults) {
+		return getResults(cacheResults, null);
+	}
+	
+	private Cursor<KeyValue<T>> getResults(boolean cacheResults, String indexedColumn) {
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
-		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> indice = indexQuery.getResultList(alreadyJoinedViews, indexedColumn);
 		
 		//DirectCursor<IndexColumnInfo> debugCursor = new DebugCursor(indice);
 		

@@ -62,12 +62,15 @@ public class NoSqlTypedRowProxyImpl implements MethodHandler {
 			Object value;
 			if(colName.equals(this.classMeta.getIdColumnMeta().getColumnName())) {
 				value = self.getRowKey();
+				indexFieldToOriginalValue.put(colName, value);
 			} else {
 				TypedColumn col = self.getColumn(colName);
-				value = col.getValue();
+				if(col != null) {
+					value = col.getValue();
+					indexFieldToOriginalValue.put(colName, value);
+				}
 			}
 			
-			indexFieldToOriginalValue.put(colName, value);
 		}
 	}
 

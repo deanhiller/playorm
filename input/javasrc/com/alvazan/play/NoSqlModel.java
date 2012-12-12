@@ -5,7 +5,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -108,22 +107,12 @@ public class NoSqlModel {
 
         if (!isEntity)
         	return;
-
+        else if(multiple)
+        	return; //we don't do multiple collections yet(like editing in a table)
+        
         ParamNode fieldParamNode = paramNode.getChild(field.getName(), true);
 
         String keyName = meta.getKeyFieldName(relation);
-
-        if (multiple && Collection.class.isAssignableFrom(field.getType())) {
-//        	Collection l = new ArrayList();
-//        	if (SortedSet.class.isAssignableFrom(field.getType())) {
-//        		l = new TreeSet();
-//        	} else if (Set.class.isAssignableFrom(field.getType())) {
-//        		l = new HashSet();
-//        	}
-        	log.trace("not implemented");
-        	//NOTE: for now we skip this
-        	return;
-        }
         
         ParamNode idChild = fieldParamNode.getChild(keyName, true);
         String theIdStr = retrieveValue(idChild);

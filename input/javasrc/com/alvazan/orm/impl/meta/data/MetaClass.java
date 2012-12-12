@@ -23,7 +23,7 @@ public interface MetaClass<T> {
 
 	boolean hasIndexedField();
 
-	SpiMetaQuery getNamedQuery(String name);
+	SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name);
 
 	KeyValue<T> translateFromRow(Row row, NoSqlSession session);
 
@@ -35,7 +35,7 @@ public interface MetaClass<T> {
 
 	List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey);
 
-	MetaField<T> getMetaFieldByCol(String columnName);
+	MetaField<T> getMetaFieldByCol(Class targetSubclass, String columnName);
 
 	boolean isPartitioned();
 

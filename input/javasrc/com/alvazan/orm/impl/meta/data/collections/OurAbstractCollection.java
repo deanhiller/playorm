@@ -4,10 +4,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +36,9 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 	private boolean cacheLoaded = false;
 
 	private boolean removeAll;
-	protected Set<Holder<T>> added = new HashSet<Holder<T>>();
+	//cannot be a Set or we may get nullpointer as sometimes the key does not exist yet and doing
+	//key.hashCode results in null as adding to a HashSet will use hashCode and equals while List does not
+	protected List<Holder<T>> added = new ArrayList<Holder<T>>();
 
 	private Object owner;
 	private String field;
@@ -292,4 +292,22 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		}
 		return adds;
 	}
+	
+    public String toString() {
+    	String name = getClass().getSimpleName();
+        Iterator<T> i = iterator();
+		if (! i.hasNext())
+		    return name+"[]";
+	
+		StringBuilder sb = new StringBuilder();
+		sb.append(name);
+		sb.append('[');
+		for (;;) {
+		    T e = i.next();
+		    sb.append(e == this ? "(this Collection)" : e);
+		    if (! i.hasNext())
+			return sb.append(']').toString();
+		    sb.append(", ");
+		}
+    }
 }

@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import javax.inject.Provider;
 
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
@@ -37,6 +39,19 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		return discriminatorColumnName;
 	}
 	
+	public Collection<MetaClassSingle<T>> fetchSubclassList() {
+		return dbTypeToMeta.values();
+	}
+	
+	public SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name) {
+		if(clazz.equals(getMetaClass()))
+			return super.getNamedQuery(clazz, name);
+		
+		String type = classToType.get(clazz);
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
+		return metaSingle.getNamedQuery(clazz, name);
+	}
+	
 	@SuppressWarnings("unchecked")
 	public MetaClassSingle<?> findOrCreate(Class<?> clazz, Class<?> parent) {
 		NoSqlDiscriminatorColumn col = clazz.getAnnotation(NoSqlDiscriminatorColumn.class);
@@ -52,7 +67,11 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		if(metaSingle != null)
 			return metaSingle;
 		
+		
 		metaSingle = classMetaProvider.get();
+		//All the subclasses need to share the same meta Dbo object!!!! as it is one table for the
+		//whole class heirarchy
+		metaSingle.setSharedMetaDbo(getMetaDbo());
 		dbTypeToMeta.put(columnValue, metaSingle);
 		classToType.put(clazz, columnValue);
 		return metaSingle;
@@ -101,8 +120,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public MetaField<T> getMetaFieldByCol(String columnName) {
-		throw new UnsupportedOperationException("not done yet");
+	public MetaField<T> getMetaFieldByCol(Class c, String columnName) {
+		String type = classToType.get(c);
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
+		return metaSingle.getMetaFieldByCol(c, columnName);
 	}
 
 	@Override

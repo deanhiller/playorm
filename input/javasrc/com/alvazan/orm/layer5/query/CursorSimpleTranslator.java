@@ -4,6 +4,7 @@ import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -23,6 +24,14 @@ public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 		this.colMeta = info;
 	}
 
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorSimpleTranslator["+tabs+cursor+tabs+"view="+viewInfo+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
 	@Override
 	public void beforeFirst() {
 		cursor.beforeFirst();

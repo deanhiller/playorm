@@ -118,7 +118,7 @@ public class TestGrammar {
 		String result = ""+newTree;
 		Assert.assertEquals("(p.numShares = :shares and p.something = :something)", result);
 	}
-	
+
 	@Test
 	public void testLargeTree() {
 		String sql = "select a FROM TABLE as a INNER JOIN a.security as d INNER JOIN a.something as b INNER JOIN b.some as e" +
@@ -128,5 +128,29 @@ public class TestGrammar {
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = ""+newTree;
 		Assert.assertEquals("((h.f > :a and(innerjoin) ((f.x > :a and f.y > :a) or(innerjoin) (g.x > :a and g.y > :a))) and(innerjoin) (((d.y > :a and(innerjoin) a.y > :a) or (b.z > :a and(innerjoin) a.z > :a)) and (e.y > :a and(innerjoin) b.x > :a)))", result);
+	}
+
+	@Test
+	public void testUpdateTree() {
+		String sql = "update TABLE set (name=\"test\")  where id = \"acc1\"";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = "" + newTree;
+		Assert.assertEquals("id = \"acc1\"", result);
+	}
+
+	@Test
+	public void testMultiUpdateTree() {
+		String sql = "update TABLE set (name=\"test\",account=\"ac\") where id = \"acc1\"";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = "" + newTree;
+		Assert.assertEquals("id = \"acc1\"", result);
+	}
+
+	@Test
+	public void testAliasUpdateTree() {
+		String sql = "update table as a inner join a.account as b set(a.users=\"test\") where (a.id=\"acc1\")";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = "" + newTree;
+		Assert.assertEquals("a.id = \"acc1\"", result);
 	}
 }

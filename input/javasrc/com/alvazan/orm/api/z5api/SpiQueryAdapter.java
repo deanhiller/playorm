@@ -16,7 +16,7 @@ public interface SpiQueryAdapter {
 	 * we do not do the other joins as the rows coming back have them directly
 	 * @return
 	 */
-	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews );
+	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews, String indexedColumn);
 
 	/**
 	 * The Iterable from getResults() is only loaded with 'batchSize' at a time from the nosql store so as you iterate

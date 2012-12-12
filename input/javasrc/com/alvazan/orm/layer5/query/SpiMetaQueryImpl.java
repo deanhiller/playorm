@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.parser.antlr.ExpressionNode;
 
@@ -19,6 +20,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Inject
 	private Provider<SpiIndexQueryImpl> factory;
 	private ExpressionNode astTreeRoot;
+	private List<TypedColumn> updateList;
 	private Map<String, TypeInfo> parameterFieldMap;
 	private String query;
 	private List<ViewInfo> viewsEagerJoin;
@@ -78,6 +80,15 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	@Override
 	public List<ViewInfo> getViewsEagerJoin() {
 		return viewsEagerJoin;
+	}
+
+	public void setUpdateList(List<TypedColumn> updateList) {
+		this.updateList = updateList;
+	}
+
+	@Override
+	public List<TypedColumn>  getUpdateList() {
+		return updateList;
 	}
 	
 }

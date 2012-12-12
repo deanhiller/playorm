@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 
 import com.alvazan.orm.api.base.CursorToMany;
+import com.alvazan.orm.api.base.CursorToManyImpl;
 import com.alvazan.orm.api.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
@@ -90,6 +91,7 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 			PROXY current = c.getCurrent();
 			translateToColumn(info, current);
 		}
+		((CursorToManyImpl<PROXY>)c).getElementsToAdd().clear();
 	}
 
 	private void addRemoveItems(InfoForIndex<OWNER> info, CursorProxy<PROXY> cursor) {
@@ -99,12 +101,14 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		for(PROXY p : elementsToAdd) {
 			translateToColumn(info, p);
 		}
+		elementsToAdd.clear();
 		
 		for(PROXY p : elementsToRemove) {
 			RowToPersist row = info.getRow();
 			IndexData data = fetchIndexData(info, p);
 			row.addIndexToRemove(data);
 		}
+		elementsToRemove.clear();
 	}
 
 	private void translateToColumn(InfoForIndex<OWNER> info, PROXY value) {

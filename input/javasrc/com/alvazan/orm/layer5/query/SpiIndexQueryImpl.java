@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
@@ -58,19 +57,19 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	}
 
 	@Override
-	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews) {
+	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		if(alreadyJoinedViews == null || alreadyJoinedViews.size() != 0)
 			throw new IllegalArgumentException("You must pass us a non-null Set that is EMPTY and not null");
-		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews, indexedColumn);
 		return cursor;
 	}
 	
-	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews) {
+	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
-			DboColumnMeta metaCol = tableMeta.getAnyIndex();
+			DboColumnMeta metaCol = tableMeta.getAnyIndex(indexedColumn);
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
 
 			alreadyJoinedViews.add(tableInfo);
@@ -179,17 +178,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			return processIndexColumn(root, scanInfo, viewInfo, info);
 		} else if (info.getOwner().getIdColumnMeta().getColumnName().equals(info.getColumnName())) {
 			//its a non-indexed primary key
-			AbstractCursor<KeyValue<Row>> scan;
-			if(root.getType() == NoSqlLexer.EQ) {
-				byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
-				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
-				List<byte[]> keyList= new ArrayList<byte[]>();
-				keyList.add(virtualkey);
-				scan = session.find(info.getOwner(), keyList, false, true, batchSize);
-			} else
-				throw new UnsupportedOperationException("Other operations not supported yet for Primary Key. Use @NoSQLIndexed for Primary Key.type="+root.getType());
-			DirectCursor<IndexColumnInfo> processKeys = processKeysforPK(viewInfo, info, scan);
-			return processKeys;
+			return  processPrimaryKey(root, scanInfo, viewInfo, info);
 		} else
 			throw new IllegalArgumentException("You cannot have '"+info.getColumnName() + "' in your sql query since "+info.getColumnName()+" is neither a Primary Key nor a column with @Index annotation on the field in the entity");			
 	}
@@ -223,6 +212,22 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		} else
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 		DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
+		return processKeys;
+	}
+
+	private DirectCursor<IndexColumnInfo> processPrimaryKey(ExpressionNode root, ScanInfo scanInfo, ViewInfoImpl viewInfo, DboColumnMeta info) {
+		AbstractCursor<KeyValue<Row>> scan;
+		if(root.getType() == NoSqlLexer.EQ) {
+			byte[] data = retrieveValue(info, root.getChild(ChildSide.RIGHT));
+			if (data == null)
+				throw new UnsupportedOperationException("Primary key "+ info.getColumnName() + " cannot be null");
+			byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
+			List<byte[]> keyList= new ArrayList<byte[]>();
+			keyList.add(virtualkey);
+			scan = session.find(info.getOwner(), keyList, false, true, batchSize);
+		} else
+			throw new UnsupportedOperationException("Other operations not supported yet for Primary Key. Use @NoSQLIndexed for Primary Key.type="+root.getType());
+		DirectCursor<IndexColumnInfo> processKeys = processKeysforPK(viewInfo, info, scan);
 		return processKeys;
 	}
 
@@ -283,5 +288,5 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			throw new IllegalArgumentException("batchSize must be 1 or greater, but really, please don't use 1, use something like 500(the default anyways)");
 		this.batchSize = batchSize;
 	}
-	
+
 }

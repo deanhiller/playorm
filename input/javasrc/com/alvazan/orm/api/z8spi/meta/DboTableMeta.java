@@ -396,15 +396,21 @@ public class DboTableMeta {
 	}
 
 
-	public DboColumnMeta getAnyIndex() {
+	public DboColumnMeta getAnyIndex(String indexedColumn) {
 		initCaches();
 		if(indexedColumnsCache.size() == 0)
 			throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation");
 		
-		//spread load over the index rows .....
-		int index = r.nextInt(indexedColumnsCache.size());
+		if(indexedColumn == null) {
+			//spread load over the index rows .....
+			int index = r.nextInt(indexedColumnsCache.size());
+			return indexedColumnsCache.get(index);
+		}
 		
-		return indexedColumnsCache.get(index);
+		DboColumnMeta colMeta = nameToField.get(indexedColumn);
+		if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("column="+indexedColumn+" is not indexed");
+		return colMeta;
 	}
 
 

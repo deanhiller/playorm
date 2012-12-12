@@ -9,6 +9,7 @@ import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.AbstractIterator;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IterableCursorProxy implements Iterable<byte[]> {
@@ -24,6 +25,17 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 	}
 
 	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "IterableCursorProxy(proxyQueryCursorWithIterable)["
+				+tabs+cursor
+				+tabs+view
+				+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
+	}
+	
+	@Override
 	public Iterator<byte[]> iterator() {
 		cursor.beforeFirst();
 		return new IteratorCursorProxy(view, cursor);
@@ -38,7 +50,18 @@ public class IterableCursorProxy implements Iterable<byte[]> {
 			this.view = view;
 			this.cursor = cursor2;
 		}
-
+		
+		@Override
+		public String toString() {
+			String tabs = StringLocal.getAndAdd();
+			String retVal = "IteratorCursorProxy(proxyQueryCursorWithIterable)["
+					+tabs+cursor
+					+tabs+view
+					+tabs+"]";
+			StringLocal.set(tabs.length());
+			return retVal;
+		}
+		
 		@Override
 		public IterHolder<byte[]> nextImpl() {
 			Holder<IndexColumnInfo> next = cursor.nextImpl();

@@ -31,8 +31,10 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.NoSqlTypedRowProxy;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
+
 
 public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
@@ -220,7 +222,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		spiQueryAdapter.setBatchSize(batchSize);
 		Set<ViewInfo> alreadyJoinedViews = new HashSet<ViewInfo>();
-		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews);
+		DirectCursor<IndexColumnInfo> iter = spiQueryAdapter.getResultList(alreadyJoinedViews, null);
 
 		QueryResultImpl impl = new QueryResultImpl(metaQuery, this, iter, batchSize);
 		
@@ -235,6 +237,44 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		TypedRow r = new TypedRow(null, metaClass);
 		return r;
+	}
+	@Override
+	public int updateQuery(String query) {
+		int batchSize = 250;
+		QueryResult result = createQueryCursor(query,batchSize);
+		Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
+		return updateBatch(cursor, result);
+	}
+
+	private int updateBatch(Cursor<List<TypedRow>> cursor, QueryResult result) {
+		int rowCount = 0;
+		QueryResultImpl impl = (QueryResultImpl) result;
+		SpiMetaQuery metaQuery = impl.getMetaQuery();
+		List<TypedColumn> updateList = metaQuery.getUpdateList();
+		if (updateList.size() == 0)
+			throw new IllegalArgumentException("UPDATE should have some values to set");
+		while(cursor.next()) {
+			List<TypedRow> joinedRow = cursor.getCurrent();
+			updateRow(joinedRow, updateList);
+			rowCount++;
+		}
+		return rowCount;
+	}
+
+	private void updateRow(List<TypedRow> joinedRow, List<TypedColumn> updateList) {
+		for(TypedRow r: joinedRow) {
+			ViewInfo view = r.getView();
+			DboTableMeta meta = view.getTableMeta();
+			for(TypedColumn c : r.getColumnsAsColl()) {
+				for (TypedColumn columnforUpdate : updateList ) {
+					if (columnforUpdate.getName().equals(c.getName())) {
+						Object value = columnforUpdate.getValue();
+						c.setValue(value);
+					}
+				}
+			}
+			put(meta.getColumnFamily(), r);	
+		}
 	}
 
 }
