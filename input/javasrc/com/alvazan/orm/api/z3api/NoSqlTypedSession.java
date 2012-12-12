@@ -67,4 +67,6 @@ public interface NoSqlTypedSession {
 	public void removeIndexPoint(IndexPoint pt, String partitionBy, String partitionId);
 	public void addIndexPoint(IndexPoint pt, String partitionBy, String partitionId);
 
+	public int count(String columnFamily, String indexedColName, Object value);
+
 }

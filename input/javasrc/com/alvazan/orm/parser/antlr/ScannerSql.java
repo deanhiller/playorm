@@ -501,7 +501,7 @@ public class ScannerSql {
 		String constant = node.getASTNode().getText();
 		
 		StorageTypeEnum ourType;
-		if(node.getType() == NoSqlLexer.DECIMAL){
+		if(node.getType() == NoSqlLexer.DECIMAL || node.getType() == NoSqlLexer.DEC_VAL){
 			ourType = StorageTypeEnum.DECIMAL;
 			BigDecimal dec = new BigDecimal(constant);
 			node.setState(dec, constant); 

@@ -277,4 +277,38 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		}
 	}
 
+	public int count(String columnFamily, String indexedColName, Object value) {
+		DboTableMeta meta = cachedMeta.getMeta(columnFamily);
+		if(meta == null)
+			throw new IllegalArgumentException("columnFamily="+columnFamily+" not found");
+		DboColumnMeta colMeta = meta.getColumnMeta(indexedColName);
+		if(colMeta == null)
+			throw new IllegalArgumentException("Column="+indexedColName+" not found on meta info for column family="+columnFamily);
+		else if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("Column="+indexedColName+" is not an indexed column");
+		String query = "SELECT * FROM " +  columnFamily + " WHERE " + indexedColName + " = ";
+		String valueString = new String();
+		if (value != null) {
+			if (value instanceof String)
+				valueString = "\"" + value.toString() + "\"";
+			else if (value instanceof Integer)
+				valueString = ""+ (((Integer)value).intValue()); 
+			else if (value instanceof Double)
+				valueString = ""+ (((Double)value).doubleValue());
+			else if (value instanceof Long)
+				valueString = ""+ (((Long)value).longValue());
+			else if (value instanceof Float)
+				valueString = ""+ (((Float)value).floatValue());
+		}
+		else 
+			valueString = null;
+		int batchSize = 250;
+		QueryResult result = createQueryCursor(query+valueString,batchSize);
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		int rowCount = 0;
+		while(cursor.next())
+			rowCount++;
+		return rowCount;
+	}
+
 }
