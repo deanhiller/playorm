@@ -166,9 +166,10 @@ public class QueryAdapter<T> implements Query<T> {
 			if(holder == null)
 				break;
 			KeyValue<T> keyVal = holder.getValue();
-			if(counter < firstResult)
-				continue; //skip it
-			else if(maxResults != null && counter >= firstResult+maxResults)
+			if(counter < firstResult) {
+                counter++;
+                continue; //skip it
+            } else if(maxResults != null && counter >= firstResult+maxResults)
 				break; //we are done with filling in our list
 			
 			try {
