@@ -58,7 +58,7 @@ public interface NoSqlTypedSession {
 	 */
 	public QueryResult createQueryCursor(String query, int batchSize);
 
-	public int updateQuery(String query);
+	public int executeQuery(String query);
 	
 	public void flush();
 

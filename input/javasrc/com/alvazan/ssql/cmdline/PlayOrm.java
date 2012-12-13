@@ -25,6 +25,7 @@ public class PlayOrm {
 	private CmdSelect select = new CmdSelect();
 	private CmdIndex index = new CmdIndex();
 	private CmdUpdate update = new CmdUpdate();
+	private CmdDelete delete = new CmdDelete();
 	private CmdListPartitions partitions = new CmdListPartitions();
 	
 	public PlayOrm(NoSqlEntityManagerFactory factory) {
@@ -151,6 +152,7 @@ public class PlayOrm {
 			println("Commands:");
 			println("SELECT           Selects dataset matching expression.  type 'help SELECT' for more info");
 			println("UPDATE           Updates dataset matching expression.  type 'help UPDATE' for more info");
+			println("DELETE           Delete  dataset matching expression.  type 'help DELETE' for more info");
 			println("PARTITIONS       Selects dataset matching expression in a partition.  type 'help PARTITIONS for more info");
 			println("VIEWINDEX        Views an index.  type 'help VIEWINDEX' for more info");
 			println("REINDEX          Rebuild a particular index.  type 'help REINDEX' for more info");
@@ -169,6 +171,8 @@ public class PlayOrm {
 			index.processIndex(cmd, mgr);
 		} else if (startsWithIgnoreCase("UPDATE ", cmd)) {
 			update.processUpdate(cmd, mgr);
+		} else if (startsWithIgnoreCase("DELETE ", cmd)) {
+		    delete.processDelete(cmd, mgr);
 		} else if(startsWithIgnoreCase("REINDEX ", cmd)) {
 			index.reindex(cmd, mgr);
 		} else if(startsWithIgnoreCase("LISTPARTITIONS ", cmd)) {
