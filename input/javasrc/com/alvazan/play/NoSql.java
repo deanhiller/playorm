@@ -1,6 +1,5 @@
 package com.alvazan.play;
 
-import play.exceptions.JPAException;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -10,10 +9,22 @@ public class NoSql {
     private static NoSqlEntityManagerFactory entityManagerFactory = null;
     private static ThreadLocal<NoSql> local = new ThreadLocal<NoSql>();
     private NoSqlEntityManager entityManager;
+    private static boolean plugin2InClassPath = false;
+
+    static {
+    	try {
+    		Class<?> c = Class.forName("com.alvazan.play2.Play2Plugin");
+    		if (c != null) {
+    			plugin2InClassPath = true;
+    		}
+    	} catch(ClassNotFoundException e) {
+    		plugin2InClassPath = false;
+        }
+    }
 
     static NoSql get() {
         if (local.get() == null) {
-            throw new JPAException("The JPA context is not initialized. JPA Entity Manager automatically start when one or more classes annotated with the @NoSqlEntity annotation are found in the application.");
+            throw new RuntimeException("The Playorm context is not initialized. NoSqlEntityManager automatically start when one or more classes annotated with the @NoSqlEntity annotation are found in the application.");
         }
         return local.get();
     }
@@ -41,7 +52,22 @@ public class NoSql {
      * Retrieve the current entityManager
      */
     public static NoSqlEntityManager em() {
-        return get().entityManager;
+    	if (plugin2InClassPath) {
+    		Class<?> clazz;
+			try {
+				clazz = Class.forName("com.alvazan.play2.NoSqlForPlay2");
+				NoSqlInterface noSql2 = (NoSqlInterface) clazz.newInstance();
+				return noSql2.em();
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException("The play2 plugin class not found");
+			} catch (InstantiationException e) {
+				throw new RuntimeException("The play2 class can't be instantiated");
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException("The play2 plugin class cannot be access");
+			}
+    	}
+    	else
+    		return get().entityManager;
     }
 
     /**

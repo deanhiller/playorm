@@ -238,10 +238,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		TypedRow r = new TypedRow(null, metaClass);
 		return r;
 	}
+
 	@Override
-	public int updateQuery(String query) {
+	public int executeQuery(String query) {
 		int batchSize = 250;
-		QueryResult result = createQueryCursor(query,batchSize);
+		QueryResult result = createQueryCursor(query, batchSize);
 		Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
 		return updateBatch(cursor, result);
 	}
@@ -251,14 +252,25 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		QueryResultImpl impl = (QueryResultImpl) result;
 		SpiMetaQuery metaQuery = impl.getMetaQuery();
 		List<TypedColumn> updateList = metaQuery.getUpdateList();
-		if (updateList.size() == 0)
+
+		if (updateList == null) {
+			// it means it is delete! We may need a better way to check it
+			while (cursor.next()) {
+				List<TypedRow> joinedRow = cursor.getCurrent();
+				deleteRow(joinedRow);
+				rowCount++;
+			}
+			return rowCount;
+		} else if (updateList.size() == 0)
 			throw new IllegalArgumentException("UPDATE should have some values to set");
-		while(cursor.next()) {
-			List<TypedRow> joinedRow = cursor.getCurrent();
-			updateRow(joinedRow, updateList);
-			rowCount++;
+		else {
+			while (cursor.next()) {
+				List<TypedRow> joinedRow = cursor.getCurrent();
+				updateRow(joinedRow, updateList);
+				rowCount++;
+			}
+			return rowCount;
 		}
-		return rowCount;
 	}
 
 	private void updateRow(List<TypedRow> joinedRow, List<TypedColumn> updateList) {
@@ -275,6 +287,48 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			}
 			put(meta.getColumnFamily(), r);	
 		}
+	}
+
+	private void deleteRow(List<TypedRow> typeRowList) {
+		for (TypedRow r : typeRowList) {
+			ViewInfo view = r.getView();
+			DboTableMeta meta = view.getTableMeta();
+			remove(meta.getColumnFamily(), r);
+		}
+	}
+
+	public int count(String columnFamily, String indexedColName, Object value) {
+		DboTableMeta meta = cachedMeta.getMeta(columnFamily);
+		if(meta == null)
+			throw new IllegalArgumentException("columnFamily="+columnFamily+" not found");
+		DboColumnMeta colMeta = meta.getColumnMeta(indexedColName);
+		if(colMeta == null)
+			throw new IllegalArgumentException("Column="+indexedColName+" not found on meta info for column family="+columnFamily);
+		else if(!colMeta.isIndexed())
+			throw new IllegalArgumentException("Column="+indexedColName+" is not an indexed column");
+		String query = "SELECT * FROM " +  columnFamily + " WHERE " + indexedColName + " = ";
+		String valueString = new String();
+		if (value != null) {
+			if (value instanceof String)
+				valueString = "\"" + value.toString() + "\"";
+			else if (value instanceof Integer)
+				valueString = ""+ (((Integer)value).intValue()); 
+			else if (value instanceof Double)
+				valueString = ""+ (((Double)value).doubleValue());
+			else if (value instanceof Long)
+				valueString = ""+ (((Long)value).longValue());
+			else if (value instanceof Float)
+				valueString = ""+ (((Float)value).floatValue());
+		}
+		else 
+			valueString = null;
+		int batchSize = 250;
+		QueryResult result = createQueryCursor(query+valueString,batchSize);
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		int rowCount = 0;
+		while(cursor.next())
+			rowCount++;
+		return rowCount;
 	}
 
 }

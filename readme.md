@@ -44,7 +44,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 * If you have some noSQL data and some Relational data, use Playorm and store your relational data in noSQL now and just maintain one database in production! As Playorm supports [SQL] (https://github.com/deanhiller/playorm/wiki/SJQL-Support), and many relations like [*ToOne] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToOne-example) and [*ToMany] (https://github.com/deanhiller/playorm/wiki/A-basic-*ToMany-example-TestOneToMany)
 * [Support for joda-time LocalDateTime, LocalDate, LocalTime] (https://github.com/deanhiller/playorm/wiki/Date-and-Calendar-Support) which works way better than java's Date object and is less buggy than java's Date and Calendar objects
 * [Command Line tool] (https://github.com/deanhiller/playorm/wiki/Command-Line-Tool)
-* [A plugin for PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support)
+* Plugins for both [PlayFramework 1.2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-1.2.x-Support) and [Playframework 2.x](https://github.com/deanhiller/playorm/wiki/PlayFramework-2.x-support)
 * [Support for all major data types] (https://github.com/deanhiller/playorm/wiki/Data-types-supported) with an option to [create your own custom converter] (https://github.com/deanhiller/playorm/wiki/Writing-a-data-type-converter)
 * @NoSqlIndexed on subclass fields that create smaller indexes(only subclasses in the index)
 
