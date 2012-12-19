@@ -19,16 +19,15 @@
   	<dependency org="org.antlr" name="ST4" rev="4.0.4" conf="build->*,!sources,!javadoc"/>
 	<dependency org="org.antlr" name="antlr" rev="3.4" conf="build->*,!sources,!javadoc"/>   
     <dependency org="junit" name="junit" rev="4.9" conf="playorm-inmemory->*,!sources,!javadoc"/>
-	<dependency org="com.netflix.astyanax" name="astyanax" rev="1.0.6" conf="playorm-astyanax->*,!sources,!javadoc">
+	<dependency org="com.netflix.astyanax" name="astyanax" rev="1.56.18" conf="playorm-astyanax->*,!sources,!javadoc">
 		<exclude org="org.slf4j" name="slf4j-log4j12"/>
 		<exclude org="log4j" name="log4j"/>
-		<exclude org="com.google.guava" name="guava"/>
 	</dependency>
 	<dependency org="org.javassist" name="javassist" rev="3.16.1-GA" conf="playorm-inmemory->*,!sources,!javadoc"/>
-	<dependency org="com.google.guava" name="guava" rev="11.0" conf="playorm-astyanax->*,!sources,!javadoc"/>
 	<dependency org="com.google.inject" name="guice" rev="3.0" conf="playorm-inmemory->*"/>
 	<dependency org="args4j" name="args4j" rev="2.0.16" conf="playorm-inmemory->*,!sources,!javadoc"/>
 	<dependency org="ch.qos.logback" name="logback-classic" rev="1.0.1" conf="playorm-inmemory->*,!sources,!javadoc"/>
 	<dependency org="com.eaio.uuid" name="uuid" rev="3.2" conf="playorm-inmemory->*,!sources,!javadoc"/>
+	<dependency org="joda-time" name="joda-time" rev="2.0" conf="playorm-astyanax->*,!sources,!javadoc"/>
   </dependencies>
 </ivy-module>
