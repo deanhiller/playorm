@@ -174,7 +174,8 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		return indexedColumns;
 	}
 
-	public boolean hasIndexedField() {
+	@Override
+	public boolean hasIndexedField(T entity) {
 		if(indexedColumns.size() > 0 || idField.getMetaDbo().isIndexed())
 			return true;
 		return false;

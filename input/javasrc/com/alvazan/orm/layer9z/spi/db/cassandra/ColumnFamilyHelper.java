@@ -25,9 +25,11 @@ import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.Keyspace;
+import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.ColumnFamilyDefinition;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
+import com.netflix.astyanax.ddl.SchemaChangeResult;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.serializers.AnnotatedCompositeSerializer;
 import com.netflix.astyanax.serializers.BytesArraySerializer;
@@ -429,18 +431,18 @@ public class ColumnFamilyHelper {
 
 	private void addColumnFamily(ColumnFamilyDefinition def) {
 		try {
-			String id = cluster.addColumnFamily(def);
+			OperationResult<SchemaChangeResult> result = cluster.addColumnFamily(def);
 			long timeout = 300000;
-			waitForNodesToBeUpToDate(id, timeout);
+			waitForNodesToBeUpToDate(result, timeout);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e.getMessage(), e);
 		}
 	}
 	
-	public void waitForNodesToBeUpToDate(String id, long timeout)
+	public void waitForNodesToBeUpToDate(OperationResult<SchemaChangeResult> result, long timeout)
 			throws ConnectionException {
-		if(id != null)
-			log.info("LOOP until all nodes have same schema version id="+id+" OR timeout in "+timeout+" milliseconds");
+		if(result != null && result.getResult() != null)
+			log.info("LOOP until all nodes have same schema version id="+result.getResult().getSchemaId()+" OR timeout in "+timeout+" milliseconds");
 		else
 			log.info("LOOP until all nodes have same schema version OR timeout in "+timeout+" milliseconds");
 		
@@ -450,10 +452,11 @@ public class ColumnFamilyHelper {
 			long now = System.currentTimeMillis();
 			if(describeSchemaVersions.size() == 1) {
 				String key = describeSchemaVersions.keySet().iterator().next();
-				if(id != null && !id.equals(key)) {
-					log.warn("BUG, in cassandra? id we upgraded schema to="+id+" but the schema on all nodes is now="+key);
+				if(result !=null && result.getResult()!= null && !key.equals(result.getResult().getSchemaId())) {
+					log.warn("BUG, in cassandra? id we upgraded schema to="+result.getResult().getSchemaId()+" but the schema on all nodes is now="+key);
 				}
-				assert id == null || key.equals(id) : "The key and id should be equal!!!! as it is updating to our schema";
+				if (result !=null && result.getResult()!= null)
+					assert result.getResult().getSchemaId() == null || key.equals(result.getResult().getSchemaId()) : "The key and id should be equal!!!! as it is updating to our schema";
 				break;
 			} else if(now >= currentTime+timeout) {
 				log.warn("All nodes are still not up to date, but we have already waited 30 seconds!!! so we are returning");

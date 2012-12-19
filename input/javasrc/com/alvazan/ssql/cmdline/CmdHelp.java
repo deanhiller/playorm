@@ -58,6 +58,12 @@ public class CmdHelp {
 			println("Example: UPDATE table as t set(t.name=\"harry\") where a.id=55");
 			println("");
 			println("Example 2: UPDATE table set(name=\"harry\",account=\"account1\") where id=60");
+		}  else if("DELETE".equalsIgnoreCase(command)) {
+			println("DELETE dataset matching expression in a table");
+			println("");
+			println("Example: DELETE from table as t where a.id=55");
+			println("");
+			println("Example 2: DELETE * from table where id=60");
 		}
 	}
 

@@ -238,10 +238,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		TypedRow r = new TypedRow(null, metaClass);
 		return r;
 	}
+
 	@Override
-	public int updateQuery(String query) {
+	public int executeQuery(String query) {
 		int batchSize = 250;
-		QueryResult result = createQueryCursor(query,batchSize);
+		QueryResult result = createQueryCursor(query, batchSize);
 		Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
 		return updateBatch(cursor, result);
 	}
@@ -251,14 +252,25 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		QueryResultImpl impl = (QueryResultImpl) result;
 		SpiMetaQuery metaQuery = impl.getMetaQuery();
 		List<TypedColumn> updateList = metaQuery.getUpdateList();
-		if (updateList.size() == 0)
+
+		if (updateList == null) {
+			// it means it is delete! We may need a better way to check it
+			while (cursor.next()) {
+				List<TypedRow> joinedRow = cursor.getCurrent();
+				deleteRow(joinedRow);
+				rowCount++;
+			}
+			return rowCount;
+		} else if (updateList.size() == 0)
 			throw new IllegalArgumentException("UPDATE should have some values to set");
-		while(cursor.next()) {
-			List<TypedRow> joinedRow = cursor.getCurrent();
-			updateRow(joinedRow, updateList);
-			rowCount++;
+		else {
+			while (cursor.next()) {
+				List<TypedRow> joinedRow = cursor.getCurrent();
+				updateRow(joinedRow, updateList);
+				rowCount++;
+			}
+			return rowCount;
 		}
-		return rowCount;
 	}
 
 	private void updateRow(List<TypedRow> joinedRow, List<TypedColumn> updateList) {
@@ -274,6 +286,14 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 				}
 			}
 			put(meta.getColumnFamily(), r);	
+		}
+	}
+
+	private void deleteRow(List<TypedRow> typeRowList) {
+		for (TypedRow r : typeRowList) {
+			ViewInfo view = r.getView();
+			DboTableMeta meta = view.getTableMeta();
+			remove(meta.getColumnFamily(), r);
 		}
 	}
 

@@ -131,8 +131,8 @@ public class TestGrammar {
 	}
 
 	@Test
-	public void testUpdateTree() {
-		String sql = "update TABLE set (name=\"test\")  where id = \"acc1\"";
+	public void testDelteTree() {
+		String sql = "delete from TABLE where id = \"acc1\"";
 		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
 		String result = "" + newTree;
 		Assert.assertEquals("id = \"acc1\"", result);

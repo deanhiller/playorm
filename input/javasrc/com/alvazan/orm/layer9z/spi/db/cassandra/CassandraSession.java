@@ -32,8 +32,10 @@ import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.MutationBatch;
+import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
+import com.netflix.astyanax.ddl.SchemaChangeResult;
 import com.netflix.astyanax.model.ByteBufferRange;
 import com.netflix.astyanax.model.ColumnFamily;
 import com.netflix.astyanax.query.ColumnFamilyQuery;
@@ -249,9 +251,9 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		cluster.dropKeyspace(keyspaceName);
-		String id = cluster.addKeyspace(ourDef);
+		OperationResult<SchemaChangeResult> result = cluster.addKeyspace(ourDef);
 		
-		columnFamilies.waitForNodesToBeUpToDate(id, 300000);
+		columnFamilies.waitForNodesToBeUpToDate(result, 300000);
 	}
 
 

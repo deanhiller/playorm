@@ -112,6 +112,41 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(toMany.getNum(), many.getNum());
 		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)many).getDescription());
 	}
+	
+	@Test
+	public void testBasicRemoveWithMultipleClasses() {
+		InheritanceSub1 common = new InheritanceSub1();
+		common.setName("xxxx");
+		common.setDiff("diff");
+		common.setNum(56);
+		mgr.put(common);
+		
+		InheritanceSub2 toMany = new InheritanceSub2();
+		toMany.setDescription("werew");
+		toMany.setNum(78);
+		toMany.setNumBalls(33);
+		mgr.put(toMany);
+		mgr.flush();
+		
+		InheritanceSuper abs = mgr.find(InheritanceSuper.class, common.getId());
+		Assert.assertTrue(InheritanceSub1.class.isAssignableFrom(abs.getClass()));
+		Assert.assertEquals(common.getNum(), abs.getNum());
+		Assert.assertEquals(common.getName(), ((InheritanceSub1)abs).getName());
+		Assert.assertEquals(common.getDiff(), ((InheritanceSub1)abs).getDiff());
+		
+		InheritanceSuper many = mgr.find(InheritanceSuper.class, toMany.getId());
+		Assert.assertTrue(InheritanceSub2.class.isAssignableFrom(many.getClass()));
+		Assert.assertEquals(toMany.getNum(), many.getNum());
+		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)many).getDescription());
+		
+		mgr.remove(abs);
+		abs = mgr.find(InheritanceSuper.class, common.getId());
+		Assert.assertNull(abs);
+		
+		mgr.remove(many);
+		many = mgr.find(InheritanceSuper.class, toMany.getId());
+		Assert.assertNull(many);
+	}
 
 	@Test
 	public void testToManyRelatipnshipSpecific() {
