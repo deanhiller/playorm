@@ -36,7 +36,7 @@ public class ReflectionUtil {
 		try {
 			return field.get(entity);
 		} catch (IllegalArgumentException e) {
-			throw new TypeMismatchException("Entity="+entity.getClass()+" was passed to field of a different type.  field type="+field.getType(), e);
+			throw new TypeMismatchException("Entity="+entity.getClass()+" was passed to field of a different type.  field="+field, e);
 		} catch (IllegalAccessException e) {
 			throw new RuntimeException(e);
 		}
