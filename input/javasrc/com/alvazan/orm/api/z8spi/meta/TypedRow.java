@@ -29,7 +29,13 @@ public class TypedRow {
 		ByteArray b = new ByteArray(fullName);
 		columns.put(b, c);
 	}
-	
+
+	public void addColumn(DboColumnEmbedSimpleMeta colMeta, byte[] fullName, byte[] namePrefix, byte[] fk, byte[] value, Long timestamp) {
+		TypedColumn c = new TypedColumn(colMeta, namePrefix, fk, value, timestamp);
+		ByteArray b = new ByteArray(fullName);
+		columns.put(b, c);
+	}
+
 	public void addColumn(DboColumnMeta colMeta,
 			byte[] columnName, byte[] value, Long timestamp) {
 		TypedColumn c = new TypedColumn(colMeta, columnName, value, timestamp);

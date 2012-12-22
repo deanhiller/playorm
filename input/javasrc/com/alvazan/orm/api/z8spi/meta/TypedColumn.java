@@ -18,7 +18,12 @@ public class TypedColumn {
 		this(colMeta, prefixName, value, timestamp2);
 		this.subName = postFixName;
 	}
-	
+
+	public TypedColumn(DboColumnEmbedSimpleMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2) {
+		this(colMeta, prefixName, value, timestamp2);
+		this.subName = postFixName;
+	}
+
 	public TypedColumn(DboColumnMeta colMeta, byte[] name, byte[] value, Long timestamp2) {
 		this.columnMeta = colMeta;
 		this.name = name;
@@ -46,12 +51,20 @@ public class TypedColumn {
 			throw new IllegalArgumentException("You need to call getName(Class type) instead as this column is not defined in our schema");
 
 		String strName = StandardConverters.convertFromBytes(String.class, name);
-		if(!(columnMeta instanceof DboColumnToManyMeta))
+		if(!(columnMeta instanceof DboColumnToManyMeta || columnMeta instanceof DboColumnEmbedSimpleMeta))
 			return strName;
-		
-		DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
-		Object objVal = many.convertFromStorage2(subName);
-		return strName+"."+many.convertTypeToString(objVal);
+
+		if (columnMeta instanceof DboColumnToManyMeta) {
+			DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
+			Object objVal = many.convertFromStorage2(subName);
+			return strName+"."+many.convertTypeToString(objVal);
+		} else if (columnMeta instanceof DboColumnEmbedSimpleMeta) {
+			DboColumnEmbedSimpleMeta embedSimple = (DboColumnEmbedSimpleMeta) columnMeta;
+			Object objVal = embedSimple.convertFromStorage2(subName);
+			return strName+"."+embedSimple.convertTypeToString(objVal);
+		}
+		// in any other case return strName
+		return strName;
 	}
 	
 	public String getNameAsString(Class<?> type) {

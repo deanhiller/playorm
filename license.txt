@@ -1,3 +1,6 @@
+Addendum: Anyone who contributes to this PlayOrm project automatically is giving Extreme Apps, Inc and Dean Hiller a shared
+copyright.  (This allows us to have multiple licenses on this project).  The only way to contribute is by doing a pull request on github so if you initiate one, you grant us a shared copyright
+
 Mozilla Public License Version 2.0
 ==================================
 

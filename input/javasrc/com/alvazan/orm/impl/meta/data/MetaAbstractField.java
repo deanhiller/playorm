@@ -139,8 +139,11 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	@Override
 	public Object getFieldRawValue(OWNER entity) {
 		Object value = ReflectionUtil.fetchFieldValue(entity, field);
-		return unwrapIfNeeded(value);
+		return value;
+		//return unwrapIfNeeded(value);
 	}
 
+	//unused now I think...
+	@Deprecated
 	protected abstract Object unwrapIfNeeded(Object value);
 }
