@@ -18,8 +18,10 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.PartitionedSingleTrade;
@@ -116,10 +118,24 @@ public class TestVirtualCf {
 		TypedRow result2 = s2.find("Owner", row2.getRowKey());
 		Assert.assertNull(result2);
 		
-		Object fk = result.getColumn("carOwner").getValue();
-		Object rowId = row2.getRowKey();
-		Assert.assertEquals(rowId, fk);
-		
+		if (result.getColumn("carOwner") != null) {
+			Object fk = result.getColumn("carOwner").getValue();
+			Object rowId = row2.getRowKey();
+			Assert.assertEquals(rowId, fk);
+		}
+		else {
+			// it is saved as a composite column now so no need to test as above, test as composite	
+			Object rowId = row2.getRowKey();
+			for(TypedColumn c : result.getColumnsAsColl()) {
+				DboColumnMeta colMeta = c.getColumnMeta();
+				if(colMeta != null) {
+					String fullName = c.getName();
+					String fkcomposite = fullName.substring(fullName.indexOf(".")+1);
+					Assert.assertEquals(rowId.toString(), fkcomposite);
+				}
+			}
+		}
+
 		QueryResult qResult = s2.createQueryCursor("select * from MyRaceCar", 50);
 		Cursor<KeyValue<TypedRow>> primView = qResult.getPrimaryViewCursor();
 		Assert.assertTrue(primView.next());

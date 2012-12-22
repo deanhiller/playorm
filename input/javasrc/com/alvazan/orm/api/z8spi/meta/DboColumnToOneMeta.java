@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.z8spi.meta;
 
+import java.util.Collection;
+
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.z8spi.Row;
@@ -52,29 +54,55 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 	}
 
 	public void translateFromColumn(Row row, TypedRow entity) {
-		Column column = row.getColumn(getColumnNameAsBytes());
-		if(column == null) {
-			return;
+		String columnName = getColumnName();
+		byte[] namePrefix = StandardConverters.convertToBytes(columnName);
+		Collection<Column> columns = row.columnByPrefix(namePrefix);
+		if (columns != null && !columns.isEmpty()) {
+			Column column = columns.iterator().next();
+			byte[] value = column.getValue();
+			byte[] fullName = column.getName();
+			//strip off the prefix to get the foreign key
+			int pkLen = fullName.length-namePrefix.length;
+			byte[] fk = new byte[pkLen];
+			for(int i = namePrefix.length; i < fullName.length; i++) {
+				fk[i-namePrefix.length] =  fullName[i];
+			}
+			entity.addColumn(this, fullName, namePrefix, fk, value, column.getTimestamp());
 		}
-
-		byte[] value = column.getValue();
-		entity.addColumn(this, getColumnNameAsBytes(), value, column.getTimestamp());
+		else {
+		     //Check if the column exists in old way
+			Column column = row.getColumn(getColumnNameAsBytes());
+			if(column == null)
+				return;
+			byte[] value = column.getValue();
+			entity.addColumn(this, getColumnNameAsBytes(), value, column.getTimestamp());
+		} 
 	}
-	
+
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow entity = info.getEntity();
 		RowToPersist row = info.getRow();
-		
+
 		Column col = new Column();
 		row.getColumns().add(col);
-	
+
 		TypedColumn column = entity.getColumn(getColumnName());
-		
+
 		byte[] byteVal = convertToStorage2(column.getValue());
-		byte[] colBytes = StandardConverters.convertToBytes(getColumnName());
-		col.setName(colBytes);
-		col.setValue(byteVal);
+		byte[] prefix = StandardConverters.convertToBytes(getColumnName());
+
+		byte[] pkData = byteVal;
+
+		byte[] name = new byte[prefix.length + pkData.length];
+		for(int i = 0; i < name.length; i++) {
+			if(i < prefix.length)
+				name[i] = prefix[i];
+			else
+				name[i] = pkData[i-prefix.length];
+		}
+
+		col.setName(name);
 		Object primaryKey = column.getValue();
 		addIndexInfo(info, primaryKey, byteVal);
 		removeIndexInfo(info, primaryKey, byteVal);		
