@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.List;
 
 import com.alvazan.orm.api.base.ToOneProvider;
@@ -42,14 +43,17 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		if(column == null) {
 			column = new Column();
 		}
-		
 		Object proxy;
-		if(field.getType().equals(ToOneProvider.class))
-			proxy = translateFromToProxy(row, column.getValue(), session);
-		else {
-			proxy = convertIdToProxy(row, column.getValue(), session);
+		if(field.getType().equals(ToOneProvider.class)) {
+			proxy = translateFromToComposite(row, session);
+			if (proxy == null)
+				proxy = translateFromToProxy(row, column.getValue(), session);
 		}
-		
+		else {
+			proxy = convertIdToProxyComposite(row, session);
+			if (proxy == null)
+				proxy = convertIdToProxy(row, column.getValue(), session);
+		}
 		ReflectionUtil.putFieldValue(entity, field, proxy);
 	}
 	
@@ -59,19 +63,57 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return toOne;
 	}
 
+	private Object translateFromToComposite(Row row, NoSqlSession session) {
+		byte[] bytes = StandardConverters.convertToBytes(columnName);
+		Collection<Column> columns = row.columnByPrefix(bytes);
+		if (columns != null && !columns.isEmpty()) {
+			Column column = columns.iterator().next();
+			byte[] fullName = column.getName();
+			//strip off the prefix to get the foreign key
+			int pkLen = fullName.length-bytes.length;
+			byte[] fk = new byte[pkLen];
+			for(int i = bytes.length; i < fullName.length; i++) {
+				fk[i-bytes.length] =  fullName[i];
+			}
+			ToOneProvider<PROXY> toOne = new ToOneProviderProxy(classMeta, fk, session);
+			return toOne;
+		}
+		else
+			return null;
+	}
+
+	private Object convertIdToProxyComposite(Row row, NoSqlSession session) {
+		byte[] bytes = StandardConverters.convertToBytes(columnName);
+		Collection<Column> columns = row.columnByPrefix(bytes);
+		if (columns != null && !columns.isEmpty()) {
+			Column column = columns.iterator().next();
+			byte[] fullName = column.getName();
+			//strip off the prefix to get the foreign key
+			int pkLen = fullName.length-bytes.length;
+			byte[] fk = new byte[pkLen];
+			for(int i = bytes.length; i < fullName.length; i++) {
+				fk[i-bytes.length] =  fullName[i];
+			}
+			Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, session, fk, null);
+			return tuple.getProxy();
+		}
+		else 
+			return null;
+	}
+
 	@SuppressWarnings("unchecked")
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
 		RowToPersist row = info.getRow();
-		
 		Column col = new Column();
 		row.getColumns().add(col);
-		
+
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		
-		if(value instanceof ToOneProvider)
+		if(value instanceof ToOneProvider) {
 			value = (PROXY) ((ToOneProvider)value).get();
-		
+		}
+
 		//Value is the Account.java or a Proxy of Account.java field and what we need to save in 
 		//the database is the ID inside this Account.java object!!!!
 		byte[] byteVal = classMeta.convertEntityToId(value);
@@ -88,15 +130,30 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 					+"2. Call entityManager.fillInWithKey(Object entity), then SAVE your "+owner+"', then save your "+child+" NOTE that this" +
 							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
 		}
-		
+
 		byte[] colBytes = StandardConverters.convertToBytes(columnName);
-		col.setName(colBytes);
-		col.setValue(byteVal);
-		
-		StorageTypeEnum storageType = getStorageType();
-		Object primaryKey = classMeta.fetchId(value);
-		addIndexInfo(info, primaryKey, byteVal, storageType);
-		removeIndexInfo(info, primaryKey, byteVal, storageType);
+		if(byteVal != null) {
+			byte[] name = new byte[colBytes.length + byteVal.length];
+			for(int i = 0; i < name.length; i++) {
+				if(i < colBytes.length)
+					name[i] = colBytes[i];
+				else
+					name[i] = byteVal[i-colBytes.length];
+			}
+			col.setName(name);
+			StorageTypeEnum storageType = getStorageType();
+			Object primaryKey = classMeta.fetchId(value);
+			addIndexInfo(info, primaryKey, byteVal, storageType);
+			removeIndexInfo(info, primaryKey, byteVal, storageType);
+		}
+		else {
+			col.setName(colBytes);
+			col.setValue(byteVal);
+			StorageTypeEnum storageType = getStorageType();
+			Object primaryKey = classMeta.fetchId(value);
+			addIndexInfo(info, primaryKey, byteVal, storageType);
+			removeIndexInfo(info, primaryKey, byteVal, storageType);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -104,6 +161,7 @@ public class MetaProxyField<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	public Object fetchField(Object entity) {
 		PROXY value = (PROXY) ReflectionUtil.fetchFieldValue(entity, field);
 		return value;
+		//throw new UnsupportedOperationException("only used for partitioning and multivalue column can't partition.  easy to implement if anyone else starts using this though, but for now unsupported");
 	}
 	
 	@SuppressWarnings("unchecked")
