@@ -482,7 +482,7 @@ public class TestOneToMany {
 		Assert.assertEquals("dean", activity.getName());
 	}
 
-	//@Test
+	@Test
 	public void testEmbedded() {
 		Email sub = new Email();
 		sub.setId("sub");
@@ -501,6 +501,10 @@ public class TestOneToMany {
 		user.getEmails().add(e1);
 		user.getEmails().add(e2);
 		
+		mgr.put(sub);
+		mgr.put(e1);
+		mgr.put(e2);
+
 		mgr.put(user);
 		mgr.flush();
 		

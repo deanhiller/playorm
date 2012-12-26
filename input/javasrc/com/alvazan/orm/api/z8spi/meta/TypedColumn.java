@@ -29,6 +29,11 @@ public class TypedColumn {
 		this.subName = postFixName;
 	}
 
+	public TypedColumn(DboColumnEmbedMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2 ) {
+		this(colMeta, prefixName, value, timestamp2);
+		this.subName = postFixName;
+	}
+
 	public TypedColumn(DboColumnMeta colMeta, byte[] name, byte[] value, Long timestamp2) {
 		this.columnMeta = colMeta;
 		this.name = name;
@@ -56,9 +61,8 @@ public class TypedColumn {
 			throw new IllegalArgumentException("You need to call getName(Class type) instead as this column is not defined in our schema");
 
 		String strName = StandardConverters.convertFromBytes(String.class, name);
-		if(!(columnMeta instanceof DboColumnToManyMeta || columnMeta instanceof DboColumnEmbedSimpleMeta || columnMeta instanceof DboColumnToOneMeta))
+		if(!(columnMeta instanceof DboColumnToManyMeta || columnMeta instanceof DboColumnEmbedSimpleMeta || columnMeta instanceof DboColumnToOneMeta || columnMeta instanceof DboColumnEmbedMeta ))
 			return strName;
-
 		if (columnMeta instanceof DboColumnToManyMeta) {
 			DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
 			Object objVal = many.convertFromStorage2(subName);
@@ -66,7 +70,7 @@ public class TypedColumn {
 		} else if (columnMeta instanceof DboColumnToOneMeta) {
 			DboColumnToOneMeta one = (DboColumnToOneMeta) columnMeta;
 			if (subName !=null) {
-				//Just if it is stored in new way
+				//Just if it is stored as composite
 				Object objVal = one.convertFromStorage2(subName);
 				return strName+"."+one.convertTypeToString(objVal);	
 			}
@@ -76,6 +80,11 @@ public class TypedColumn {
 			DboColumnEmbedSimpleMeta embedSimple = (DboColumnEmbedSimpleMeta) columnMeta;
 			Object objVal = embedSimple.convertFromStorage2(subName);
 			return strName+"."+embedSimple.convertTypeToString(objVal);
+
+		} else if (columnMeta instanceof DboColumnEmbedMeta) {
+			DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) columnMeta;
+			Object objVal = embedMeta.convertFromStorage2(subName);
+			return strName + "." + embedMeta.convertTypeToString(objVal);
 		}
 		// in any other case return strName
 		return strName;
