@@ -26,7 +26,7 @@ import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.ToOneProviderProxy;
 
-public class MetaEmbeddedEntity<OWNER, PROXY, T> extends MetaAbstractField<OWNER> {
+public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private DboColumnEmbedMeta metaDbo = new DboColumnEmbedMeta();
 	private MetaAbstractClass<PROXY> classMeta;
