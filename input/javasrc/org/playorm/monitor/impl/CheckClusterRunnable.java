@@ -55,6 +55,8 @@ public class CheckClusterRunnable implements Runnable {
 			all.add(val);
 			if(isServerUp(mgr, val))
 				servers.add(val);
+			if(val.getWebServerName().equals(config.getHostName()))
+				saveNodeIsUp(mgr, val);
 		}
 
 		mgr.clear();
@@ -75,6 +77,13 @@ public class CheckClusterRunnable implements Runnable {
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}
 
+	private void saveNodeIsUp(NoSqlEntityManager mgr, WebNodeDbo val) {
+		val.setLastSeen(new DateTime());
+		val.setUp(true);
+		mgr.put(val);
+		mgr.flush();
+	}
+	
 	private void runOurMonitors(NoSqlEntityManager mgr, int numUpWebNodes, int serverNumber) {
 		log.info("num up nodes="+numUpWebNodes+" servernum="+serverNumber);
 		Cursor<KeyValue<MonitorDbo>> cursor = MonitorDbo.findAll(mgr);
