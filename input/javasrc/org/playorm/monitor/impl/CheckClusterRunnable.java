@@ -47,10 +47,12 @@ public class CheckClusterRunnable implements Runnable {
 		
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		Cursor<KeyValue<WebNodeDbo>> cursor = WebNodeDbo.findAllNodes(mgr);
+		List<WebNodeDbo> all = new ArrayList<WebNodeDbo>();
 		List<WebNodeDbo> servers = new ArrayList<WebNodeDbo>();
 		while(cursor.next()) {
 			KeyValue<WebNodeDbo> kv = cursor.getCurrent();
 			WebNodeDbo val = kv.getValue();
+			all.add(val);
 			if(isServerUp(mgr, val))
 				servers.add(val);
 		}
@@ -68,7 +70,7 @@ public class CheckClusterRunnable implements Runnable {
 		}
 
 		if(serverNumber == -1)
-			throw new IllegalStateException("serverNumber not found in list of servers="+servers);
+			throw new IllegalStateException("serverNumber not found in list of servers="+all);
 		
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}

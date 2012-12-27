@@ -23,6 +23,11 @@ public class WebNodeDbo {
 	@NoSqlIndexed
 	private boolean isUp;
 	
+	@Override
+	public String toString() {
+		return "[webNode="+webServerName+" up="+isUp+" lastSeen="+lastSeen+"]";
+	}
+
 	public String getWebServerName() {
 		return webServerName;
 	}
