@@ -23,9 +23,9 @@ public class MonitorServiceImpl implements MonitorService {
 	private Config config;
 	@Inject
 	private CheckClusterRunnable clusterRunnable;
-	
+
 	private NoSqlEntityManagerFactory factory;
-	
+
 	@Override
 	public void start() {
 		String host = config.getHostName();
