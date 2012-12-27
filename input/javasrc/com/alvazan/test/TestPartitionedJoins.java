@@ -13,8 +13,8 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
-import com.alvazan.test.db.PartitionedTrade;
 import com.alvazan.test.db.PartSecurity;
+import com.alvazan.test.db.PartitionedTrade;
 
 public class TestPartitionedJoins {
 
