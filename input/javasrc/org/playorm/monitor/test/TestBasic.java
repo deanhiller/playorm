@@ -37,7 +37,7 @@ public class TestBasic {
 		
 		int rate = 5*60*1000;
 		Map<String, Object> props = new HashMap<String, Object>();
-		props.put(MonitorProdBindings.NOSQL_MGR_FACTORY, factory);
+		props.put(MonitorServiceFactory.NOSQL_MGR_FACTORY, factory);
 		props.put(MonitorProdBindings.SCHEDULER, mock);
 		props.put(MonitorProdBindings.HASH_GENERATOR, mockHash);
 		props.put(MonitorServiceFactory.SCAN_RATE_MILLIS, ""+rate);

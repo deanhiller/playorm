@@ -14,7 +14,6 @@ import com.google.inject.Module;
 
 public class MonitorProdBindings implements Module {
 
-	public static final String NOSQL_MGR_FACTORY = "org.playorm.monitor.factory";
 	public static final String SCHEDULER = "org.playorm.monitor.scheduler";
 	public static final String HASH_GENERATOR = "org.playorm.monitor.hashGenerator";
 	

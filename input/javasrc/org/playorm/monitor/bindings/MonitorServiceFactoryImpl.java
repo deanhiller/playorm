@@ -17,7 +17,7 @@ public class MonitorServiceFactoryImpl extends MonitorServiceFactory {
 		Injector injector = Guice.createInjector(new MonitorProdBindings(properties));
 		MonitorServiceImpl impl = injector.getInstance(MonitorServiceImpl.class);
 		
-		Object factoryObj = properties.get(MonitorProdBindings.NOSQL_MGR_FACTORY);
+		Object factoryObj = properties.get(MonitorServiceFactory.NOSQL_MGR_FACTORY);
 		if(factoryObj == null) 
 			throw new IllegalArgumentException("NOSQL_MGR_FACTORY is required and must be set");
 		else if(!(factoryObj instanceof NoSqlEntityManagerFactory))

@@ -14,6 +14,8 @@ public abstract class MonitorServiceFactory {
 		return newInstance.createService(properties);
 	}
 
+	public static final String NOSQL_MGR_FACTORY = "org.playorm.monitor.factory";
+
 	protected abstract MonitorService createService(Map<String, Object> properties);
 
 	private static MonitorServiceFactory createInstance(String impl) {
