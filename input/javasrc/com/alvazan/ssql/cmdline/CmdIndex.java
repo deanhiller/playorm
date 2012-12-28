@@ -88,6 +88,14 @@ public class CmdIndex {
 				TypedRow val = row.getValue();
 				
 				TypedColumn column = val.getColumn(colName);
+				if (column == null) {
+					//Doing nothing as of now but this is the code to remove index
+					//System.out.println("Column "  + colName + " with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
+					//s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
+					changedCounter++;
+					continue;
+				}
+
 				Object value = column.getValue();
 
 				if(!valuesEqual(pt.getIndexedValue(), value)) {

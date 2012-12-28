@@ -61,8 +61,13 @@ public class TypedColumn {
 
 		if (columnMeta instanceof DboColumnToManyMeta) {
 			DboColumnToManyMeta many = (DboColumnToManyMeta) columnMeta;
-			Object objVal = many.convertFromStorage2(subName);
-			return strName+"."+many.convertTypeToString(objVal);
+			if (subName !=null) {
+				//Just if the subName is null and use in some other way like in DeleteColumn
+				Object objVal = many.convertFromStorage2(subName);
+				return strName+"."+many.convertTypeToString(objVal);
+			}
+			else
+				return strName;
 		} else if (columnMeta instanceof DboColumnToOneMeta) {
 			DboColumnToOneMeta one = (DboColumnToOneMeta) columnMeta;
 			if (subName !=null) {

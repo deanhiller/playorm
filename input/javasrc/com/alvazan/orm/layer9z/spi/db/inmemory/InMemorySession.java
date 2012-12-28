@@ -26,6 +26,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
@@ -66,10 +67,12 @@ public class InMemorySession implements NoSqlRawSession {
 				persistIndex((PersistIndex) action, (NoSqlEntityManager) ormSession);
 			} else if(action instanceof RemoveIndex) {
 				removeIndex((RemoveIndex) action, (NoSqlEntityManager) ormSession);
+			} else if(action instanceof RemoveColumn) {
+				removeColumn((RemoveColumn) action, (NoSqlEntityManager) ormSession);
 			}
 		}
 	}
-
+	
 	private void persistIndex(PersistIndex action, NoSqlEntityManager ormSession) {
 		String colFamily = action.getIndexCfName();
 		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
@@ -179,6 +182,17 @@ public class InMemorySession implements NoSqlRawSession {
 		for(byte[] name : action.getColumns()) {
 			row.remove(name);
 		}
+	}
+
+	private void removeColumn(RemoveColumn action, NoSqlEntityManager ormSession) {
+
+		String colFamily = action.getColFamily().getColumnFamily();
+		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
+		Row row = table.getRow(action.getRowKey());
+		if(row == null)
+			return;
+		byte[] name = action.getColumn();
+			row.remove(name);
 	}
 
 	private void persist(Persist action, NoSqlEntityManager ormSession) {

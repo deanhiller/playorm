@@ -21,6 +21,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
@@ -251,26 +252,35 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		int rowCount = 0;
 		QueryResultImpl impl = (QueryResultImpl) result;
 		SpiMetaQuery metaQuery = impl.getMetaQuery();
+		String queryType = metaQuery.getQueryType();
 		List<TypedColumn> updateList = metaQuery.getUpdateList();
-
-		if (updateList == null) {
-			// it means it is delete! We may need a better way to check it
+		if (queryType.equalsIgnoreCase("DELETE")) {
 			while (cursor.next()) {
 				List<TypedRow> joinedRow = cursor.getCurrent();
 				deleteRow(joinedRow);
 				rowCount++;
 			}
 			return rowCount;
-		} else if (updateList.size() == 0)
-			throw new IllegalArgumentException("UPDATE should have some values to set");
-		else {
+		} else if(queryType.equalsIgnoreCase("UPDATE")) {
+			if (updateList.size() == 0)
+				throw new IllegalArgumentException("UPDATE should have some values to set");
+			else {
+				while (cursor.next()) {
+					List<TypedRow> joinedRow = cursor.getCurrent();
+					updateRow(joinedRow, updateList);
+					rowCount++;
+				}
+				return rowCount;
+			}
+		} else if(queryType.equalsIgnoreCase("DELETECOLUMN")) {
 			while (cursor.next()) {
 				List<TypedRow> joinedRow = cursor.getCurrent();
-				updateRow(joinedRow, updateList);
-				rowCount++;
+				if(deleteColumn(joinedRow, updateList))
+					rowCount++;
 			}
 			return rowCount;
 		}
+		return rowCount;
 	}
 
 	private void updateRow(List<TypedRow> joinedRow, List<TypedColumn> updateList) {
@@ -295,6 +305,26 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			DboTableMeta meta = view.getTableMeta();
 			remove(meta.getColumnFamily(), r);
 		}
+	}
+
+	private boolean deleteColumn(List<TypedRow> typeRowList, List<TypedColumn> deleteList) {
+		for (TypedRow r : typeRowList) {
+			ViewInfo view = r.getView();
+	        DboTableMeta metaClass = view.getTableMeta();
+	        for(TypedColumn c : r.getColumnsAsColl()) {
+	        	for (TypedColumn columnforDelete : deleteList ) {
+	        		if (columnforDelete.getName().equals(c.getName())) {
+	        			session.removeColumn(metaClass, StandardConverters.convertToBytes(r.getRowKey()), c.getNameRaw());
+	        			return true;
+	        		}
+	        		else if (c.getName().equals(columnforDelete.getName()+"."+StandardConverters.convertToString(columnforDelete.getValue()))) {
+	        			session.removeColumn(metaClass, StandardConverters.convertToBytes(r.getRowKey()), c.getNameRaw());
+	        			return true;
+	        		}
+	            }
+	        }
+		}
+		return false;
 	}
 
 	public int count(String columnFamily, String indexedColName, Object value) {

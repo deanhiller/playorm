@@ -20,6 +20,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveEnum;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
@@ -75,8 +76,17 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		persist.setRowKey(rowKey);
 		persist.setColumn(column);
 		actions.add(persist);
-	}	
-	
+	}
+
+	@Override
+	public void removeColumn(DboTableMeta colFamily, byte[] rowKey, byte[] columnName) {
+		RemoveColumn removeColumn = new RemoveColumn();
+     	removeColumn.setColFamily(colFamily);
+     	removeColumn.setRowKey(rowKey);
+     	removeColumn.setColumn(columnName);
+		actions.add(removeColumn);
+	}
+
 	@Override
 	public void removeFromIndex(DboTableMeta cf, String indexColFamily, byte[] rowKeyBytes,
 			IndexColumn c) {

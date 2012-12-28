@@ -14,6 +14,7 @@ import org.antlr.runtime.tree.CommonTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -109,6 +110,12 @@ public class ScannerSql {
 			break;
 		case NoSqlLexer.UPDATE:
 			processUpdate(tree, wiring, facade);
+			break;
+		case NoSqlLexer.DELETE_COLUMN:
+			compileDeleteColumnClause(tree, wiring, facade);
+			break;
+		case NoSqlLexer.DELETE:
+			compileDeleteClause(wiring);
 			break;
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
@@ -303,6 +310,33 @@ public class ScannerSql {
 		}
 	}
 	
+	private void compileDeleteClause(InfoForWiring wiring) {
+		wiring.setQueryType("DELETE");
+	}
+
+	@SuppressWarnings("unchecked")
+	private void compileDeleteColumnClause(CommonTree tree, InfoForWiring wiring, MetaFacade facade) {
+		wiring.setQueryType("DELETECOLUMN");
+		List<TypedColumn> deleteList = new ArrayList<TypedColumn>(); 
+		List<CommonTree> childrenList = tree.getChildren();
+		if (childrenList == null)
+			return;
+		else {
+			TypeInfo columnTypeInfo = processSide(new ExpressionNode(childrenList.get(0)), wiring, null, facade);
+			byte[] value = null;
+			if (childrenList.size() > 1)
+			{
+				// value is only relevant if it is *ToOne or *ToMany
+				String withQuotes = childrenList.get(1).getText().trim();
+				String withoutQuotes = withQuotes.substring(1, withQuotes.length()-1);
+				value = StandardConverters.convertToBytes(withoutQuotes);
+			}
+			TypedColumn columnforDelete = new TypedColumn(columnTypeInfo.getColumnInfo(), columnTypeInfo.getColumnInfo().getColumnNameAsBytes(), value, null);
+			deleteList.add(columnforDelete);
+		}
+		wiring.setUpdateList(deleteList);
+	}
+
 	@SuppressWarnings("unchecked")
 	private <T> void compileUpdateClause(CommonTree tree,
 			InfoForWiring wiring, MetaFacade facade) {
@@ -339,6 +373,7 @@ public class ScannerSql {
 
 	private <T> void processUpdate(CommonTree tree,
 			InfoForWiring wiring, MetaFacade facade) {
+		wiring.setQueryType("UPDATE");
 		// NEed to re-visit again if Update can really be done here
 	}
 	// the alias part is silly due to not organize right in .g file

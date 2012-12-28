@@ -219,4 +219,11 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		cache.clear();
 	}
 
+	@Override
+	public void removeColumn(DboTableMeta colFamily, byte[] rowKey,
+			byte[] columnName) {
+		session.removeColumn(colFamily, rowKey, columnName);
+		cacheRow(colFamily, rowKey, null);
+	}
+
 }
