@@ -11,6 +11,7 @@ import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
@@ -22,17 +23,22 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
 import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
+import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
+import com.alvazan.orm.layer3.typed.IndiceCursorProxy;
 import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, MetaLoader {
@@ -143,19 +149,26 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 			throw new IllegalArgumentException("Class type="+entityType.getName()+" was not found, please check that you scanned the right package and look at the logs to see if this class was scanned");
 
 		Iterable<byte[]> iter = new IterableKey<T>(meta, keys);
+		Iterable<byte[]> virtKeys = new IterToVirtual(meta.getMetaDbo(), iter);
 		
 		//we pass in null for batch size such that we do infinite size or basically all keys passed into this method in one
 		//shot
-		return findAllImpl2(meta, iter, null, true, null);
+		return findAllImpl2(meta, new IterableWrappingCursor<byte[]>(virtKeys), null, true, null);
 	}
 	
-	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, Iterable<byte[]> iter, String query, boolean cacheResults, Integer batchSize) {
+	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, ViewInfo mainView, DirectCursor<IndexColumnInfo> keys, String query, boolean cacheResults, Integer batchSize) {
 		//OKAY, so this gets interesting.  The noSqlKeys could be a proxy iterable to 
 		//millions of keys with some batch size.  We canNOT do a find inline here but must do the find in
 		//batches as well
-		Iterable<byte[]> virtKeys = new IterToVirtual(meta.getMetaDbo(), iter);
+		IndiceCursorProxy indiceCursor = new IndiceCursorProxy(mainView, keys);
+		DirectCursor<byte[]> virtKeys = new IndiceToVirtual(meta.getMetaDbo(), indiceCursor);
+		return findAllImpl2(meta, virtKeys, query, cacheResults, batchSize);
+	}
+	
+	
+	<T> AbstractCursor<KeyValue<T>> findAllImpl2(MetaClass<T> meta, DirectCursor<byte[]> keys, String query, boolean cacheResults, Integer batchSize) {
 		boolean skipCache = query != null;
-		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), virtKeys, skipCache, cacheResults, batchSize);
+		AbstractCursor<KeyValue<Row>> cursor = session.find(meta.getMetaDbo(), keys, skipCache, cacheResults, batchSize);
 		return new CursorRow<T>(session, meta, cursor, query);
 	}
 

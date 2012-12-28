@@ -54,6 +54,24 @@ public class CachingCursor<T> implements DirectCursor<IndexColumnInfo> {
 		}
 		return null;
 	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		if(cacheEnabled) {
+			return fetchFromCache();
+		}
+		Holder<IndexColumnInfo> next = cursor.previousImpl();
+		if(next != null) {
+			if(cached.size() < 500)
+				cached.add(next.getValue());
+			return next;
+		}
+		
+		if(cached.size() < 500) {
+			cacheEnabled = true;
+		}
+		return null;
+	}
 
 	private Holder<IndexColumnInfo> fetchFromCache() {
 		if(cachedIter == null)
@@ -70,5 +88,13 @@ public class CachingCursor<T> implements DirectCursor<IndexColumnInfo> {
 			cachedIter = cached.iterator();
 		else
 			cursor.beforeFirst();
+	}
+	
+	@Override
+	public void afterLast() {
+		if(cacheEnabled)
+			cachedIter = cached.iterator();
+		else
+			cursor.afterLast();
 	}
 }

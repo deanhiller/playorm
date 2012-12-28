@@ -25,6 +25,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -247,7 +248,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
 			List<byte[]> keyList= new ArrayList<byte[]>();
 			keyList.add(virtualkey);
-			scan = session.find(info.getOwner(), keyList, false, true, batchSize);
+			scan = session.find(info.getOwner(), new IterableWrappingCursor<byte[]>(keyList), false, true, batchSize);
 		} else if (root.getType() == NoSqlLexer.IN) {
 			List<byte[]> keyList = new ArrayList<byte[]>();
 			List<ParsedNode> keys = root.getChildrenForIn();
@@ -256,7 +257,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
 				keyList.add(virtualkey);
 			}
-			scan = session.find(info.getOwner(), keyList, false, true, batchSize);
+			scan = session.find(info.getOwner(), new IterableWrappingCursor<byte[]>(keyList), false, true, batchSize);
 		} else
 			throw new UnsupportedOperationException("Other operations not supported yet for Primary Key. Use @NoSQLIndexed for Primary Key.type="+root.getType());
 		DirectCursor<IndexColumnInfo> processKeys = processKeysforPK(viewInfo, info, scan);

@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -50,6 +51,12 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		cachedCursors = new EmptyCursor<List<TypedRow>>();
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cachedCursors = new EmptyCursor<List<TypedRow>>();
+		cursor.afterLast();
+	}
 
 	@Override
 	public Holder<List<TypedRow>> nextImpl() {
@@ -61,6 +68,19 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		loadCache();
 		
 		return cachedCursors.nextImpl();
+	}
+	
+	@Override
+	public Holder<List<TypedRow>> previousImpl() {
+		Holder<List<TypedRow>> previous = cachedCursors.previousImpl();
+		if(previous != null)
+			return previous;
+
+		//Well, the cursor ran out, load more results if any exist...
+		//TODO:JSC  this probably won't work how you want.  It'll load the next items, not the previous ones.
+		loadCache();
+		
+		return cachedCursors.previousImpl();
 	}
 
 	private void loadCache() {
@@ -76,7 +96,7 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			TwoLists twoLists = map.get(view);
 			List<byte[]> rowKeys = twoLists.getListWithNoNulls();
 			DboTableMeta meta = view.getTableMeta();
-			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, rowKeys, query, batchSize);
+			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, new IterableWrappingCursor<byte[]>(rowKeys), query, batchSize);
 			DirectCursor<KeyValue<TypedRow>> fillCursor = new CursorFillNulls(cursor, twoLists.getFullKeyList(), view);
 			cursors.add(fillCursor);
 			fullKeyLists.add(twoLists.getFullKeyList());

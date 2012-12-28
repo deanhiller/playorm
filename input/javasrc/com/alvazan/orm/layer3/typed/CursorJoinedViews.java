@@ -29,6 +29,13 @@ class CursorJoinedViews extends AbstractCursor<List<TypedRow>> {
 			d.beforeFirst();
 		}
 	}
+	
+	@Override
+	public void afterLast() {
+		for(DirectCursor<KeyValue<TypedRow>> d : cursors) {
+			d.afterLast();
+		}
+	}
 
 	@Override
 	public Holder<List<TypedRow>> nextImpl() {
@@ -38,6 +45,32 @@ class CursorJoinedViews extends AbstractCursor<List<TypedRow>> {
 			DirectCursor<KeyValue<TypedRow>> cursor = cursors.get(i);
 			ViewInfo view = views.get(i);
 			Holder<KeyValue<TypedRow>> next = cursor.nextImpl();
+			if(next != null) {
+				atLeastOneCursorHasNext = true;
+				KeyValue<TypedRow> kv = next.getValue();
+				TypedRow row = kv.getValue();
+				if(row != null)
+					row.setView(view);
+				rows.add(row);
+			} else {
+				TypedRow row = new TypedRow(view, view.getTableMeta());
+				rows.add(row);
+			}
+		}
+
+		if(atLeastOneCursorHasNext)
+			return new Holder<List<TypedRow>>(rows);
+		return null;
+	}
+	
+	@Override
+	public Holder<List<TypedRow>> previousImpl() {
+		boolean atLeastOneCursorHasNext = false;
+		List<TypedRow> rows = new ArrayList<TypedRow>();
+		for(int i = 0; i < cursors.size(); i++) {
+			DirectCursor<KeyValue<TypedRow>> cursor = cursors.get(i);
+			ViewInfo view = views.get(i);
+			Holder<KeyValue<TypedRow>> next = cursor.previousImpl();
 			if(next != null) {
 				atLeastOneCursorHasNext = true;
 				KeyValue<TypedRow> kv = next.getValue();

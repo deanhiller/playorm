@@ -43,6 +43,11 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow>> {
 		if(keysIterable != null)
 			keys = keysIterable.iterator();
 	}
+	
+	@Override 
+	public void afterLast() {
+		throw new UnsupportedOperationException("Reverse iteration is not yet supported for this curor type.  Try sending in your keys in reverse order");
+	}
 
 	@Override
 	public Holder<KeyValue<TypedRow>> nextImpl() {
@@ -52,6 +57,11 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow>> {
 		
 		KeyValue<TypedRow> val = nextChunk(nextImpl.getValue());
 		return new Holder<KeyValue<TypedRow>>(val);
+	}
+	
+	@Override
+	public Holder<KeyValue<TypedRow>> previousImpl() {
+		throw new UnsupportedOperationException("Reverse iteration is not yet supported for this curor type.  Try sending in your keys in reverse order");
 	}
 	
 	private KeyValue<TypedRow> nextChunk(KeyValue<Row> keyValue) {

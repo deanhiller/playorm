@@ -7,6 +7,7 @@ import com.alvazan.orm.api.z8spi.action.Action;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 
@@ -40,7 +41,7 @@ public interface NoSqlRawSession {
 
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr);
 
-	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr);
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, DirectCursor<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr);
 
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily);
 

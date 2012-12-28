@@ -30,6 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -45,7 +46,7 @@ public class InMemorySession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
+			DirectCursor<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
 		//NOTE: We don't have to do a cursor for in-memory, BUT by doing so, the logs are kept the same
 		//as when going against cassandra OR it is very confusing to users who switch(as I got confused).
 		CursorKeysToRows cursor = new CursorKeysToRows(colFamily, rowKeys, list, database, cache);
@@ -215,7 +216,7 @@ public class InMemorySession implements NoSqlRawSession {
 		
 	}
 
-	public Iterable<Column> columnSliceImpl(DboTableMeta colFamily, byte[] rowKey,
+	public Collection<Column> columnSliceImpl(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l) {
 		Table table = database.findTable(colFamily.getColumnFamily());
 		if(table == null) {
@@ -250,7 +251,7 @@ public class InMemorySession implements NoSqlRawSession {
 	@Override
 	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
-		Iterable<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
+		Collection<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
 		return new ProxyTempCursor<Column>(iter);
 	}
 

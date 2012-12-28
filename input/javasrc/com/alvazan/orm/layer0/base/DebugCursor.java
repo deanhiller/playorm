@@ -17,9 +17,21 @@ public class DebugCursor implements DirectCursor<IndexColumnInfo> {
 	public Holder<IndexColumnInfo> nextImpl() {
 		return cursor.nextImpl();
 	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		return cursor.previousImpl();
+	}
 
 	@Override
 	public void beforeFirst() {
+		if(alreadyRan)
+			throw new IllegalArgumentException("This cursor cannot be reset");
+		alreadyRan = true;
+	}
+	
+	@Override
+	public void afterLast() {
 		if(alreadyRan)
 			throw new IllegalArgumentException("This cursor cannot be reset");
 		alreadyRan = true;

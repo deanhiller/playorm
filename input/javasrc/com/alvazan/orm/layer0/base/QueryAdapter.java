@@ -130,10 +130,9 @@ public class QueryAdapter<T> implements Query<T> {
 		//BIG NOTE: Here, we could return all the keys from the join so we can eagerly fetch other entities as well
 		//instead of waiting for the user to loop through those entities AND if user accesses those entites, we could block
 		//while the load is happening too in the background
-		Iterable<byte[]> keys = new IterableCursorProxy(mainView, indice);
 		
 		String query = meta.getQuery();
-		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, cacheResults, batchSize);
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, mainView, indice, query, cacheResults, batchSize);
 
 		return results;
 	}

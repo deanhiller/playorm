@@ -41,10 +41,25 @@ public class CursorForPrimaryKey implements DirectCursor<IndexColumnInfo> {
 	public void beforeFirst() {
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cursor.beforeFirst();
+	}
 
 	@Override
 	public Holder<IndexColumnInfo> nextImpl() {
 		Holder<KeyValue<Row>> holder = cursor.nextImpl();
+		return buildHolder(holder);
+	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		Holder<KeyValue<Row>> holder = cursor.previousImpl();
+		return buildHolder(holder);
+	}
+	
+	private Holder<IndexColumnInfo> buildHolder(Holder<KeyValue<Row>> holder) {
 		if(holder == null)
 			return null;
 		KeyValue<Row> pkCol = holder.getValue();

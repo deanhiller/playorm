@@ -27,11 +27,26 @@ public class CursorToManyImpl<T> implements CursorToMany<T> {
 	public void beforeFirst() {
 		index = -1;
 	}
+	
+	@Override
+	public void afterLast() {
+		index = -1;
+		if (list!=null)
+			index=list.size();
+	}
 
 	@Override
 	public boolean next() {
 		index++;
 		if(index < list.size())
+			return true;
+		return false;
+	}
+	
+	@Override
+	public boolean previous() {
+		index--;
+		if(index >= 0)
 			return true;
 		return false;
 	}

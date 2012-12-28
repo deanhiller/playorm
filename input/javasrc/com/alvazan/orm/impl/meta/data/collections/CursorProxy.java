@@ -10,6 +10,9 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
+import com.alvazan.orm.api.z8spi.iter.ListWrappingCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -45,9 +48,26 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	public void beforeFirst() {
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cursor.afterLast();
+	}
 
 	@Override
 	public boolean next() {
+		loadSomeKeys();
+		if(cachedProxies.hasNext()) {
+			currentProxy = cachedProxies.next();
+			return true;
+		}
+		currentProxy = null;
+		return false;
+	}
+	
+	//TODO:jsc cachedProxies is an iterator...  is 'loadSomeKeys' ok?  reverse it?
+	@Override
+	public boolean previous() {
 		loadSomeKeys();
 		if(cachedProxies.hasNext()) {
 			currentProxy = cachedProxies.next();
@@ -103,7 +123,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		currentCacheLoaded = true;
 		
 		DboTableMeta metaDbo = proxyMeta.getMetaDbo();
-		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keyList);
+		IndiceToVirtual virtKeys = new IndiceToVirtual(metaDbo, new ListWrappingCursor<byte[]>(keyList));
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, true, false, batchSize);
 		
 		int counter = 0;

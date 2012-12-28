@@ -15,7 +15,9 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
@@ -28,17 +30,16 @@ import com.netflix.astyanax.query.RowSliceQuery;
 public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 
 	private Info info;
-	private Iterable<byte[]> rowKeys;
+	private DirectCursor<byte[]> rowKeys;
 	private int batchSize;
 	private BatchListener list;
 	private Keyspace keyspace;
-	private Iterator<byte[]> theKeys;
 	private Iterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;
 	private Cache cache;
 	private DboTableMeta cf;
 
-	public CursorKeysToRows2(Iterable<byte[]> rowKeys, int batchSize,
+	public CursorKeysToRows2(DirectCursor<byte[]> rowKeys, int batchSize,
 			BatchListener list, Provider<Row> rowProvider) {
 		this.rowProvider = rowProvider;
 		this.rowKeys = rowKeys;
@@ -68,7 +69,13 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 	}
 	@Override
 	public void beforeFirst() {
-		theKeys = rowKeys.iterator();
+		rowKeys.beforeFirst();
+		cachedRows = null;
+	}
+	
+	@Override
+	public void afterLast() {
+		rowKeys.afterLast();
 		cachedRows = null;
 	}
 
@@ -80,23 +87,46 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 		
 		return new Holder<KeyValue<Row>>(cachedRows.next());
 	}
+	
+	//TODO:JSC  again, either cachedRows needs to be built backward or needs a previous/hasPrevious
+	//TODO:JSC  also, loadCache either needs to build in reverse or need a new method loadCacheBackward
+	//actually, maybe the whole thing is in memory?  see the comment in loadCache!
+	//TODOD:JSC  THIS IS WRONG FOR SURE!!!!  The incoming cursor is a list of keys... are they in asc or desc order?
+	@Override
+	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> previousImpl() {
+		loadCache();
+		if(cachedRows == null || !cachedRows.hasNext())
+			return null;
+		
+		return new Holder<KeyValue<Row>>(cachedRows.next());
+	}
 
 	@SuppressWarnings("unchecked")
 	private void loadCache() {
+		
+		byte[] nextKey = null;
+		Holder<byte[]> keyHolder = rowKeys.nextImpl();
+		if (keyHolder != null)
+			nextKey = keyHolder.getValue();
+		
 		if(cachedRows != null && cachedRows.hasNext())
 			return; //There are more rows so return and the code will return the next result from cache
-		else if(!theKeys.hasNext())
+		else if(nextKey == null)
 			return;
+
 		
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
-		while(results.size() < batchSize && theKeys.hasNext()) {
-			byte[] key = theKeys.next();
-			RowHolder<Row> result = cache.fromCache(cf, key);
+		while(nextKey != null) {
+			RowHolder<Row> result = cache.fromCache(cf, nextKey);
 			if(result == null)
-				keysToLookup.add(key);
+				keysToLookup.add(nextKey);
 			
 			results.add(result);
+			nextKey = null;
+			keyHolder = rowKeys.nextImpl();
+			if (keyHolder != null)
+				nextKey = keyHolder.getValue();
 		}
 
 		

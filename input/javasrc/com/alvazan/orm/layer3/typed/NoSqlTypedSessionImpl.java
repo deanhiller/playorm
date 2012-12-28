@@ -25,7 +25,9 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
 import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -162,13 +164,13 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(meta == null)
 			throw new IllegalArgumentException("Meta for columnfamily="+colFamily+" was not found");
 		DboColumnMeta idMeta = meta.getIdColumnMeta();
-		Iterable<byte[]> noSqlKeys = new IterableTypedProxy<Object>(idMeta, keys);
+		DirectCursor<byte[]> noSqlKeys = new TypedProxyWrappingCursor<Object>(idMeta, new IterableWrappingCursor<Object>(keys));
 		return findAllImpl2(meta, keys, noSqlKeys, null, batchSize);
 	}
 
-	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, Iterable<byte[]> noSqlKeys, String query, int batchSize) {
-		
-		Iterable<byte[]> virtKeys = new IterToVirtual(meta, noSqlKeys);
+	<T> AbstractCursor<KeyValue<TypedRow>> findAllImpl2(DboTableMeta meta, Iterable<T> keys, DirectCursor<byte[]> noSqlKeys, String query, int batchSize) {
+
+		DirectCursor<byte[]> virtKeys = new IndiceToVirtual(meta, noSqlKeys);
 		//NOTE: It is WAY more efficient to find ALL keys at once then it is to
 		//find one at a time.  You would rather have 1 find than 1000 if network latency was 1 ms ;).
 		AbstractCursor<KeyValue<Row>> rows2 = session.find(meta, virtKeys, true, false, batchSize);

@@ -27,10 +27,23 @@ public class CursorProxyDirect implements Cursor<IndexColumnInfo> {
 	public void beforeFirst() {
 		iter.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		iter.afterLast();
+	}
 
 	@Override
 	public boolean next() {
 		cached = iter.nextImpl();
+		if(cached == null)
+			return false;
+		return true;
+	}
+	
+	@Override
+	public boolean previous() {
+		cached = iter.previousImpl();
 		if(cached == null)
 			return false;
 		return true;

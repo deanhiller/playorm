@@ -14,6 +14,8 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 @NoSqlEntity
 @NoSqlQueries({
@@ -89,6 +91,19 @@ public class Account extends AccountSuper{
 		query.setParameter("active", active);
 		return query.getResultList(0, null);
 	}
+	
+	public static List<Account> findAndBackward(NoSqlEntityManager mgr, String name, Boolean active) {
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findAnd");
+		query.setParameter("name", name);
+		query.setParameter("active", active);
+		Cursor<KeyValue<Account>> results = query.getResults();
+		results.afterLast();
+		List<Account> accounts = new ArrayList<Account>();
+		while(results.previous()) {
+			accounts.add(results.getCurrent().getValue());
+		}
+		return accounts;
+	}
 
 	public static List<Account> findOr(NoSqlEntityManager mgr, String name,
 			boolean active) {
@@ -96,6 +111,19 @@ public class Account extends AccountSuper{
 		query.setParameter("name", name);
 		query.setParameter("active", active);
 		return query.getResultList(0, null);
+	}
+	
+	public static List<Account> findOrBackward(NoSqlEntityManager mgr, String name, Boolean active) {
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findOr");
+		query.setParameter("name", name);
+		query.setParameter("active", active);
+		Cursor<KeyValue<Account>> results = query.getResults();
+		results.afterLast();
+		List<Account> accounts = new ArrayList<Account>();
+		while(results.previous()) {
+			accounts.add(results.getCurrent().getValue());
+		}
+		return accounts;
 	}
 
 	public List<Activity> getActivities() {

@@ -10,5 +10,9 @@ public interface Cursor<T> {
 	boolean next();
 
 	T getCurrent();
+	
+	void afterLast();
+	
+	boolean previous();
 
 }

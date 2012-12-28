@@ -14,7 +14,9 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
 import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
+import com.alvazan.orm.api.z8spi.iter.ListWrappingCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
@@ -63,7 +65,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
 		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
-		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keys);
+		IndiceToVirtual virtKeys = new IndiceToVirtual(metaDbo, new ListWrappingCursor<byte[]>(keys));
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
 		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);

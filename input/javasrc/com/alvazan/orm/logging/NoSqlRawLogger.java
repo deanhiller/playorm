@@ -28,6 +28,7 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
@@ -292,7 +293,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l, MetaLookup mgr) {
+			DirectCursor<byte[]> rowKeys, Cache realCache, int batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		//NOTE: get the cache here before the below log statement which used to clear out the trhead local as it ends
 		//up doing a find through the cache layer that used to clear the thread local

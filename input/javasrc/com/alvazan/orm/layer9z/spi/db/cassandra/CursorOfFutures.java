@@ -36,9 +36,47 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 	public void beforeFirst() {
 		needToGetBatch = true;
 	}
+	
+	//TODO:JSC  change to needtogetpreviousbatch?
+	@Override
+	public void afterLast() {
+		needToGetBatch = true;
+	}
 
 	@Override
 	public Holder<IndexColumn> nextImpl() {
+		if(batchListener != null)
+			batchListener.beforeFetchingNextBatch();
+		loadBatchIfNeeded();
+		if(cachedLastCols != null && cachedLastCols.hasNext()) {
+			Column<byte[]> col = cachedLastCols.next();
+			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col);
+			return new Holder<IndexColumn>(indexedCol);
+		}
+		
+		while(true) {
+			if(!theOneBatch.hasNext())
+				return null;			
+			Future<OperationResult<ColumnList<byte[]>>> future = theOneBatch.next();
+
+			OperationResult<ColumnList<byte[]>> results = get(future);
+			ColumnList<byte[]> columnList = results.getResult();
+			cachedLastCols = columnList.iterator();
+
+			if(cachedLastCols.hasNext()) {
+				Column<byte[]> col = cachedLastCols.next();
+				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);
+	
+				if(batchListener != null)
+					batchListener.afterFetchingNextBatch(columnList.size());
+				return new Holder<IndexColumn>(indexCol);
+			}
+		}
+	}
+	
+	//TODO:JSC  the usual next vs previous iterator stuff
+	@Override
+	public Holder<IndexColumn> previousImpl() {
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
 		loadBatchIfNeeded();
