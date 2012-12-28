@@ -110,4 +110,10 @@ public class NoSqlDevLogger implements NoSqlSession {
 	public void clear() {
 	}
 
+	@Override
+	public void removeColumn(DboTableMeta colFamily, byte[] rowKey,
+			byte[] columnName) {
+		session.removeColumn(colFamily, rowKey, columnName);
+	}
+
 }

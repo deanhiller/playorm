@@ -35,6 +35,7 @@ tokens {
 	IN_PARENS;
 	UPDATE_CLAUSE;
 	TABLE_CLAUSE;
+	DELETE_COLUMN;
 
 	AS	=	'as';
 	DOT	=	'.';
@@ -53,7 +54,6 @@ tokens {
 	OR	=	'or';
 	NOT	=	'not';
 	IN	=	'in';
-	SET =	'set';
 	
 }
 
@@ -87,7 +87,7 @@ package com.alvazan.orm.parser.antlr;
 }
 
 statement: ( sqlStatement EOF! );
-sqlStatement: selectStatement | updateStatement | deleteStatement;
+sqlStatement: selectStatement | updateStatement | deleteStatement | deleteColumnStatement;
 
 //SELECT PORTION SPECIFIC STUFF
 selectStatement: (partitionClause)? selectClause fromClause (joinClause)? (whereClause)? -> fromClause (joinClause)? (partitionClause)? selectClause (whereClause)?;
@@ -111,6 +111,10 @@ deleteStatement: deleteClause fromClause (whereClause)? -> fromClause (whereClau
 deleteClause: DELETE deleteList;
 deleteList: (STAR)?;
 
+//DELETECOLUMN statement
+deleteColumnStatement: deleteColumnClause fromClause (whereClause)? -> fromClause (whereClause)? deleteColumnClause;
+deleteColumnClause : DELETECOLUMN deleteColumn;
+deleteColumn: LPAREN column (COMMA value)? RPAREN -> ^(DELETE_COLUMN column (value)?);
 
 //PARTITONS CLAUSE SPECIFIC STUFF (for adhoc queries ONLY!!!!)
 partitionClause: PARTITIONS partitionList -> ^(PARTITIONS_CLAUSE partitionList);
@@ -195,6 +199,8 @@ FALSE   :   ('F'|'f')('A'|'a')('L'|'l')('S'|'s')('E'|'e');
 TRUE    :   ('T'|'t')('R'|'r')('U'|'u')('E'|'e');
 UPDATE  :   ('U'|'u')('P'|'p')('D'|'d')('A'|'a')('T'|'t')('E'|'e');
 DELETE  :   ('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e');
+SET		:	('S'|'s')('E'|'e')('T'|'t');
+DELETECOLUMN : 	('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e')('C'|'c')('O'|'o')('L'|'l')('U'|'u')('M'|'m')('N'|'n');
 
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;

@@ -50,6 +50,8 @@ public interface NoSqlSession {
 	 * @param columns
 	 */
 	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames);
+
+	public void removeColumn(DboTableMeta colFamily, byte[] rowKey, byte[] columnName);
 	
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, Iterable<byte[]> rowKeys, boolean skipReadCache, boolean cacheResults, Integer batchSize);
 	

@@ -73,6 +73,7 @@ public class ScannerForQuery implements QueryParser {
 		spiMetaQuery.setQuery(query);
 		spiMetaQuery.setParameterFieldMap(wiring.getParameterFieldMap());
 		spiMetaQuery.setUpdateList(wiring.getUpdateList());
+		spiMetaQuery.setQueryType(wiring.getQueryType());
 		
 		return spiMetaQuery;
 	}

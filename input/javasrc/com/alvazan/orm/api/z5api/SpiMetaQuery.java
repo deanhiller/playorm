@@ -43,5 +43,7 @@ public interface SpiMetaQuery {
 	public List<ViewInfo> getViewsEagerJoin();
 
 	public List<TypedColumn> getUpdateList();
+
+	public String getQueryType();
 	
 }

@@ -129,4 +129,18 @@
 
 <package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>
 
+
+<package name="monitorapi" package="org.playorm.monitor.api"></package>
+
+<package name="monitorimpl" package="org.playorm.monitor.impl" subpackages="include">
+    <depends>monitorapi</depends>
+    <depends>api</depends>
+    <depends>api8</depends>
+</package>
+
+<!-- bindings can depend on everything to wire stuff up so needdepends is false -->
+<package name="bindings2" package="org.playorm.monitor.bindings" needdepends="false"/>
+
+<package name="monitortest" package="org.playorm.monitor.test" needdepends="false"></package>
+
 </design>

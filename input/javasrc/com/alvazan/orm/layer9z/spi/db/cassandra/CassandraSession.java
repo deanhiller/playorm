@@ -24,6 +24,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
@@ -126,6 +127,8 @@ public class CassandraSession implements NoSqlRawSession {
 				persistIndex((PersistIndex)action, ormSession, m);
 			} else if(action instanceof RemoveIndex) {
 				removeIndex((RemoveIndex)action, ormSession, m);
+			} else if(action instanceof RemoveColumn) {
+				removeColumn((RemoveColumn) action, ormSession, m);
 			}
 		}
 		
@@ -163,6 +166,18 @@ public class CassandraSession implements NoSqlRawSession {
 		for(byte[] name : action.getColumns()) {
 			row.deleteColumn(name);
 		}
+	}
+
+	private void removeColumn(RemoveColumn action, MetaLookup mgr, MutationBatch m) {
+		Info info = columnFamilies.fetchColumnFamilyInfo(action.getColFamily().getColumnFamily(), mgr);
+		if(info == null)
+			return; //if no cf exist/returned, nothing to do
+		ColumnFamily cf = info.getColumnFamilyObj();
+		ColumnListMutation row = m.withRow(cf, action.getRowKey());
+		if(row == null)
+			return;
+		byte[] name = action.getColumn();
+			row.deleteColumn(name);
 	}
 
 	private void persistIndex(PersistIndex action, MetaLookup mgr, MutationBatch m) {

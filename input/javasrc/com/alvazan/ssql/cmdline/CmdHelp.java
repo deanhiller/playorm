@@ -55,15 +55,21 @@ public class CmdHelp {
 		} else if("UPDATE".equalsIgnoreCase(command)) {
 			println("Update dataset matching expression in a table");
 			println("");
-			println("Example: UPDATE table as t set(t.name=\"harry\") where a.id=55");
+			println("Example: UPDATE table as t set(t.name=\"harry\") where t.id=55");
 			println("");
 			println("Example 2: UPDATE table set(name=\"harry\",account=\"account1\") where id=60");
 		}  else if("DELETE".equalsIgnoreCase(command)) {
 			println("DELETE dataset matching expression in a table");
 			println("");
-			println("Example: DELETE from table as t where a.id=55");
+			println("Example: DELETE from table as t where t.id=55");
 			println("");
 			println("Example 2: DELETE * from table where id=60");
+		}	else if("DELETECOLUMN".equalsIgnoreCase(command)) {
+			println("DELETE a column from the rows matching a expression in a table. ");
+			println("");
+			println("Example: DELETECOLUMN (name) from Account where id = \"id1\"");
+			println("");
+			println("Example 2: DELETECOLUMN (a.activities, \"act3\") from Account as a where a.id = \"acc2\"");
 		}
 	}
 

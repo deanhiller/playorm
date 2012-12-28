@@ -20,6 +20,7 @@ public class InfoForWiring {
 	private boolean selectStarDefined;
 	private String query;
 	private ExpressionNode astTree;
+	private String queryType;
 	private List<TypedColumn> updateList;
 	private Map<String, Integer> attributeUsedCount = new HashMap<String, Integer>();
 	private DboTableMeta metaQueryTargetTable;
@@ -123,5 +124,13 @@ public class InfoForWiring {
 
 	public List<TypedColumn>  getUpdateList() {
 		return updateList;
+	}
+
+	public String getQueryType() {
+		return queryType;
+	}
+
+	public void setQueryType(String queryType) {
+		this.queryType = queryType;
 	}
 }

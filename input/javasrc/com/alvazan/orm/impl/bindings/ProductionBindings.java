@@ -1,9 +1,11 @@
 package com.alvazan.orm.impl.bindings;
 
 import com.alvazan.orm.api.base.DbTypeEnum;
+import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.layer0.base.BaseEntityManagerFactoryImpl;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession;
@@ -36,7 +38,8 @@ public class ProductionBindings implements Module {
 		} else {
 			bindRawSession("main", binder);
 		}
-		
+
+		binder.bind(NoSqlEntityManagerFactory.class).to(BaseEntityManagerFactoryImpl.class);
 		binder.bind(DboDatabaseMeta.class).asEagerSingleton();
 		
 		binder.bind(NoSqlRawSession.class).annotatedWith(Names.named("logger")).to(NoSqlRawLogger.class).asEagerSingleton();

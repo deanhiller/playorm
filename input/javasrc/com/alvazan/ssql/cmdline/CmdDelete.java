@@ -20,6 +20,22 @@ public class CmdDelete {
 		}
 	}
 
+	void processDeleteColumn(String cmd, NoSqlEntityManager mgr) {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		try {
+			int count = s.executeQuery(cmd);
+			mgr.flush();
+			println("Column deleted from " + count + " rows");
+		} catch (ParseException e) {
+			Throwable childExc = e.getCause();
+			throw new InvalidCommand(
+					"Scalable-SQL command was invalid.  Reason="
+							+ childExc.getMessage()
+							+ " AND you may want to add -v option to playcli to get more info",	e);
+		}
+	}
+
+
 	private void println(String msg) {
 		System.out.println(msg);
 	}

@@ -22,7 +22,7 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	private ExpressionNode astTreeRoot;
 	private List<TypedColumn> updateList;
 	private Map<String, TypeInfo> parameterFieldMap;
-	private String query;
+	private String query, queryType;
 	private List<ViewInfo> viewsEagerJoin;
 	private List<ViewInfo> viewsDelayedJoin;
 	private List<ViewInfo> views = new ArrayList<ViewInfo>();
@@ -90,5 +90,13 @@ public class SpiMetaQueryImpl implements SpiMetaQuery {
 	public List<TypedColumn>  getUpdateList() {
 		return updateList;
 	}
-	
+
+	@Override
+	public String getQueryType() {
+		return queryType;
+	}
+
+	public void setQueryType(String queryType) {
+		this.queryType = queryType;
+	}
 }
