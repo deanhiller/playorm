@@ -6,6 +6,8 @@ import org.playorm.monitor.impl.db.MonitorDbo;
 public class CopyUtil {
 
 	public static MonitorDbo copy(PlayOrmMonitor monitor) {
+		if(monitor == null)
+			return null;
 		MonitorDbo m = new MonitorDbo();
 		m.setId(monitor.getId());
 		m.setTimePeriodMillis(monitor.getTimePeriodMillis());
@@ -20,6 +22,8 @@ public class CopyUtil {
 	}
 
 	public static PlayOrmMonitor copy(MonitorDbo monitor) {
+		if(monitor == null)
+			return null;
 		PlayOrmMonitor mon = new PlayOrmMonitor();
 		mon.setId(monitor.getId());
 		mon.setTimePeriodMillis(monitor.getTimePeriodMillis());
