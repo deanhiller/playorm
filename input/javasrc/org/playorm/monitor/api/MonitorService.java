@@ -1,5 +1,7 @@
 package org.playorm.monitor.api;
 
+import java.util.List;
+
 
 
 public interface MonitorService {
@@ -11,5 +13,7 @@ public interface MonitorService {
 	void saveMonitor(PlayOrmMonitor monitor);
 
 	PlayOrmMonitor getMonitor(String id);
+	
+	List<PlayOrmMonitor> getMonitors(List<String> ids);
 	
 }
