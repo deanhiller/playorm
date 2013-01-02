@@ -3,8 +3,6 @@ package com.alvazan.orm.api.z8spi.iter;
 import java.util.Iterator;
 
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
-import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.alvazan.orm.layer3.typed.IndiceCursorProxy;
 
 public class IterableWrappingCursor<T> implements DirectCursor<T> {
 

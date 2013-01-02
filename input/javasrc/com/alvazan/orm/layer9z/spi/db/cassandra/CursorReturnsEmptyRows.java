@@ -1,7 +1,5 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import java.util.Iterator;
-
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;

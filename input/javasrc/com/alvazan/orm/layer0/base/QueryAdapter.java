@@ -30,7 +30,6 @@ import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.layer3.typed.IterableCursorProxy;
 import com.alvazan.orm.layer3.typed.IterableProxy;
 
 public class QueryAdapter<T> implements Query<T> {

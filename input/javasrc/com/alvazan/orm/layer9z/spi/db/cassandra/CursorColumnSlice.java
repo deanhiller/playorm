@@ -1,11 +1,8 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.ListIterator;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
-//import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
@@ -15,6 +12,7 @@ import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
+//import com.alvazan.orm.api.z8spi.action.Column;
 
 class CursorColumnSlice<T> extends AbstractCursor<T> {
 
@@ -191,8 +189,8 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 	
 	private class OurColumnListIterator implements ListIterator<Column<byte[]>> {
 
-		ColumnList<byte[]> columns = null;
-		int currIndex=0;  //zero means *before* the zeroith element
+		private ColumnList<byte[]> columns = null;
+		private int currIndex=0;  //zero means *before* the zeroith element
 		
 		public OurColumnListIterator(ColumnList<byte[]> cols) {
 			columns = cols;
