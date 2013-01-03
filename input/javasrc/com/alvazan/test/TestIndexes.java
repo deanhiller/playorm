@@ -175,6 +175,48 @@ public class TestIndexes {
 	}
 	
 	
+	public void testTwoQueriesSameNameDifferentEntitiesAllowedBackward() {
+		//Account has the same name as a query in Activity which IS allowed in our implementation
+		Account acc = new Account("acc1");
+		acc.setName("tempxxxxx");
+		acc.setUsers(9.33333f);
+		mgr.put(acc);
+		Account acc2 = new Account("acc2");
+		acc2.setName("xyz");
+		acc2.setUsers(3.1f);
+		mgr.put(acc2);
+		Account acc3 = new Account("acc3");
+		acc3.setName(acc2.getName());
+		acc3.setUsers(2.9f);
+		mgr.put(acc3);
+		
+		Activity act = new Activity("act1");
+		mgr.put(act);
+		
+		mgr.flush();
+		
+		List<Account> all2 = Account.findAll(mgr);
+		Assert.assertEquals(3, all2.size());
+		printList(" all2", all2);
+		
+		List<Account> allbackward2 = Account.findAllBackward(mgr);
+		Assert.assertEquals(3, allbackward2.size());
+		printList(" allbackward2", allbackward2);
+		Assert.assertEquals(all2.get(0).getId(), allbackward2.get(2).getId());
+		
+		List<Activity> all3 = Activity.findAll(mgr, 100);
+		Assert.assertEquals(1, all3.size());
+	}
+	
+	private void printList(String listName, List<Account> list) {
+		System.out.println("The list "+listName);
+		for (Account a : list) {
+			System.out.println("   "+a.getId());
+		}
+		System.out.println("end of list "+listName);
+	}
+	
+	
 	
 	@Test
 	@SuppressWarnings("unchecked")

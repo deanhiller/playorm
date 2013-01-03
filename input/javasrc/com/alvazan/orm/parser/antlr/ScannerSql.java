@@ -117,6 +117,9 @@ public class ScannerSql {
 		case NoSqlLexer.DELETE:
 			compileDeleteClause(wiring);
 			break;
+//		case NoSqlLexer.ORDERBY_CLAUSE:
+//			compileOrderByClause(wiring);
+//			break;
 		case 0: // nil
 			List<CommonTree> childrenList = tree.getChildren();
 			for (CommonTree child : childrenList) {
@@ -130,6 +133,22 @@ public class ScannerSql {
 
 	@SuppressWarnings("unchecked")
 	private <T> void compileJoinClause(CommonTree tree,
+			InfoForWiring wiring, MetaFacade facade) {
+		List<CommonTree> children = tree.getChildren();
+		
+		for(CommonTree child : children) {
+			int type = child.getType();
+			if(type == NoSqlLexer.LEFT_OUTER_JOIN) {
+				compileJoin(child, wiring, facade, JoinType.LEFT_OUTER);
+			} else if(type == NoSqlLexer.INNER_JOIN) {
+				compileJoin(child, wiring, facade, JoinType.INNER);
+			} else
+				throw new UnsupportedOperationException("bug?, type="+type+" and we don't process that type for joins");
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <T> void compileOrderByClause(CommonTree tree,
 			InfoForWiring wiring, MetaFacade facade) {
 		List<CommonTree> children = tree.getChildren();
 		
