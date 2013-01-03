@@ -580,6 +580,8 @@ public class ScannerSql {
 			throw new IllegalArgumentException("Cannot use column="+info.getColumnName()+" since that is a toMany relationship");
 		else if(constantType == StorageTypeEnum.NULL)
 			return; //null is any type so no need to match
+		else if(info.isJodaType())
+			return;
 		else if(constantType != info.getStorageType())
 			throw new IllegalArgumentException("Types do not match in namedquery="+wiring.getQuery()+" for column="+info.getColumnName()+" type1="+constantType+" type2="+info.getStorageType());
 	}

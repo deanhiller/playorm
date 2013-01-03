@@ -15,7 +15,7 @@ public abstract class MonitorServiceFactory {
 		//double checked locking is ONLY ok if you use the keyword volatile in java
 		if(singleton == null) {
 			synchronized(MonitorServiceFactory.class) {
-				if(singleton == null)
+				//if(singleton == null)
 					singleton = create(properties);
 			}
 		}

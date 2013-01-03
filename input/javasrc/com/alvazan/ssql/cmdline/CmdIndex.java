@@ -89,9 +89,7 @@ public class CmdIndex {
 				
 				TypedColumn column = val.getColumn(colName);
 				if (column == null) {
-					//Doing nothing as of now but this is the code to remove index
-					//System.out.println("Column "  + colName + " with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
-					//s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
+					//It means column was deleted by user. Doing nothing as of now 
 					changedCounter++;
 					continue;
 				}
