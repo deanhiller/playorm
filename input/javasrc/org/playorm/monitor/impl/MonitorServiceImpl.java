@@ -1,5 +1,7 @@
 package org.playorm.monitor.impl;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -14,6 +16,8 @@ import org.playorm.monitor.impl.db.WebNodeDbo;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public class MonitorServiceImpl implements MonitorService {
 
@@ -60,6 +64,18 @@ public class MonitorServiceImpl implements MonitorService {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		MonitorDbo mon = mgr.find(MonitorDbo.class, id);
 		return CopyUtil.copy(mon);
+	}
+	
+	public List<PlayOrmMonitor> getMonitors(List<String> ids) {
+		NoSqlEntityManager mgr = factory.createEntityManager();
+		Cursor<KeyValue<MonitorDbo>> cursor = mgr.findAll(MonitorDbo.class, ids);
+		List<PlayOrmMonitor> monitors = new ArrayList<PlayOrmMonitor>();
+		while(cursor.next()) {
+			KeyValue<MonitorDbo> kv = cursor.getCurrent();
+			MonitorDbo mon = kv.getValue();
+			monitors.add(CopyUtil.copy(mon));
+		}
+		return monitors;
 	}
 
 	public void setFactory(NoSqlEntityManagerFactory factory2) {
