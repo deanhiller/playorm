@@ -56,6 +56,7 @@ public class StandardConverters {
 		storageTypes.put(String.class, StorageTypeEnum.STRING);
 		storageTypes.put(BigDecimal.class, StorageTypeEnum.DECIMAL);
 		storageTypes.put(BigInteger.class, StorageTypeEnum.INTEGER);
+		storageTypes.put(DateTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalDateTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalTime.class, StorageTypeEnum.INTEGER);
 		storageTypes.put(LocalDate.class, StorageTypeEnum.INTEGER);

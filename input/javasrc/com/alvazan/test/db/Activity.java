@@ -2,7 +2,10 @@ package com.alvazan.test.db;
 
 import java.util.List;
 
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
@@ -53,10 +56,19 @@ public class Activity {
 
 	@NoSqlIndexed
 	private String name;
-	
+
 	@NoSqlIndexed
 	private LocalDateTime date;
+
+	@NoSqlIndexed
+	private DateTime dateTime;
+
+	@NoSqlIndexed
+	private LocalDate localDate;
 	
+	@NoSqlIndexed
+	private LocalTime localTime;
+
 	@NoSqlIndexed
 	private long numTimes;
 
@@ -141,7 +153,6 @@ public class Activity {
 		this.somethingElse = somethingElse;
 	}
 
-	
 	public Boolean getIsCool() {
 		return isCool;
 	}
@@ -157,7 +168,31 @@ public class Activity {
 	public void setUniqueId(UUID uniqueId) {
 		this.uniqueId = uniqueId;
 	}
-	
+
+	public LocalDate getLocalDate() {
+		return localDate;
+	}
+
+	public void setLocalDate(LocalDate localDate) {
+		this.localDate = localDate;
+	}
+
+	public LocalTime getLocalTime() {
+		return localTime;
+	}
+
+	public void setLocalTime(LocalTime localTime) {
+		this.localTime = localTime;
+	}
+
+	public DateTime getDateTime() {
+		return dateTime;
+	}
+
+	public void setDateTime(DateTime dateTime) {
+		this.dateTime = dateTime;
+	}
+
 	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);

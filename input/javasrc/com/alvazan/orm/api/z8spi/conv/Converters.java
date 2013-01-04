@@ -380,7 +380,7 @@ public class Converters {
 	}
 
 	public static class LocalDateConverter extends BaseConverter {
-		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		private DateTimeFormatter fmt = ISODateTimeFormat.date();
 		
 		@Override
 		public byte[] convertToNoSqlImpl(Object value) {
@@ -410,7 +410,7 @@ public class Converters {
 	}
 	
 	public static class LocalTimeConverter extends BaseConverter {
-		private DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+		private DateTimeFormatter fmt = ISODateTimeFormat.time();
 		
 		@Override
 		public byte[] convertToNoSqlImpl(Object value) {

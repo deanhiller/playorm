@@ -355,4 +355,14 @@ public abstract class DboColumnMeta {
 		return owner;
 	}
 
+	public boolean isJodaType() {
+		if (this.getClassType().getName().equals("org.joda.time.DateTime")
+					|| this.getClassType().getName().equals("org.joda.time.LocalDateTime")
+					|| this.getClassType().getName().equals("org.joda.time.LocalDate")
+					|| this.getClassType().getName().equals("org.joda.time.LocalTime"))
+			return true;
+
+		return false;
+	}
+
 }

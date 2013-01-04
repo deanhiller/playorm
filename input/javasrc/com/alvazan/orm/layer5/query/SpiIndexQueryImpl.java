@@ -6,6 +6,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z5api.SpiQueryAdapter;
@@ -15,6 +22,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -273,6 +281,26 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	private byte[] processConstant(DboColumnMeta info, ExpressionNode node) {
 		//constant is either BigDecimal, BigInteger or a String
 		Object constant = node.getState();
+		if (info.isJodaType()) {
+			DateTimeFormatter fmt;
+			if (info.getClassType().getName().equals("org.joda.time.DateTime")) {
+				fmt = ISODateTimeFormat.dateTime();
+				DateTime dateTime = fmt.parseDateTime(constant.toString());
+				return StandardConverters.convertToBytes(dateTime);
+			} else if (info.getClassType().getName().equals("org.joda.time.LocalDateTime")) {
+				fmt = ISODateTimeFormat.dateTime();
+				LocalDateTime localDateTime = fmt.parseLocalDateTime(constant.toString());
+				return StandardConverters.convertToBytes(localDateTime);
+			} else if (info.getClassType().getName().equals("org.joda.time.LocalDate")) {
+				fmt = ISODateTimeFormat.date();
+				LocalDate localDate = fmt.parseLocalDate(constant.toString());
+				return StandardConverters.convertToBytes(localDate);
+			} else if (info.getClassType().getName().equals("org.joda.time.LocalTime")) {
+				fmt = ISODateTimeFormat.time();
+				LocalTime localTime = fmt.parseLocalTime(constant.toString());
+				return StandardConverters.convertToBytes(localTime);
+			}
+		}
 		return info.convertToStorage2(constant);
 	}
 
