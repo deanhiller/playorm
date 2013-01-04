@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alvazan.orm.api.base.ToOneProvider;
-import com.alvazan.orm.api.exc.ChildWithNoPkException;
+import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.meta.DboColumnEmbedMeta;
@@ -115,14 +115,16 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private Object convertIdToProxyComposite(Row row, NoSqlSession session) {
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
+		byte[] rowid = StandardConverters.convertToBytes("Id");
 		if (columns != null && !columns.isEmpty()) {
 			Column column = columns.iterator().next();
 			byte[] fullName = column.getName();
+			int bytesandrowid = bytes.length + rowid.length;
 			// strip off the prefix to get the foreign key
-			int pkLen = fullName.length - bytes.length;
+			int pkLen = fullName.length - bytesandrowid;
 			byte[] fk = new byte[pkLen];
-			for (int i = bytes.length; i < fullName.length; i++) {
-				fk[i - bytes.length] = fullName[i];
+			for (int i = bytesandrowid; i < fullName.length; i++) {
+				fk[i - bytesandrowid] = fullName[i];
 			}
 			Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, session, fk,
 					null);
@@ -133,7 +135,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
-		List<byte[]> keys = MetaToManyField.parseColNamePostfix(columnName, row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session,
 				classMeta, keys, field);
 		return retVal;
@@ -142,7 +144,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row, OWNER entity,
 			NoSqlSession session) {
-		List<byte[]> keys = MetaToManyField.parseColNamePostfix(columnName, row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		MapProxyFetchAll proxy = MapProxyFetchAll.create(entity, session,
 				classMeta, keys, fieldForKey, field);
 		return proxy;
@@ -150,7 +152,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private List<PROXY> translateFromColumnList(Row row, OWNER entity,
 			NoSqlSession session) {
-		List<byte[]> keys = MetaToManyField.parseColNamePostfix(columnName, row);
+		List<byte[]> keys = parseColNamePostfix(columnName, row);
 		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session,
 				classMeta, keys, field);
 		return retVal;
@@ -162,17 +164,27 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		RowToPersist row = info.getRow();
 		if (field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
-		else
+		else if (field.getType().equals(List.class))
 			translateToColumnList(entity, row);
+		else translateToColumn(entity, row);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void translateToColumn(OWNER entity, RowToPersist row) {
+		Collection<PROXY> value = new ArrayList<PROXY>();
+		value.add((PROXY)ReflectionUtil.fetchFieldValue(entity, field));
+		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
+		translateToColumnImpl(value, row, toBeRemoved);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void translateToColumnList(OWNER entity, RowToPersist row) {
 		Collection<PROXY> values = (Collection<PROXY>) ReflectionUtil
 				.fetchFieldValue(entity, field);
-		Collection<PROXY> toBeAdded = values; // all values in the list get
-												// added if not an
-												// OurAbstractCollection
+		Collection<PROXY> toBeAdded = values;
+		// all values in the list get
+		// added if not an
+		// OurAbstractCollection
 		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
 		if (values instanceof OurAbstractCollection) {
 			OurAbstractCollection<PROXY> coll = (OurAbstractCollection<PROXY>) values;
@@ -202,53 +214,96 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			byte[] name = formTheName(p);
 			row.addEntityToRemove(name);
 		}
-
-		// now process all the existing columns (we can add same entity as many
-		// times as we like and it does not
-		// get duplicated)
-		if (toBeAdded != null) {
-			for (PROXY proxy : toBeAdded) {
-				byte[] name = formTheName(proxy);
-				Column c = new Column();
-				c.setName(name);
-
-				row.getColumns().add(c);
+		for (PROXY proxy : toBeAdded) {
+			byte[] name = formTheName(proxy);
+			if (name != null) {
+				Column idColumn = new Column();
+				idColumn.setName(name);
+				idColumn.setValue(null);
+				row.getColumns().add(idColumn);
+				byte[] idValue = translateOne(proxy);
+				Field[] fieldsinClass = proxy.getClass().getDeclaredFields();
+				for (Field singleField : fieldsinClass) {
+					singleField.setAccessible(true);
+					if (!singleField.isAnnotationPresent(NoSqlId.class)) {
+						addColumn(proxy, singleField, idValue, row);
+					}
+				}
 			}
 		}
 	}
 
-	private byte[] formTheName(PROXY p) {
-		byte[] pkData = translateOne(p);
-		return formTheNameImpl(columnName, pkData);
+	private void addColumn(PROXY proxy, Field singleField, byte[] idValue, RowToPersist row) {
+		Object value = ReflectionUtil.fetchFieldValue(proxy, singleField);
+		Column c = new Column();
+		byte[] columnName = formTheColumnName(proxy, idValue, singleField);
+		c.setName(columnName);
+		if (value != null) {
+			byte[] columnValue = StandardConverters.convertToBytes(value);
+			c.setValue(columnValue);
+		}
+		row.getColumns().add(c);
 	}
 
-	static byte[] formTheNameImpl(String colName, byte[] postFix) {
+	private byte[] formTheColumnName(PROXY p, byte[] id, Field singleField) {
+		byte[] prefix = StandardConverters.convertToBytes(columnName);
+		byte[] singleFieldName = StandardConverters.convertToBytes(singleField.getName());
+		byte[] columnName = new byte[ prefix.length + id.length + singleFieldName.length];
+		for (int i = 0; i < columnName.length; i++) {
+			if (i < prefix.length)
+				columnName[i] = prefix[i];
+			else if (i < (prefix.length + id.length))
+				columnName[i] = id[i - prefix.length];
+			else 
+				columnName[i] = singleFieldName[i - prefix.length - id.length];
+		}
+		return columnName;
+	}
+
+	private byte[] formTheName(PROXY p) {
+		byte[] pkData = translateOne(p);
+		if (pkData == null)
+			return null;
+		else 
+			return formTheNameImpl(columnName, pkData);
+	}
+
+	private byte[] formTheNameImpl(String colName, byte[] postFix) {
 		byte[] prefix = StandardConverters.convertToBytes(colName);
-		byte[] name = new byte[prefix.length + postFix.length];
+		byte[] rowid = StandardConverters.convertToBytes("Id");
+		byte[] name = new byte[prefix.length + rowid.length + postFix.length];
 		for (int i = 0; i < name.length; i++) {
 			if (i < prefix.length)
 				name[i] = prefix[i];
-			else
-				name[i] = postFix[i - prefix.length];
+			else if (i < (prefix.length + rowid.length))
+				name[i] = rowid[i - prefix.length];
+			else 
+				name[i] = postFix[i - prefix.length - rowid.length];
 		}
 		return name;
 	}
 
 	private byte[] translateOne(PROXY proxy) {
 		byte[] byteVal = classMeta.convertEntityToId(proxy);
-		if(byteVal == null) {
-			String owner = "'"+field.getDeclaringClass().getSimpleName()+"'";
-			String child = "'"+classMeta.getMetaClass().getSimpleName()+"'";
-			String fieldName = "'"+field.getType().getSimpleName()+" "+field.getName()+"'";
-			throw new ChildWithNoPkException("The entity you are saving of type="+owner+" has a field="+fieldName
-					+" which has an entity in the collection that does not yet have a primary key so you cannot save it. \n" +
-					"The offending object is="+proxy+"   To correct this\n" +
-					"problem, you can either\n"
-					+"1. SAVE the "+child+" BEFORE you save the "+owner+" OR\n"
-					+"2. Call entityManager.fillInWithKey(Object entity), then SAVE your "+owner+"', then save your "+child+" NOTE that this" +
-							"\nmethod #2 is used for when you have a bi-directional relationship where each is a child of the other");
-		}
 		return byteVal;
+	}
+
+	private List<byte[]> parseColNamePostfix(String columnName, Row row) {
+		String columnNameWithPrefix = columnName + "Id";
+		byte[] namePrefix = StandardConverters.convertToBytes(columnNameWithPrefix);
+		Collection<Column> columns = row.columnByPrefix(namePrefix);
+		List<byte[]> entities = new ArrayList<byte[]>();
+		
+		for(Column col : columns) {
+			byte[] rowkeyFullName = col.getName();
+			int rkLen = rowkeyFullName.length-namePrefix.length;
+			byte[] rk = new byte[rkLen];
+			for(int i = namePrefix.length; i < rowkeyFullName.length; i++) {
+				rk[i-namePrefix.length] =  rowkeyFullName[i];
+			}
+			entities.add(rk);
+		}
+		return entities;
 	}
 
 	@Override

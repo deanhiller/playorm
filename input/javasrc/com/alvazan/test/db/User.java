@@ -32,8 +32,11 @@ public class User {
 	private String lastName;
 	
 	@NoSqlEmbedded
-	private List<Email> emails = new ArrayList<Email>();
-	
+	private List<EmbeddedEmail> emails = new ArrayList<EmbeddedEmail>();
+
+	@NoSqlEmbedded
+	private EmbeddedEmail email = new EmbeddedEmail();
+
 	@NoSqlOneToMany
 	private List<EmailAccountXref> accounts = new ArrayList<EmailAccountXref>();
 	
@@ -69,11 +72,11 @@ public class User {
 		this.lastName = lastName;
 	}
 
-	public List<Email> getEmails() {
+	public List<EmbeddedEmail> getEmails() {
 		return emails;
 	}
 
-	public void setEmails(List<Email> emails) {
+	public void setEmails(List<EmbeddedEmail> emails) {
 		this.emails = emails;
 	}
 
@@ -84,7 +87,15 @@ public class User {
 	public List<EmailAccountXref> getAccounts() {
 		return accounts;
 	}
-	
+
+	public EmbeddedEmail getEmail() {
+		return email;
+	}
+
+	public void setEmail(EmbeddedEmail email) {
+		this.email = email;
+	}
+
 	public static User findByName(NoSqlEntityManager mgr, String name) {
 		Query<User> query = mgr.createNamedQuery(User.class, "findByName");
 		query.setParameter("name", name);
