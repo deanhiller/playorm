@@ -157,9 +157,11 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		buildPreviousValuesToFind(values, rightListResults);
 		
 		cachedFromRightResults = rightListResults.listIterator();
+		while(cachedFromRightResults.hasNext())cachedFromRightResults.next();
 		cachedFromNewView = session.scanIndex(scanInfo, values);
-		
+		cachedFromNewView.afterLast();
 		Holder<IndexColumn> next = cachedFromNewView.previousImpl();
+		
 		if(next == null)
 			return null;
 		else if(lastCachedRightSide == null)

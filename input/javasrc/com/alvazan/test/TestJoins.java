@@ -100,6 +100,121 @@ public class TestJoins {
 		Assert.assertEquals("e", typedRow.getView().getAlias());
 		Assert.assertEquals("act1", typedRow.getRowKeyString());
 		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+		
+		rows.next();
+		joinedRow = rows.getCurrent();
+		
+		typedRow = joinedRow.get(0);
+		theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act7", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+	}
+	
+	@Test
+	public void testInnerJoinBackward() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
+		List<ViewInfo> views = result.getViews();
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		cursor.afterLast();
+		
+		ViewInfo viewAct = views.get(0);
+		ViewInfo viewAcc = views.get(1);
+		String alias1 = viewAct.getAlias();
+		String alias2 = viewAcc.getAlias();
+		Assert.assertEquals("e", alias1);
+		Assert.assertEquals("a", alias2);
+		
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+		Assert.assertFalse(cursor.previous());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		rows.afterLast();
+		
+		rows.previous();
+		List<TypedRow> joinedRow = rows.getCurrent();
+		
+		TypedRow typedRow = joinedRow.get(0);
+		TypedRow theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act7", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+		
+		rows.previous();
+		joinedRow = rows.getCurrent();
+		
+		typedRow = joinedRow.get(0);
+		theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+	}
+	
+	/**
+	 * This tests the caching of backward iteration.  There once was a bug where it got reversed (back to forward) when iterated 
+	 * backward the second time because the of the cache.
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testInnerJoinBackwardRepeatedly() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
+		List<ViewInfo> views = result.getViews();
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		cursor.afterLast();
+		//iterate all the way through to force everything to load once, then ensure things are still in the correct (reversed) order:
+		while(cursor.previous()){}
+		cursor.afterLast();
+		
+		ViewInfo viewAct = views.get(0);
+		ViewInfo viewAcc = views.get(1);
+		String alias1 = viewAct.getAlias();
+		String alias2 = viewAcc.getAlias();
+		Assert.assertEquals("e", alias1);
+		Assert.assertEquals("a", alias2);
+		
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
+		Assert.assertFalse(cursor.previous());
+		
+		Cursor<List<TypedRow>> rows = result.getAllViewsCursor();
+		rows.afterLast();
+		
+		rows.previous();
+		List<TypedRow> joinedRow = rows.getCurrent();
+		
+		TypedRow typedRow = joinedRow.get(0);
+		TypedRow theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act7", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
+		
+		rows.previous();
+		joinedRow = rows.getCurrent();
+		
+		typedRow = joinedRow.get(0);
+		theJoinedRow = joinedRow.get(1);
+		
+		log.info("joinedRow="+joinedRow);
+		Assert.assertEquals("e", typedRow.getView().getAlias());
+		Assert.assertEquals("act1", typedRow.getRowKeyString());
+		Assert.assertEquals("acc1", theJoinedRow.getRowKey());
 	}
 
 	//Well, we fail here as postgres returns just two results and does NOT return the results where e.account= null do to the inner join WHERE we do return the

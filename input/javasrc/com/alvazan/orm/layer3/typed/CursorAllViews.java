@@ -77,14 +77,18 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			return previous;
 
 		//Well, the cursor ran out, load more results if any exist...
-		//TODO:JSC  this probably won't work how you want.  It'll load the next items, not the previous ones.
-		loadCache();
+		loadCacheBackward();
 		
 		return cachedCursors.previousImpl();
 	}
 
 	private void loadCache() {
 		Map<ViewInfo, TwoLists> map = setupKeyLists();
+		createCursors(map);		
+	}
+	
+	private void loadCacheBackward() {
+		Map<ViewInfo, TwoLists> map = setupKeyListsBackward();
 		createCursors(map);		
 	}
 
@@ -130,6 +134,31 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 						List<byte[]> list = twoLists.getListWithNoNulls();
 						list.add(pk);
 					}
+				}
+			}
+		}
+		return map;
+	}
+	
+	private Map<ViewInfo, TwoLists> setupKeyListsBackward() {
+		Map<ViewInfo, TwoLists> map = new HashMap<ViewInfo, TwoLists>();
+		initializeMap(map);
+		
+		for(int i = 0; i < batchSize; i++) {
+			//Here we want to read in batchSize
+			Holder<IndexColumnInfo> previous = cursor.previousImpl();
+			if(previous == null)
+				break;
+			
+			
+			IndexColumnInfo index = previous.getValue();
+			for(ViewInfo info : eagerlyJoinedViews) {
+				byte[] pk = index.getPrimaryKeyRaw(info);
+				TwoLists twoLists = map.get(info);
+				twoLists.getFullKeyList().add(pk);
+				if(pk != null) {
+					List<byte[]> list = twoLists.getListWithNoNulls();
+					list.add(pk);
 				}
 			}
 		}

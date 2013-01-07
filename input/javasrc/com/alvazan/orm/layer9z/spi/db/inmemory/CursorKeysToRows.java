@@ -168,7 +168,7 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		if(keysToLookup.size() > 0) {
 			if(list != null)
 				list.beforeFetchingNextBatch();
-			rows = fetchRows();
+			rows = fetchRowsBackward();
 			if(list != null)
 				list.afterFetchingNextBatch(rows.size());
 		}
@@ -235,6 +235,33 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		}
 		return rows;
 	}
+	
+	public List<KeyValue<Row>> fetchRowsBackward() {
+		List<KeyValue<Row>> rows = new ArrayList<KeyValue<Row>>();
+		Table table = database.findTable(colFamily.getColumnFamily());
+		rowKeys.afterLast();
+		Holder<byte[]> keyHolder = rowKeys.previousImpl();
+		if (keyHolder != null) {
+			byte[] key = keyHolder.getValue();
+			while(key != null) {
+				Row row = findRow(table, key);
+				Row newRow = null;
+				if(row != null)
+					newRow = row.deepCopy();
+				KeyValue<Row> kv = new KeyValue<Row>();
+				kv.setKey(key);
+				kv.setValue(newRow);
+				//This add null if there is no row to the list on purpose
+				rows.add(0, kv);
+				keyHolder = rowKeys.previousImpl();
+				key = null;
+				if (keyHolder != null)
+					key = keyHolder.getValue();
+			}
+		}
+		return rows;
+	}
+	
 	private Row findRow(Table table, byte[] key) {
 		if(table == null)
 			return null;
