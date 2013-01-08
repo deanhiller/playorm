@@ -1,5 +1,7 @@
 package com.alvazan.orm.parser.antlr;
 
+import java.util.List;
+
 
 
 
@@ -28,6 +30,10 @@ public interface ParsedNode {
 	void replace(ParsedNode oldChild, ParsedNode newChild);
 	ParsedNode getOppositeChild(ParsedNode first);
 
-	boolean isInBetweenExpression();
+	boolean isBetweenExpression();
+
+	List<ParsedNode> getChildrenForIn();
+	void setChildrenForIn(List<ParsedNode> listOfNode);
+	boolean isInExpression();
 	
 }

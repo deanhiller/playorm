@@ -24,9 +24,15 @@ public class OptimizeAddJoinInfo {
 			node.setJoinMeta(info);
 			return;
 			
-		} else if(node.isInBetweenExpression()) {
+		} else if(node.isBetweenExpression()) {
 			ParsedNode leftGrand = left.getChild(ChildSide.LEFT);
 			ViewInfoImpl viewInfo = leftGrand.getViewInfo();
+			JoinInfo info = new JoinInfo(viewInfo, null, null, null, JoinType.NONE);
+			JoinMeta meta1 = new JoinMeta(info, info.getJoinType());
+			node.setJoinMeta(meta1);
+			return;
+		} else if(node.isInExpression()) {
+			ViewInfoImpl viewInfo = left.getViewInfo();
 			JoinInfo info = new JoinInfo(viewInfo, null, null, null, JoinType.NONE);
 			JoinMeta meta1 = new JoinMeta(info, info.getJoinType());
 			node.setJoinMeta(meta1);

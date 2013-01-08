@@ -448,6 +448,9 @@ public class ScannerSql {
 		case NoSqlLexer.LE:
 			compileComparator(node, wiring, facade, expression);
 			break;
+		case NoSqlLexer.IN:
+			 compileComparatorIn(node, wiring, facade, expression);
+			 break;
 		case NoSqlLexer.BETWEEN:
 			throw new UnsupportedOperationException("not supported yet, use <= and >= intead for now");
 		default:
@@ -497,6 +500,33 @@ public class ScannerSql {
 			node.setState(tableInfo, null);
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	private static void compileComparatorIn(ExpressionNode node,
+			InfoForWiring wiring, MetaFacade facade, CommonTree expression) {
+			CommonTree leftSide = (CommonTree) expression.getChild(0);
+			CommonTree rightSide = (CommonTree) expression.getChild(1);
+			ExpressionNode left  = new ExpressionNode(leftSide);
+			ExpressionNode right = new ExpressionNode(rightSide);
+			node.setChild(ChildSide.LEFT, left);
+			node.setChild(ChildSide.RIGHT, right);
+			TypeInfo typeInfo = processSide(left, wiring, null, facade);
+			List<ParsedNode> keyList = new ArrayList<ParsedNode>();
+			List<CommonTree> keys= rightSide.getChildren();
+			for(CommonTree keyNode: keys) {
+				ExpressionNode rightNode = new ExpressionNode(keyNode);
+				processSide(rightNode, wiring, typeInfo, facade);
+				keyList.add(rightNode);
+			}
+			node.setChildrenForIn(keyList);
+
+			Object state = left.getState();
+			if(state instanceof StateAttribute) {
+				StateAttribute st = (StateAttribute) state;
+				ViewInfoImpl tableInfo = st.getViewInfo();
+				node.setState(tableInfo, null);
+			}
+		}
 
 	private static <T> ExpressionNode processSide(ExpressionNode node, InfoForWiring wiring,
 			List<CommonTree> children, int i, ChildSide side, MetaFacade facade) {

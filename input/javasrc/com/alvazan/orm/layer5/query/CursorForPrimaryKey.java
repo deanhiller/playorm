@@ -48,12 +48,19 @@ public class CursorForPrimaryKey implements DirectCursor<IndexColumnInfo> {
 		if(holder == null)
 			return null;
 		KeyValue<Row> pkCol = holder.getValue();
-		if(pkCol == null || pkCol.getValue() == null)
-			return null;
+		if(pkCol == null)
+			return new Holder<IndexColumnInfo>(null);
 		IndexColumn c = new IndexColumn();
-		c.setPrimaryKey(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pkCol.getValue().getKey()));
-		c.setIndexedValue(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pkCol.getValue().getKey()));
-		c.setValue(pkCol.getValue().getKey());
+		byte[] pk = null;
+		if (pkCol.getValue() == null)
+			pk = null;
+		else
+			pk = pkCol.getValue().getKey();
+		if (pk != null) {
+			c.setPrimaryKey(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pk));
+			c.setIndexedValue(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pk));
+			c.setValue(pk);
+		}
 		IndexColumnInfo info = new IndexColumnInfo();
 		info.putIndexNode(viewInfo, c, colMeta);
 		return new Holder<IndexColumnInfo>(info);

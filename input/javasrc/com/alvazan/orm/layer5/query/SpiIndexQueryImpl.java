@@ -34,6 +34,7 @@ import com.alvazan.orm.parser.antlr.JoinInfo;
 import com.alvazan.orm.parser.antlr.JoinMeta;
 import com.alvazan.orm.parser.antlr.JoinType;
 import com.alvazan.orm.parser.antlr.NoSqlLexer;
+import com.alvazan.orm.parser.antlr.ParsedNode;
 import com.alvazan.orm.parser.antlr.PartitionMeta;
 import com.alvazan.orm.parser.antlr.StateAttribute;
 import com.alvazan.orm.parser.antlr.ViewInfoImpl;
@@ -117,6 +118,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		case NoSqlLexer.GE:
 		case NoSqlLexer.LE:
 		case NoSqlLexer.BETWEEN:
+		case NoSqlLexer.IN:
 			return processRangeExpression(parent, alreadyJoinedViews);
 		default:
 			throw new UnsupportedOperationException("bug, unsupported type="+type);
@@ -172,6 +174,9 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		if(root.getType() == NoSqlLexer.BETWEEN) {
 			ExpressionNode grandChild = root.getChild(ChildSide.LEFT).getChild(ChildSide.LEFT);
 			attr = (StateAttribute) grandChild.getState();
+		} else if (root.getType() == NoSqlLexer.IN) {
+			ExpressionNode grandChild = root.getChild(ChildSide.LEFT);
+			attr = (StateAttribute) grandChild.getState();
 		} else {
 			attr = (StateAttribute) root.getChild(ChildSide.LEFT).getState();
 		}
@@ -201,10 +206,10 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 				|| root.getType() == NoSqlLexer.GE
 				|| root.getType() == NoSqlLexer.LT
 				|| root.getType() == NoSqlLexer.LE
-				|| root.isInBetweenExpression()) {
+				|| root.isBetweenExpression()) {
 			Key from = null;
 			Key to = null;
-			if(root.isInBetweenExpression()) {
+			if(root.isBetweenExpression()) {
 				ExpressionNode node = root.getGreaterThan();
 				ExpressionNode node2 = root.getLessThan();
 				from = createLeftKey(node, info);
@@ -217,12 +222,22 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			} else
 				throw new UnsupportedOperationException("not done yet here");
 			scan = session.scanIndex(scanInfo, from, to, batchSize);
+		} else if(root.getType() == NoSqlLexer.IN) {
+			List<byte[]> values = new ArrayList<byte[]>();
+			List<ParsedNode> keys = root.getChildrenForIn();
+			for (ParsedNode keyNode : keys) {
+				byte[] data = retrieveValue(info, (ExpressionNode) keyNode);
+				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
+				values.add(virtualkey);
+			}
+			scan = session.scanIndex(scanInfo, values);			
 		} else
 			throw new UnsupportedOperationException("not supported yet. type="+root.getType());
 		DirectCursor<IndexColumnInfo> processKeys = processKeys(viewInfo, info, scan);
 		return processKeys;
 	}
 
+	@SuppressWarnings("unchecked")
 	private DirectCursor<IndexColumnInfo> processPrimaryKey(ExpressionNode root, ScanInfo scanInfo, ViewInfoImpl viewInfo, DboColumnMeta info) {
 		AbstractCursor<KeyValue<Row>> scan;
 		if(root.getType() == NoSqlLexer.EQ) {
@@ -232,6 +247,15 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
 			List<byte[]> keyList= new ArrayList<byte[]>();
 			keyList.add(virtualkey);
+			scan = session.find(info.getOwner(), keyList, false, true, batchSize);
+		} else if (root.getType() == NoSqlLexer.IN) {
+			List<byte[]> keyList = new ArrayList<byte[]>();
+			List<ParsedNode> keys = root.getChildrenForIn();
+			for (ParsedNode keyNode : keys) {
+				byte[] data = retrieveValue(info, (ExpressionNode) keyNode);
+				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
+				keyList.add(virtualkey);
+			}
 			scan = session.find(info.getOwner(), keyList, false, true, batchSize);
 		} else
 			throw new UnsupportedOperationException("Other operations not supported yet for Primary Key. Use @NoSQLIndexed for Primary Key.type="+root.getType());
