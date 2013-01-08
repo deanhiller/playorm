@@ -175,6 +175,7 @@ public class TestIndexes {
 	}
 	
 	@Test
+	//TODO:JSC  this test will fail randomly until we can specify the index to 'find' over
 	public void testTwoQueriesSameNameDifferentEntitiesAllowedBackward() {
 		//Account has the same name as a query in Activity which IS allowed in our implementation
 		Account acc = new Account("acc1");

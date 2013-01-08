@@ -82,6 +82,20 @@ public class TestJoins {
 		Assert.assertEquals("e", alias1);
 		Assert.assertEquals("a", alias2);
 		
+while(cursor.next()){
+	IndexColumnInfo info = cursor.getCurrent();
+	IndexPoint keyForActivity = info.getKeyForView(viewAct);
+	String key = keyForActivity.getKeyAsString();
+	
+	String keyAcc = null;
+	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
+	keyAcc = keyForAccount.getKeyAsString();
+
+	System.out.println("cursor act in order:"+key+" acc:"+keyAcc);
+}
+cursor.beforeFirst();
+		
+		
 		Assert.assertTrue(cursor.next());
 		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
 		Assert.assertTrue(cursor.next());
@@ -114,13 +128,106 @@ public class TestJoins {
 	}
 	
 	@Test
+	public void testInnerJoinParts() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e WHERE e.numTimes < 15", 50);
+		
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		List<ViewInfo> views = result.getViews();
+		
+		ViewInfo viewAct = views.get(0);
+		String alias1 = viewAct.getAlias();
+		Assert.assertEquals("e", alias1);
+		
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "act1", null);
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "act3", null);
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "act5", null);
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "act7", null);
+		Assert.assertFalse(cursor.next());
+		
+	}
+	
+	@Test
+	public void testInnerJoinPartsBackward() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Activity as e WHERE e.numTimes < 15", 50);
+		
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		cursor.afterLast();
+		List<ViewInfo> views = result.getViews();
+		
+		ViewInfo viewAct = views.get(0);
+		String alias1 = viewAct.getAlias();
+		Assert.assertEquals("e", alias1);
+		
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "act7", null);
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "act5", null);
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "act3", null);
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "act1", null);
+		Assert.assertFalse(cursor.previous());
+		
+	}
+	
+	@Test
+	public void testInnerJoinParts2() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Account as a WHERE a.isActive = false", 50);
+		
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		List<ViewInfo> views = result.getViews();
+		
+		ViewInfo viewAct = views.get(0);
+		String alias1 = viewAct.getAlias();
+		Assert.assertEquals("a", alias1);
+		
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "acc1", null);
+		Assert.assertTrue(cursor.next());
+		compareKeys(cursor, viewAct, null, "acc3", null);
+		Assert.assertFalse(cursor.next());
+	}
+	
+	@Test
+	public void testInnerJoinParts2Backward() throws InterruptedException {
+		NoSqlTypedSession s = mgr.getTypedSession();
+
+		QueryResult result = s.createQueryCursor("select * FROM Account as a WHERE a.isActive = false", 50);
+		
+		Cursor<IndexColumnInfo> cursor = result.getCursor();
+		cursor.afterLast();
+		List<ViewInfo> views = result.getViews();
+		
+		ViewInfo viewAct = views.get(0);
+		String alias1 = viewAct.getAlias();
+		Assert.assertEquals("a", alias1);
+		
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "acc3", null);
+		Assert.assertTrue(cursor.previous());
+		compareKeys(cursor, viewAct, null, "acc1", null);
+		Assert.assertFalse(cursor.previous());
+	}
+	
+	@Test
 	public void testInnerJoinBackward() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
 
 		QueryResult result = s.createQueryCursor("select * FROM Activity as e INNER JOIN e.account  as a WHERE e.numTimes < 15 and a.isActive = false", 50);
-		List<ViewInfo> views = result.getViews();
+		
 		Cursor<IndexColumnInfo> cursor = result.getCursor();
 		cursor.afterLast();
+		List<ViewInfo> views = result.getViews();
 		
 		ViewInfo viewAct = views.get(0);
 		ViewInfo viewAcc = views.get(1);
@@ -128,6 +235,19 @@ public class TestJoins {
 		String alias2 = viewAcc.getAlias();
 		Assert.assertEquals("e", alias1);
 		Assert.assertEquals("a", alias2);
+		
+while(cursor.previous()){
+	IndexColumnInfo info = cursor.getCurrent();
+	IndexPoint keyForActivity = info.getKeyForView(viewAct);
+	String key = keyForActivity.getKeyAsString();
+	
+	String keyAcc = null;
+	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
+	keyAcc = keyForAccount.getKeyAsString();
+
+	System.out.println("cursor act:"+key+" acc:"+keyAcc);
+}
+cursor.afterLast();
 		
 		Assert.assertTrue(cursor.previous());
 		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");

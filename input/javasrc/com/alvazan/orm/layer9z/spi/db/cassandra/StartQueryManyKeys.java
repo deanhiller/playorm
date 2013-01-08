@@ -1,6 +1,7 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -38,6 +39,7 @@ public class StartQueryManyKeys implements StartQueryListener {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		
 		List<Future<OperationResult<ColumnList<byte[]>>>> futures = new ArrayList<Future<OperationResult<ColumnList<byte[]>>>>();
+
 		for(byte[] val : values) {
 			Key from = new Key(val, true);
 			Key to = new Key(val, true);

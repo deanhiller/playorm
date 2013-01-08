@@ -57,10 +57,6 @@ public class CursorKeysToRows extends AbstractCursor<KeyValue<Row>> {
 		return new Holder<KeyValue<Row>>(cachedRows.next());
 	}
 	
-	//TODO:JSC  again, either cachedRows needs to be built backward or needs a previous/hasPrevious
-	//TODO:JSC  also, loadCache either needs to build in reverse or need a new method loadCacheBackward
-	//actually, maybe the whole thing is in memory?  see the comment in loadCache!
-	//TODO:JSC  WRONG FOR SURE!!!! See other CursorKeysToRow
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> previousImpl() {
 		loadCacheBackward();

@@ -9,10 +9,8 @@ import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
-import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
-//import com.alvazan.orm.api.z8spi.action.Column;
 
 class CursorColumnSlice<T> extends AbstractCursor<T> {
 
@@ -179,75 +177,13 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 
 		if(columns.isEmpty())
 			subIterator = null; 
-		else 
-			subIterator = new OurColumnListIterator(columns);
+		else {
+			subIterator = new OurColumnListIterator(columns, true);
+			while (subIterator.hasNext()) subIterator.next();
+		}
 		
 		if(batchListener != null)
 			batchListener.afterFetchingNextBatch(columns.size());
 		return subIterator;
 	}
-	
-	private class OurColumnListIterator implements ListIterator<Column<byte[]>> {
-
-		private ColumnList<byte[]> columns = null;
-		private int currIndex=0;  //zero means *before* the zeroith element
-		
-		public OurColumnListIterator(ColumnList<byte[]> cols) {
-			columns = cols;
-		}
-		
-		@Override
-		public void add(Column<byte[]> arg0) {
-			throw new UnsupportedOperationException("We don't support this");
-			
-		}
-
-		@Override
-		public boolean hasNext() {
-			return currIndex!=columns.size();
-		}
-
-		@Override
-		public boolean hasPrevious() {
-			return currIndex!=0;
-		}
-
-		@Override
-		public Column<byte[]> next() {
-			if(currIndex==columns.size())
-				return null;
-			return columns.getColumnByIndex(currIndex++);
-		}
-
-		@Override
-		public int nextIndex() {
-			return currIndex;
-		}
-
-		@Override
-		public Column<byte[]> previous() {
-			if(currIndex==0)
-				return null;
-			return columns.getColumnByIndex(currIndex--);
-		}
-
-		@Override
-		public int previousIndex() {
-			return currIndex-1;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("We don't support this");
-			
-		}
-
-		@Override
-		public void set(Column<byte[]> arg0) {
-			throw new UnsupportedOperationException("We don't support this");
-			
-		}
-		
-	}
-
 }

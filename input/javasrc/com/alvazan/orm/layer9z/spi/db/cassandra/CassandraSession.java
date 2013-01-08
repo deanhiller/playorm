@@ -314,6 +314,10 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList, MetaLookup mgr) {
+		return scanIndex(info, values, batchList, mgr, false);
+	}
+	
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList, MetaLookup mgr, boolean reverse) {
 		String colFamily = info.getIndexColFamily();
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
@@ -326,7 +330,7 @@ public class CassandraSession implements NoSqlRawSession {
 		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			StartQueryListener listener = new StartQueryManyKeys(columnFamilies, info1, info, values, false);
+			StartQueryListener listener = new StartQueryManyKeys(columnFamilies, info1, info, values, reverse);
 			return new CursorOfFutures(listener, batchList);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
@@ -371,6 +375,8 @@ public class CassandraSession implements NoSqlRawSession {
 			else
 				range = range.lessThan(to.getKey());
 		}
+		if (reverse)
+			range = range.reverse();
 		return range;
 	}
 	
@@ -429,7 +435,7 @@ public class CassandraSession implements NoSqlRawSession {
 		 * @return
 		 */
 		public RowQuery<byte[], byte[]> createRowQueryReverse() {
-			CompositeRangeBuilder range = setupRangeBuilder(to, from, info1, true);
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1, true);
 			if(batchSize != null)
 				range = range.limit(batchSize);			
 			return createBasicRowQuery(rowKey, info1, range);
