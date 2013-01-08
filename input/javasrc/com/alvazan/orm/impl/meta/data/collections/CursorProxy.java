@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data.collections;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -23,7 +24,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	private NoSqlSession session;
 	private MetaAbstractClass<T> proxyMeta;
 	private int batchSize;
-	private Iterator<T> cachedProxies;
+	private ListIterator<T> cachedProxies;
 	private T currentProxy;
 	private List<T> proxyList;
 	private List<byte[]> keyList;
@@ -63,12 +64,11 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		return false;
 	}
 	
-	//TODO:jsc cachedProxies is an iterator...  is 'loadSomeKeys' ok?  reverse it?
 	@Override
 	public boolean previous() {
 		loadSomeKeys();
-		if(cachedProxies.hasNext()) {
-			currentProxy = cachedProxies.next();
+		if(cachedProxies.hasPrevious()) {
+			currentProxy = cachedProxies.previous();
 			return true;
 		}
 		currentProxy = null;
@@ -96,7 +96,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 				break;
 		}
 
-		cachedProxies = proxyList.iterator();
+		cachedProxies = proxyList.listIterator();
 		//new proxies that are not initialized...
 		currentCacheLoaded = false;
 	}

@@ -38,7 +38,6 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 		needToGetBatch = true;
 	}
 	
-	//TODO:JSC  change to needtogetpreviousbatch?
 	@Override
 	public void afterLast() {
 		needToGetBatch = true;
@@ -76,7 +75,6 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 		}
 	}
 	
-	//TODO:JSC  the usual next vs previous iterator stuff
 	@Override
 	public Holder<IndexColumn> previousImpl() {
 		if(batchListener != null)

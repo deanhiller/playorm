@@ -295,7 +295,7 @@ cursor.afterLast();
 		Cursor<IndexColumnInfo> cursor = result.getCursor();
 		cursor.afterLast();
 		//iterate all the way through to force everything to load once, then ensure things are still in the correct (reversed) order:
-		while(cursor.previous()){}
+		while(cursor.previous()){cursor.getCurrent();}
 		cursor.afterLast();
 		
 		ViewInfo viewAct = views.get(0);

@@ -30,7 +30,6 @@ public class CursorResult extends AbstractCursor<KeyValue<Row>> {
 		rows = rowsIterable.iterator();
 	}
 	
-	//TODO:JSC  need to get this in reverse.  build rowsIteravle backward?
 	@Override
 	public void afterLast() {
 		rows = rowsIterable.iterator();
@@ -55,7 +54,6 @@ public class CursorResult extends AbstractCursor<KeyValue<Row>> {
 		return new Holder<KeyValue<Row>>(kv);		
 	}
 	
-	//TODO:JSC 'rows' is an iterator, reverse it or use something else, good other than that
 	@Override
 	public Holder<KeyValue<Row>> previousImpl() {
 		if(!rows.hasNext())

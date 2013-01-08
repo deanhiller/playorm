@@ -1,7 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 

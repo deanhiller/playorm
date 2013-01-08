@@ -16,7 +16,6 @@ public class CursorFillNulls implements DirectCursor<KeyValue<TypedRow>> {
 	private Iterator<byte[]> keyIter;
 	private ViewInfo view;
 
-	//TODO:JSC  we iterate over this fullKeyList... can't go backward.  Send it in backward?  Then the impls for nextImpl and prevImpl are identical?
 	public CursorFillNulls(DirectCursor<KeyValue<TypedRow>> cursor,
 			List<byte[]> fullKeyList, ViewInfo view) {
 		this.cursor = cursor;

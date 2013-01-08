@@ -1,7 +1,9 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import input.javasrc.com.alvazan.orm.api.z8spi.action.Column;
 import java.util.ListIterator;
+
+import com.netflix.astyanax.model.Column;
+import com.netflix.astyanax.model.ColumnList;
 
 
 public class OurColumnListIterator implements ListIterator<Column<byte[]>>{
