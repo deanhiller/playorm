@@ -101,13 +101,15 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			
 			
 			IndexColumnInfo index = next.getValue();
-			for(ViewInfo info : eagerlyJoinedViews) {
-				byte[] pk = index.getPrimaryKeyRaw(info);
-				TwoLists twoLists = map.get(info);
-				twoLists.getFullKeyList().add(pk);
-				if(pk != null) {
-					List<byte[]> list = twoLists.getListWithNoNulls();
-					list.add(pk);
+			if(index != null) {
+				for(ViewInfo info : eagerlyJoinedViews) {
+					byte[] pk = index.getPrimaryKeyRaw(info);
+					TwoLists twoLists = map.get(info);
+					twoLists.getFullKeyList().add(pk);
+					if(pk != null) {
+						List<byte[]> list = twoLists.getListWithNoNulls();
+						list.add(pk);
+					}
 				}
 			}
 		}

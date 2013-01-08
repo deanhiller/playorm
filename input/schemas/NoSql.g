@@ -37,7 +37,6 @@ tokens {
 	TABLE_CLAUSE;
 	DELETE_COLUMN;
 
-	AS	=	'as';
 	DOT	=	'.';
 	EQ	=	'=';
 	NE	=	'!=';
@@ -50,10 +49,6 @@ tokens {
 	STAR	=	'*';
 	COMMA	=	',';
 	COLON	=	':';
-	AND	=	'and';
-	OR	=	'or';
-	NOT	=	'not';
-	IN	=	'in';
 	
 }
 
@@ -201,6 +196,11 @@ UPDATE  :   ('U'|'u')('P'|'p')('D'|'d')('A'|'a')('T'|'t')('E'|'e');
 DELETE  :   ('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e');
 SET		:	('S'|'s')('E'|'e')('T'|'t');
 DELETECOLUMN : 	('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e')('C'|'c')('O'|'o')('L'|'l')('U'|'u')('M'|'m')('N'|'n');
+AND		:	('A'|'a')('N'|'n')('D'|'d');
+OR		: 	('O'|'o')('R'|'r');
+NOT		:	('N'|'n')('O'|'o')('T'|'t');
+IN		:	('I'|'i')('N'|'n');
+AS		:	('A'|'a')('S'|'s');
 
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;

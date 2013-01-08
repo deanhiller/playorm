@@ -53,7 +53,7 @@ public class CursorForPrimaryKey implements DirectCursor<IndexColumnInfo> {
 		IndexColumn c = new IndexColumn();
 		byte[] pk = null;
 		if (pkCol.getValue() == null)
-			pk = null;
+			return new Holder<IndexColumnInfo>(null);
 		else
 			pk = pkCol.getValue().getKey();
 		if (pk != null) {
