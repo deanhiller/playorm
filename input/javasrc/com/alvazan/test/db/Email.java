@@ -3,27 +3,26 @@ package com.alvazan.test.db;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
+import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
-
-@NoSqlEmbeddable
+@NoSqlEntity
 public class Email {
 
 	@NoSqlId
 	private String id; 
 	
-	@NoSqlEmbedded
-	private List<Email> emails = new ArrayList<Email>();
+/*	@NoSqlEmbedded
+	private List<Email> emails = new ArrayList<Email>();*/
 	
 	@NoSqlEmbedded
 	private List<String> ids = new ArrayList<String>();
 	@NoSqlEmbedded
 	private List<Integer> ints = new ArrayList<Integer>();
 
-	@NoSqlEmbedded
-	private Email email;
+/*	@NoSqlEmbedded
+	private Email email;*/
 
 	@NoSqlIndexed
 	private String name;
@@ -44,7 +43,7 @@ public class Email {
 		this.name = name;
 	}
 
-	public List<Email> getEmails() {
+/*	public List<Email> getEmails() {
 		return emails;
 	}
 
@@ -58,7 +57,7 @@ public class Email {
 
 	public void setEmail(Email email) {
 		this.email = email;
-	}
+	}*/
 
 	public List<String> getIds() {
 		return ids;

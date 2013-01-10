@@ -108,6 +108,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		RowToPersist row = metaClass.translateToRow(entity);
 		
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
+		if (metaDbo.isEmbeddable())
+			throw new IllegalArgumentException("Entity type="+entity.getClass().getName()+" can not be saved as it is Embedded Entity. And Embeddable entitites are only saved along with their parent entity");
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
