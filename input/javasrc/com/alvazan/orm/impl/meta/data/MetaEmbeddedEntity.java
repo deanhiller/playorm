@@ -20,7 +20,6 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
-import com.alvazan.orm.impl.meta.data.collections.ListProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
@@ -58,7 +57,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	}
 
 	private Object translateFromSingleEntity(Row row, NoSqlSession session) {
-		Object proxy;
+		Object proxy = null;
 		String columnName = getColumnName();
 		byte[] colBytes = StandardConverters.convertToBytes(columnName);
 		Column column = row.getColumn(colBytes);
@@ -66,27 +65,17 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			column = new Column();
 		}
 		if (field.getType().equals(ToOneProvider.class)) {
+			// THIS IS NOT DONE YET
 			proxy = translateFromToComposite(row, session);
-			if (proxy == null)
-				proxy = translateFromToProxy(row, column.getValue(), session);
 		} else {
-			proxy = convertIdToProxyComposite(row, session);
-			if (proxy == null)
-				proxy = convertIdToProxy(row, column.getValue(), session);
+				proxy = convertIdToProxyComposite(row, session);
 		}
 		return proxy;
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Object translateFromToProxy(Row row, byte[] value,
-			NoSqlSession session) {
-		ToOneProvider<PROXY> toOne = new ToOneProviderProxy(classMeta, value,
-				session);
-		return toOne;
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private Object translateFromToComposite(Row row, NoSqlSession session) {
+		// THIS IS NOT DONE YET
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
 		if (columns != null && !columns.isEmpty()) {
@@ -105,13 +94,6 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			return null;
 	}
 
-	public PROXY convertIdToProxy(Row row, byte[] nonVirtFk,
-			NoSqlSession session) {
-		Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, session,
-				nonVirtFk, null);
-		return tuple.getProxy();
-	}
-
 	private Object convertIdToProxyComposite(Row row, NoSqlSession session) {
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
 		Collection<Column> columns = row.columnByPrefix(bytes);
@@ -122,13 +104,11 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			int bytesandrowid = bytes.length + rowid.length;
 			// strip off the prefix to get the foreign key
 			int pkLen = fullName.length - bytesandrowid;
-			byte[] fk = new byte[pkLen];
+			byte[] pk = new byte[pkLen];
 			for (int i = bytesandrowid; i < fullName.length; i++) {
-				fk[i - bytesandrowid] = fullName[i];
+				pk[i - bytesandrowid] = fullName[i];
 			}
-			Tuple<PROXY> tuple = classMeta.convertIdToProxy(row, session, fk,
-					null);
-			return tuple.getProxy();
+			return createProxy(pk, row);
 		} else
 			return null;
 	}
@@ -150,11 +130,15 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return proxy;
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<PROXY> translateFromColumnList(Row row, OWNER entity,
 			NoSqlSession session) {
 		List<byte[]> keys = parseColNamePostfix(columnName, row);
-		List<PROXY> retVal = new ListProxyFetchAll<PROXY>(entity, session,
-				classMeta, keys, field);
+		List<PROXY> retVal = new ArrayList<PROXY>();
+		for (byte[] rowkey : keys) {
+			Object proxy = createProxy(rowkey, row);
+			retVal.add((PROXY)proxy);
+		}
 		return retVal;
 	}
 
@@ -266,6 +250,42 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			return null;
 		else 
 			return formTheNameImpl(columnName, pkData);
+	}
+
+	private Object createProxy(byte[] rowKey, Row row) {
+		Object newproxy = null;
+		try {
+			newproxy = classMeta.getMetaClass().newInstance();
+		} catch (InstantiationException e) {
+			throw new UnsupportedOperationException("There is some problem in creating the proxy");
+		} catch (IllegalAccessException e) {
+			throw new UnsupportedOperationException("There is some problem in creating the proxy");
+		}
+
+		// first fill the id
+		Object idValue = this.getMetaDbo().convertFromStorage2(rowKey);
+		ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue);
+
+		// Now extract other columns
+		Object objVal = this.getMetaDbo().convertFromStorage2(rowKey);
+		String columnsInEmbeddedRowName = getColumnName() + this.getMetaDbo().convertTypeToString(objVal);
+		byte[] embedColumn = StandardConverters.convertToBytes(columnsInEmbeddedRowName);
+		Collection<Column> columnsInRow = row.columnByPrefix(embedColumn);
+		for (Column colInRow : columnsInRow) {
+			byte[] fullNameCol = colInRow.getName();
+			int colLen = fullNameCol.length - embedColumn.length;
+			byte[] fk = new byte[colLen];
+			for (int i = embedColumn.length; i < fullNameCol.length; i++) {
+				fk[i - embedColumn.length] = fullNameCol[i];
+			}
+			Object colVal = this.getMetaDbo().convertFromStorage2(fk);
+			String colName = this.getMetaDbo().convertTypeToString(colVal);
+
+			Object columnValue = this.getMetaDbo().convertFromStorage2(colInRow.getValue());
+
+			ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
+		}
+		return newproxy;
 	}
 
 	private byte[] formTheNameImpl(String colName, byte[] postFix) {
