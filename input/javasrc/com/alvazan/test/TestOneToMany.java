@@ -266,11 +266,11 @@ public class TestOneToMany {
 				Assert.assertEquals("dean", current.getName());
 			counter++;
 		}
-		//Assert.assertEquals(3, counter);
+		Assert.assertEquals(3, counter);
 		
-	/*	for (int i=0; i<forwardActivities.size(); i++) {
+		for (int i=0; i<forwardActivities.size(); i++) {
 			Assert.assertEquals(forwardActivities.get(i).getName(), reverseActivities.get(i).getName());
-		}*/
+		}
 		
 	}
 	
