@@ -79,6 +79,7 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			Row row = kv.getValue();
 			Tuple<T> tuple = metaClass.convertIdToProxy(row, session, nonVirtKey, null);
 			if(row == null) {
+				if (!metaDbo.isEmbeddable())
 				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
 						" reference/FK to a row that does not exist in another table.  " +
 						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
