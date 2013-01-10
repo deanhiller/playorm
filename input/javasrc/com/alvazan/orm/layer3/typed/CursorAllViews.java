@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -50,6 +51,12 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		cachedCursors = new EmptyCursor<List<TypedRow>>();
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cachedCursors = new EmptyCursor<List<TypedRow>>();
+		cursor.afterLast();
+	}
 
 	@Override
 	public Holder<List<TypedRow>> nextImpl() {
@@ -62,9 +69,26 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 		
 		return cachedCursors.nextImpl();
 	}
+	
+	@Override
+	public Holder<List<TypedRow>> previousImpl() {
+		Holder<List<TypedRow>> previous = cachedCursors.previousImpl();
+		if(previous != null)
+			return previous;
+
+		//Well, the cursor ran out, load more results if any exist...
+		loadCacheBackward();
+		
+		return cachedCursors.previousImpl();
+	}
 
 	private void loadCache() {
 		Map<ViewInfo, TwoLists> map = setupKeyLists();
+		createCursors(map);		
+	}
+	
+	private void loadCacheBackward() {
+		Map<ViewInfo, TwoLists> map = setupKeyListsBackward();
 		createCursors(map);		
 	}
 
@@ -76,7 +100,7 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			TwoLists twoLists = map.get(view);
 			List<byte[]> rowKeys = twoLists.getListWithNoNulls();
 			DboTableMeta meta = view.getTableMeta();
-			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, rowKeys, query, batchSize);
+			DirectCursor<KeyValue<TypedRow>> cursor = session.findAllImpl2(meta, null, new IterableWrappingCursor<byte[]>(rowKeys), query, batchSize);
 			DirectCursor<KeyValue<TypedRow>> fillCursor = new CursorFillNulls(cursor, twoLists.getFullKeyList(), view);
 			cursors.add(fillCursor);
 			fullKeyLists.add(twoLists.getFullKeyList());
@@ -101,6 +125,33 @@ public class CursorAllViews extends AbstractCursor<List<TypedRow>> {
 			
 			
 			IndexColumnInfo index = next.getValue();
+			if(index != null) {
+				for(ViewInfo info : eagerlyJoinedViews) {
+					byte[] pk = index.getPrimaryKeyRaw(info);
+					TwoLists twoLists = map.get(info);
+					twoLists.getFullKeyList().add(pk);
+					if(pk != null) {
+						List<byte[]> list = twoLists.getListWithNoNulls();
+						list.add(pk);
+					}
+				}
+			}
+		}
+		return map;
+	}
+	
+	private Map<ViewInfo, TwoLists> setupKeyListsBackward() {
+		Map<ViewInfo, TwoLists> map = new HashMap<ViewInfo, TwoLists>();
+		initializeMap(map);
+		
+		for(int i = 0; i < batchSize; i++) {
+			//Here we want to read in batchSize
+			Holder<IndexColumnInfo> previous = cursor.previousImpl();
+			if(previous == null)
+				break;
+			
+			
+			IndexColumnInfo index = previous.getValue();
 			for(ViewInfo info : eagerlyJoinedViews) {
 				byte[] pk = index.getPrimaryKeyRaw(info);
 				TwoLists twoLists = map.get(info);

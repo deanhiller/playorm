@@ -2,7 +2,7 @@ package com.alvazan.test;
 
 import java.util.List;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.junit.After;
 import org.junit.Before;
@@ -70,13 +70,31 @@ public class TestIndexAndOrParens {
 		mgr.flush();
 		
 		List<Account> activeList = Account.findAnd(mgr, "dean", true);
+		printList(" activeList", activeList);
 		Assert.assertEquals(2, activeList.size());
+		List<Account> reversedList = Account.findAndBackward(mgr, "dean", true);
+		printList(" reversedList", reversedList);
+		Assert.assertEquals(2, reversedList.size());
+		Assert.assertEquals(activeList.get(1).getId(), reversedList.get(0).getId());
+		Assert.assertEquals(activeList.get(0).getId(), reversedList.get(1).getId());
 		
 		List<Account> nullList = Account.findAnd(mgr, "dean", null);
 		Assert.assertEquals(1, nullList.size());
 		
 		List<Account> orList = Account.findOr(mgr, "dean", true);
 		Assert.assertEquals(5, orList.size());
+		reversedList = Account.findOrBackward(mgr, "dean", true);
+		Assert.assertEquals(5, reversedList.size());
+		Assert.assertEquals(orList.get(4).getId(), reversedList.get(0).getId());
+		Assert.assertEquals(orList.get(0).getId(), reversedList.get(4).getId());
+	}
+	
+	private void printList(String listName, List<Account> list) {
+		System.out.println("The list "+listName);
+		for (Account a : list) {
+			System.out.println("   "+a.getId());
+		}
+		System.out.println("end of list "+listName);
 	}
 		
 	@Test

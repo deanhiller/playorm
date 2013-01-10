@@ -23,7 +23,6 @@ public class ReflectionUtil {
 			//did entity.id get modified, BUT entity.nameToValue ALSO was modified for some dang
 			//reason and I am not sure why, so NOW instead of using field.set on javassist.util.Proxy
 			//we are going to call a special method on the Proxy to try to set the field instead
-			
 			field.set(entity, value);
 		} catch (IllegalArgumentException e) {
 			throw new RuntimeException(e);

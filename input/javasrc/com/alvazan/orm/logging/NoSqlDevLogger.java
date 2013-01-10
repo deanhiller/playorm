@@ -17,6 +17,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 /**
@@ -64,7 +65,7 @@ public class NoSqlDevLogger implements NoSqlSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta cf,
-			Iterable<byte[]> noSqlKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
+			DirectCursor<byte[]> noSqlKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
 		return session.find(cf, noSqlKeys, skipCache, cacheResults, batchSize);
 	}
 	

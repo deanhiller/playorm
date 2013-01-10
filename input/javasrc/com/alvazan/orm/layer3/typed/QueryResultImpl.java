@@ -50,10 +50,11 @@ public class QueryResultImpl implements QueryResult {
 	public Cursor<KeyValue<TypedRow>> getPrimaryViewCursor() {
 		directCursor.beforeFirst();
 		ViewInfo mainView = metaQuery.getTargetViews().get(0);
-		Iterable<byte[]> indexIterable = new IterableCursorProxy(mainView, directCursor);
+		IndiceCursorProxy indiceCursor = new IndiceCursorProxy(mainView, directCursor);
 
 		DboTableMeta meta = mainView.getTableMeta();
-		Cursor<KeyValue<TypedRow>> results = session.findAllImpl2(meta, null, indexIterable, metaQuery.getQuery(), batchSize);
+		
+		Cursor<KeyValue<TypedRow>> results = session.findAllImpl2(meta, null, indiceCursor, metaQuery.getQuery(), batchSize);
 		
 		return results;
 	}

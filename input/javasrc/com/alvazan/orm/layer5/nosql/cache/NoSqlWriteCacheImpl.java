@@ -25,7 +25,9 @@ import com.alvazan.orm.api.z8spi.action.RemoveEnum;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.IterableWrappingCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlWriteCacheImpl implements NoSqlSession {
@@ -100,7 +102,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
+			DirectCursor<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
 		int size = 500;
 		if(batchSize != null)
 			size = batchSize;
@@ -108,7 +110,7 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	}
 	
 	private List<Row> find(DboTableMeta colFamily, List<byte[]> keys, boolean cacheResults) {
-		AbstractCursor<KeyValue<Row>> results = find(colFamily, keys, false, cacheResults, null);
+		AbstractCursor<KeyValue<Row>> results = find(colFamily, new IterableWrappingCursor<byte[]>(keys), false, cacheResults, null);
 		List<Row> rows = new ArrayList<Row>();
 		while(true) {
 			Holder<KeyValue<Row>> holder = results.nextImpl();

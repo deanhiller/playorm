@@ -26,6 +26,7 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
@@ -100,7 +101,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
+			DirectCursor<byte[]> rowKeys, boolean skipCache, boolean cacheResults, Integer batchSize) {
 		Cache c = new EmptyCache(this, skipCache, cacheResults);
 		
 		//NOTE: I would put a finally to clear out the threadlocal normally BUT sometimes log statements may

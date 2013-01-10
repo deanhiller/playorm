@@ -174,6 +174,39 @@ public class TestIndexes {
 		Assert.assertEquals(1, all3.size());
 	}
 	
+	@Test
+	public void testTwoQueriesSameNameDifferentEntitiesAllowedBackward() {
+		//Account has the same name as a query in Activity which IS allowed in our implementation
+		Account acc = new Account("acc1");
+		acc.setName("tempxxxxx");
+		acc.setUsers(9.33333f);
+		mgr.put(acc);
+		Account acc2 = new Account("acc2");
+		acc2.setName("xyz");
+		acc2.setUsers(3.1f);
+		mgr.put(acc2);
+		Account acc3 = new Account("acc3");
+		acc3.setName(acc2.getName());
+		acc3.setUsers(2.9f);
+		mgr.put(acc3);
+		
+		Activity act = new Activity("act1");
+		mgr.put(act);
+		
+		mgr.flush();
+		
+		List<Account> all2 = Account.findAll(mgr);
+		Assert.assertEquals(3, all2.size());
+		
+		//TODO:JSC  this test will fail randomly until we can specify the index to 'find' over
+		//this add these lines back in when 'order by' is done to verify it:
+//		List<Account> allbackward2 = Account.findAllBackward(mgr);
+//		Assert.assertEquals(3, allbackward2.size());
+//		Assert.assertEquals(all2.get(0).getId(), allbackward2.get(2).getId());
+		
+		List<Activity> all3 = Activity.findAll(mgr, 100);
+		Assert.assertEquals(1, all3.size());
+	}
 	
 	
 	@Test

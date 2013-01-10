@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlWriteCacheImpl;
 import com.google.inject.ImplementedBy;
@@ -53,7 +54,7 @@ public interface NoSqlSession {
 
 	public void removeColumn(DboTableMeta colFamily, byte[] rowKey, byte[] columnName);
 	
-	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, Iterable<byte[]> rowKeys, boolean skipReadCache, boolean cacheResults, Integer batchSize);
+	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, DirectCursor<byte[]> rowKeys, boolean skipReadCache, boolean cacheResults, Integer batchSize);
 	
 	public Row find(DboTableMeta colFamily, byte[] rowKey);
 	
@@ -75,7 +76,8 @@ public interface NoSqlSession {
 	 * @return
 	 */
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
-	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values);
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values);	
+
 	
 	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
 	

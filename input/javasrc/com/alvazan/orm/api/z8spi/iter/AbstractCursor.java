@@ -14,8 +14,20 @@ public abstract class AbstractCursor<T> implements DirectCursor<T>,Cursor<T> {
 		}
 		return true;
 	}
+	
+	@Override
+	public final boolean previous() {
+		currentValue = previousImpl();
+		if(currentValue == null) {
+			//There is NO previous value so screw it, return false
+			return false;
+		}
+		return true;
+	}
 
 	public abstract Holder<T> nextImpl();
+	
+	public abstract Holder<T> previousImpl();
 
 	@Override
 	public final T getCurrent() {

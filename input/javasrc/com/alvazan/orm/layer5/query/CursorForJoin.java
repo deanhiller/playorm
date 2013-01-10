@@ -1,8 +1,8 @@
 package com.alvazan.orm.layer5.query;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -26,7 +26,7 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 	private DirectCursor<IndexColumn> cachedFromNewView;
 	private ViewInfo newView;
 	private ViewInfo rightView;
-	private Iterator<IndexColumnInfo> cachedFromRightResults;
+	private ListIterator<IndexColumnInfo> cachedFromRightResults;
 	private IndexColumnInfo lastCachedRightSide;
 	private DboColumnMeta colMeta;
 
@@ -72,6 +72,13 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		this.rightResults.beforeFirst();
 		cachedFromNewView = null;
 	}
+	
+	@Override
+	public void afterLast() {
+		this.rightResults.afterLast();
+		cachedFromNewView = null;
+	}
+
 
 	@Override
 	public Holder<IndexColumnInfo> nextImpl() {
@@ -85,6 +92,19 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		
 		return fetchAnother();
 	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		if(cachedFromNewView != null) {
+			Holder<IndexColumn> prev = cachedFromNewView.previousImpl();
+			if(prev != null) {
+				return createResult(prev);
+			}
+			//we need to fetch more...
+		}
+		
+		return fetchAnotherPrevious();
+	}
 
 	private Holder<IndexColumnInfo> fetchAnother() {
 		//HERE we want to batch for performance
@@ -94,7 +114,7 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		//optimize by fetching LOTS of keys at one time up to batchSize
 		buildValuesToFind(values, rightListResults);
 		
-		cachedFromRightResults = rightListResults.iterator();
+		cachedFromRightResults = rightListResults.listIterator();
 		cachedFromNewView = session.scanIndex(scanInfo, values);
 		
 		Holder<IndexColumn> next = cachedFromNewView.nextImpl();
@@ -112,6 +132,50 @@ public class CursorForJoin extends AbstractCursor<IndexColumnInfo> {
 		int counter = 0;
 		while(true) {
 			Holder<IndexColumnInfo> rightHolder = rightResults.nextImpl();
+			if(rightHolder == null) {
+			//	rightResultsExhausted = true;
+				break;
+			} else if(batchSize != null && batchSize.intValue() < counter)
+				break;
+			
+			IndexColumnInfo rightResult = rightHolder.getValue();
+			ByteArray pk = rightResult.getPrimaryKey(rightView);
+			values.add(pk.getKey());
+			rightListResults.add(rightResult);
+			counter++;
+		}
+		
+	}
+	
+	
+	private Holder<IndexColumnInfo> fetchAnotherPrevious() {
+		//HERE we want to batch for performance
+		List<byte[]> values = new ArrayList<byte[]>();
+		List<IndexColumnInfo> rightListResults = new ArrayList<IndexColumnInfo>();
+				
+		//optimize by fetching LOTS of keys at one time up to batchSize
+		buildPreviousValuesToFind(values, rightListResults);
+		
+		cachedFromRightResults = rightListResults.listIterator();
+		while(cachedFromRightResults.hasNext())cachedFromRightResults.next();
+		cachedFromNewView = session.scanIndex(scanInfo, values);
+		cachedFromNewView.afterLast();
+		Holder<IndexColumn> next = cachedFromNewView.previousImpl();
+		
+		if(next == null)
+			return null;
+		else if(lastCachedRightSide == null)
+			lastCachedRightSide = cachedFromRightResults.previous();
+		
+		return createResult(next);
+	}
+
+	private void buildPreviousValuesToFind(List<byte[]> values,
+			List<IndexColumnInfo> rightListResults) {
+		//boolean rightResultsExhausted = false;
+		int counter = 0;
+		while(true) {
+			Holder<IndexColumnInfo> rightHolder = rightResults.previousImpl();
 			if(rightHolder == null) {
 			//	rightResultsExhausted = true;
 				break;

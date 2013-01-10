@@ -22,12 +22,14 @@ public class StartQueryManyKeys implements StartQueryListener {
 	private List<byte[]> values;
 	private Info info1;
 	private ColumnFamilyHelper columnFamilies;
+	private boolean reverse = false;
 	
-	public StartQueryManyKeys(ColumnFamilyHelper columnFamilies, Info info1, ScanInfo info, List<byte[]> values) {
+	public StartQueryManyKeys(ColumnFamilyHelper columnFamilies, Info info1, ScanInfo info, List<byte[]> values, boolean reverse) {
 		this.columnFamilies = columnFamilies;
 		this.info1 = info1;
 		this.scanInfo = info;
 		this.values = values;
+		this.reverse = reverse;
 	}
 
 	@Override
@@ -36,12 +38,13 @@ public class StartQueryManyKeys implements StartQueryListener {
 		Keyspace keyspace = columnFamilies.getKeyspace();
 		
 		List<Future<OperationResult<ColumnList<byte[]>>>> futures = new ArrayList<Future<OperationResult<ColumnList<byte[]>>>>();
+
 		for(byte[] val : values) {
 			Key from = new Key(val, true);
 			Key to = new Key(val, true);
 			byte[] rowKey = scanInfo.getRowKey();
 			
-			CompositeRangeBuilder range = CassandraSession.setupRangeBuilder(from, to, info1);
+			CompositeRangeBuilder range = CassandraSession.setupRangeBuilder(from, to, info1, reverse);
 			ColumnFamilyQuery query = keyspace.prepareQuery(cf);
 			RowQuery<byte[], byte[]> rowQuery = query.getKey(rowKey).withColumnRange(range);
 			Future future = executeAsync(rowQuery);

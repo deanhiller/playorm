@@ -32,6 +32,11 @@ public class CursorToIndexPoint extends AbstractCursor<IndexPoint> {
 	public void beforeFirst() {
 		indCol.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		indCol.afterLast();
+	}
 
 	@Override
 	public Holder<IndexPoint> nextImpl() {
@@ -44,4 +49,14 @@ public class CursorToIndexPoint extends AbstractCursor<IndexPoint> {
 		return new Holder<IndexPoint>(p);
 	}
 
+	@Override
+	public Holder<IndexPoint> previousImpl() {
+		Holder<IndexColumn> previous = indCol.previousImpl();
+		if(previous == null)
+			return null;
+		
+		IndexColumn col = previous.getValue();
+		IndexPoint p = new IndexPoint(idMeta, col, valueMeta);
+		return new Holder<IndexPoint>(p);
+	}
 }

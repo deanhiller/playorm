@@ -27,6 +27,7 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Cluster;
@@ -71,7 +72,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	@Override
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
-			Iterable<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
+			DirectCursor<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list, MetaLookup mgr) {
 		Info info = columnFamilies.fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
 		if(info == null) {
 			//If there is no column family in cassandra, then we need to return no rows to the user...
@@ -294,6 +295,17 @@ public class CassandraSession implements NoSqlRawSession {
 				ByteBufferRange range = rangeBldr.build(); 
 				return createBasicRowQuery(rowKey, info1, range);
 			}
+
+			@Override
+			public RowQuery<byte[], byte[]> createRowQueryReverse() {
+				RangeBuilder rangeBldr = new RangeBuilder().setStart(to).setEnd(from).setReversed(true);
+				if(batchSize != null)
+					rangeBldr = rangeBldr.setLimit(batchSize);
+				ByteBufferRange range = rangeBldr.build(); 
+				return createBasicRowQuery(rowKey, info1, range);
+			}
+			
+			
 		};
 			
 
@@ -302,6 +314,10 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList, MetaLookup mgr) {
+		return scanIndex(info, values, batchList, mgr, false);
+	}
+	
+	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, List<byte[]> values, BatchListener batchList, MetaLookup mgr, boolean reverse) {
 		String colFamily = info.getIndexColFamily();
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
@@ -314,7 +330,7 @@ public class CassandraSession implements NoSqlRawSession {
 		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
-			StartQueryListener listener = new StartQueryManyKeys(columnFamilies, info1, info, values);
+			StartQueryListener listener = new StartQueryManyKeys(columnFamilies, info1, info, values, reverse);
 			return new CursorOfFutures(listener, batchList);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
@@ -344,7 +360,7 @@ public class CassandraSession implements NoSqlRawSession {
 			throw new UnsupportedOperationException("not done here yet");
 	}
 	
-	public static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1) {
+	public static CompositeRangeBuilder setupRangeBuilder(Key from, Key to, Info info1, boolean reverse) {
 		AnnotatedCompositeSerializer serializer = info1.getCompositeSerializer();
 		CompositeRangeBuilder range = serializer.buildRange();
 		if(from != null) {
@@ -359,6 +375,8 @@ public class CassandraSession implements NoSqlRawSession {
 			else
 				range = range.lessThan(to.getKey());
 		}
+		if (reverse)
+			range = range.reverse();
 		return range;
 	}
 	
@@ -381,6 +399,7 @@ public class CassandraSession implements NoSqlRawSession {
 	
 	public interface CreateColumnSliceCallback {
 		RowQuery<byte[], byte[]> createRowQuery();
+		RowQuery<byte[], byte[]> createRowQueryReverse();
 	}
 	
 	private class Listener implements CreateColumnSliceCallback {
@@ -404,7 +423,19 @@ public class CassandraSession implements NoSqlRawSession {
 		 * @return
 		 */
 		public RowQuery<byte[], byte[]> createRowQuery() {
-			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1);
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1, false);
+			if(batchSize != null)
+				range = range.limit(batchSize);			
+			return createBasicRowQuery(rowKey, info1, range);
+		}
+		
+		/**
+		 * For some dang reason with astyanax, we have to recreate the row query from scratch before we re-use it for 
+		 * a NEsted join.
+		 * @return
+		 */
+		public RowQuery<byte[], byte[]> createRowQueryReverse() {
+			CompositeRangeBuilder range = setupRangeBuilder(from, to, info1, true);
 			if(batchSize != null)
 				range = range.limit(batchSize);			
 			return createBasicRowQuery(rowKey, info1, range);

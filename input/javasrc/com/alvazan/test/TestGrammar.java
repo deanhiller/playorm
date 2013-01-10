@@ -118,6 +118,14 @@ public class TestGrammar {
 		String result = ""+newTree;
 		Assert.assertEquals("(p.numShares = :shares and p.something = :something)", result);
 	}
+	
+	@Test
+	public void testSingleOrderBy() {
+		String sql = "select p FROM TABLE as p INNER JOIN p.security as s where p.numShares = :shares and p.something = :something ORDER BY something ASC";
+		ExpressionNode newTree = scanner.compileSql(sql, wiring, facade);
+		String result = ""+newTree;
+		Assert.assertEquals("(p.numShares = :shares and p.something = :something)", result);
+	}
 
 	@Test
 	public void testLargeTree() {

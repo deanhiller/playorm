@@ -234,21 +234,44 @@ public class TestOneToMany {
 		
 		addAndSaveActivity1(mgr1, acc1, "dean", "act1");
 		addAndSaveActivity1(mgr2, acc2, "xxxx", "act2");
+		addAndSaveActivity1(mgr2, acc2, "yyyy", "act3");
+
 
 		NoSqlEntityManager mgr3 = factory.createEntityManager();
 		//Now, we should have no activities in our account list
 		Account theAccount = mgr3.find(Account.class, acc.getId());
 		
+		ArrayList<Activity> forwardActivities = new ArrayList<Activity>();
 		CursorToMany<Activity> cursor = theAccount.getActivitiesCursor();
 		int counter = 0;
 		while(cursor.next()) {
 			Activity current = cursor.getCurrent();
+			forwardActivities.add(current);
 			if(counter == 0)
 				Assert.assertEquals("dean", current.getName());
 			counter++;
 		}
 		
-		Assert.assertEquals(2, counter);
+		Assert.assertEquals(3, counter);
+		
+		ArrayList<Activity> reverseActivities = new ArrayList<Activity>();
+		cursor = theAccount.getActivitiesCursor();
+		cursor.afterLast();
+		counter = 0;
+
+		while(cursor.next()) {
+			Activity current = cursor.getCurrent();
+			reverseActivities.add(0, current);
+			if(counter == 2)
+				Assert.assertEquals("dean", current.getName());
+			counter++;
+		}
+		Assert.assertEquals(3, counter);
+		
+		for (int i=0; i<forwardActivities.size(); i++) {
+			Assert.assertEquals(forwardActivities.get(i).getName(), reverseActivities.get(i).getName());
+		}
+		
 	}
 	
 	@Test

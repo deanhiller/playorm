@@ -135,6 +135,13 @@ public class LogDao {
 			counter = 0;
 			fetchNewBatch();
 		}
+		
+		//TODO:JSC  none of this works if I can't figure out what the last index/size/number of results is...  
+		@Override
+		public void afterLast() {
+			counter = 0;  //<--  JSC here
+			fetchNewBatchFromEnd();
+		}
 
 		@Override
 		public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<LogEvent> nextImpl() {
@@ -150,6 +157,26 @@ public class LogDao {
 			if(nextImpl == null)
 				return null;
 			KeyValue<LogEvent> kv = nextImpl.getValue();
+			if(kv.getValue() == null)
+				return null;
+			
+			return new Holder<LogEvent>(kv.getValue());
+		}
+		
+		@Override
+		public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<LogEvent> previousImpl() {
+			if(event == null)
+				fetchNewBatchFromEnd();
+			
+			Holder<KeyValue<LogEvent>> prevImpl = event.previousImpl();
+			if(prevImpl == null) {
+				fetchNewBatchFromEnd();
+				prevImpl = event.previousImpl();
+			}
+			
+			if(prevImpl == null)
+				return null;
+			KeyValue<LogEvent> kv = prevImpl.getValue();
 			if(kv.getValue() == null)
 				return null;
 			
@@ -183,6 +210,13 @@ public class LogDao {
 			event = (AbstractCursor<KeyValue<LogEvent>>) mgr.findAll(LogEvent.class, keys);
 		}
 
+		private void fetchNewBatchFromEnd() {
+			List<String> keys = createKeys(serverNames, counter-batchSize, counter);
+			counter = counter-batchSize;
+			mgr.clear();
+			
+			event = (AbstractCursor<KeyValue<LogEvent>>) mgr.findAll(LogEvent.class, keys);
+		}
 //		@Override
 //		public LogEvent next() {
 //			if(!hasNext())

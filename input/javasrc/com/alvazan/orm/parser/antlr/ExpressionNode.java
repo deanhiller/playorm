@@ -1,5 +1,7 @@
 package com.alvazan.orm.parser.antlr;
 
+import java.util.List;
+
 import org.antlr.runtime.tree.CommonTree;
 
 
@@ -11,7 +13,9 @@ public class ExpressionNode implements ParsedNode {
 	 */
 	private ExpressionNode leftChild;
 	private ExpressionNode rightChild;
-	
+
+	private List<ParsedNode> childernForIn;
+
 	private CommonTree commonNode;
 	
 	private Object state;
@@ -29,8 +33,12 @@ public class ExpressionNode implements ParsedNode {
 		this.type = nodeType;
 	}
 
-	public boolean isInBetweenExpression() {
+	public boolean isBetweenExpression() {
 		return type == NoSqlLexer.BETWEEN;
+	}
+
+	public boolean isInExpression() {
+		return type == NoSqlLexer.IN;
 	}
 
 	public int getType() {
@@ -74,7 +82,7 @@ public class ExpressionNode implements ParsedNode {
 
 
 	public String getExpressionAsString(boolean isCalledFromFirstIfBlock) {
-		if(isInBetweenExpression()) {
+		if(isBetweenExpression() || isBetweenExpression()) {
 			ExpressionNode greaterThan = getGreaterThan();
 			ExpressionNode lessThan = getLessThan();
 			if(greaterThan == null || lessThan == null)
@@ -204,4 +212,12 @@ public class ExpressionNode implements ParsedNode {
 		throw new IllegalStateException("bug, should never end up here");
 	}
 
+	public List<ParsedNode> getChildrenForIn() {
+		return childernForIn;
+
+	}
+
+	public void setChildrenForIn(List<ParsedNode> listOfNode) {
+		childernForIn = listOfNode;
+	}
 }

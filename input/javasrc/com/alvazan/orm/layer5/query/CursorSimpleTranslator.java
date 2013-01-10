@@ -36,10 +36,28 @@ public class CursorSimpleTranslator implements DirectCursor<IndexColumnInfo> {
 	public void beforeFirst() {
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cursor.afterLast();
+	}
 
 	@Override
 	public Holder<IndexColumnInfo> nextImpl() {
 		Holder<IndexColumn> holder = cursor.nextImpl();
+		if(holder == null)
+			return null;
+		IndexColumn indCol = holder.getValue();
+		if(indCol == null)
+			return new Holder<IndexColumnInfo>(null);
+		IndexColumnInfo info = new IndexColumnInfo();
+		info.putIndexNode(viewInfo, indCol, colMeta);
+		return new Holder<IndexColumnInfo>(info);
+	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		Holder<IndexColumn> holder = cursor.previousImpl();
 		if(holder == null)
 			return null;
 		IndexColumn indCol = holder.getValue();

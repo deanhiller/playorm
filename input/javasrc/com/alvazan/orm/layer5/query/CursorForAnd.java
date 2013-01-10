@@ -70,6 +70,36 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 		}
 		return null;
 	}
+	
+	@Override
+	public Holder<IndexColumnInfo> previousImpl() {
+		while(true) {
+			Holder<IndexColumnInfo> prevFromCursor = leftResults.previousImpl();
+			if(prevFromCursor == null)
+				break;
+			IndexColumnInfo next = prevFromCursor.getValue();
+
+			if(cachedMap != null) {
+				Holder<IndexColumnInfo> result = quickHashLookup(next);
+				if(result != null)
+					return result;
+			} else if(!ranFullInnerLoopTo500Once) {
+				rightResults.afterLast();
+				Holder<IndexColumnInfo> result = runFullInnerLoopOnceBackward(next);
+				if(result != null)
+					return result;				
+			} else {
+				//Need to change to lookahead joining here as well as switch join types on the fly
+				//This stinks as we have to re-read from the database every 1000 rows!!!! We should find out if
+				//we can do any kind of counting or something so we don't have to go back to database every time
+				rightResults.afterLast();
+				Holder<IndexColumnInfo> result = runInnerLoopBackward(next);
+				if(result != null)
+					return result;
+			}
+		}
+		return null;
+	}
 
 	private Holder<IndexColumnInfo> runFullInnerLoopOnce(IndexColumnInfo next) {
 		Map<ByteArray, IndexColumnInfo> pkToRightSide = new HashMap<ByteArray, IndexColumnInfo>();
@@ -98,6 +128,35 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 			cachedMap = pkToRightSide;
 		return matchedResult;
 	}
+	
+	private Holder<IndexColumnInfo> runFullInnerLoopOnceBackward(IndexColumnInfo previous) {
+		Map<ByteArray, IndexColumnInfo> pkToRightSide = new HashMap<ByteArray, IndexColumnInfo>();
+		Holder<IndexColumnInfo> matchedResult = null;
+		while(true) {
+			Holder<IndexColumnInfo> previousFromCursor = rightResults.previousImpl();
+			if(previousFromCursor == null)
+				break;
+			IndexColumnInfo andedInfo = previousFromCursor.getValue();
+			ByteArray key1 = previous.getPrimaryKey(leftView);
+			ByteArray key2 = andedInfo.getPrimaryKey(rightView);
+			if(pkToRightSide.size() < 500)
+				pkToRightSide.put(key2, andedInfo);
+			if(matchedResult == null && key1.equals(key2)) {
+				previous.mergeResults(andedInfo);
+				matchedResult = new Holder<IndexColumnInfo>(previous);
+			}
+			
+			if(matchedResult != null && pkToRightSide.size()>=500) {
+				//we have exceeded cache size so we can't switch to a Hash join :(
+				return matchedResult;
+			}
+		}
+		
+		if(pkToRightSide.size() < 500)
+			cachedMap = pkToRightSide;
+		return matchedResult;
+	}
+
 
 	private Holder<IndexColumnInfo> quickHashLookup(IndexColumnInfo next) {
 		ByteArray key1 = next.getPrimaryKey(leftView);
@@ -124,12 +183,35 @@ public class CursorForAnd implements DirectCursor<IndexColumnInfo> {
 		
 		return null;
 	}
+	
+	private Holder<IndexColumnInfo> runInnerLoopBackward(IndexColumnInfo previous) {
+		while(true) {
+			Holder<IndexColumnInfo> prevFromCursor = rightResults.previousImpl();
+			if(prevFromCursor == null)
+				break;
+			IndexColumnInfo andedInfo = prevFromCursor.getValue();
+			ByteArray key1 = previous.getPrimaryKey(leftView);
+			ByteArray key2 = andedInfo.getPrimaryKey(rightView);
+			if(key1.equals(key2)) {
+				previous.mergeResults(andedInfo);
+				return new Holder<IndexColumnInfo>(previous);
+			}
+		}
+		
+		return null;
+	}
 
 
 	@Override
 	public void beforeFirst() {
 		leftResults.beforeFirst();
 		rightResults.beforeFirst();
+	}
+	
+	@Override
+	public void afterLast() {
+		leftResults.afterLast();
+		rightResults.afterLast();
 	}
 
 }

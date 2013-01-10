@@ -39,10 +39,32 @@ public class CursorFillNulls implements DirectCursor<KeyValue<TypedRow>> {
 
 		return cursor.nextImpl();
 	}
+	
+	@Override
+	public Holder<KeyValue<TypedRow>> previousImpl() {
+		if(!keyIter.hasNext())
+			return null;
+		
+		byte[] theKey = keyIter.next();
+		if(theKey == null) {
+			KeyValue<TypedRow> kv = new KeyValue<TypedRow>();
+			TypedRow row = new TypedRow(view, view.getTableMeta());
+			kv.setValue(row);
+			return new Holder<KeyValue<TypedRow>>(kv);
+		}
+
+		return cursor.nextImpl();
+	}
 
 	@Override
 	public void beforeFirst() {
 		cursor.beforeFirst();
+		keyIter = fullKeyList.iterator();
+	}
+	
+	@Override
+	public void afterLast() {
+		cursor.afterLast();
 		keyIter = fullKeyList.iterator();
 	}
 

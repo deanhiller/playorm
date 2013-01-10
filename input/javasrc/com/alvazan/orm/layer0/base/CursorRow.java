@@ -29,12 +29,29 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 		cursor.beforeFirst();
 	}
 	
+	
+	@Override
+	public void afterLast() {
+		cursor.afterLast();
+	}
+	
 	@Override
 	public Holder<KeyValue<T>> nextImpl() {
 		Holder<KeyValue<Row>> nextImpl = cursor.nextImpl();
 		if(nextImpl == null)
 			return null;
 		KeyValue<Row> kv = nextImpl.getValue();
+		
+		KeyValue<T> result = translateRow(kv);
+		return new Holder<KeyValue<T>>(result);
+	}
+	
+	@Override
+	public Holder<KeyValue<T>> previousImpl() {
+		Holder<KeyValue<Row>> prevImpl = cursor.previousImpl();
+		if(prevImpl == null)
+			return null;
+		KeyValue<Row> kv = prevImpl.getValue();
 		
 		KeyValue<T> result = translateRow(kv);
 		return new Holder<KeyValue<T>>(result);

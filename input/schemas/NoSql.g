@@ -36,8 +36,8 @@ tokens {
 	UPDATE_CLAUSE;
 	TABLE_CLAUSE;
 	DELETE_COLUMN;
+	ORDERBY_CLAUSE;
 
-	AS	=	'as';
 	DOT	=	'.';
 	EQ	=	'=';
 	NE	=	'!=';
@@ -50,10 +50,6 @@ tokens {
 	STAR	=	'*';
 	COMMA	=	',';
 	COLON	=	':';
-	AND	=	'and';
-	OR	=	'or';
-	NOT	=	'not';
-	IN	=	'in';
 	
 }
 
@@ -90,7 +86,7 @@ statement: ( sqlStatement EOF! );
 sqlStatement: selectStatement | updateStatement | deleteStatement | deleteColumnStatement;
 
 //SELECT PORTION SPECIFIC STUFF
-selectStatement: (partitionClause)? selectClause fromClause (joinClause)? (whereClause)? -> fromClause (joinClause)? (partitionClause)? selectClause (whereClause)?;
+selectStatement: (partitionClause)? selectClause fromClause (joinClause)? (whereClause)? (orderClause)? -> fromClause (joinClause)? (partitionClause)? selectClause (whereClause)? (orderClause)?;
 selectClause: SELECT resultList -> ^(SELECT_CLAUSE resultList);
 
 resultList
@@ -135,6 +131,10 @@ joinList: singleJoinClause (singleJoinClause)*;
 singleJoinClause: leftJoin | join;
 leftJoin: LEFT JOIN aliasedColumn AS newAlias -> ^(LEFT_OUTER_JOIN aliasedColumn ALIAS[$newAlias.text]);
 join: INNER JOIN aliasedColumn AS newAlias -> ^(INNER_JOIN aliasedColumn ALIAS[$newAlias.text]);
+
+//ORDER BY CLAUSE SPECIFIC STUFF
+orderClause: ORDER BY orderby_item -> ^(ORDERBY_CLAUSE orderby_item);
+orderby_item: column (ASC | DESC)? ;
 
 //WHERE CLAUSE SPECIFIC STUFF
 whereClause: WHERE^ expression;  //NOTE: This should be (expression | orExpr) BUT antlr doesn't like that so need to re-visit
@@ -201,6 +201,15 @@ UPDATE  :   ('U'|'u')('P'|'p')('D'|'d')('A'|'a')('T'|'t')('E'|'e');
 DELETE  :   ('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e');
 SET		:	('S'|'s')('E'|'e')('T'|'t');
 DELETECOLUMN : 	('D'|'d')('E'|'e')('L'|'l')('E'|'e')('T'|'t')('E'|'e')('C'|'c')('O'|'o')('L'|'l')('U'|'u')('M'|'m')('N'|'n');
+AND		:	('A'|'a')('N'|'n')('D'|'d');
+OR		: 	('O'|'o')('R'|'r');
+NOT		:	('N'|'n')('O'|'o')('T'|'t');
+IN		:	('I'|'i')('N'|'n');
+AS		:	('A'|'a')('S'|'s');
+ORDER   :   ('O'|'o')('R'|'r')('D'|'d')('E'|'e')('R'|'r');
+BY      :   ('B'|'b')('Y'|'y');
+ASC     :   ('A'|'a')('S'|'s')('C'|'c');
+DESC    :   ('D'|'d')('E'|'e')('S'|'s')('C'|'c');
 
 // Lexer Rules
 ID	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_'|'-')*;

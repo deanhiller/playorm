@@ -30,7 +30,6 @@ import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
-import com.alvazan.orm.layer3.typed.IterableCursorProxy;
 import com.alvazan.orm.layer3.typed.IterableProxy;
 
 public class QueryAdapter<T> implements Query<T> {
@@ -130,10 +129,8 @@ public class QueryAdapter<T> implements Query<T> {
 		//BIG NOTE: Here, we could return all the keys from the join so we can eagerly fetch other entities as well
 		//instead of waiting for the user to loop through those entities AND if user accesses those entites, we could block
 		//while the load is happening too in the background
-		Iterable<byte[]> keys = new IterableCursorProxy(mainView, indice);
-		
 		String query = meta.getQuery();
-		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, keys, query, cacheResults, batchSize);
+		AbstractCursor<KeyValue<T>> results = mgr.findAllImpl2(mainMetaClass, mainView, indice, query, cacheResults, batchSize);
 
 		return results;
 	}

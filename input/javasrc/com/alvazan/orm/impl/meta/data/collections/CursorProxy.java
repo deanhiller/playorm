@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data.collections;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -11,7 +12,8 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
-import com.alvazan.orm.api.z8spi.iter.IterToVirtual;
+import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
+import com.alvazan.orm.api.z8spi.iter.ListWrappingCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.Tuple;
@@ -22,7 +24,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	private NoSqlSession session;
 	private MetaAbstractClass<T> proxyMeta;
 	private int batchSize;
-	private Iterator<T> cachedProxies;
+	private ListIterator<T> cachedProxies;
 	private T currentProxy;
 	private List<T> proxyList;
 	private List<byte[]> keyList;
@@ -45,12 +47,28 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	public void beforeFirst() {
 		cursor.beforeFirst();
 	}
+	
+	@Override
+	public void afterLast() {
+		cursor.afterLast();
+	}
 
 	@Override
 	public boolean next() {
 		loadSomeKeys();
 		if(cachedProxies.hasNext()) {
 			currentProxy = cachedProxies.next();
+			return true;
+		}
+		currentProxy = null;
+		return false;
+	}
+	
+	@Override
+	public boolean previous() {
+		loadSomeKeys();
+		if(cachedProxies.hasPrevious()) {
+			currentProxy = cachedProxies.previous();
 			return true;
 		}
 		currentProxy = null;
@@ -78,7 +96,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 				break;
 		}
 
-		cachedProxies = proxyList.iterator();
+		cachedProxies = proxyList.listIterator();
 		//new proxies that are not initialized...
 		currentCacheLoaded = false;
 	}
@@ -103,7 +121,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		currentCacheLoaded = true;
 		
 		DboTableMeta metaDbo = proxyMeta.getMetaDbo();
-		Iterable<byte[]> virtKeys = new IterToVirtual(metaDbo, keyList);
+		IndiceToVirtual virtKeys = new IndiceToVirtual(metaDbo, new ListWrappingCursor<byte[]>(keyList));
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, true, false, batchSize);
 		
 		int counter = 0;

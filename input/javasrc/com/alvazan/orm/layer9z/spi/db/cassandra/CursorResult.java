@@ -29,9 +29,33 @@ public class CursorResult extends AbstractCursor<KeyValue<Row>> {
 	public void beforeFirst() {
 		rows = rowsIterable.iterator();
 	}
+	
+	@Override
+	public void afterLast() {
+		rows = rowsIterable.iterator();
+	}
 
 	@Override
 	public Holder<KeyValue<Row>> nextImpl() {
+		if(!rows.hasNext())
+			return null;
+		com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.next();
+		KeyValue<Row> kv = new KeyValue<Row>();
+		kv.setKey(row.getKey());
+		if(!row.getColumns().isEmpty()) {
+			//Astyanax returns a row when there is none BUT we know if there are 0 columns there is really no row in the database
+			//then
+			Row r = rowProvider.get();
+			r.setKey(row.getKey());
+			CassandraSession.processColumns(row, r);
+			kv.setValue(r);
+		}
+		
+		return new Holder<KeyValue<Row>>(kv);		
+	}
+	
+	@Override
+	public Holder<KeyValue<Row>> previousImpl() {
 		if(!rows.hasNext())
 			return null;
 		com.netflix.astyanax.model.Row<byte[], byte[]> row = rows.next();
