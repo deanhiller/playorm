@@ -65,7 +65,7 @@ public class CursorProxy<T> implements CursorToMany<T> {
 	
 	@Override
 	public boolean previous() {
-		loadSomeKeys();
+		loadSomeKeysBackward();
 		if(cachedProxies.hasPrevious()) {
 			currentProxy = cachedProxies.previous();
 			return true;
@@ -96,6 +96,33 @@ public class CursorProxy<T> implements CursorToMany<T> {
 		}
 
 		cachedProxies = proxyList.listIterator();
+		//new proxies that are not initialized...
+		currentCacheLoaded = false;
+	}
+	
+	private void loadSomeKeysBackward() {
+		if(cachedProxies != null && cachedProxies.hasPrevious())
+			return;
+		
+		proxyList = new ArrayList<T>();
+		keyList = new ArrayList<byte[]>();
+		while(true) {
+			Holder<IndexColumn> holder = cursor.previousImpl();
+			if(holder == null)
+				break;
+			IndexColumn val = holder.getValue();
+			//NOTE: Here the indCol.getPrimaryKey is our owning entities primary key
+			// and the indexedValue is the actual foreign key to the other table
+			byte[] indexedValue = val.getIndexedValue();
+			keyList.add(0, indexedValue);
+			T proxy = convertIdToProxy(indexedValue, session);
+			proxyList.add(0, proxy);
+			if(proxyList.size() > batchSize)
+				break;
+		}
+
+		cachedProxies = proxyList.listIterator();
+		while(cachedProxies.hasNext())cachedProxies.next();
 		//new proxies that are not initialized...
 		currentCacheLoaded = false;
 	}

@@ -259,7 +259,7 @@ public class TestOneToMany {
 		cursor.afterLast();
 		counter = 0;
 
-		while(cursor.next()) {
+		while(cursor.previous()) {
 			Activity current = cursor.getCurrent();
 			reverseActivities.add(0, current);
 			if(counter == 2)
