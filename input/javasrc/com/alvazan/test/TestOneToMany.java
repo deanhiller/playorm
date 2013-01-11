@@ -259,18 +259,18 @@ public class TestOneToMany {
 		cursor.afterLast();
 		counter = 0;
 
-		while(cursor.next()) {
+		while(cursor.previous()) {
 			Activity current = cursor.getCurrent();
 			reverseActivities.add(0, current);
 			if(counter == 2)
 				Assert.assertEquals("dean", current.getName());
 			counter++;
 		}
-		//Assert.assertEquals(3, counter);
+		Assert.assertEquals(3, counter);
 		
-	/*	for (int i=0; i<forwardActivities.size(); i++) {
+		for (int i=0; i<forwardActivities.size(); i++) {
 			Assert.assertEquals(forwardActivities.get(i).getName(), reverseActivities.get(i).getName());
-		}*/
+		}
 		
 	}
 	
