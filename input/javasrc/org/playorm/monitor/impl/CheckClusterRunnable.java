@@ -35,7 +35,7 @@ public class CheckClusterRunnable implements Runnable {
 	@Override
 	public void run() {
 		try {
-			log.info("firing cluster runnable");
+			log.debug("firing cluster runnable");
 			runImpl();
 		} catch(Exception e) {
 			log.warn("Exception", e);
@@ -53,10 +53,15 @@ public class CheckClusterRunnable implements Runnable {
 			KeyValue<WebNodeDbo> kv = cursor.getCurrent();
 			WebNodeDbo val = kv.getValue();
 			all.add(val);
-			if(isServerUp(mgr, val))
+			log.debug("checking node="+val.getWebServerName());
+			if(isServerUp(mgr, val)) {
+				log.debug("server is up="+val.getWebServerName());
 				servers.add(val);
-			if(val.getWebServerName().equals(config.getHostName()))
+			}
+			if(val.getWebServerName().equals(config.getHostName())) {
+				log.debug("saving our node to be up="+val.getWebServerName());
 				saveNodeIsUp(mgr, val);
+			}
 		}
 
 		mgr.clear();
@@ -66,6 +71,7 @@ public class CheckClusterRunnable implements Runnable {
 		for(int i = 0; i < servers.size(); i++) {
 			WebNodeDbo node = servers.get(i);
 			if(node.getWebServerName().equals(config.getHostName())) {
+				log.debug("we are server number="+i+" out of number="+servers.size());
 				serverNumber = i;
 				break;
 			}
@@ -102,6 +108,7 @@ public class CheckClusterRunnable implements Runnable {
 	private void processMonitor(NoSqlEntityManager mgr, MonitorDbo monitor) {
 		DateTime time = monitor.getLastRun();
 		DateTime now = new DateTime();
+		log.debug("now="+now+" and lastrun time="+time+" for monitor="+monitor.getId());
 		if(time == null) {
 			runMonitor(mgr, monitor, now);
 			return;
@@ -114,7 +121,7 @@ public class CheckClusterRunnable implements Runnable {
 	}
 	private void runMonitor(NoSqlEntityManager mgr, MonitorDbo monitor,
 			DateTime now) {
-		log.info("run monitor="+monitor.getId());
+		log.debug("run monitor="+monitor.getId());
 		PlayOrmMonitor p = CopyUtil.copy(monitor);
 		fireToListener(p);
 		monitor.setLastRun(now);
