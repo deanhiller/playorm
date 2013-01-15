@@ -36,7 +36,7 @@ public class IndiceCursorProxy implements DirectCursor<byte[]> {
 	@Override
 	public Holder<byte[]> nextImpl() {
 		Holder<IndexColumnInfo> next = cursor.nextImpl();
-		if(next == null)
+		if(next == null || next.getValue()==null)
 			return null;
 		IndexColumnInfo info = next.getValue();
 		Wrapper wrapper = info.getIndexNode(view);
