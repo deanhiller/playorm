@@ -46,13 +46,13 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		LocalDateTime dateTime = new LocalDateTime(2012, 6, 1, 0, 0);
 		long baseTime = dateTime.toDate().getTime();
 		long current = System.currentTimeMillis() - baseTime;
+		current = (current * 10000);
 		long time = generateKeyImpl(current);
 		String encodedTime = Long.toString(time, 36).toUpperCase();
 		return encodedTime+"."+HOST_NAME;		
 	}
 	
-	private static synchronized long generateKeyImpl(long current) {
-		long timeMillis = (current * 10000);
+	private static synchronized long generateKeyImpl(long timeMillis) {
 		if(timeMillis > lastTimeStamp) {
 			lastTimeStamp = timeMillis;
 		} else
