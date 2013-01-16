@@ -1,5 +1,7 @@
 package com.alvazan.ssql.cmdline;
 
+
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -15,6 +17,8 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 
 public class PlayOrm {
@@ -159,6 +163,7 @@ public class PlayOrm {
 			println("REINDEX          Rebuild a particular index.  type 'help REINDEX' for more info");
 			println("CREATE TABLE     Not in yet");
 			println("INSERT           Not in yet");
+			println("LIST TABLES      To list all non-virtual column families. To list virual column families use LIST TABLES -all");
 			println("LISTPARTITIONS   IF you partition on a field with @ManyToOne, you can list the partitions. type 'help LISTPARTITIONS' for more info");
 		} else if("exit".equals(cmd)) {
 			System.exit(0);
@@ -180,6 +185,8 @@ public class PlayOrm {
 			index.reindex(cmd, mgr);
 		} else if(startsWithIgnoreCase("LISTPARTITIONS ", cmd)) {
 			partitions.list(cmd, mgr);
+		} else if(startsWithIgnoreCase("LIST TABLES", cmd)) {
+			listTables(cmd, mgr);
 		} else {
 			throw new InvalidCommand();
 		}
@@ -210,7 +217,30 @@ public class PlayOrm {
 		
 		
 	}
-	
+
+	private void listTables(String cmd, NoSqlEntityManager mgr) {
+		DboDatabaseMeta database = mgr.find(DboDatabaseMeta.class,
+				DboDatabaseMeta.META_DB_ROWKEY);
+		Collection<DboTableMeta> allTables = database.getAllTables();
+		int count = 0;
+		if (cmd.contains("-all") || cmd.contains("-ALL")) {
+			for (DboTableMeta tableMeta : allTables) {
+				println(tableMeta.getColumnFamily());
+				count++;
+			}
+		} else {
+			for (DboTableMeta tableMeta : allTables) {
+				if (!tableMeta.isVirtualCf()) {
+					println(tableMeta.getColumnFamily());
+					count++;
+				}
+			}
+		}
+		println("");
+		println(count + " tables");
+		println("");
+	}
+
 	private static void println(String msg) {
 		System.out.println(msg);
 	}

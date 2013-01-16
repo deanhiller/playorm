@@ -500,13 +500,17 @@
 			<fileset dir="${gen.src}" excludes="**/test/**"  />
 		</jar>
 	    <echo file="${jardist}/source/Readmesrc.txt">
-			Source files are in main jar file.	
+			Source files are also in main jar file.
 	    </echo>
 		<echo file="${jardist}/javadoc/Readmejavadoc.txt">
 			Placeholder for java doc.
 		</echo>
 		<jar jarfile="${jardist}/${name}-sources.jar">
 			<fileset dir="${jardist}/source"/>
+			<fileset dir="${javacode}">
+				<exclude name="**/test/**"/>
+				<exclude name="logback.xml"/>
+			</fileset>
 		</jar>
 		<jar jarfile="${jardist}/${name}-javadoc.jar">
 			<fileset dir="${jardist}/javadoc"/>

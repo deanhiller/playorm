@@ -6,6 +6,7 @@ import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 
 @NoSqlEmbeddable
 public class EmbeddedEmail {
+	private static final String MAIN = "main";
 
 	@NoSqlId
 	private String id;
