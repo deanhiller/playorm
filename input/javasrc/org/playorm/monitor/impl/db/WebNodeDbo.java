@@ -20,7 +20,10 @@ public class WebNodeDbo {
 	
 	private DateTime lastSeen;
 
+	//purely for index and NOT on isUp on purpose as we could get corrupt index too easily with computers running
 	@NoSqlIndexed
+	private String indexed = "webnode";
+	
 	private boolean isUp;
 	
 	@Override

@@ -75,5 +75,8 @@ public class TestKeysAndBasic {
 		NoSqlEntityManager mgr2 = factory.createEntityManager();
 		EntityWithUUIDKey entity = mgr2.find(EntityWithUUIDKey.class, enUID.getId());
 		Assert.assertEquals(enUID.getSomething(), entity.getSomething());
+
+		mgr.remove(enUID);
+		mgr.flush();
 	}
 }

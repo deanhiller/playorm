@@ -3,6 +3,7 @@ package com.alvazan.test.db;
 
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.eaio.uuid.UUID;
 
 @NoSqlEntity
@@ -11,6 +12,7 @@ public class EntityWithUUIDKey {
 	@NoSqlId
 	private UUID id;
 	
+	@NoSqlIndexed
 	private String something;
 
 	public UUID getId() {
