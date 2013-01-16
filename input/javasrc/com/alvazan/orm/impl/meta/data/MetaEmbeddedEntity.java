@@ -1,6 +1,7 @@
 package com.alvazan.orm.impl.meta.data;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 import com.alvazan.orm.api.base.ToOneProvider;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.meta.DboColumnEmbedMeta;
@@ -209,6 +211,10 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				Field[] fieldsinClass = proxy.getClass().getDeclaredFields();
 				for (Field singleField : fieldsinClass) {
 					singleField.setAccessible(true);
+					if(Modifier.isTransient(singleField.getModifiers()) ||
+							Modifier.isStatic(singleField.getModifiers()) ||
+							singleField.isAnnotationPresent(NoSqlTransient.class))
+						continue;
 					if (!singleField.isAnnotationPresent(NoSqlId.class)) {
 						addColumn(proxy, singleField, idValue, row);
 					}
@@ -282,8 +288,8 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			String colName = this.getMetaDbo().convertTypeToString(colVal);
 
 			Object columnValue = this.getMetaDbo().convertFromStorage2(colInRow.getValue());
-
-			ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
+			if (classMeta.getMetaFieldByCol(null,colName) != null)
+				ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
 		}
 		return newproxy;
 	}
