@@ -87,6 +87,8 @@ public class InMemorySession implements NoSqlRawSession {
 
 	private void removeIndex(RemoveIndex action, NoSqlEntityManager ormSession) {
 		String colFamily = action.getIndexCfName();
+		if (colFamily.equalsIgnoreCase("BytesIndice"))
+			return;
 		Table table = lookupColFamily(colFamily, (NoSqlEntityManager) ormSession);
 		
 		byte[] rowKey = action.getRowKey();

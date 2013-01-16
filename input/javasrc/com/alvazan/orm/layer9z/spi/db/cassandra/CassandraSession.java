@@ -194,6 +194,8 @@ public class CassandraSession implements NoSqlRawSession {
 
 	private void removeIndex(RemoveIndex action, MetaLookup mgr, MutationBatch m) {
 		String indexCfName = action.getIndexCfName();
+		if (indexCfName.equalsIgnoreCase("BytesIndice"))
+			return;
 		Info info = columnFamilies.fetchColumnFamilyInfo(indexCfName, mgr);
 		if(info == null)
 			return; //nothing to do since it doesn't exist
