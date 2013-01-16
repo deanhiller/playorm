@@ -25,10 +25,6 @@ public class UniqueKeyGenerator implements KeyGenerator {
 	private static long lastTimeStamp;
 	
 	static {
-		LocalDateTime time = new LocalDateTime(2012, 6, 1, 0, 0);
-		long baseTime = time.toDate().getTime();
-		lastTimeStamp = System.currentTimeMillis() - baseTime;
-		
 		try {
 			HOST_NAME = createHostName();
 		} catch(Throwable e) {
@@ -46,10 +42,23 @@ public class UniqueKeyGenerator implements KeyGenerator {
 		return generateKey();
 	}
 	
-	public static synchronized String generateKey() {
-		long time = lastTimeStamp++;
+	public static String generateKey() {
+		LocalDateTime dateTime = new LocalDateTime(2012, 6, 1, 0, 0);
+		long baseTime = dateTime.toDate().getTime();
+		long current = System.currentTimeMillis() - baseTime;
+		long time = generateKeyImpl(current);
 		String encodedTime = Long.toString(time, 36).toUpperCase();
-		return encodedTime+"."+HOST_NAME;
+		return encodedTime+"."+HOST_NAME;		
+	}
+	
+	private static synchronized long generateKeyImpl(long current) {
+		long timeMillis = (current * 10000);
+		if(timeMillis > lastTimeStamp) {
+			lastTimeStamp = timeMillis;
+		} else
+			lastTimeStamp++;
+
+		return lastTimeStamp;
 	}
 
 	private static String createHostName() throws UnknownHostException {
@@ -61,7 +70,7 @@ public class UniqueKeyGenerator implements KeyGenerator {
 			int index = address.indexOf(".");
 			address = address.substring(0, index);
 		}
-		
+
 		if(address.contains("localhost"))
 			throw new RuntimeException("Call to InetAddress.getLocalHost().getHostname() == localhost.  This must be fixed(you are most likely on linux!!) or unique keys will not be generated");
 		return address;
