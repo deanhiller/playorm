@@ -7,7 +7,7 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public interface Query<T> {
 
-	public void setParameter(String name, Object value);
+	public Query<T> setParameter(String name, Object value);
 	
 	/**
 	 * If there is an entity in your query result list where the index has the value and

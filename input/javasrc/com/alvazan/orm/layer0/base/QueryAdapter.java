@@ -58,7 +58,7 @@ public class QueryAdapter<T> implements Query<T> {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public void setParameter(String name, Object value) {
+	public Query<T> setParameter(String name, Object value) {
 		//check parameter 
 		
 		TypeInfo typeInfo = meta.getMetaFieldByParameter(name);
@@ -92,6 +92,7 @@ public class QueryAdapter<T> implements Query<T> {
 		byte[] data = metaField.translateValue(value);
 		
 		indexQuery.setParameter(name, data);
+		return this;
 	}
 
 	@Override
