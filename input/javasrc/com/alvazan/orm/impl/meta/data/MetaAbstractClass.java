@@ -27,7 +27,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 	
 	public Object fetchId(T entity) {
-		if(entity == null)
+		if(entity == null || idField == null)
 			return null;
 		return ReflectionUtil.fetchFieldValue(entity, idField.getField());
 	}
@@ -42,6 +42,8 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		if(value == null)
 			return null;
 		MetaIdField idField = getIdField();
+		if (idField == null)
+			return null;
 		Object id = fetchId(value);
 		Converter converter = idField.getConverter();
 		return converter.convertToNoSql(id);		

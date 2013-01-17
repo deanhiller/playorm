@@ -20,6 +20,7 @@ import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.Email;
 import com.alvazan.test.db.EmailAccountXref;
 import com.alvazan.test.db.EmbeddedEmail;
+import com.alvazan.test.db.EmbeddedEntityWithNoId;
 import com.alvazan.test.db.SomeEntity;
 import com.alvazan.test.db.User;
 
@@ -556,8 +557,36 @@ public class TestOneToMany {
 		
 		EmbeddedEmail email2 = emails.get(1);
 		Assert.assertEquals(e2.getName(), email2.getName());
+
+		// To check if delete is working fine
+		mgr.remove(user);
+		mgr.flush();
 	}
-	
+
+	@Test
+	public void testEmbeddedWithoutId() {
+		// Now check if an Embedded Entity without NoSqlId works or not
+		EmbeddedEntityWithNoId embedWOId = new EmbeddedEntityWithNoId();
+		embedWOId.setId("someid");
+		embedWOId.setName("someName");
+		embedWOId.setType("someType");
+
+		User user = new User();
+		user.setEntityWOId(embedWOId);
+
+		mgr.put(user);
+		mgr.flush();
+
+		NoSqlEntityManager mgr2 = factory.createEntityManager();
+		User user2 = mgr2.find(User.class, user.getId());
+
+		EmbeddedEntityWithNoId embedWOId2 = user2.getEntityWOId();
+		Assert.assertNotNull(embedWOId2);
+		Assert.assertEquals(embedWOId.getId(), embedWOId2.getId());
+		Assert.assertEquals(embedWOId.getName(), embedWOId2.getName());
+		Assert.assertEquals(embedWOId.getType(), embedWOId2.getType());
+	}
+
 	@Test
 	public void testEmbeddedSimple() {
 		Email sub = new Email();

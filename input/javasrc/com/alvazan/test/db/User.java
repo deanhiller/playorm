@@ -30,12 +30,15 @@ public class User {
 	private int age;
 	
 	private String lastName;
-	
+
 	@NoSqlEmbedded
 	private List<EmbeddedEmail> emails = new ArrayList<EmbeddedEmail>();
 
 	@NoSqlEmbedded
 	private EmbeddedEmail email = new EmbeddedEmail();
+
+	@NoSqlEmbedded
+	private EmbeddedEntityWithNoId entityWOId = new EmbeddedEntityWithNoId();
 
 	@NoSqlOneToMany
 	private List<EmailAccountXref> accounts = new ArrayList<EmailAccountXref>();
@@ -94,6 +97,14 @@ public class User {
 
 	public void setEmail(EmbeddedEmail email) {
 		this.email = email;
+	}
+
+	public EmbeddedEntityWithNoId getEntityWOId() {
+		return entityWOId;
+	}
+
+	public void setEntityWOId(EmbeddedEntityWithNoId entityWOId) {
+		this.entityWOId = entityWOId;
 	}
 
 	public static User findByName(NoSqlEntityManager mgr, String name) {

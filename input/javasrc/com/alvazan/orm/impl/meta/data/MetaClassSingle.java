@@ -137,7 +137,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	}
 	
 	public MetaField<T> getMetaFieldByCol(Class clazz, String columnName){
-		if(idField.getColumnName().equals(columnName))
+		if(idField != null && idField.getColumnName().equals(columnName))
 			return idField;
 		return columnNameToField.get(columnName);
 	}

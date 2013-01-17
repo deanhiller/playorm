@@ -59,17 +59,18 @@ public class ScannerForClass {
 		MetaAbstractClass classMeta = metaInfo.findOrCreate(clazz);
 		
 		NoSqlInheritance annotation = clazz.getAnnotation(NoSqlInheritance.class);
+		DboTableMeta metaDbo = classMeta.getMetaDbo();
+
 		if(classMeta instanceof MetaClassInheritance) {
 			MetaClassInheritance classMeta2 = (MetaClassInheritance) classMeta;
 			scanMultipleClasses(annotation, classMeta2);
 		} else {
 			MetaClassSingle classMeta2 = (MetaClassSingle)classMeta;
-			DboTableMeta metaDbo = classMeta2.getMetaDbo();
 			scanForAnnotations(classMeta2);
 			scanSingle(classMeta2, metaDbo);
 		}
 		
-		if(classMeta.getIdField() == null)
+		if(classMeta.getIdField() == null && !metaDbo.isEmbeddable())
 			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @NoSqlId and that is required");
 		
 		metaInfo.addTableNameLookup(classMeta);
