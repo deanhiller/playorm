@@ -27,8 +27,11 @@ public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> nextImpl() {
-		
-		byte[] key = keys.nextImpl().getValue();
+		Holder<byte[]> holder = keys.nextImpl();
+		if (holder == null)
+			return null;
+
+		byte[] key = holder.getValue();
 		KeyValue<Row> kv = new KeyValue<Row>();
 		kv.setKey(key);
 		
@@ -37,7 +40,11 @@ public class CursorReturnsEmptyRows extends AbstractCursor<KeyValue<Row>> {
 	
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> previousImpl() {
-		byte[] key = keys.previousImpl().getValue();
+		Holder<byte[]> holder = keys.previousImpl();
+		if (holder == null)
+			return null;
+
+		byte[] key = holder.getValue();
 		KeyValue<Row> kv = new KeyValue<Row>();
 		kv.setKey(key);
 		
