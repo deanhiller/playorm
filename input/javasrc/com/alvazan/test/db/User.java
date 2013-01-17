@@ -9,6 +9,7 @@ import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
+import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
@@ -35,10 +36,13 @@ public class User {
 	private List<EmbeddedEmail> emails = new ArrayList<EmbeddedEmail>();
 
 	@NoSqlEmbedded
-	private EmbeddedEmail email = new EmbeddedEmail();
+	private EmbeddedEmail email;
 
 	@NoSqlEmbedded
-	private EmbeddedEntityWithNoId entityWOId = new EmbeddedEntityWithNoId();
+	private EmbeddedEntityWithNoId entityWOId;
+
+	@NoSqlManyToOne
+	private EntityWithUUIDKey uuidEntity;
 
 	@NoSqlOneToMany
 	private List<EmailAccountXref> accounts = new ArrayList<EmailAccountXref>();
@@ -105,6 +109,14 @@ public class User {
 
 	public void setEntityWOId(EmbeddedEntityWithNoId entityWOId) {
 		this.entityWOId = entityWOId;
+	}
+
+	public EntityWithUUIDKey getUuidEntity() {
+		return uuidEntity;
+	}
+
+	public void setUuidEntity(EntityWithUUIDKey uuidEntity) {
+		this.uuidEntity = uuidEntity;
 	}
 
 	public static User findByName(NoSqlEntityManager mgr, String name) {

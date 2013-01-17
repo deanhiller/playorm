@@ -221,15 +221,16 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 					}
 				}
 			} else {
-				//byte[] idValue = translateOne(proxy);
-				Field[] fieldsinClass = proxy.getClass().getDeclaredFields();
-				for (Field singleField : fieldsinClass) {
-					singleField.setAccessible(true);
-					if(Modifier.isTransient(singleField.getModifiers()) ||
-							Modifier.isStatic(singleField.getModifiers()) ||
-							singleField.isAnnotationPresent(NoSqlTransient.class))
-						continue;
-					addColumnWithoutId(proxy, singleField, row);
+				if (proxy != null) {
+					Field[] fieldsinClass = proxy.getClass().getDeclaredFields();
+					for (Field singleField : fieldsinClass) {
+						singleField.setAccessible(true);
+						if(Modifier.isTransient(singleField.getModifiers()) ||
+								Modifier.isStatic(singleField.getModifiers()) ||
+								singleField.isAnnotationPresent(NoSqlTransient.class))
+							continue;
+						addColumnWithoutId(proxy, singleField, row);
+					}
 				}
 			}
 		}

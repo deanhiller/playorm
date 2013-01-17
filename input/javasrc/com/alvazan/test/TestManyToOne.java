@@ -14,6 +14,8 @@ import com.alvazan.orm.api.exc.ChildWithNoPkException;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
+import com.alvazan.test.db.EntityWithUUIDKey;
+import com.alvazan.test.db.User;
 
 public class TestManyToOne {
 
@@ -129,7 +131,31 @@ public class TestManyToOne {
 			log.info("this is expected");
 		}
 	}
-	
+
+	@Test
+	public void testToOneWithUUID() {
+		Account acc1 = new Account();
+		acc1.setId("acc1");
+		acc1.setName("acc1name");
+		mgr.fillInWithKey(acc1);
+
+		EntityWithUUIDKey entity = new EntityWithUUIDKey();
+		entity.setSomething("something");
+		entity.setAccount(acc1);
+		mgr.fillInWithKey(entity);
+		// mgr.put(entity);
+
+		User user = new User();
+		user.setUuidEntity(entity);
+
+		mgr.put(user);
+		mgr.flush();
+
+		User user2 = mgr.find(User.class, user.getId());
+		Assert.assertNotNull(user2);
+		Assert.assertEquals(entity.getId(), user2.getUuidEntity().getId());
+	}
+
 	private Activity readWriteBasic(NoSqlEntityManager mgr) {
 		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
