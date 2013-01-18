@@ -200,6 +200,8 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			byte[] name = formTheName(p);
 			row.addEntityToRemove(name);
 		}
+		if (toBeAdded == null)
+			return;
 		for (PROXY proxy : toBeAdded) {
 			byte[] name = formTheName(proxy);
 			if (name != null) {

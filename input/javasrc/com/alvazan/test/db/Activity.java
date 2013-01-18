@@ -271,9 +271,7 @@ public class Activity {
 	public static List<Activity> findWithoutParens(NoSqlEntityManager mgr,
 			String name, long numTimes, float myFloat) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findWithoutParens");
-		query.setParameter("name", name);
-		query.setParameter("numTimes", numTimes);
-		query.setParameter("myFloat", myFloat);
+		query.setParameter("name", name).setParameter("numTimes", numTimes).setParameter("myFloat", myFloat);
 		return query.getResultList(0, null);
 	}
 

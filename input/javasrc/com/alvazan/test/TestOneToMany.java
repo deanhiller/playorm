@@ -526,8 +526,10 @@ public class TestOneToMany {
 		e2.setType("type2");
 		
 		User user = new User();
-		user.getEmails().add(e1);
-		user.getEmails().add(e2);
+		List<EmbeddedEmail> listEmails = new ArrayList<EmbeddedEmail>();
+		listEmails.add(e1);
+		listEmails.add(e2);
+		user.setEmails(listEmails);
 		user.setEmail(sub);
 
 		mgr.fillInWithKey(e1);

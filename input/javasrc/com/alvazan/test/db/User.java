@@ -33,7 +33,7 @@ public class User {
 	private String lastName;
 
 	@NoSqlEmbedded
-	private List<EmbeddedEmail> emails = new ArrayList<EmbeddedEmail>();
+	private List<EmbeddedEmail> emails;
 
 	@NoSqlEmbedded
 	private EmbeddedEmail email;
