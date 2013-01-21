@@ -493,6 +493,12 @@
 				<exclude name="**/test/**"/>
 				<exclude name="logback.xml"/>
 			</fileset>
+		</jar>
+		<jar jarfile="${jardist}/${name}-srcbin.jar" manifest="${manifest}/MANIFEST.MF" >
+			<fileset dir="${build}" excludes="**/test/**">
+				<exclude name="**/test/**"/>
+				<exclude name="logback.xml"/>
+			</fileset>
 			<fileset dir="${javacode}">
 				<exclude name="**/test/**"/>
 				<exclude name="logback.xml"/>
@@ -511,6 +517,7 @@
 				<exclude name="**/test/**"/>
 				<exclude name="logback.xml"/>
 			</fileset>
+			<fileset dir="${gen.src}" excludes="**/test/**"  />
 		</jar>
 		<jar jarfile="${jardist}/${name}-javadoc.jar">
 			<fileset dir="${jardist}/javadoc"/>
