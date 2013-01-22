@@ -200,9 +200,12 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			byte[] name = formTheName(p);
 			row.addEntityToRemove(name);
 		}
+		if (toBeAdded == null)
+			return;
 		for (PROXY proxy : toBeAdded) {
 			byte[] name = formTheName(proxy);
 			if (name != null) {
+				// rowkey is not null. i.e., NoSqlId is present
 				Column idColumn = new Column();
 				idColumn.setName(name);
 				idColumn.setValue(null);
@@ -217,6 +220,18 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 						continue;
 					if (!singleField.isAnnotationPresent(NoSqlId.class)) {
 						addColumn(proxy, singleField, idValue, row);
+					}
+				}
+			} else {
+				if (proxy != null) {
+					Field[] fieldsinClass = proxy.getClass().getDeclaredFields();
+					for (Field singleField : fieldsinClass) {
+						singleField.setAccessible(true);
+						if(Modifier.isTransient(singleField.getModifiers()) ||
+								Modifier.isStatic(singleField.getModifiers()) ||
+								singleField.isAnnotationPresent(NoSqlTransient.class))
+							continue;
+						addColumnWithoutId(proxy, singleField, row);
 					}
 				}
 			}
@@ -267,29 +282,47 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		} catch (IllegalAccessException e) {
 			throw new UnsupportedOperationException("There is some problem in creating the proxy");
 		}
+		if (classMeta.getIdField() != null) {
+			// first fill the id
+			Object idValue = this.getMetaDbo().convertFromStorage2(rowKey);
+			ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue);
 
-		// first fill the id
-		Object idValue = this.getMetaDbo().convertFromStorage2(rowKey);
-		ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue);
+			// Now extract other columns
+			Object objVal = this.getMetaDbo().convertFromStorage2(rowKey);
+			String columnsInEmbeddedRowName = getColumnName() + this.getMetaDbo().convertTypeToString(objVal);
+			byte[] embedColumn = StandardConverters.convertToBytes(columnsInEmbeddedRowName);
+			Collection<Column> columnsInRow = row.columnByPrefix(embedColumn);
+			for (Column colInRow : columnsInRow) {
+				byte[] fullNameCol = colInRow.getName();
+				int colLen = fullNameCol.length - embedColumn.length;
+				byte[] fk = new byte[colLen];
+				for (int i = embedColumn.length; i < fullNameCol.length; i++) {
+					fk[i - embedColumn.length] = fullNameCol[i];
+				}
+				Object colVal = this.getMetaDbo().convertFromStorage2(fk);
+				String colName = this.getMetaDbo().convertTypeToString(colVal);
 
-		// Now extract other columns
-		Object objVal = this.getMetaDbo().convertFromStorage2(rowKey);
-		String columnsInEmbeddedRowName = getColumnName() + this.getMetaDbo().convertTypeToString(objVal);
-		byte[] embedColumn = StandardConverters.convertToBytes(columnsInEmbeddedRowName);
-		Collection<Column> columnsInRow = row.columnByPrefix(embedColumn);
-		for (Column colInRow : columnsInRow) {
-			byte[] fullNameCol = colInRow.getName();
-			int colLen = fullNameCol.length - embedColumn.length;
-			byte[] fk = new byte[colLen];
-			for (int i = embedColumn.length; i < fullNameCol.length; i++) {
-				fk[i - embedColumn.length] = fullNameCol[i];
+				Object columnValue = this.getMetaDbo().convertFromStorage2(colInRow.getValue());
+				if (classMeta.getMetaFieldByCol(null,colName) != null)
+					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
 			}
-			Object colVal = this.getMetaDbo().convertFromStorage2(fk);
-			String colName = this.getMetaDbo().convertTypeToString(colVal);
-
-			Object columnValue = this.getMetaDbo().convertFromStorage2(colInRow.getValue());
-			if (classMeta.getMetaFieldByCol(null,colName) != null)
-				ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
+		} else {
+			// No Id is present, only fill the columns
+			byte[] colName = StandardConverters.convertToBytes(getColumnName());
+			Collection<Column> columnsWORowKey = row.columnByPrefix(colName);
+			for(Column col : columnsWORowKey) {
+				byte[] fullName = col.getName();
+				int embedColumnLen = fullName.length - colName.length;
+				byte[] embedColumn = new byte[embedColumnLen];
+				for(int i = colName.length; i < fullName.length; i++) {
+					embedColumn[i-colName.length] =  fullName[i];
+				}
+				Object colVal = this.getMetaDbo().convertFromStorage2(embedColumn);
+				String columnName = this.getMetaDbo().convertTypeToString(colVal);
+				Object columnValue = this.getMetaDbo().convertFromStorage2(col.getValue());
+				if (classMeta.getMetaFieldByCol(null,columnName) != null)
+					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
+			}
 		}
 		return newproxy;
 	}
@@ -330,6 +363,28 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			entities.add(rk);
 		}
 		return entities;
+	}
+
+	private void addColumnWithoutId(PROXY proxy, Field singleField, RowToPersist row) {
+		Object value = ReflectionUtil.fetchFieldValue(proxy, singleField);
+		Column c = new Column();
+		//byte[] columnName = formTheColumnName(proxy, idValue, singleField);
+
+		byte[] prefix = StandardConverters.convertToBytes(columnName);
+		byte[] singleFieldName = StandardConverters.convertToBytes(singleField.getName());
+		byte[] columnName = new byte[ prefix.length + singleFieldName.length];
+		for (int i = 0; i < columnName.length; i++) {
+			if (i < prefix.length)
+				columnName[i] = prefix[i];
+			else
+				columnName[i] = singleFieldName[i - prefix.length];
+		}
+		c.setName(columnName);
+		if (value != null) {
+			byte[] columnValue = StandardConverters.convertToBytes(value);
+			c.setValue(columnValue);
+		}
+		row.getColumns().add(c);
 	}
 
 	@Override

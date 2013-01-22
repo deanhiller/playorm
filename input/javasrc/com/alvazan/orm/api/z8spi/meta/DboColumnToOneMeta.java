@@ -88,24 +88,28 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 		row.getColumns().add(col);
 
 		TypedColumn column = entity.getColumn(getColumnName());
+		if (column != null) {
+			byte[] byteVal = convertToStorage2(column.getValue());
+			byte[] prefix = StandardConverters.convertToBytes(getColumnName());
 
-		byte[] byteVal = convertToStorage2(column.getValue());
-		byte[] prefix = StandardConverters.convertToBytes(getColumnName());
+			byte[] pkData = byteVal;
 
-		byte[] pkData = byteVal;
+			byte[] name = new byte[prefix.length + pkData.length];
+			for(int i = 0; i < name.length; i++) {
+				if(i < prefix.length)
+					name[i] = prefix[i];
+				else
+					name[i] = pkData[i-prefix.length];
+			}
 
-		byte[] name = new byte[prefix.length + pkData.length];
-		for(int i = 0; i < name.length; i++) {
-			if(i < prefix.length)
-				name[i] = prefix[i];
-			else
-				name[i] = pkData[i-prefix.length];
+			col.setName(name);
+			Object primaryKey = column.getValue();
+			addIndexInfo(info, primaryKey, byteVal);
+			removeIndexInfo(info, primaryKey, byteVal);	
+		} else {
+			byte[] prefix = StandardConverters.convertToBytes(getColumnName());
+			col.setName(prefix);
 		}
-
-		col.setName(name);
-		Object primaryKey = column.getValue();
-		addIndexInfo(info, primaryKey, byteVal);
-		removeIndexInfo(info, primaryKey, byteVal);		
 	}
 
 	@Override

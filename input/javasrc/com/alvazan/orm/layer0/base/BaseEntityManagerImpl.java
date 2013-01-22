@@ -235,7 +235,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	public void fillInWithKey(Object entity) {
 		MetaClass metaClass = metaInfo.getMetaClass(entity.getClass());
 		MetaIdField idField = metaClass.getIdField();
-		idField.fillInAndFetchId(entity);
+		if (idField != null)
+			idField.fillInAndFetchId(entity);
 	}
 
 	@Override
@@ -256,8 +257,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
         	for(DboColumnMeta col : table.getAllColumns()) {
         		tempMgr.put(col);
         	}
-        	
-        	tempMgr.put(table.getIdColumnMeta());
+			if (!table.isEmbeddable())
+				tempMgr.put(table.getIdColumnMeta());
         	
         	tempMgr.put(table);
         }
