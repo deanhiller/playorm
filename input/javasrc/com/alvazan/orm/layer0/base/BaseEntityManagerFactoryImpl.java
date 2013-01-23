@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer0.base;
 
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,11 +17,16 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlQueries;
 import com.alvazan.orm.api.base.anno.NoSqlQuery;
 import com.alvazan.orm.api.z5api.QueryParser;
 import com.alvazan.orm.api.z5api.SpiMetaQuery;
 import com.alvazan.orm.api.z8spi.conv.Converter;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
@@ -96,13 +102,17 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         for(MetaAbstractClass meta : allEntities) {
         	setupQueryStuff(meta);
         }
-        
-        log.info("Finished scanning classes, saving meta data");
-        isScanned = true;
-        
-        BaseEntityManagerImpl tempMgr = (BaseEntityManagerImpl) createEntityManager();
-        tempMgr.saveMetaData();
-        
+
+		log.info("Finished scanning classes, saving meta data");
+		isScanned = true;
+
+		BaseEntityManagerImpl tempMgr = (BaseEntityManagerImpl) createEntityManager();
+		tempMgr.saveMetaData();
+
+		for (MetaAbstractClass meta : allEntities) {
+			setupIndexForKeyOnly(meta);
+		}
+
         cache.init(this);
         log.info("Finished saving meta data, complelety done initializing");
 	}
@@ -164,6 +174,38 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		}
 	}
 
+	public void setupIndexForKeyOnly(MetaAbstractClass classMeta) {
+		Class<?> clazz = classMeta.getMetaClass();
+		Field[] fields = clazz.getDeclaredFields();
+		for (Field field : fields) {
+			field.setAccessible(true);
+			if (field.isAnnotationPresent(NoSqlIndexed.class)) {
+				NoSqlIndexed indexAnno = field
+						.getAnnotation(NoSqlIndexed.class);
+				boolean byKeyOnly = indexAnno.byKeyOnly();
+				if (byKeyOnly) {
+					DboTableMeta cf = new DboTableMeta();
+					String indexTableName = field.getName() + "To"
+							+ classMeta.getColumnFamily();
+
+					cf.setup(null, indexTableName, false);
+					cf.setColNamePrefixType(StorageTypeEnum.STRING);
+
+					DboColumnIdMeta idMeta = new DboColumnIdMeta();
+					idMeta.setup(cf, field.getName(), field.getType(), false);
+
+					DboColumnCommonMeta col1 = new DboColumnCommonMeta();
+					col1.setup(cf, "value", classMeta.getIdField().getField().getType(), false, false, false);
+
+					BaseEntityManagerImpl tempMgr = (BaseEntityManagerImpl) createEntityManager();
+					tempMgr.put(cf);
+					tempMgr.put(idMeta);
+					tempMgr.put(col1);
+					tempMgr.flush();
+				}
+			}
+		}
+	}
 	@SuppressWarnings("rawtypes")
 	private SpiMetaQuery createQueryAndAdd(MetaClass classMeta, NoSqlQuery query) {
 		// parse and setup this query once here to be used by ALL of the

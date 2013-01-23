@@ -34,6 +34,8 @@ public abstract class DboColumnMeta {
 
 	protected boolean isIndexed;
 
+	protected boolean byKeyOnly;
+
 	private String foreignKeyToExtensions;
 
 	@NoSqlIndexed
@@ -59,7 +61,7 @@ public abstract class DboColumnMeta {
 		return columnName;
 	}
 
-	protected void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
+	protected void setup(DboTableMeta owner2, String colName, boolean isIndexed, boolean byKeyOnly2) {
 		if (owner2.getColumnFamily() == null)
 			throw new IllegalArgumentException(
 					"The owner passed in must have a non-null column family name");
@@ -71,6 +73,7 @@ public abstract class DboColumnMeta {
 		owner2.addColumnMeta(this);
 		id = owner.getColumnFamily() + ":" + columnName;
 		this.isIndexed = isIndexed;
+		this.byKeyOnly = byKeyOnly2;
 	}
 
 	protected void setColumnName(String colName) {
@@ -102,6 +105,10 @@ public abstract class DboColumnMeta {
 
 	public boolean isIndexed() {
 		return isIndexed;
+	}
+
+	public boolean isIndexedByKey() {
+		return byKeyOnly;
 	}
 
 	/**
@@ -316,8 +323,8 @@ public abstract class DboColumnMeta {
 		// value
 		byte[] pk = row.getKey();
 		List<IndexData> indexList = row.getIndexToAdd();
-
 		addToIndexList(info, byteVal, storageType, pk, indexList);
+
 	}
 
 	private boolean isNeedPersist(TypedRow entity, Object value,
@@ -337,7 +344,10 @@ public abstract class DboColumnMeta {
 	private IndexData createAddIndexData(String columnFamily, byte[] byteVal,
 			StorageTypeEnum storageType, byte[] pk, PartitionTypeInfo part) {
 		IndexData data = new IndexData();
-		data.setColumnFamilyName(storageType.getIndexTableName());
+		if (!isIndexedByKey())
+			data.setColumnFamilyName(storageType.getIndexTableName());
+		else 
+			data.setColumnFamilyName(this.getColumnName()+"To"+this.owner.getColumnFamily());
 		String rowKey = getIndexRowKey(part.getPartitionBy(),
 				part.getPartitionId());
 		data.setRowKey(rowKey);

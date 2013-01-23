@@ -24,8 +24,19 @@ public class User {
 	@NoSqlId
 	private String id;
 	
-	@NoSqlIndexed
+	@NoSqlIndexed(byKeyOnly=false)
 	private String name;
+
+	@NoSqlIndexed(byKeyOnly=false)
+	private int number;
+	
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
+	}
 
 	@NoSqlIndexed
 	private int age;

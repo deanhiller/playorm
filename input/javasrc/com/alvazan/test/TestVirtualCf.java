@@ -160,7 +160,7 @@ public class TestVirtualCf {
 		DboColumnIdMeta id = new DboColumnIdMeta();
 		id.setup(fkToTable, "id", String.class, true);
 		DboColumnCommonMeta col1 = new DboColumnCommonMeta();
-		col1.setup(fkToTable, "name", String.class, false, false);
+		col1.setup(fkToTable, "name", String.class, false, false, false);
 		
 		mgr.put(fkToTable);
 		mgr.put(id);

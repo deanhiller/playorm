@@ -80,8 +80,8 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 		return converter.convertToNoSql(value);
 	}
 	
-	public void setup(DboTableMeta tableMeta, Field field2, String colName, Converter converter, boolean isIndexed, boolean isPartitioned) {
-		metaDbo.setup(tableMeta, colName, field2.getType(), isIndexed, isPartitioned);
+	public void setup(DboTableMeta tableMeta, Field field2, String colName, Converter converter, boolean isIndexed, boolean isPartitioned, boolean byKeyOnly) {
+		metaDbo.setup(tableMeta, colName, field2.getType(), isIndexed, isPartitioned, byKeyOnly);
 		super.setup(field2, colName);
 		this.converter = converter;
 	}

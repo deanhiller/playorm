@@ -8,6 +8,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface NoSqlIndexed {
-    String indexName() default "";
+	String indexName() default "";
+
+	boolean byKeyOnly() default false;
 }
 

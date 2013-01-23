@@ -12,8 +12,8 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 	private String columnValueType;
 	private boolean isPartitionedByThisColumn;
 	
-	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed, boolean isPartitionedBy) {
-		super.setup(owner, colName, isIndexed);
+	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed, boolean isPartitionedBy, boolean byKeyOnly) {
+		super.setup(owner, colName, isIndexed, byKeyOnly);
 		Class newType = translateType(valuesType);
 		this.columnValueType = newType.getName();
 		this.isPartitionedByThisColumn = isPartitionedBy;
@@ -28,7 +28,10 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 		StorageTypeEnum type = getStorageType();
 		if(type == null)
 			throw new IllegalArgumentException(getClassType()+" is not supported at this time");
-		return getStorageType().getIndexTableName();
+		if(byKeyOnly)
+			return 	this.getColumnName() + "To" + this.owner.getColumnFamily();
+		else
+			return getStorageType().getIndexTableName();
 	}
 
 	public Class getClassType() {

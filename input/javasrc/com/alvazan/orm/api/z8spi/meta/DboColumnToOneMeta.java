@@ -24,7 +24,7 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable,
 			boolean isIndexed, boolean isPartitionedBy) {
-		super.setup(owner, colName, isIndexed);
+		super.setup(owner, colName, isIndexed, false);
 		this.fkToColumnFamily = fkToTable;
 		this.isPartitionedByThisColumn = isPartitionedBy;
 	}

@@ -42,7 +42,7 @@ public class MockFacade implements MetaFacade {
 		DboColumnMeta colMeta = metaClass.getColumnMeta(columnName);
 		if(colMeta == null) {
 			DboColumnCommonMeta temp = new DboColumnCommonMeta();
-			temp.setup(metaClass, columnName, String.class, true, false);
+			temp.setup(metaClass, columnName, String.class, true, false, false);
 			metaClass.addColumnMeta(temp);
 			colMeta = temp;
 		}

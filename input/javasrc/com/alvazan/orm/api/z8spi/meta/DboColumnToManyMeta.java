@@ -28,7 +28,7 @@ public class DboColumnToManyMeta extends DboColumnMeta {
 	private Boolean isSeparateRow;
 	
 	public void setup(DboTableMeta owner, String colName, DboTableMeta fkToTable, boolean isCursor) {
-		super.setup(owner, colName, false);
+		super.setup(owner, colName, false, false);
 		this.fkToColumnFamily = fkToTable;
 		this.isSeparateRow = isCursor;
 	}

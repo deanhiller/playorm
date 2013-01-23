@@ -171,8 +171,12 @@ public class ScannerForField {
 		}
 
 		boolean isIndexed = false;
-		if(field.isAnnotationPresent(NoSqlIndexed.class))
+		boolean byKeyOnly = false;
+		if(field.isAnnotationPresent(NoSqlIndexed.class)) {
 			isIndexed = true;
+			NoSqlIndexed indexAnno = field.getAnnotation(NoSqlIndexed.class);
+			byKeyOnly = indexAnno.byKeyOnly();
+		}			
 		
 		boolean isPartitioned = false;
 		if(field.isAnnotationPresent(NoSqlPartitionByThisField.class))
@@ -186,7 +190,7 @@ public class ScannerForField {
 		converter = lookupConverter(field, type, converter);
 		if(converter == null)
 			throw throwInvalidConverter(field);
-		metaField.setup(t, field, colName, converter, isIndexed, isPartitioned);
+		metaField.setup(t, field, colName, converter, isIndexed, isPartitioned, byKeyOnly);
 		return metaField;			
 	}
 	

@@ -167,7 +167,7 @@ public class TestNewRawLayer {
 		
 		for(String field : fields) {
 			DboColumnCommonMeta fieldDbo = new DboColumnCommonMeta();
-			fieldDbo.setup(meta, field, String.class, true, false);
+			fieldDbo.setup(meta, field, String.class, true, false, false);
 			mgr.put(fieldDbo);
 		}
 		mgr.put(meta);
