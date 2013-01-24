@@ -13,6 +13,8 @@ import org.playorm.monitor.api.MonitorService;
 import org.playorm.monitor.api.PlayOrmMonitor;
 import org.playorm.monitor.impl.db.MonitorDbo;
 import org.playorm.monitor.impl.db.WebNodeDbo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -21,6 +23,8 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 
 public class MonitorServiceImpl implements MonitorService {
 
+	private static final Logger log = LoggerFactory.getLogger(MonitorServiceImpl.class);
+	
 	@Inject
 	private ScheduledExecutorService svc;
 	@Inject
@@ -43,6 +47,7 @@ public class MonitorServiceImpl implements MonitorService {
 		mgr.flush();
 		
 		clusterRunnable.setFactory(factory);
+		log.info("running monitor service at rate="+config.getRate()+" milliseconds");
 		svc.scheduleAtFixedRate(clusterRunnable, 30000, config.getRate(), TimeUnit.MILLISECONDS);
 	}
 
