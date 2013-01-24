@@ -17,6 +17,7 @@ import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.IndexPoint;
+import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
@@ -68,6 +69,17 @@ public class TestJoins {
 	}
 	
 	@Test
+	public void testReverseTyped() {
+		String sql = "select a from Activity as a";
+		NoSqlTypedSession s = mgr.getTypedSession();
+		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
+		cursor.afterLast();
+		Assert.assertTrue(cursor.previous());
+		Assert.assertEquals("act7", cursor.getCurrent().getKey());
+	}
+	
+	@Test
 	public void testInnerJoin() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
 
@@ -80,21 +92,7 @@ public class TestJoins {
 		String alias1 = viewAct.getAlias();
 		String alias2 = viewAcc.getAlias();
 		Assert.assertEquals("e", alias1);
-		Assert.assertEquals("a", alias2);
-		
-while(cursor.next()){
-	IndexColumnInfo info = cursor.getCurrent();
-	IndexPoint keyForActivity = info.getKeyForView(viewAct);
-	String key = keyForActivity.getKeyAsString();
-	
-	String keyAcc = null;
-	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
-	keyAcc = keyForAccount.getKeyAsString();
-
-	System.out.println("cursor act in order:"+key+" acc:"+keyAcc);
-}
-cursor.beforeFirst();
-		
+		Assert.assertEquals("a", alias2);		
 		
 		Assert.assertTrue(cursor.next());
 		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
@@ -235,19 +233,6 @@ cursor.beforeFirst();
 		String alias2 = viewAcc.getAlias();
 		Assert.assertEquals("e", alias1);
 		Assert.assertEquals("a", alias2);
-		
-while(cursor.previous()){
-	IndexColumnInfo info = cursor.getCurrent();
-	IndexPoint keyForActivity = info.getKeyForView(viewAct);
-	String key = keyForActivity.getKeyAsString();
-	
-	String keyAcc = null;
-	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
-	keyAcc = keyForAccount.getKeyAsString();
-
-	System.out.println("cursor act:"+key+" acc:"+keyAcc);
-}
-cursor.afterLast();
 		
 		Assert.assertTrue(cursor.previous());
 		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");
