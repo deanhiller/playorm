@@ -60,7 +60,7 @@ public class MonitorServiceImpl implements MonitorService {
 	public void saveMonitor(PlayOrmMonitor monitor) {
 		MonitorDbo m = CopyUtil.copy(monitor);
 		NoSqlEntityManager mgr = factory.createEntityManager();
-		mgr.put(m);
+		mgr.put(m, false);
 		mgr.flush();
 	}
 
