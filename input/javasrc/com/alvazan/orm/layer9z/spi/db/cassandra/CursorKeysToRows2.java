@@ -113,7 +113,7 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 		
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
-		while(nextKey != null) {
+		while(results.size() < batchSize && nextKey != null) {
 			RowHolder<Row> result = cache.fromCache(cf, nextKey);
 			if(result == null)
 				keysToLookup.add(nextKey);
@@ -204,7 +204,7 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 		
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
-		while(previousKey != null) {
+		while(results.size() < batchSize && previousKey != null) {
 			RowHolder<Row> result = cache.fromCache(cf, previousKey);
 			if(result == null)
 				keysToLookup.add(0, previousKey);

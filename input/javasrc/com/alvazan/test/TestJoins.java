@@ -23,6 +23,7 @@ import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
+import com.alvazan.test.db.Email;
 
 public class TestJoins {
 
@@ -70,13 +71,84 @@ public class TestJoins {
 	
 	@Test
 	public void testReverseTyped() {
-		String sql = "select a from Activity as a";
+		
+		Email sub = new Email();
+		sub.setId("email1");
+		sub.setName("anemail1");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email2");
+		sub.setName("anemail2");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email3");
+		sub.setName("anemail3");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		mgr.flush();
+		
+		String sql = "select a from Email as a";
 		NoSqlTypedSession s = mgr.getTypedSession();
 		QueryResult result = s.createQueryCursor(sql, 1); // only need last
 		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
 		cursor.afterLast();
 		Assert.assertTrue(cursor.previous());
-		Assert.assertEquals("act7", cursor.getCurrent().getKey());
+		Assert.assertEquals("email3", cursor.getCurrent().getKey());
+	}
+	
+	@Test
+	public void testForwardTyped() {
+		
+		Email sub = new Email();
+		sub.setId("email1");
+		sub.setName("anemail1");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email2");
+		sub.setName("anemail2");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email3");
+		sub.setName("anemail3");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		mgr.flush();
+		
+		String sql = "select a from Email as a";
+		NoSqlTypedSession s = mgr.getTypedSession();
+		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
+		cursor.beforeFirst();
+		Assert.assertTrue(cursor.next());
+		Assert.assertEquals("email1", cursor.getCurrent().getKey());
 	}
 	
 	@Test

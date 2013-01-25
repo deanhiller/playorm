@@ -169,7 +169,7 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 			}
 		}
 		
-		count = -1;
+		count = 0;
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
 		OperationResult<ColumnList<byte[]>> opResult = query.execute();
