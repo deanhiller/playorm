@@ -1,6 +1,8 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
-import java.util.ListIterator;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
@@ -9,6 +11,7 @@ import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession.CreateColumnSliceCallback;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
+import com.netflix.astyanax.model.Column;
 import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
 
@@ -20,9 +23,10 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 	private Integer batchSize;
 
 	private RowQuery<byte[], byte[]> query;
-	private ListIterator<com.netflix.astyanax.model.Column<byte[]>> subIterator;
-	private int count;
 	private String info;
+	private int pointer = -1;
+	private List<Column<byte[]>> subList;
+	private Boolean forward = null;
 	
 	public CursorColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener, Integer batchSize, String logInfo) {
 		this.callback = l;
@@ -46,7 +50,9 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		//FOR some reason in astyanax, we have to keep getting the row query on resets or this Cursor returns 5 rows instead of the
 		//SAME two rows it returned the first time.....well, form one of the unit tests
 		 query = callback.createRowQuery();
-		 subIterator = null;
+		 pointer = -1;
+		 subList = null;
+		 forward = true;
 	}
 	
 	@Override
@@ -54,16 +60,23 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		//FOR some reason in astyanax, we have to keep getting the row query on resets or this Cursor returns 5 rows instead of the
 		//SAME two rows it returned the first time.....well, form one of the unit tests
 		 query = callback.createRowQueryReverse();
-		 subIterator = null;
+		 pointer = -1;
+		 subList = null;
+		 forward = false;
 	}
 
 	@Override
 	public Holder<T> nextImpl() {
+		if(!forward)
+			throw new IllegalStateException("You must call beforeFirst to traverse the cursor forward, you cannot call next after calling previous due to limitations of talking to noSql apis");
 		try {
-			ListIterator<com.netflix.astyanax.model.Column<byte[]>> latestIterator = fetchMoreResultsImpl();
-			if(latestIterator == null)
-				return null;
-			return nextColumn(latestIterator);
+			fetchMoreResultsImpl();
+			pointer++;
+			if(pointer >= subList.size())
+				return null; //no more results
+			Column<byte[]> column = subList.get(pointer);
+			
+			return buildHolder(column);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
 		}
@@ -71,31 +84,20 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 	
 	@Override
 	public Holder<T> previousImpl() {
+		if(forward)
+			throw new IllegalStateException("You must call afterLast to traverse reverse.  You cannot call previous after calling next due to limitations of calling into noSQL apis");
 		try {
-			ListIterator<com.netflix.astyanax.model.Column<byte[]>> latestIterator = fetchMorePreviousResultsImpl();
-			if(latestIterator == null)
-				return null;
-			return previousColumn(latestIterator);
+			fetchMoreResultsImpl();
+			pointer++;
+			if(pointer >= subList.size())
+				return null; //no more results
+			
+			Column<byte[]> column = subList.get(pointer);
+			return buildHolder(column);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
-	@SuppressWarnings("unchecked")
-	private Holder<T> nextColumn(ListIterator<com.netflix.astyanax.model.Column<byte[]>> latestIterator) {
-		com.netflix.astyanax.model.Column<byte[]> col = latestIterator.next();
-		count++;
-		
-		return buildHolder(col);
-	}
-	
-	@SuppressWarnings("unchecked")
-	private Holder<T> previousColumn(ListIterator<com.netflix.astyanax.model.Column<byte[]>> latestIterator) {
-		com.netflix.astyanax.model.Column<byte[]> col = latestIterator.previous();
-		count--;
-		return buildHolder(col);
-	}
-	
 
 	@SuppressWarnings("unchecked")
 	private Holder<T> buildHolder(com.netflix.astyanax.model.Column<byte[]> col) {
@@ -124,66 +126,43 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		return c;
 	}
 	
-	
-	private ListIterator<com.netflix.astyanax.model.Column<byte[]>> fetchMoreResultsImpl() throws ConnectionException {
-		if(subIterator != null){
+	private void fetchMoreResultsImpl() throws ConnectionException {
+		if(subList != null){
 			//If subIterator is not null, we have already previously fetched results!!!
-			if(subIterator.hasNext())
-				return subIterator; //no need to fetch next subiterator since this subIterator has more
+			if(pointer < subList.size()-1)
+				return; //no need to fetch next subiterator since this subIterator has more
 			else if(batchSize == null) //then we already fetched everything in first round
-				return null;
-			else if(count < batchSize) {
+				return;
+			else if(subList.size() < batchSize) {
 				//since we have previous results, we then have a count of those results BUT they
 				//did NOT fill up the batch so no need to go to database as we know it has no more results
-				return null;
+				return;
 			}
 		}
 		
-		count = 0;
+		//reset the point...
+		pointer = -1;
+		
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
 		OperationResult<ColumnList<byte[]>> opResult = query.execute();
 		ColumnList<byte[]> columns = opResult.getResult();
 
 		if(columns.isEmpty())
-			subIterator = null; 
+			subList = new ArrayList<Column<byte[]>>();
 		else 
-			subIterator = new OurColumnListIterator(columns);
+			fillInList(columns);
 		
 		if(batchListener != null)
 			batchListener.afterFetchingNextBatch(columns.size());
-		return subIterator;
 	}
 	
-	private ListIterator<com.netflix.astyanax.model.Column<byte[]>> fetchMorePreviousResultsImpl() throws ConnectionException {
-		if(subIterator != null){
-			//If subIterator is not null, we have already previously fetched results!!!
-			if(subIterator.hasPrevious())
-				return subIterator; //no need to fetch previous subiterator since this subIterator has more
-			else if(batchSize == null) //then we already fetched everything in first round
-				return null;
-			else if(Math.abs(count) < batchSize) {
-				//since we have previous results, we then have a count of those results BUT they
-				//did NOT fill up the batch so no need to go to database as we know it has no more results
-				return null;
-			}
+	private void fillInList(ColumnList<byte[]> columns) {
+		subList = new ArrayList<Column<byte[]>>();
+		Iterator<Column<byte[]>> iter = columns.iterator();
+		while(iter.hasNext()) {
+			Column<byte[]> col = iter.next();
+			subList.add(col);
 		}
-		
-		count = 0;
-		if(batchListener != null)
-			batchListener.beforeFetchingNextBatch();
-		OperationResult<ColumnList<byte[]>> opResult = query.execute();
-		ColumnList<byte[]> columns = opResult.getResult();
-
-		if(columns.isEmpty())
-			subIterator = null; 
-		else {
-			subIterator = new OurColumnListIterator(columns, true);
-			while (subIterator.hasNext()) subIterator.next();
-		}
-		
-		if(batchListener != null)
-			batchListener.afterFetchingNextBatch(columns.size());
-		return subIterator;
 	}
 }
