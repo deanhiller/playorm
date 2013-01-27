@@ -114,7 +114,9 @@ public class CheckClusterRunnable implements Runnable {
 			return;
 		}
 
-		DateTime nextRunTime = time.plus(monitor.getTimePeriodMillis());
+		//subtract 1000 or 1 second in case they line up on the minute intervals so we fire every two minutes if
+		//they choose 2 minutes
+		DateTime nextRunTime = time.plus(monitor.getTimePeriodMillis()-1000);
 		if(now.isAfter(nextRunTime)) {
 			runMonitor(mgr, monitor, now);
 		}
