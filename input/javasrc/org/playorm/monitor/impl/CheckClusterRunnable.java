@@ -99,7 +99,7 @@ public class CheckClusterRunnable implements Runnable {
 			String id = val.getId();
 			int hash = id.hashCode();
 			int serverNum = hashGen.generate(hash, numUpWebNodes);
-			log.info("monitor="+val.getId()+" server num="+serverNum+" our num="+serverNumber);
+			log.info("monitor="+val.getId()+" target server num="+serverNum+" our servernum="+serverNumber);
 			if(serverNum == serverNumber) 
 				processMonitor(mgr, val);
 		}
