@@ -53,18 +53,19 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
 		TypedRow typedRow = info.getEntity();
 		RowToPersist row = info.getRow();
-		
-		Column col = new Column();
-		row.getColumns().add(col);
 
 		TypedColumn typedCol = typedRow.getColumn(getColumnName());
 		Object value = null;
-		if(typedCol != null)
+		byte[] byteVal = null;
+		if(typedCol != null) {
+			Column col = new Column();
+			row.getColumns().add(col);
+			
 			value = typedCol.getValue();
-		byte[] byteVal = convertToStorage2(value);
-		col.setName(getColumnNameAsBytes());
-		col.setValue(byteVal);
-		
+			byteVal = convertToStorage2(value);
+			col.setName(getColumnNameAsBytes());
+			col.setValue(byteVal);
+		}		
 		addIndexInfo(info, value, byteVal);
 		removeIndexInfo(info, value, byteVal);
 	}

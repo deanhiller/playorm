@@ -55,6 +55,16 @@ public class TypedRow {
 		columns.put(b, c);
 	}
 	
+	public void removeColumn(String name) {
+		byte[] nameBytes = StandardConverters.convertToBytes(name);
+		removeColumn(nameBytes);
+	}
+
+	private void removeColumn(byte[] name) {
+		ByteArray b = new ByteArray(name);
+		columns.remove(b);
+	}
+	
 	public void addColumn(byte[] name, byte[] value, Long timestamp) {
 		ByteArray b = new ByteArray(name);
 		TypedColumn c = new TypedColumn(null, name, value, timestamp);
