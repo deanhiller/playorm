@@ -243,6 +243,8 @@ public class CmdIndex {
 		
 		DboColumnMeta colMeta = meta.getColumnMeta(field);
 		if(colMeta == null) {
+			colMeta = meta.getIdColumnMeta();
+			if(!(colMeta != null && colMeta.getColumnName().equals(field)))
 			throw new InvalidCommand("Column="+field+" not found on table="+cf);
 		}
 		
