@@ -68,12 +68,12 @@ public class TestNewRawLayer {
 	}
 
 	//Okay, let's test some edge cases
-	//1. save value of zero
+	//1. save value of zero for Decimal
 	//2. save value of null
 	//3. save value of no column exists
 	//4. save value of 0 length byte array
 	//5. save value of 0 length string
-	//
+	//6. save value of ZERO for Integer
 	@Test
 	public void testZeroVersusNullVersusOther() {
 		//Because we can save a name column with no value, can we save a name
@@ -89,7 +89,7 @@ public class TestNewRawLayer {
 		row1.addColumn("temp", new BigDecimal(0));
 		row1.addColumn("someName", "dean");
 		s.put(cf, row1);
-		
+
 		//SAVE a null value
 		TypedRow row2 = s.createTypedRow(cf);
 		row2.setRowKey(BigInteger.valueOf(26));
@@ -117,6 +117,14 @@ public class TestNewRawLayer {
 		row5.addColumn("other", "");
 		row5.addColumn("someName", "dean");
 		s.put(cf, row5);
+
+		//SAVE zero for int
+		TypedRow row6 = s.createTypedRow(cf);
+		row6.setRowKey(BigInteger.valueOf(30));
+		row6.addColumn("other", 0);
+		row6.addColumn("nullInt", null);
+		row6.addColumn("someName", "dean");
+		s.put(cf, row6);
 		
 		s.flush();
 		
@@ -126,6 +134,7 @@ public class TestNewRawLayer {
 		TypedRow result3 = s.find(cf, row3.getRowKey());
 		TypedRow result4 = s.find(cf, row4.getRowKey());
 		TypedRow result5 = s.find(cf, row5.getRowKey());
+		TypedRow result6 = s.find(cf, row6.getRowKey());
 		
 		TypedColumn column1 = result1.getColumn("temp");
 		Assert.assertNotNull(column1);
@@ -149,6 +158,15 @@ public class TestNewRawLayer {
 		Assert.assertNotNull(column5);
 		String value = (String) column5.getValue(String.class);
 		Assert.assertEquals(null, value);
+		
+		TypedColumn column6 = result6.getColumn("other");
+		Assert.assertNotNull(column6);
+		int value6 = (Integer) column6.getValue(Integer.class);
+		Assert.assertEquals(0, value6);
+		
+		TypedColumn column6b = result6.getColumn("nullInt");
+		Integer val6b = column6b.getValue(Integer.class);
+		Assert.assertNull(val6b);
 	}
 	
 	@Test

@@ -87,6 +87,8 @@ public class StandardConverters {
 	 * @return
 	 */
 	public static byte[] convertToBytes(Object obj) {
+		if(obj == null)
+			return null;
 		Class clazz = obj.getClass();
 		BaseConverter converter = stdConverters.get(clazz);
 		if(converter == null)
