@@ -17,6 +17,7 @@ import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
+import com.netflix.astyanax.connectionpool.impl.ConnectionPoolType;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.model.ConsistencyLevel;
@@ -65,6 +66,7 @@ public class BootstrapImpl extends Bootstrap {
 		
 		return impl;
 	}
+	
 	@Override
 	protected void createBestCassandraConfig(Map<String, Object> properties,
 			String clusterName, String keyspace2, String seeds2) {
@@ -73,6 +75,7 @@ public class BootstrapImpl extends Bootstrap {
 	    .forKeyspace(keyspace2)
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
 	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
+	        .setConnectionPoolType(ConnectionPoolType.TOKEN_AWARE)
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
 	        .setMaxConnsPerHost(20)

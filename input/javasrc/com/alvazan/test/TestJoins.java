@@ -17,11 +17,13 @@ import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.IndexPoint;
+import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
+import com.alvazan.test.db.Email;
 
 public class TestJoins {
 
@@ -68,6 +70,88 @@ public class TestJoins {
 	}
 	
 	@Test
+	public void testReverseTyped() {
+		
+		Email sub = new Email();
+		sub.setId("email1");
+		sub.setName("anemail1");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email2");
+		sub.setName("anemail2");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email3");
+		sub.setName("anemail3");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		mgr.flush();
+		
+		String sql = "select a from Email as a";
+		NoSqlTypedSession s = mgr.getTypedSession();
+		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
+		cursor.afterLast();
+		Assert.assertTrue(cursor.previous());
+		Assert.assertEquals("email3", cursor.getCurrent().getKey());
+	}
+	
+	@Test
+	public void testForwardTyped() {
+		
+		Email sub = new Email();
+		sub.setId("email1");
+		sub.setName("anemail1");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email2");
+		sub.setName("anemail2");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		sub = new Email();
+		sub.setId("email3");
+		sub.setName("anemail3");
+		sub.getIds().add("one");
+		sub.getIds().add("two");
+		sub.getInts().add(5);
+		sub.getInts().add(8);
+		mgr.put(sub);
+		
+		mgr.flush();
+		
+		String sql = "select a from Email as a";
+		NoSqlTypedSession s = mgr.getTypedSession();
+		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
+		cursor.beforeFirst();
+		Assert.assertTrue(cursor.next());
+		Assert.assertEquals("email1", cursor.getCurrent().getKey());
+	}
+	
+	@Test
 	public void testInnerJoin() throws InterruptedException {
 		NoSqlTypedSession s = mgr.getTypedSession();
 
@@ -80,21 +164,7 @@ public class TestJoins {
 		String alias1 = viewAct.getAlias();
 		String alias2 = viewAcc.getAlias();
 		Assert.assertEquals("e", alias1);
-		Assert.assertEquals("a", alias2);
-		
-while(cursor.next()){
-	IndexColumnInfo info = cursor.getCurrent();
-	IndexPoint keyForActivity = info.getKeyForView(viewAct);
-	String key = keyForActivity.getKeyAsString();
-	
-	String keyAcc = null;
-	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
-	keyAcc = keyForAccount.getKeyAsString();
-
-	System.out.println("cursor act in order:"+key+" acc:"+keyAcc);
-}
-cursor.beforeFirst();
-		
+		Assert.assertEquals("a", alias2);		
 		
 		Assert.assertTrue(cursor.next());
 		compareKeys(cursor, viewAct, viewAcc, "act1", "acc1");
@@ -235,19 +305,6 @@ cursor.beforeFirst();
 		String alias2 = viewAcc.getAlias();
 		Assert.assertEquals("e", alias1);
 		Assert.assertEquals("a", alias2);
-		
-while(cursor.previous()){
-	IndexColumnInfo info = cursor.getCurrent();
-	IndexPoint keyForActivity = info.getKeyForView(viewAct);
-	String key = keyForActivity.getKeyAsString();
-	
-	String keyAcc = null;
-	IndexPoint keyForAccount = info.getKeyForView(viewAcc);
-	keyAcc = keyForAccount.getKeyAsString();
-
-	System.out.println("cursor act:"+key+" acc:"+keyAcc);
-}
-cursor.afterLast();
 		
 		Assert.assertTrue(cursor.previous());
 		compareKeys(cursor, viewAct, viewAcc, "act7", "acc1");

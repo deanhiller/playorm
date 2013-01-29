@@ -7,6 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.Query;
@@ -43,6 +46,8 @@ import com.alvazan.orm.layer3.typed.NoSqlTypedSessionImpl;
 
 public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, MetaLoader {
 
+	private static final Logger log = LoggerFactory.getLogger(BaseEntityManagerImpl.class);
+	
 	@Inject @Named("readcachelayer")
 	private NoSqlSession session;
 	@Inject
@@ -63,6 +68,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	public void put(Object entity, boolean isInsert) {
 		boolean needRead = false;
 		if(!isInsert && !(entity instanceof NoSqlProxy)) {
+			if(log.isDebugEnabled())
+				log.debug("need read as isInsert="+isInsert);
 			needRead = true;
 		}
 		
@@ -99,6 +106,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		if(needRead) {
 			Object id = metaClass.fetchId(originalEntity);
 			Object temp = find(metaClass.getMetaClass(), id);
+			if(log.isDebugEnabled())
+				log.debug("entity with id="+id+" is="+temp);
 			if(temp != null) {
 				entity = temp;
 				BeanProps.copyProps(originalEntity, entity);

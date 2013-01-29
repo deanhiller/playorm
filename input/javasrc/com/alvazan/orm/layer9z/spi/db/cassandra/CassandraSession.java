@@ -446,6 +446,9 @@ public class CassandraSession implements NoSqlRawSession {
 
 	@Override
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
+		if(log.isDebugEnabled()) {
+			log.debug("readMeta and create CF="+colFamily);
+		}
 		columnFamilies.lookupOrCreate2(colFamily, ormSession);
 	}
 

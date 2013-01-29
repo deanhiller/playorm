@@ -18,6 +18,7 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
+import com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
@@ -99,32 +100,23 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 
 	@SuppressWarnings("unchecked")
 	private void loadCache() {
-		
-		byte[] nextKey = null;
-		Holder<byte[]> keyHolder = rowKeys.nextImpl();
-		if (keyHolder != null)
-			nextKey = keyHolder.getValue();
-		
 		if(cachedRows != null && cachedRows.hasNext())
 			return; //There are more rows so return and the code will return the next result from cache
-		else if(nextKey == null)
-			return;
 
-		
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
-		while(nextKey != null) {
+		while(results.size() < batchSize) {
+			Holder<byte[]> keyHolder = rowKeys.nextImpl();
+			if(keyHolder == null)
+				break; //we are officially exhausted
+			
+			byte[] nextKey = keyHolder.getValue();
 			RowHolder<Row> result = cache.fromCache(cf, nextKey);
 			if(result == null)
 				keysToLookup.add(nextKey);
 			
 			results.add(result);
-			nextKey = null;
-			keyHolder = rowKeys.nextImpl();
-			if (keyHolder != null)
-				nextKey = keyHolder.getValue();
 		}
-
 		
 		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = null;
 		if(keysToLookup.size() > 0) {
@@ -190,33 +182,24 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 	
 	@SuppressWarnings("unchecked")
 	private void loadCacheBackward() {
-		
-		byte[] previousKey = null;
-		Holder<byte[]> keyHolder = rowKeys.previousImpl();
-		if (keyHolder != null)
-			previousKey = keyHolder.getValue();
-		
 		if(cachedRows != null && cachedRows.hasPrevious())
 			return; //There are more rows so return and the code will return the next result from cache
-		else if(previousKey == null)
-			return;
-
 		
 		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
 		List<byte[]> keysToLookup = new ArrayList<byte[]>();
-		while(previousKey != null) {
+		while(results.size() < batchSize) {
+			Holder<byte[]> keyHolder = rowKeys.previousImpl();
+			if(keyHolder == null)
+				break; //we are officially exhausted
+			
+			byte[] previousKey = keyHolder.getValue();
 			RowHolder<Row> result = cache.fromCache(cf, previousKey);
 			if(result == null)
 				keysToLookup.add(0, previousKey);
 			
 			results.add(result);
-			previousKey = null;
-			keyHolder = rowKeys.previousImpl();
-			if (keyHolder != null)
-				previousKey = keyHolder.getValue();
 		}
-
-		
+	
 		Iterator<com.netflix.astyanax.model.Row<byte[], byte[]>> resultingRows = null;
 		if(keysToLookup.size() > 0) {
 			if(list != null)

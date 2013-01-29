@@ -486,14 +486,18 @@ public class Converters {
 
 		@Override
 		public Object convertFromNoSqlImpl(byte[] value) {
-			byte[] timeArray = new byte[8];
-			byte[] clockSeqAndNodeArray=new byte[8];
-			System.arraycopy(value,0,timeArray,0,8);
-			System.arraycopy(value,8,clockSeqAndNodeArray,0,8);
-			long time = StandardConverters.convertFromBytes(Long.class, timeArray);
-			long clockSeqAndNode = StandardConverters.convertFromBytes(Long.class, clockSeqAndNodeArray);
-			UUID ud = new UUID(time,clockSeqAndNode);
-			return ud;
+			try {
+				byte[] timeArray = new byte[8];
+				byte[] clockSeqAndNodeArray=new byte[8];
+				System.arraycopy(value,0,timeArray,0,8);
+				System.arraycopy(value,8,clockSeqAndNodeArray,0,8);
+				long time = StandardConverters.convertFromBytes(Long.class, timeArray);
+				long clockSeqAndNode = StandardConverters.convertFromBytes(Long.class, clockSeqAndNodeArray);
+				UUID ud = new UUID(time,clockSeqAndNode);
+				return ud;
+			} catch(Exception e) {
+				throw new RuntimeException("value in len="+value.length, e);
+			}
 		}
 
 		@Override

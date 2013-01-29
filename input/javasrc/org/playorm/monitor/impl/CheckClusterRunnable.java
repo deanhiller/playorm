@@ -99,7 +99,7 @@ public class CheckClusterRunnable implements Runnable {
 			String id = val.getId();
 			int hash = id.hashCode();
 			int serverNum = hashGen.generate(hash, numUpWebNodes);
-			log.info("monitor="+val.getId()+" server num="+serverNum+" our num="+serverNumber);
+			log.info("monitor="+val.getId()+" target server num="+serverNum+" our servernum="+serverNumber);
 			if(serverNum == serverNumber) 
 				processMonitor(mgr, val);
 		}
@@ -114,7 +114,9 @@ public class CheckClusterRunnable implements Runnable {
 			return;
 		}
 
-		DateTime nextRunTime = time.plus(monitor.getTimePeriodMillis());
+		//subtract 1000 or 1 second in case they line up on the minute intervals so we fire every two minutes if
+		//they choose 2 minutes
+		DateTime nextRunTime = time.plus(monitor.getTimePeriodMillis()-1000);
 		if(now.isAfter(nextRunTime)) {
 			runMonitor(mgr, monitor, now);
 		}
