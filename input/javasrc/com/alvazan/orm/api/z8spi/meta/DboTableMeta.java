@@ -280,6 +280,10 @@ public class DboTableMeta {
 			columns.add(c);
 		}
 		
+		for(byte[] name : typedRow.getColumnsToRemove()) {
+			row.addEntityToRemove(name);
+		}
+		
 		return row;
 	}
 	

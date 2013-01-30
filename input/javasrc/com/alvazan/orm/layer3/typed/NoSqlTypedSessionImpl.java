@@ -72,10 +72,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 		RowToPersist row = metaClass.translateToRow(typedRow);
 		
+		byte[] virtualKey = row.getVirtualKey();
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
-			session.remove(metaClass, row.getKey(), row.getColumnNamesToRemove());
+			session.remove(metaClass, virtualKey, row.getColumnNamesToRemove());
 		
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
@@ -87,7 +88,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			session.persistIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		byte[] virtualKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
 		session.put(metaClass, virtualKey, cols);
 	}

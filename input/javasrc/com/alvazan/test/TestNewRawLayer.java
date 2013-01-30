@@ -68,12 +68,12 @@ public class TestNewRawLayer {
 	}
 
 	//Okay, let's test some edge cases
-	//1. save value of zero for Decimal
-	//2. save value of null
-	//3. save value of no column exists
-	//4. save value of 0 length byte array
-	//5. save value of 0 length string
-	//6. save value of ZERO for Integer
+	//1. save value of zero for Decimal - returns 0
+	//2. save value of null - returns null
+	//3. save value of no column exists - returns no column
+	//4. save value of 0 length byte array - returns null (use no column to represent null and column with null to represent 0 length)
+	//5. save value of 0 length string - returns null (use no column to represent null and column with null to represent 0 length)
+	//6. save value of ZERO for Integer - returns 0
 	@Test
 	public void testZeroVersusNullVersusOther() {
 		//Because we can save a name column with no value, can we save a name
@@ -167,6 +167,43 @@ public class TestNewRawLayer {
 		TypedColumn column6b = result6.getColumn("nullInt");
 		Integer val6b = column6b.getValue(Integer.class);
 		Assert.assertNull(val6b);
+	}
+	
+	@Test
+	public void testRemoveColumn() {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		String cf = "TimeSeriesData";
+		TypedRow row1 = s.createTypedRow(cf);
+		row1.setRowKey(BigInteger.valueOf(25));
+		row1.addColumn("temp", new BigDecimal(667));
+		row1.addColumn("someName", "dean");
+		row1.addColumn("notInSchema", "hithere");
+		s.put(cf, row1);
+		
+		s.flush();
+		
+		TypedRow result1 = s.find(cf, row1.getRowKey());
+		TypedColumn col = result1.getColumn("temp");
+		Assert.assertEquals(new BigDecimal(667), col.getValue());
+		
+		TypedColumn col2 = result1.getColumn("notInSchema");
+		String value = col2.getValue(String.class);
+		Assert.assertEquals("hithere", value);
+		
+		result1.removeColumn("temp");
+		result1.removeColumn("notInSchema");
+		
+		s.put(cf, result1);
+		s.flush();
+		
+		TypedRow result2 = s.find(cf, row1.getRowKey());
+		
+		TypedColumn col4 = result2.getColumn("notInSchema");
+		Assert.assertNull(col4);
+		
+		TypedColumn col3 = result2.getColumn("temp");
+		Assert.assertNull(col3);
 	}
 	
 	@Test
