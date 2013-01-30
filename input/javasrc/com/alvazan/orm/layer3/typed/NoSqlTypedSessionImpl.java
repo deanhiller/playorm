@@ -203,8 +203,13 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(meta == null)
 			throw new IllegalArgumentException("columnFamily="+columnFamily+" not found");
 		DboColumnMeta colMeta = meta.getColumnMeta(column);
-		if(colMeta == null)
-			throw new IllegalArgumentException("Column="+column+" not found on meta info for column family="+columnFamily);
+		if (colMeta == null) {
+			colMeta = meta.getIdColumnMeta();
+			if (!(colMeta != null && colMeta.getColumnName().equals(column)))
+				throw new IllegalArgumentException("Column=" + column
+						+ " not found on meta info for column family="
+						+ columnFamily);
+		}
 		else if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("Column="+column+" is not an indexed column");
 		else if(meta.getPartitionedColumns().size() > 1 && partitionBy == null)
