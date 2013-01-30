@@ -63,7 +63,7 @@ public class TypedRow {
 		removeColumn(nameBytes);
 	}
 
-	private void removeColumn(byte[] name) {
+	public void removeColumn(byte[] name) {
 		ByteArray b = new ByteArray(name);
 		columns.remove(b);
 		columnsToBeRemoved.add(name);
