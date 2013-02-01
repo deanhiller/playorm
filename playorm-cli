@@ -7,10 +7,6 @@ else
     JAVA=`which java`
 fi
 
-for jar in $CASSANDRA_HOME/lib/*.jar; do
-    CLASSPATH=$CLASSPATH:$jar
-done
-
 for jar in ./output/jardist/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
