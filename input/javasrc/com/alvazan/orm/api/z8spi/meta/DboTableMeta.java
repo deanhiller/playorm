@@ -362,11 +362,12 @@ public class DboTableMeta {
             String strName = StandardConverters.convertFromBytes(String.class, name);
             boolean colmetaAlreadyExists = false;
             for(DboColumnMeta column : this.nameToField.values()) {
-                if (strName.contains(column.getColumnName()))
+                if (strName.startsWith(column.getColumnName()))
                     colmetaAlreadyExists = true;
             }
+            
             if (!colmetaAlreadyExists)
-            inst.addColumn(c.getName(), c.getValue(), c.getTimestamp());
+            	inst.addColumn(c.getName(), c.getValue(), c.getTimestamp());
         }
 	}
 
