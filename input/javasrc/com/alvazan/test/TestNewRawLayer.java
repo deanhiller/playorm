@@ -22,6 +22,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class TestNewRawLayer {
@@ -43,13 +44,13 @@ public class TestNewRawLayer {
 	
 	@After
 	public void clearDatabase() {
-
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDatabase(true);
 	}
 	
 	@Test
 	public void testBasicChangeToIndex() {
 		log.info("testBasicChangeToIndex");
-		try {
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		String cf = "User";
@@ -64,9 +65,145 @@ public class TestNewRawLayer {
 		Assert.assertEquals(id, result.getRowKey());
 		Assert.assertEquals(row.getColumn("name").getValue(), result.getColumn("name").getValue());
 		Assert.assertEquals(row.getColumn("lastName").getValue(), result.getColumn("lastName").getValue());
-		} finally {
-		log.info("DONE test BasicChangeToIndex");
-		}
+	}
+
+	//Okay, let's test some edge cases
+	//1. save value of zero for Decimal - returns 0
+	//2. save value of null - returns null
+	//3. save value of no column exists - returns no column
+	//4. save value of 0 length byte array - returns null (use no column to represent null and column with null to represent 0 length)
+	//5. save value of 0 length string - returns null (use no column to represent null and column with null to represent 0 length)
+	//6. save value of ZERO for Integer - returns 0
+	@Test
+	public void testZeroVersusNullVersusOther() {
+		//Because we can save a name column with no value, can we save a name
+		//column with a value of 0?  
+		log.info("testTimeSeries");
+
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		//SAVE the value ZERO
+		String cf = "TimeSeriesData";
+		TypedRow row1 = s.createTypedRow(cf);
+		row1.setRowKey(BigInteger.valueOf(25));
+		row1.addColumn("temp", new BigDecimal(0));
+		row1.addColumn("someName", "dean");
+		s.put(cf, row1);
+
+		//SAVE a null value
+		TypedRow row2 = s.createTypedRow(cf);
+		row2.setRowKey(BigInteger.valueOf(26));
+		row2.addColumn("temp", null);
+		row2.addColumn("someName", "dean");
+		s.put(cf, row2);
+
+		//SAVE with NO column
+		TypedRow row3 = s.createTypedRow(cf);
+		row3.setRowKey(BigInteger.valueOf(27));
+		row3.addColumn("someName", "dean");
+		s.put(cf, row3);
+
+		byte[] name = new byte[] {1,2,3,4};
+		//SAVE with zero length byte array
+		TypedRow row4 = s.createTypedRow(cf);
+		row4.setRowKey(BigInteger.valueOf(28));
+		row4.addColumn(name, new byte[0], null);
+		row4.addColumn("someName", "dean");
+		s.put(cf, row4);
+		
+		//SAVE with zero length byte array
+		TypedRow row5 = s.createTypedRow(cf);
+		row5.setRowKey(BigInteger.valueOf(29));
+		row5.addColumn("other", "");
+		row5.addColumn("someName", "dean");
+		s.put(cf, row5);
+
+		//SAVE zero for int
+		TypedRow row6 = s.createTypedRow(cf);
+		row6.setRowKey(BigInteger.valueOf(30));
+		row6.addColumn("other", 0);
+		row6.addColumn("nullInt", null);
+		row6.addColumn("someName", "dean");
+		s.put(cf, row6);
+		
+		s.flush();
+		
+		//NOW, let's find the row we put
+		TypedRow result1 = s.find(cf, row1.getRowKey());
+		TypedRow result2 = s.find(cf, row2.getRowKey());
+		TypedRow result3 = s.find(cf, row3.getRowKey());
+		TypedRow result4 = s.find(cf, row4.getRowKey());
+		TypedRow result5 = s.find(cf, row5.getRowKey());
+		TypedRow result6 = s.find(cf, row6.getRowKey());
+		
+		TypedColumn column1 = result1.getColumn("temp");
+		Assert.assertNotNull(column1);
+		Object val = column1.getValue();
+		Assert.assertEquals(new BigDecimal(0), val);
+		
+		TypedColumn column2 = result2.getColumn("temp");
+		Assert.assertNotNull(column2);		
+		Object val2 = column2.getValue();
+		Assert.assertNull(val2);
+		
+		TypedColumn column3 = result3.getColumn("temp");
+		Assert.assertNull(column3);
+
+		TypedColumn column4 = result4.getColumn(name);
+		Assert.assertNotNull(column4);		
+		byte[] valueRaw = column4.getValueRaw();
+		Assert.assertNull(valueRaw);
+		
+		TypedColumn column5 = result5.getColumn("other");
+		Assert.assertNotNull(column5);
+		String value = (String) column5.getValue(String.class);
+		Assert.assertEquals(null, value);
+		
+		TypedColumn column6 = result6.getColumn("other");
+		Assert.assertNotNull(column6);
+		int value6 = (Integer) column6.getValue(Integer.class);
+		Assert.assertEquals(0, value6);
+		
+		TypedColumn column6b = result6.getColumn("nullInt");
+		Integer val6b = column6b.getValue(Integer.class);
+		Assert.assertNull(val6b);
+	}
+	
+	@Test
+	public void testRemoveColumn() {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		String cf = "TimeSeriesData";
+		TypedRow row1 = s.createTypedRow(cf);
+		row1.setRowKey(BigInteger.valueOf(25));
+		row1.addColumn("temp", new BigDecimal(667));
+		row1.addColumn("someName", "dean");
+		row1.addColumn("notInSchema", "hithere");
+		s.put(cf, row1);
+		
+		s.flush();
+		
+		TypedRow result1 = s.find(cf, row1.getRowKey());
+		TypedColumn col = result1.getColumn("temp");
+		Assert.assertEquals(new BigDecimal(667), col.getValue());
+		
+		TypedColumn col2 = result1.getColumn("notInSchema");
+		String value = col2.getValue(String.class);
+		Assert.assertEquals("hithere", value);
+		
+		result1.removeColumn("temp");
+		result1.removeColumn("notInSchema");
+		
+		s.put(cf, result1);
+		s.flush();
+		
+		TypedRow result2 = s.find(cf, row1.getRowKey());
+		
+		TypedColumn col4 = result2.getColumn("notInSchema");
+		Assert.assertNull(col4);
+		
+		TypedColumn col3 = result2.getColumn("temp");
+		Assert.assertNull(col3);
 	}
 	
 	@Test

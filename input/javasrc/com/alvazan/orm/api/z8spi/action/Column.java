@@ -36,10 +36,12 @@ public class Column {
 	}
 
 	public Column copy() {
+		//perhaps should deep copy here but we don't...
 		Column c = new Column();
 		c.name = name;
 		c.timestamp = timestamp;
-		c.value = value;
+		if(value != null && value.length != 0)
+			c.value = value;
 		return c;
 	}
 	

@@ -25,6 +25,7 @@
 <package name="args" package="org.kohsuke.args4j"/>
 <package name="logback" package="ch.qos.logback" subpackages="include"/>
 <package name="playframework" package="play" subpackages="include"/>
+<package name="jline" package="jline" subpackages="include"/>
 
 <package name="def" package="nosql"/>
 
@@ -69,6 +70,7 @@
     <depends>args</depends>
     <depends>allapis</depends>
     <depends>logback</depends>
+    <depends>jline</depends>
 </package>
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->

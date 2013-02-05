@@ -1,6 +1,8 @@
 package com.alvazan.orm.api.z8spi.meta;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -13,6 +15,7 @@ public class TypedRow {
 	private NavigableMap<ByteArray, TypedColumn> columns = new TreeMap<ByteArray, TypedColumn>();
 	private DboTableMeta metaClass;
 	private ViewInfo view;
+	private List<byte[]> columnsToBeRemoved = new ArrayList<byte[]>();
 	
 	public TypedRow() {
 	}
@@ -53,6 +56,17 @@ public class TypedRow {
 		TypedColumn c = new TypedColumn(colMeta, columnName, value, timestamp);
 		ByteArray b = new ByteArray(columnName);
 		columns.put(b, c);
+	}
+	
+	public void removeColumn(String name) {
+		byte[] nameBytes = StandardConverters.convertToBytes(name);
+		removeColumn(nameBytes);
+	}
+
+	public void removeColumn(byte[] name) {
+		ByteArray b = new ByteArray(name);
+		columns.remove(b);
+		columnsToBeRemoved.add(name);
 	}
 	
 	public void addColumn(byte[] name, byte[] value, Long timestamp) {
@@ -144,6 +158,10 @@ public class TypedRow {
 
 	public void setView(ViewInfo view2) {
 		this.view = view2;
+	}
+
+	public List<byte[]> getColumnsToRemove() {
+		return columnsToBeRemoved;
 	}
 
 }

@@ -72,10 +72,11 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 
 		RowToPersist row = metaClass.translateToRow(typedRow);
 		
+		byte[] virtualKey = row.getVirtualKey();
 		//This is if we need to be removing columns from the row that represents the entity in a oneToMany or ManyToMany
 		//as the entity.accounts may have removed one of the accounts!!!
 		if(row.hasRemoves())
-			session.remove(metaClass, row.getKey(), row.getColumnNamesToRemove());
+			session.remove(metaClass, virtualKey, row.getColumnNamesToRemove());
 		
 		//NOW for index removals if any indexed values change of the entity, we remove from the index
 		for(IndexData ind : row.getIndexToRemove()) {
@@ -87,7 +88,6 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			session.persistIndex(metaClass, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 		
-		byte[] virtualKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
 		session.put(metaClass, virtualKey, cols);
 	}
@@ -203,8 +203,13 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		if(meta == null)
 			throw new IllegalArgumentException("columnFamily="+columnFamily+" not found");
 		DboColumnMeta colMeta = meta.getColumnMeta(column);
-		if(colMeta == null)
-			throw new IllegalArgumentException("Column="+column+" not found on meta info for column family="+columnFamily);
+		if (colMeta == null) {
+			colMeta = meta.getIdColumnMeta();
+			if (!(colMeta != null && colMeta.getColumnName().equals(column)))
+				throw new IllegalArgumentException("Column=" + column
+						+ " not found on meta info for column family="
+						+ columnFamily);
+		}
 		else if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("Column="+column+" is not an indexed column");
 		else if(meta.getPartitionedColumns().size() > 1 && partitionBy == null)

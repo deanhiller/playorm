@@ -1,10 +1,15 @@
 package com.alvazan.ssql.cmdline;
 
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+
+import jline.ConsoleReader;
+import jline.History;
+
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -30,6 +35,8 @@ public class PlayOrm {
 	private CmdIndex index = new CmdIndex();
 	private CmdUpdate update = new CmdUpdate();
 	private CmdDelete delete = new CmdDelete();
+	public final static String HISTORYFILE = ".playorm.history";
+
 	private CmdListPartitions partitions = new CmdListPartitions();
 	
 	public PlayOrm(NoSqlEntityManagerFactory factory) {
@@ -97,34 +104,52 @@ public class PlayOrm {
 		System.out.println("Welcome to PlayOrm Command Line");
 		System.out.println("Type 'help;' for help");
 		System.out.println("Type 'exit;' to exit");
-		
-		System.out.print("playorm >> ");
-        Scanner sc = new Scanner(System.in);
-        String allLines = "";
-        while(sc.hasNext()){
-        	allLines = processAnotherLine(sc, allLines);
-        }
-	}
-
-	private String processAnotherLine(Scanner sc, String allLines2) {
 		try {
-			String allLines = allLines2;
-			String line = sc.nextLine();
-			String newLine = line.trim();
-			allLines += newLine;
-			if(newLine.endsWith(";")) {
-				process(allLines);
-				allLines = "";
-				System.out.print("playorm >> ");
-			} else {
-				System.out.print("...     ");
+			ConsoleReader reader = new ConsoleReader();
+			reader.setBellEnabled(false);
+			String historyFile = System.getProperty("user.home")
+					+ File.separator + HISTORYFILE;
+			History history = new History(new File(historyFile));
+			reader.setHistory(history);
+
+			String prompt;
+			String line = "";
+			String currentStatement = "";
+			boolean inCompoundStatement = false;
+
+			while (line != null) {
+				prompt = (inCompoundStatement) ? "...\t" : "playorm >>";
+
+				line = reader.readLine(prompt);
+
+				if (line == null)
+					return;
+
+				line = line.trim();
+
+				// skipping empty and comment lines
+				if (line.isEmpty() || line.startsWith("--"))
+					continue;
+
+				currentStatement += line;
+
+				if (line.endsWith(";") || line.equals("?")) {
+					try {
+						process(currentStatement);
+					} catch (Exception exp) {
+						log.warn("Exception occurred", exp);
+						println("Sorry, we ran into a bug, recovering now so you can continue using command line");
+						println("playorm >> ");
+					}
+					currentStatement = "";
+					inCompoundStatement = false;
+				} else {
+					currentStatement += " "; // ready for new line
+					inCompoundStatement = true;
+				}
 			}
-			return allLines;
-		} catch(Exception e) {
-			log.warn("Exception occurred", e);
-			println("Sorry, we ran into a bug, recovering now so you can continue using command line");
-			System.out.print("playorm >> ");
-			return "";
+		} catch (IOException exp) {
+			log.warn("Exception occurred", exp);
 		}
 	}
 
@@ -244,4 +269,5 @@ public class PlayOrm {
 	private static void println(String msg) {
 		System.out.println(msg);
 	}
+
 }
