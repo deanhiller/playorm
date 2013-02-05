@@ -15,7 +15,6 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
-import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
