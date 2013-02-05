@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.z8spi.action;
 
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
+
 public class Column {
 	private byte[] name;
 	private byte[] value;
@@ -40,9 +42,14 @@ public class Column {
 		Column c = new Column();
 		c.name = name;
 		c.timestamp = timestamp;
+		//THIS MAKES us perform exactly like cassandra in that a 0 length byte or string is same as null!!!
 		if(value != null && value.length != 0)
 			c.value = value;
 		return c;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "colName="+new ByteArray(name)+"/value="+new ByteArray(value);
+	}
 }
