@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mortbay.log.Log;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.IndexPoint;
@@ -75,6 +77,8 @@ public class CmdIndex {
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
 			if(row == null) {
+				if(Log.isDebugEnabled())
+					Log.debug("row is null for key="+pt.getKey());
 				//We are iterating over two views in batch mode soooo
 				//one batch may not have any of the keys of the other batch.  This is very normal
 			} else if(row.getException() != null || row.getValue() == null) {

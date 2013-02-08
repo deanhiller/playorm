@@ -113,6 +113,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		DboTableMeta cf = info.getEntityColFamily();
 		
 		IndexColumn col = new IndexColumn();
+		if(colMeta != null)
+			col.setColumnName(colMeta.getColumnName());
 		col.setIndexedValue(pt.getRawIndexedValue());
 		col.setPrimaryKey(pt.getRawKey());
 		session.persistIndex(cf, indColFamily, rowKey, col);

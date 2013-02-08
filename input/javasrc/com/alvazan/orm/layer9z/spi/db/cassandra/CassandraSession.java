@@ -311,7 +311,7 @@ public class CassandraSession implements NoSqlRawSession {
 		};
 			
 
-		return findBasic(Column.class, rowKey, l, batchListener, batchSize, "general column slice");
+		return findBasic(Column.class, rowKey, l, batchListener, batchSize, "general column slice", null);
 	}
 
 	@Override
@@ -352,12 +352,16 @@ public class CassandraSession implements NoSqlRawSession {
 			return new EmptyCursor<IndexColumn>();
 		}
 		
+		String colName = null;
+		if(info.getColumnName() != null)
+			colName = info.getColumnName().getColumnName();
+		
 		ColumnType type = info1.getColumnType();
 		if(type == ColumnType.COMPOSITE_INTEGERPREFIX ||
 				type == ColumnType.COMPOSITE_DECIMALPREFIX ||
 				type == ColumnType.COMPOSITE_STRINGPREFIX) {
 			Listener l = new Listener(rowKey, info1, from, to, batchSize);
-			return findBasic(IndexColumn.class, rowKey, l, bListener, batchSize, ""+info);
+			return findBasic(IndexColumn.class, rowKey, l, bListener, batchSize, ""+info, colName);
 		} else
 			throw new UnsupportedOperationException("not done here yet");
 	}
@@ -394,9 +398,9 @@ public class CassandraSession implements NoSqlRawSession {
 		return rowQuery;
 	}
 
-	private <T> AbstractCursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize, String logInfo) {
+	private <T> AbstractCursor<T> findBasic(Class<T> clazz, byte[] rowKey, CreateColumnSliceCallback l, BatchListener bListener, Integer batchSize, String logInfo, String colName) {
 		boolean isComposite = IndexColumn.class == clazz;
-		return new CursorColumnSlice<T>(l, isComposite, bListener, batchSize, logInfo);
+		return new CursorColumnSlice<T>(l, isComposite, bListener, batchSize, logInfo, colName);
 	}
 	
 	public interface CreateColumnSliceCallback {
