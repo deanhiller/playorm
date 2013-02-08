@@ -41,13 +41,9 @@ public class CmdIndex {
 		System.out.println("It is safe to kill this process at any time since it only removes duplicates");
 		System.out.println("Beginning re-index");
 
-		//let's report every 10 seconds on status I think
-		long start = System.currentTimeMillis();
-		
 		int totalChanges = 0;
 		int totalRows = 0;
 		int rowCountProcessed = 0;
-		int timeToReport = TIME_TO_REPORT;
 		while(true) {
 			Map<Object, KeyValue<TypedRow>> keyToRow = findNextSetOfData(s, cf, indexView);
 			rowCountProcessed += keyToRow.size();
@@ -59,11 +55,8 @@ public class CmdIndex {
 			totalRows += c.getRowCounter();
 			totalChanges += c.getChangedCounter();
 			
-			long time = System.currentTimeMillis();
-			long total = time-start;
-			if(total > timeToReport) {
+			if(rowCountProcessed % 1000 == 0) {
 				System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRows+" totalChanges so far="+totalChanges);
-				timeToReport+=TIME_TO_REPORT;
 			}
 		}
 		
@@ -93,7 +86,6 @@ public class CmdIndex {
 				TypedColumn column = val.getColumn(colName);
 				if (column == null) {
 					//It means column was deleted by user. Doing nothing as of now 
-					changedCounter++;
 					continue;
 				}
 
@@ -116,7 +108,10 @@ public class CmdIndex {
 			rowCounter++;
 			if(changedCounter > 50) {
 				s.flush();
-				System.out.println("Successfully flushed all previous changes");
+				//System.out.println("Successfully flushed all previous changes.  row="+rowCounter);
+			}
+			if(rowCounter % 1000 == 0) {
+				System.out.println("reindexing.  row count so far="+rowCounter+" num index points changed="+changedCounter);
 			}
 		}
 		
