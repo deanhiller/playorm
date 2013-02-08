@@ -18,7 +18,7 @@ import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class CmdIndex {
 
-	private static final int BATCH_SIZE = 1000;
+	private static final int BATCH_SIZE = 200;
 	private static final int TIME_TO_REPORT = 10000;
 	
 	public void reindex(String cmd, NoSqlEntityManager mgr) {
@@ -80,7 +80,10 @@ public class CmdIndex {
 			IndexPoint pt = indexView2.getCurrent();
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
-			if(row.getException() != null) {
+			if(row == null) {
+				//We are iterating over two views in batch mode soooo
+				//one batch may not have any of the keys of the other batch.  This is very normal
+			} else if(row.getException() != null) {
 				System.out.println("Entity with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
 				s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
 				changedCounter++;
