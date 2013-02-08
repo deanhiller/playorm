@@ -52,7 +52,7 @@ public class CmdIndex {
 			}
 			
 			Counter c = processAllColumns(s, data, keyToRow, indexView2);
-			totalRows += c.getRowCounter();
+			totalRows = c.getRowCounter();
 			totalChanges += c.getChangedCounter();
 			
 			if(rowCountProcessed % 1000 == 0) {
@@ -67,6 +67,7 @@ public class CmdIndex {
 			Cursor<IndexPoint> indexView2) {
 		String colName = data.getColumn();
 		
+		indexView2.beforeFirst();
 		int rowCounter = 0;
 		int changedCounter = 0;
 		while(indexView2.next()) {
@@ -76,13 +77,11 @@ public class CmdIndex {
 			if(row == null) {
 				//We are iterating over two views in batch mode soooo
 				//one batch may not have any of the keys of the other batch.  This is very normal
-			} else if(row.getException() != null) {
-				System.out.println("Entity with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
-				s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
+			} else if(row.getException() != null || row.getValue() == null) {
+				removeIndexPt(s, data, pt);
 				changedCounter++;
 			} else {
 				TypedRow val = row.getValue();
-				
 				TypedColumn column = val.getColumn(colName);
 				if (column == null) {
 					//It means column was deleted by user. Doing nothing as of now 
@@ -110,13 +109,19 @@ public class CmdIndex {
 				s.flush();
 				//System.out.println("Successfully flushed all previous changes.  row="+rowCounter);
 			}
-			if(rowCounter % 1000 == 0) {
+			if(rowCounter % 20000 == 0) {
 				System.out.println("reindexing.  row count so far="+rowCounter+" num index points changed="+changedCounter);
 			}
 		}
 		
 		s.flush();
 		return new Counter(rowCounter, changedCounter);
+	}
+
+	private void removeIndexPt(NoSqlTypedSession s, ColFamilyData data,
+			IndexPoint pt) {
+		System.out.println("Entity with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
+		s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
 	}
 
 	private boolean valuesEqual(Object indexedValue, Object value) {
