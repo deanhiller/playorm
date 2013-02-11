@@ -159,7 +159,7 @@ public class CmdIndex {
 			NoSqlTypedSession s, String cf, Cursor<IndexPoint> indexView) {
 		int batchCounter = 0;
 		List<Object> keys = new ArrayList<Object>(); 
-		while(indexView.next() && batchCounter < BATCH_SIZE) {
+		while(batchCounter < BATCH_SIZE && indexView.next()) {
 			IndexPoint current = indexView.getCurrent();
 			keys.add(current.getKey());
 			batchCounter++;
