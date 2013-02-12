@@ -126,7 +126,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			return "null";
 		
 		try {
-			Object obj = meta.getIdColumnMeta().convertFromStorage2(rowKey);
+			byte[] rawKey = meta.getIdColumnMeta().unformVirtRowKey(rowKey);
+			Object obj = meta.getIdColumnMeta().convertFromStorage2(rawKey);
 			return meta.getIdColumnMeta().convertTypeToString(obj);
 		} catch(Exception e) {
 			if(log.isTraceEnabled())

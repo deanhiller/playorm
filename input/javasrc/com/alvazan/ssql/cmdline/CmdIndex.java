@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.mortbay.log.Log;
+
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z5api.IndexPoint;
@@ -18,7 +20,7 @@ import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class CmdIndex {
 
-	private static final int BATCH_SIZE = 1000;
+	private static final int BATCH_SIZE = 200;
 	private static final int TIME_TO_REPORT = 10000;
 	
 	public void reindex(String cmd, NoSqlEntityManager mgr) {
@@ -41,13 +43,9 @@ public class CmdIndex {
 		System.out.println("It is safe to kill this process at any time since it only removes duplicates");
 		System.out.println("Beginning re-index");
 
-		//let's report every 10 seconds on status I think
-		long start = System.currentTimeMillis();
-		
 		int totalChanges = 0;
 		int totalRows = 0;
 		int rowCountProcessed = 0;
-		int timeToReport = TIME_TO_REPORT;
 		while(true) {
 			Map<Object, KeyValue<TypedRow>> keyToRow = findNextSetOfData(s, cf, indexView);
 			rowCountProcessed += keyToRow.size();
@@ -56,14 +54,11 @@ public class CmdIndex {
 			}
 			
 			Counter c = processAllColumns(s, data, keyToRow, indexView2);
-			totalRows += c.getRowCounter();
+			totalRows = c.getRowCounter();
 			totalChanges += c.getChangedCounter();
 			
-			long time = System.currentTimeMillis();
-			long total = time-start;
-			if(total > timeToReport) {
+			if(rowCountProcessed % 1000 == 0) {
 				System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRows+" totalChanges so far="+totalChanges);
-				timeToReport+=TIME_TO_REPORT;
 			}
 		}
 		
@@ -74,23 +69,26 @@ public class CmdIndex {
 			Cursor<IndexPoint> indexView2) {
 		String colName = data.getColumn();
 		
+		indexView2.beforeFirst();
 		int rowCounter = 0;
 		int changedCounter = 0;
 		while(indexView2.next()) {
 			IndexPoint pt = indexView2.getCurrent();
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
-			if(row.getException() != null) {
-				System.out.println("Entity with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
-				s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
+			if(row == null) {
+				if(Log.isDebugEnabled())
+					Log.debug("row is null for key="+pt.getKey());
+				//We are iterating over two views in batch mode soooo
+				//one batch may not have any of the keys of the other batch.  This is very normal
+			} else if(row.getException() != null || row.getValue() == null) {
+				removeIndexPt(s, data, pt);
 				changedCounter++;
 			} else {
 				TypedRow val = row.getValue();
-				
 				TypedColumn column = val.getColumn(colName);
 				if (column == null) {
 					//It means column was deleted by user. Doing nothing as of now 
-					changedCounter++;
 					continue;
 				}
 
@@ -113,12 +111,21 @@ public class CmdIndex {
 			rowCounter++;
 			if(changedCounter > 50) {
 				s.flush();
-				System.out.println("Successfully flushed all previous changes");
+				//System.out.println("Successfully flushed all previous changes.  row="+rowCounter);
+			}
+			if(rowCounter % 20000 == 0) {
+				System.out.println("reindexing.  row count so far="+rowCounter+" num index points changed="+changedCounter);
 			}
 		}
 		
 		s.flush();
 		return new Counter(rowCounter, changedCounter);
+	}
+
+	private void removeIndexPt(NoSqlTypedSession s, ColFamilyData data,
+			IndexPoint pt) {
+		System.out.println("Entity with rowkey="+pt.getKeyAsString()+" does not exist, WILL remove from index");
+		s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionBy());
 	}
 
 	private boolean valuesEqual(Object indexedValue, Object value) {
@@ -152,7 +159,7 @@ public class CmdIndex {
 			NoSqlTypedSession s, String cf, Cursor<IndexPoint> indexView) {
 		int batchCounter = 0;
 		List<Object> keys = new ArrayList<Object>(); 
-		while(indexView.next() && batchCounter < BATCH_SIZE) {
+		while(batchCounter < BATCH_SIZE && indexView.next()) {
 			IndexPoint current = indexView.getCurrent();
 			keys.add(current.getKey());
 			batchCounter++;

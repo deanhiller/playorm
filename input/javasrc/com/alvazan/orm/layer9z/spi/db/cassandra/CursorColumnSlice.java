@@ -17,6 +17,7 @@ import com.netflix.astyanax.query.RowQuery;
 
 class CursorColumnSlice<T> extends AbstractCursor<T> {
 
+	private static String columnName;
 	private CreateColumnSliceCallback callback;
 	private boolean isComposite;
 	private BatchListener batchListener;
@@ -28,12 +29,13 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 	private List<Column<byte[]>> subList;
 	private Boolean forward = null;
 	
-	public CursorColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener, Integer batchSize, String logInfo) {
+	public CursorColumnSlice(CreateColumnSliceCallback l, boolean isComposite, BatchListener bListener, Integer batchSize, String logInfo, String colName) {
 		this.callback = l;
 		this.isComposite = isComposite;
 		this.batchListener = bListener;
 		this.batchSize = batchSize;
 		this.info = logInfo;
+		this.columnName = colName;
 		beforeFirst();
 	}
 
@@ -120,6 +122,7 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		Object colName = col.getName();
 		GenericComposite bigDec = (GenericComposite)colName;
 		IndexColumn c = new IndexColumn();
+		c.setColumnName(columnName);
 		c.setPrimaryKey(bigDec.getPk());
 		c.setIndexedValue(bigDec.getIndexedValue());
 		c.setValue(col.getByteArrayValue());

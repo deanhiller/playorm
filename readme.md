@@ -50,10 +50,7 @@ We also embrace embedding information in rows so you can do quick one key lookup
 
 
 ### Features soon to be added
-* WAY better support for @Embedded and putting Map<String, Type> in your entities for wide row support
 * Ability to index fields inside Embedded objects even if embedded object is a list so you can query them still
-* TONS of documentation is in the works due out.  Check wiki for latest dates
-* More work around the command line tool 
 * Map/Reduce tasks for re-indexing, or creating new indexes from existing data
 * MANY MANY optimizations can be made to increase performance like a nested lookahead loop join and other tricks that only work in noSQL
 * We are considering a stateless server that exposes JDBC BUT requires S-SQL commands (OR just SQL commands for non-partitioned tables)

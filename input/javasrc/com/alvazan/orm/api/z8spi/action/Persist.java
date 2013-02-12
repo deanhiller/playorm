@@ -2,6 +2,7 @@ package com.alvazan.orm.api.z8spi.action;
 
 import java.util.List;
 
+import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 
@@ -35,5 +36,9 @@ public class Persist implements Action {
 	}
 	public void setColumns(List<Column> columns) {
 		this.columns = columns;
+	}
+	@Override
+	public String toString() {
+		return "CF="+colFamily.getColumnFamily()+" rowkey="+new ByteArray(rowKey)+" columns="+this.columns;
 	}
 }

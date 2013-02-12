@@ -24,6 +24,12 @@ public class RowImpl implements Row {
 		this.columns = map;
 	}
 	
+	
+	@Override
+	public String toString() {
+		return "rowKey="+new ByteArray(key)+" columns="+columns;
+	}
+
 	/* (non-Javadoc)
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#getKey()
 	 */
@@ -59,8 +65,8 @@ public class RowImpl implements Row {
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#put(byte[], com.alvazan.orm.api.spi3.db.Column)
 	 */
 	@Override
-	public void put(byte[] name, Column col) {
-		ByteArray key = new ByteArray(name);
+	public void put(Column col) {
+		ByteArray key = new ByteArray(col.getName());
 		columns.put(key, col);
 	}
 	/* (non-Javadoc)

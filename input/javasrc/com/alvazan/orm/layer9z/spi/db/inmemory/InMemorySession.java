@@ -204,7 +204,7 @@ public class InMemorySession implements NoSqlRawSession {
 		Row row = table.findOrCreateRow(action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			row.put(col.getName(), col.copy());
+			row.put(col.copy());
 		}
 	}
 

@@ -19,7 +19,7 @@ public interface Row {
 
 	Column getColumn(byte[] key);
 
-	void put(byte[] name, Column col);
+	void put(Column col);
 
 	void remove(byte[] name);
 

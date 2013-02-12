@@ -74,6 +74,7 @@ public class CursorForPrimaryKey implements DirectCursor<IndexColumnInfo> {
 		if (pk != null) {
 			c.setPrimaryKey(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pk));
 			c.setIndexedValue(colMeta.getOwner().getIdColumnMeta().unformVirtRowKey(pk));
+			c.setColumnName(colMeta.getOwner().getIdColumnMeta().getColumnName());
 			c.setValue(pk);
 		}
 		IndexColumnInfo info = new IndexColumnInfo();

@@ -15,6 +15,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
@@ -48,6 +49,38 @@ public class TestNewRawLayer {
 		other.clearDatabase(true);
 	}
 	
+	//In one case, we added this String.long.String a few times and our in-memory version saw different values as being the same
+	//due to the Utf8Comparator being not so correct in that it translated some different long values back to the same string utf 8 value
+	@Test
+	public void testRawComposite() {
+		NoSqlTypedSession s = mgr.getTypedSession();
+		String cf = "TimeSeriesData";
+		BigInteger id = BigInteger.valueOf(98);
+		TypedRow row = s.createTypedRow(cf);
+		row.setRowKey(id);
+
+		createColumn(row, "6e756d526f6f6d73", (byte) 1);
+		createColumn(row, "6275696c64696e67", (byte) 2);
+		createColumn(row, "6e616d65", (byte) 3);
+		createColumn(row, "5f686973746f72790000013caaa1b98d5f7374617465", (byte) 4);
+		createColumn(row, "5f686973746f72790000013caaa1b98d6275696c64696e67", (byte) 5);
+		createColumn(row, "5f686973746f72790000013caaa1b98d6e756d526f6f6d73", (byte) 6);
+		createColumn(row, "5f686973746f72790000013caaa1b9ba6275696c64696e67", (byte) 7);
+		createColumn(row, "5f686973746f72790000013caaa1b9ba6e756d526f6f6d73", (byte) 8);
+		createColumn(row, "6e756d526f6f6d73", (byte) 0);
+		
+		s.put(cf, row);
+		s.flush();
+		
+		TypedRow result = s.find(cf, id);
+		Assert.assertEquals(8, result.getColumnsAsColl().size());
+	}
+	
+	private void createColumn(TypedRow row, String hex, byte value) {
+		byte[] name = StandardConverters.convertFromString(byte[].class, hex);
+		row.addColumn(name, new byte[] { value} , null);
+	}
+
 	@Test
 	public void testBasicChangeToIndex() {
 		log.info("testBasicChangeToIndex");
