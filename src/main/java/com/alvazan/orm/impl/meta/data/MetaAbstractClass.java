@@ -25,6 +25,8 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	protected MetaIdField<T> idField;
 	
 	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
+
+	private Throwable firstTrace;
 	
 	public Object fetchId(T entity) {
 		if(entity == null || idField == null)
@@ -103,5 +105,12 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	public abstract Tuple<T> convertIdToProxy(Row row, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cacheLoadCallback);
 	public abstract List<MetaField<T>> getIndexedColumns();
 	public abstract void fillInInstance(Row row, NoSqlSession session, T inst);
+
+	public void setFirstTrace(Throwable fillInStackTrace) {
+		firstTrace = fillInStackTrace;
+	}
+	public Throwable getFirstTrace() {
+		return firstTrace;
+	}
 
 }
