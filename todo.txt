@@ -1,14 +1,7 @@
-
-@Embedded with a List<String> first
-
-maven publish jar
-
 map/reduce failing with classloader issue
 
-@Embedded with actual entities
 
 finish PLAY plugin for NoSql stuff to make that easier...only need to add edits now to playframework plugin and we are good..later add gui for queries
-need @Embedded tag as well especially for List<String>
 
 do a TimeUUID for PlayOrm with a type1 style UUID (ie. not random) and allow queries on time range as well.
 
@@ -17,8 +10,6 @@ make sure query on LocalDateTime works and add test case as well
 test query by a data format like 10/2/21 10:15:37.893
 
 add queries/indexing of @Embedded stuff as well
-
-allow query by row key if they just do where table.rowkey = :id  but for >,<, they have to Index it
 
 Add the in clause in S-SQL so we can also do a findAll without findAll method at all
 

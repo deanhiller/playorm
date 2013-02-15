@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# Use JAVA_HOME if set, otherwise look for java in PATH
+if [ -x $JAVA_HOME/bin/java ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA=`which java`
+fi
+
+for jar in ../output/jardist/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
+for jar in ../output/jardist/playorm-astyanax/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
+for jar in ../output/jardist/playorm-inmemory/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
+# Add classes so that it works in development
+CLASSPATH=../bin:$CLASSPATH
+
+if [ -z $CLASSPATH ]; then
+    echo "You must set the CLASSPATH var" >&2
+    exit 1
+fi
+
+$JAVA -ea -cp $CLASSPATH -Xmx256M \
+         com.alvazan.ssql.cmdline.PlayOrm "$@"
+
+# vi:ai sw=4 ts=4 tw=0 et

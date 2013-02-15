@@ -1,3 +1,11 @@
 output
 eclipsegen
 examples/example/bin
+.gradle
+.project
+.classpath
+.settings
+/bin
+playorm.iml
+playorm.ipr
+playorm.iws

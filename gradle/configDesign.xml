@@ -1,0 +1,146 @@
+<design>
+
+<!-- Use this tool to create your package design which the build will compare with the
+     actual package dependencies.  It will then tell you what parts of the code violate
+	 the following package design.
+
+	 See the documentation of the ant-contrib project to fill in the package design here
+     ant-contrib is at http://sourceforge.net/projects/ant-contrib.  Currently, this
+	 template is using a version from the CVS head, and the docs are up to date on the
+	 CVS head, but not in the latest download yet as I have not asked for a new release
+	 on ant-contrib yet(wanted to finish a few more things), but this is stable and works.
+	 I just want to add one more feature-->
+
+<!-- external packages that are global and everyone is allowed to depend on -->
+<package name="slf4j" package="org.slf4j" needdeclarations="false"/>
+<package name="inject" package="javax.inject" needdeclarations="false"/>
+<package name="commons" package="org.apache.commons" needdeclarations="false" subpackages="include"/>
+<package name="jodatime" package="org.joda" needdeclarations="false" subpackages="include"/>
+<package name="uuid" package="com.eaio" needdeclarations="false" subpackages="include"/>
+
+<!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
+<package name="antlr" package="org.antlr.runtime" subpackages="include"/>
+<package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
+<package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
+<package name="args" package="org.kohsuke.args4j"/>
+<package name="logback" package="ch.qos.logback" subpackages="include"/>
+<package name="playframework" package="play" subpackages="include"/>
+<package name="jline" package="jline" subpackages="include"/>
+
+<package name="def" package="nosql"/>
+
+<package name="javassist" package="javassist" subpackages="include"/>
+<package name="annotationParser" package="com.impetus.annovention" subpackages="include">
+	<depends>javassist</depends>
+</package>
+
+<package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>
+
+<package name="api8" package="com.alvazan.orm.api.z8spi" subpackages="include">
+	<depends>javassist</depends>
+</package>
+
+<package name="api5" package="com.alvazan.orm.api.z5api" subpackages="include">
+	<depends>api8</depends>
+</package>
+
+<package name="api3" package="com.alvazan.orm.api.z3api">
+	<depends>api5</depends>
+	<depends>api8</depends>
+</package>
+
+<package name="api" package="com.alvazan.orm.api.base" subpackages="include">
+    <depends>api3</depends>
+	<depends>api5</depends>
+	<depends>api8</depends>
+</package>
+
+<package name="allapis" package="com.alvazan.orm.api" subpackages="include"/>
+
+<package name="apiutil" package="com.alvazan.orm.api.util">
+	<depends>allapis</depends>
+</package>
+
+<package name="ourParser" package="com.alvazan.orm.parser.antlr">
+	<depends>antlr</depends>
+	<depends>api8</depends>
+</package>
+
+<package name="cmdline" package="com.alvazan.ssql.cmdline">
+    <depends>args</depends>
+    <depends>allapis</depends>
+    <depends>logback</depends>
+    <depends>jline</depends>
+</package>
+
+<!-- bindings can depend on everything to wire stuff up so needdepends is false -->
+<package name="bindings" package="com.alvazan.orm.impl.bindings" needdepends="false"/>
+
+<package name="metadata" package="com.alvazan.orm.impl.meta.data"  subpackages="include">
+	<depends>allapis</depends>
+	<depends>javassist</depends>
+</package>
+
+<package name="metascan" package="com.alvazan.orm.impl.meta.scan">
+    <depends>metadata</depends>
+	<depends>allapis</depends>
+	<depends>javassist</depends>
+</package>
+
+<package name="typedlayer" package="com.alvazan.orm.layer3.typed">
+	<depends>allapis</depends>
+</package>
+
+<package name="playplugin" package="com.alvazan.play" subpackages="include">
+	<depends>allapis</depends>
+	<depends>playframework</depends>
+    <depends>logback</depends>
+</package>
+
+<package name="base" package="com.alvazan.orm.layer0.base">
+	<depends>allapis</depends>
+	<depends>metascan</depends>
+	<depends>metadata</depends>
+	<depends>annotationParser</depends>
+	<!-- I hate this dependency on another impl... -->
+	<depends>typedlayer</depends>
+</package>
+
+<package name="cache" package="com.alvazan.orm.layer5" subpackages="include">
+	<depends>allapis</depends>
+	<depends>ourParser</depends>
+</package>
+
+<package name="loggingX" package="com.alvazan.orm.logging" subpackages="include">
+	<depends>api8</depends>
+	<depends>api5</depends>
+</package>
+
+<!-- This section is just the database adapters depending on the spi -->
+<package name="cass" package="com.alvazan.orm.layer9z.spi.db.cassandra">
+	<depends>api8</depends>
+	<depends>astyanax</depends>
+	<depends>cassandra</depends>
+</package>
+<package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
+	<depends>api8</depends>
+</package>
+<package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
+	<depends>allapis</depends>
+</package>
+
+<package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>
+
+
+<package name="monitorapi" package="org.playorm.monitor.api"></package>
+
+<package name="monitorimpl" package="org.playorm.monitor.impl" subpackages="include">
+    <depends>monitorapi</depends>
+    <depends>api</depends>
+    <depends>api8</depends>
+</package>
+
+<!-- bindings can depend on everything to wire stuff up so needdepends is false -->
+<package name="bindings2" package="org.playorm.monitor.bindings" needdepends="false"/>
+
+</design>

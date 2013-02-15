@@ -1,5 +1,0 @@
-ScannerForXXX are singleton classes that do the scanning and should be doing all the parsing to create the meta objects for fields, queries, classes, etc. etc.  MetaXXXX.java are the meta classes that are filled in and used at runtime.  These classes are all looked up in hashmaps and do the translation from nosql to objects and back as well as translation between objects and the indexing formats too.  
-
-NoSqlProxyImpl is the main proxy class that remains empty until a method is called on the object(except for getId() of course since it has that form the current table).  Once a method is called on that object, it fills itself in by going to the database and getting the data and using the meta objects to fill itself in.
-
-MetaQuery should only be doing translation of ORM parameters if needed.  All parsing should really be done in ScannerForQuery or something of that nature.
