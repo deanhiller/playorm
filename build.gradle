@@ -48,7 +48,7 @@ sourceSets {
 }
 task generateparser(dependsOn: 'clean', type: JavaExec) {
 	def antlrSource = 'src/main/antlr'
-	destinationDir = "${projectDir}/output/generated/"
+	def destinationDir = "${projectDir}/output/generated/"
 	inputs.dir file(antlrSource)
 	def grammars = fileTree(antlrSource).include('**/*.g')
 	main = 'org.antlr.Tool'
@@ -103,7 +103,7 @@ jar {
 }
  
 task createfile << {
-    jardistloc = file(new File('$buildDir/jardist'))
+    def jardistloc = file(new File('$buildDir/jardist'))
     jardistloc.mkdir()
 } 
 
