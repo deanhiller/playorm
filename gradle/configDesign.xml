@@ -129,9 +129,6 @@
 	<depends>allapis</depends>
 </package>
 
-<package name="test" package="com.alvazan.test" subpackages="include" needdepends="false"/>
-
-
 <package name="monitorapi" package="org.playorm.monitor.api"></package>
 
 <package name="monitorimpl" package="org.playorm.monitor.impl" subpackages="include">
