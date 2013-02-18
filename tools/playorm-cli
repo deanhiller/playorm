@@ -11,14 +11,6 @@ for jar in ../output/jardist/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
-for jar in ../output/jardist/playorm-astyanax/*.jar; do
-    CLASSPATH=$CLASSPATH:$jar
-done
-
-for jar in ../output/jardist/playorm-inmemory/*.jar; do
-    CLASSPATH=$CLASSPATH:$jar
-done
-
 # Add classes so that it works in development
 CLASSPATH=../bin:$CLASSPATH
 
