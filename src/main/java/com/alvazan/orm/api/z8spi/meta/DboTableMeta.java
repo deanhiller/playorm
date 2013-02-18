@@ -154,7 +154,7 @@ public class DboTableMeta {
 			cl = cl.getParent();
 		}
 		log.info(prefix+"BEGIN BEGIN classloaders that proxies class exists in="+logMsg+"}");
-		//log.info(prefix+"END END END END END classloader info")
+		log.info(prefix+"END END END END END classloader info");
 	}
 
 	public String getRealColumnFamily() {
