@@ -21,7 +21,7 @@ public @interface NoSqlColumn {
      *  but targetEntity may specify a subtype like Honda such that we would create a Honda object
      *  and put it into the Car field here.  I am not sure if this would be used or not so we
      *  have left it unimplemented
-     * @return
+     * @return Class name of the subtype
      */
 	@SuppressWarnings("rawtypes")
 	Class targetEntity() default void.class;
@@ -32,7 +32,7 @@ public @interface NoSqlColumn {
 	 * You can supply your own converter for a field here which will override all
 	 * standard conversions even for primitives.  You just translate back and
 	 * forth from the byte[] for us and we wire that in.
-	 * @return
+	 * @return An object of <code>Class</code> which extends <code>Converter</code> 
 	 */
 	@Deprecated
 	Class<? extends Converter> customConverter() default NoConversion.class;

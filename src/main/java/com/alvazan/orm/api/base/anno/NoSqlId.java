@@ -30,7 +30,7 @@ public @interface NoSqlId {
 	 * You can supply your own converter for a field here which will override all
 	 * standard conversions even for primitives.  You just translate back and
 	 * forth from the byte[] for us and we wire that in.
-	 * @return
+	 * @return An object of <code>Class</code> which extends <code>Converter</code> 
 	 */
 	@Deprecated
 	Class<? extends Converter> customConverter() default NoConversion.class;

@@ -11,7 +11,7 @@ public @interface NoSqlVirtualCf {
 	/**
 	 * You can put a whole slew of tables in ONE ColumnFamily.  This maps which column family the entity
 	 * will be stored in.
-	 * @return
+	 * @return Name of the Virtual columnFamily in which this entity will be stored. 
 	 */
 	String storedInCf();
 	

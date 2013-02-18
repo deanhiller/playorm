@@ -21,23 +21,22 @@ public interface NoSqlTypedSession {
 	 * interface.  In fact, the flush methods of all higher level interfaces call persist ONCE on the raw
 	 * session and providers are supposed to do ONE send to avoid network latency if you are sending 100
 	 * actions to the nosql database.
-	 * @return
+	 * @return The raw session that all the providers implement
 	 */
 	public NoSqlSession getRawSession();
 
 	/**
-	 * This api takes BigDecimal, BigInteger, or String as the types and no others for the rowKey
-	 * @param colFamily
-	 * @param rowKey rowkey which is BigDecimal, BigInteger, or String
-	 * @param columns
+	 * This API takes BigDecimal, BigInteger, or String as the types and no others for the rowKey
+	 * @param colFamily		ColumnFamily where the row will be saved.
+	 * @param row	 	    <code>TypedRow</code> having a rowkey which is BigDecimal, BigInteger, or String
 	 */
 	public void put(String colFamily, TypedRow row);
 	
 	/**
 	 * Remove entire row.
 	 * 
-	 * @param colFamily
-	 * @param rowKey
+	 * @param colFamily		Name of the ColumnFamily from where row is removed.
+	 * @param rowKey		RowKey of the row
 	 */
 	public void remove(String colFamily, TypedRow rowKey);
 	
@@ -50,11 +49,9 @@ public interface NoSqlTypedSession {
 	 * This creates a query cursor that will query into the database AS you iterate over the cursor.  You
 	 * can also save the cursor to pick up where you left off.  
 	 * 
-	 * @param query
-	 * @param batchSize
-	 * @param includeUnecessaryJoins false for speed but doesn't lookup joined entites, true ensures it gives you all
-	 * the entities back.
-	 * @return
+	 * @param query			S-SQl query to be executed
+	 * @param batchSize		Size of the batch
+	 * @return <code>QueryResult</code> 
 	 */
 	public QueryResult createQueryCursor(String query, int batchSize);
 

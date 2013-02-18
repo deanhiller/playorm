@@ -14,7 +14,7 @@ public @interface NoSqlManyToMany {
 	/**
 	 * When using Map instead of a List, the field in entityType() needs to 
 	 * be specified here...
-	 * @return
+	 * @return The key field name for the map
 	 */
 	String keyFieldForMap() default "";
 
