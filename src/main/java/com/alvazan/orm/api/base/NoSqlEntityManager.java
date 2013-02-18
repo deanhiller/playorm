@@ -16,7 +16,7 @@ public interface NoSqlEntityManager {
 	 * Retrieve underlying interface to write raw columns to.  This works the same as the NoSqlEntityManager
 	 * in that you must call flush to execute all the calls to persist, but is the raw interface.
 	 * 
-	 * @return 
+	 * @return The raw session that all the providers implement
 	 */
 	public NoSqlSession getSession();
 
@@ -30,7 +30,7 @@ public interface NoSqlEntityManager {
 	/**
 	 * Creates a 'Remove' action in the write cache that will be sent to nosql store when flush is called.  This 
 	 * method also creates RemoveIndex actions that will be sent when flush is called as well. 
-	 * @param entity
+	 * @param entity Entity to be removed
 	 */
 	public void remove(Object entity);
 	
@@ -38,7 +38,7 @@ public interface NoSqlEntityManager {
 	 * Creates a 'Persist' action in the write cache that will be sent to nosql store when flush is called.  This method
 	 * also creates PersistIndex and RemoveIndex actions if you have indexed fields and the index needs to be modified
 	 * and those are sent when flush is called as well.
-	 * @param entity
+	 * @param entity Entity to be added
 	 */
 	public void put(Object entity);
 	
@@ -46,7 +46,7 @@ public interface NoSqlEntityManager {
 	 * MUST be used for entity with MANUAL key generation.  To prevent index corruption, you MUST tell us if this is an 
 	 * insert OR an update.  If it is an update, entity will be checked if it was read in first(it needs to be read in
 	 * first before updating so we can properly remove from index and add to it).
-	 * @param entity
+	 * @param entity Entity to be added
 	 * @param isInsert
 	 */
 	public void put(Object entity, boolean isInsert);
@@ -58,9 +58,9 @@ public interface NoSqlEntityManager {
 	 * If your network latency is 5 ms, looking up 1000 records will cost you 5 seconds in a loop(plus processing time)
 	 * where findAll will cost you 5 ms (plus processing time).  ie. findAll is better for looking up lots of entities!!
 	 * 
-	 * @param entityType
-	 * @param key
-	 * @return
+	 * @param entityType Entity for which keys need to be find
+	 * @param key Rowkey of the Object
+	 * @return The object of that Entity for which a rowkey is found
 	 */
 	public <T> T find(Class<T> entityType, Object key);
 	
@@ -70,16 +70,16 @@ public interface NoSqlEntityManager {
 	 * extremely fast(as they are fetched in parallel not series so 5ms network latency for 1000 objects
 	 * is not 5 seconds but just 5ms as it is done in parallel).  
 	 * 
-	 * @param entityType
-	 * @param keys
-	 * @return
+	 * @param entityType Entity for which keys need to be find
+	 * @param keys	List of the rowkeys
+	 * @return	List of the Objects of EntityType having those keys
 	 */
 	public <T> List<KeyValue<T>> findAllList(Class<T> entityType, List<? extends Object> keys);
 	
 	/** 
-	 * @param entityType
-	 * @param keys
-	 * @return
+	 * @param entityType Entity for which keys need to be find
+	 * @param keys List of the rowkeys
+	 * @return Cursor of the Objects of EntityType having those keys
 	 */
 	public <T> Cursor<KeyValue<T>> findAll(Class<T> entityType, Iterable<? extends Object> keys);
 	
@@ -90,9 +90,9 @@ public interface NoSqlEntityManager {
 	 * then set the fake account into the User object and save the user object.  The User is now
 	 * related to the account with that accountId and you did not have to hit the database to
 	 * read in the account.  Again, this is the same as JPA getReference method.
-	 * @param entityType
-	 * @param key
-	 * @return
+	 * @param entityType Entity for which keys need to be find
+	 * @param key 
+	 * @return The object of that EntityType having key as rowkey
 	 */
 	public <T> T getReference(Class<T> entityType, Object key);
 	

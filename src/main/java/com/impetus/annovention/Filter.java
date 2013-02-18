@@ -26,7 +26,7 @@ public interface Filter {
      * If true, the file is accepted, else rejected.
      * 
      * @param filename
-     * @return
+     * @return file is accepted or not
      */
     boolean accepts(String filename);
 }

@@ -58,8 +58,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	/**
 	 * @param row
 	 * @param session - The session to pass to newly created proxy objects
-	 * @param inst The object OR the proxy to be filled in
-	 * @return The key of the entity object
+	 * @param inst The object OR the proxy to be filled in 
 	 */
 	public void fillInInstance(Row row, NoSqlSession session, T inst) {
 		idField.translateFromColumn(row, inst, session);

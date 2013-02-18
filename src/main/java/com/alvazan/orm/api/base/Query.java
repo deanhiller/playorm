@@ -17,14 +17,14 @@ public interface Query<T> {
 	 * any exception at all and code will keep working.
 	 * 
 	 * Also, you can call getException instead of getValue to avoid the Exception
-	 * @return
+	 * @return A <code>Cursor</code> 
 	 */
 	public Cursor<KeyValue<T>> getResults();
 	/**
 	 * getResults caches results returned as you iterate over them BUT if you are going to stream 1000's of results
 	 * to someone, you an skip caching results so memory does not build up using this method...
-	 * @param skipCache 
-	 * @return
+	 * @param cacheResults 
+	 * @return A <code>Cursor</code> 
 	 */
 	public Cursor<KeyValue<T>> getResults(boolean cacheResults);
 
@@ -32,21 +32,21 @@ public interface Query<T> {
 	 * Only done when you have queries on a subclass in inheritance tables.  Then if you do a select all, you probably should
 	 * supply the index to read from to select all the entries.
 	 * @param indexedColumn
-	 * @return
+	 * @return A <code>Cursor</code> 
 	 */
 	public Cursor<KeyValue<T>> getResults(String indexedColumn);
 	
 	/**
 	 * Wraps the cursor in a nice hasNext/next Iterable
-	 * @return
+	 * @return An iterator over the elements in the result
 	 */
 	public Iterable<KeyValue<T>> getResultsIter();
 	
 	/**
 	 * getResults caches results returned as you iterate over them BUT if you are going to stream 1000's of results
 	 * to someone, you can skip caching results so memory does not build up using this method...
-	 * @param skipCache 
-	 * @return
+	 * @param cacheResults  
+	 * @return An iterator over the elements in the result
 	 */
 	public Iterable<KeyValue<T>> getResultsIter(boolean cacheResults);
 	
@@ -59,13 +59,11 @@ public interface Query<T> {
 	 * 
 	 * You probably should use getResultKeyValueList instead since that will delay exceptions caused by entities
 	 * do not exist but are in the index (this is nosql after all)
-	 * @param firstResult 
-	 * @param maxResults 
 	 * @param firstResult 0 or larger
 	 * @param maxResults null if you want all the results though you should probably cap this so you don't blow out memory
 	 * or use getResults method instead.
 	 * 
-	 * @return
+	 * @return List of the entities
 	 */
 	public List<T> getResultList(int firstResult, Integer maxResults);
 	

@@ -50,7 +50,7 @@ public class NoSqlProxyImpl<T> implements MethodHandler {
 	}
 	
 	/**
-	 * @param self - The proxy object(if you call any method on self, it will result in calling invoke method
+	 * @param selfArg - The proxy object(if you call any method on self, it will result in calling invoke method
 	 *                   AND that includes a simple toString like if you did log.info("proxy="+self);
 	 * @param superClassMethod - The method that is on the superclass like Account.java
 	 * @param subclassProxyMethod - The method that is on the proxy like Account_$$_javassist_0

@@ -128,7 +128,7 @@ public abstract class Discoverer {
 	/**
 	 * Finds resources to scan for
 	 * 
-	 * @return
+	 * @return Array of URLs
 	 */
 	public abstract URL[] findResources(ClassLoader cl);
 	

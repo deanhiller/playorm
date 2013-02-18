@@ -26,7 +26,7 @@ public interface NoSqlSession {
 	 * interface.  In fact, the flush methods of all higher level interfaces call persist ONCE on the raw
 	 * session and providers are supposed to do ONE send to avoid network latency if you are sending 100
 	 * actions to the nosql database.
-	 * @return
+	 * @return The raw session that all the providers implement
 	 */
 	public NoSqlRawSession getRawSession();
 	
@@ -44,11 +44,11 @@ public interface NoSqlSession {
 	public void remove(DboTableMeta colFamily, byte[] rowKey);
 	
 	/**
-	 * Remove specific columns from a row, mainly 
+	 * Remove specific columns from a row
 	 * 
 	 * @param colFamily
 	 * @param rowKey
-	 * @param columns
+	 * @param columnNames
 	 */
 	public void remove(DboTableMeta colFamily, byte[] rowKey, Collection<byte[]> columnNames);
 
@@ -71,9 +71,8 @@ public interface NoSqlSession {
 	 * @param from
 	 * @param to
 	 * @param batchSize 
-	 * @param colFamily
-	 * @param rowKey
-	 * @return
+	 * @param info
+	 * @return An <code>Cursor</code> of <code>IndexColumn</code> type
 	 */
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo info, Key from, Key to, Integer batchSize);
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values);	

@@ -17,8 +17,7 @@ public interface SpiMetaQuery {
 	 * have many SpiQueryAdapters associated with it that came from the same query but threads supply
 	 * different parameters to it.  
 	 * 
-	 * @param indexName
-	 * @param partitionId 
+
 	 * @param session 
 	 * @return A BRAND NEW instance of SpiQueryAdapter(must not be one you have returned previously)
 	 */
@@ -32,13 +31,13 @@ public interface SpiMetaQuery {
 
 	/**
 	 * Join happens after rows returned because don't need indices as it would just slow it down.
-	 * @return
+	 * @return List of ViewInfo
 	 */
 	public List<ViewInfo> getViewsDelayedJoin();
 
 	/**
 	 * Join happens from indices during the query
-	 * @return
+	 * @return List of ViewInfo
 	 */
 	public List<ViewInfo> getViewsEagerJoin();
 

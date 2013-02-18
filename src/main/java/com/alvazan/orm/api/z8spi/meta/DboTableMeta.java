@@ -114,7 +114,7 @@ public class DboTableMeta {
 	
 	private static Proxy testInstanceCreation(Class<?> clazz) {
 		try {
-			Object obj = clazz.newInstance();
+			//Object obj = clazz.newInstance();
 			Proxy inst = (Proxy) clazz.newInstance();
 			return inst;
 		} catch (InstantiationException e) {
@@ -353,10 +353,8 @@ public class DboTableMeta {
 	}
 	
 	/**
-	 * @param row
-	 * @param session - The session to pass to newly created proxy objects
+	 * @param row The row from where columns to be filled in the <code>TypedRow</code> 
 	 * @param inst The object OR the proxy to be filled in
-	 * @return The key of the entity object
 	 */
 	public void fillInInstance(Row row, TypedRow inst) {
 		idColumn.translateFromColumn(row, inst);

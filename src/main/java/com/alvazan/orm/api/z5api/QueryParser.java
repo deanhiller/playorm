@@ -13,9 +13,10 @@ public interface QueryParser {
 	 * For ORM layer that want to use TABLE as the alias instead of typing Entity name which allows
 	 * you to refactor code without named queries breaking ;).
 	 * 
-	 * @param query
-	 * @param targetTable
-	 * @return
+	 * @param query the s-sql query
+	 * @param targetTable name of the columnFamily
+	 * @param errorMsg
+	 * @return Meta Query for the provider
 	 */
 	public SpiMetaQuery parseQueryForOrm(String query, String targetTable, String errorMsg);
 	

@@ -7,7 +7,7 @@ public interface HashGenerator {
 	 * 
 	 * @param monitorHash
 	 * @param numUpWebNodes
-	 * @return
+	 * @return the node number this should run on
 	 */
 	int generate(int monitorHash, int numUpWebNodes);
 

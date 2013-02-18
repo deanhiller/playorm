@@ -108,14 +108,14 @@ public abstract class DboColumnMeta {
 	 * This is the more detailed type for programs to know what types the values
 	 * fit into. This would be of type long.class, short.class, float, etc. etc.
 	 * 
-	 * @return
+	 * @return <code>Class</code> type of the Column
 	 */
 	public abstract Class getClassType();
 
 	/**
 	 * This is the raw database type of String, BigInteger or BigDecimal
 	 * 
-	 * @return
+	 * @return the storage type
 	 */
 	public abstract StorageTypeEnum getStorageType();
 

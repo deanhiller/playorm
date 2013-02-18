@@ -12,9 +12,10 @@ public interface SpiQueryAdapter {
 
 	/**
 	 * 
-	 * @param includeUnecessaryJoin you give us an EMPTY Set and we fill it with views that we had to join because of where expression.  For performance
+	 * @param alreadyJoinedViews you give us an EMPTY Set and we fill it with views that we had to join because of where expression.  For performance
 	 * we do not do the other joins as the rows coming back have them directly
-	 * @return
+	 * @param indexedColumn Name of the indexed Column
+	 * @return A <code>Cursor</code> of <code>IndexColumnInfo</code> type
 	 */
 	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews, String indexedColumn);
 

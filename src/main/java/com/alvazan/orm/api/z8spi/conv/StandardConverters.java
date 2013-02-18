@@ -84,7 +84,7 @@ public class StandardConverters {
 	/**
 	 * Converts to BigInteger byte form OR BigDecimal byte form OR UTF8 byte form
 	 * @param obj
-	 * @return
+	 * @return byte form for the object
 	 */
 	public static byte[] convertToBytes(Object obj) {
 		if(obj == null)
@@ -100,7 +100,7 @@ public class StandardConverters {
 	 * Special method as if you convert 5 or 876, they convert to BigInteger byte form but here we
 	 * specifically want BigDecimal byte form so we need to force that.
 	 * @param obj
-	 * @return
+	 * @return byte form for the object
 	 */
 	public static byte[] convertToDecimalBytes(Object obj) {
 		Object value = obj;

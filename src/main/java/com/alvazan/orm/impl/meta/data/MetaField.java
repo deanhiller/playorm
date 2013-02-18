@@ -33,7 +33,7 @@ public interface MetaField<OWNER> {
 	/**
 	 * For when Query.setParameter is called, we need to translate into byte[] to search the index for the value
 	 * @param value
-	 * @return
+	 * @return byte array for the value object
 	 */
 	public byte[] translateValue(Object value);
 
