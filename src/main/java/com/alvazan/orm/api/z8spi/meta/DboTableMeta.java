@@ -114,6 +114,7 @@ public class DboTableMeta {
 	
 	private static Proxy testInstanceCreation(Class<?> clazz) {
 		try {
+			Object obj = clazz.newInstance();
 			Proxy inst = (Proxy) clazz.newInstance();
 			return inst;
 		} catch (InstantiationException e) {
@@ -125,6 +126,12 @@ public class DboTableMeta {
 	
 	private static void logClassLoaders(Class clazz) {
 		logClassLoader("[proxies loaded in this one]", clazz.getClassLoader());
+		
+		Class[] interfaces = clazz.getInterfaces();
+		for(Class inter : interfaces) {
+			log.info("loggin interface="+inter);
+			logClassLoader("[INTERFACE="+inter+"]", inter.getClassLoader());
+		}
 		
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		logClassLoader("[context classloader]", cl);
@@ -146,7 +153,8 @@ public class DboTableMeta {
 			logMsg+=cl+",";
 			cl = cl.getParent();
 		}
-		log.info(prefix+"classloaders that proxies class exists in="+logMsg+"}");
+		log.info(prefix+"BEGIN BEGIN classloaders that proxies class exists in="+logMsg+"}");
+		log.info(prefix+"END END END END END classloader info)
 	}
 
 	public String getRealColumnFamily() {
