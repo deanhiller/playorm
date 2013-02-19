@@ -70,9 +70,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	@Override
 	public void remove(DboTableMeta colFamily, byte[] rowKey) {
 		session.remove(colFamily, rowKey);
-		
-		TheKey k = new TheKey(colFamily.getColumnFamily(), rowKey);
-		cache.remove(k);
+		cacheRow(colFamily, rowKey, null);
 	}
 
 	@Override
@@ -127,15 +125,12 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	public void cacheRow(DboTableMeta colFamily, byte[] key, Row r) {
-		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
-		//NOTE: We NO LONGER cache nulls!!!  The reason is if someone has an entity and does entity.getListOfXXXEntities()
-		//as they iterate over the list, they can do a mgr.find(XXXEntity.class, entity.getId()) to find out if the row actually 
-		//exists
-		if(r != null) {
-			TheKey k = new TheKey(colFamily.getColumnFamily(), key);
-			RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
-			cache.put(k, holder);
-		}
+		//NOTE: We cache null rows as on a user.getYYYEntites(), the loaded entities may be null though the user
+		//get a List<YYYEntity> and all are there but he can check if they are really there with
+		//mgr.checkRowExists(entity) and that will just hit the cache
+		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
+		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
+		cache.put(k, holder);
 	}
 
 	static class TheKey {
