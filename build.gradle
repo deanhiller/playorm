@@ -1,0 +1,182 @@
+apply plugin: 'java'
+apply plugin: 'checkstyle'
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+buildDir= "$rootDir/output"
+
+ext.githubProjectName = rootProject.name 
+group = "com.alvazan.${githubProjectName}"
+sourceCompatibility = 1.6
+
+repositories { mavenCentral() }
+
+configurations {
+	antlr3
+	antcp 
+}
+
+dependencies {
+	compile group:'com.google.code.maven-play-plugin.org.playframework',name:'play',version:'1.2.5', transitive:false
+	compile group: 'org.antlr', name: 'ST4', version: '4.0.4'
+	compile group: 'junit', name: 'junit', version: '4.9'
+	compile (group: 'com.netflix.astyanax', name: 'astyanax', version: '1.56.18') {
+		exclude group: 'org.slf4j'
+        exclude group: 'log4j'
+	    }         
+	compile group: 'org.javassist', name: 'javassist', version: '3.16.1-GA'
+	compile group: 'com.google.inject', name: 'guice', version: '3.0'
+	compile group: 'args4j', name: 'args4j', version: '2.0.16'
+	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.1'
+	compile group: 'com.eaio.uuid', name: 'uuid', version: '3.2'
+	compile group: 'joda-time', name: 'joda-time', version: '2.0'
+	compile 'org.antlr:antlr-runtime:3.2' 
+	antlr3 'org.antlr:antlr:3.2'
+	antcp "ant-contrib:ant-contrib:1.0b3"
+	antcp "com.google.code.findbugs:bcel:2.0.1"
+	testCompile group: 'junit', name: 'junit', version: '4.+'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir "${projectDir}/output/generated/java"
+        }
+    }
+}
+task generateparser(dependsOn: 'clean', type: JavaExec) {
+	def antlrSource = 'src/main/antlr'
+	def destinationDir = "${projectDir}/output/generated/"
+	inputs.dir file(antlrSource)
+	def grammars = fileTree(antlrSource).include('**/*.g')
+	main = 'org.antlr.Tool'
+	classpath = configurations.antlr3
+	args = ["-o", "${destinationDir}/java/com/alvazan/orm/parser/antlr", grammars.files].flatten()
+}
+
+compileJava {
+    dependsOn generateparser
+}
+compileTestJava.dependsOn 'copyToLib', 'srcbin', 'verifyPackageDesign'
+
+eclipseClasspath.dependsOn 'generateparser'
+ideaModule.dependsOn 'generateparser' 
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+    from sourceSets.main.allSource
+    classifier 'sources'
+    extension 'jar'
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    from javadoc.destinationDir
+    classifier 'javadoc'
+    extension 'jar'
+}
+
+task srcbin(type: Jar, dependsOn:javadoc) {
+    from sourceSets.main.allSource
+    from 'output/classes/main'
+    classifier 'srcbin'
+}
+
+test {
+	classpath = classpath +  files("${projectDir}/src/conf/logback.xml")
+}
+
+configurations.add('sources')
+configurations.add('javadoc')
+configurations.archives {
+    extendsFrom configurations.sources
+    extendsFrom configurations.javadoc
+}
+   
+task copyToLib (dependsOn: 'createfile', type: Copy ) {
+	into "$buildDir/jardist"
+	from configurations.runtime
+}
+	
+jar {  
+	exclude('**/t*/d*')
+}
+ 
+task createfile << {
+    def jardistloc = file(new File('$buildDir/jardist'))
+    jardistloc.mkdir()
+} 
+
+checkstyleMain {
+    configFile = rootProject.file('gradle/checkstyle.xml')
+	source = sourceSets.main.allJava.matching {
+        exclude '**/com/alvazan/orm/parser/antlr/*'
+	}
+}
+
+checkstyleMain.dependsOn 'verifyPackageDesign'
+
+checkstyleTest {
+    configFile = rootProject.file('gradle/checkstyle.xml')
+}
+
+task verifyPackageDesign(dependsOn: compileJava) << { 
+	ant.taskdef(name: 'verifyDesign', classname: 'net.sf.antcontrib.design.VerifyDesign', classpath: configurations.antcp.asPath)
+    ant.verifyDesign(design: 'gradle/configDesign.xml') {
+		ant.path() {
+			ant.fileset(dir: "$rootDir/output/classes") {
+				ant.include(name: '**/*.class')
+			}			
+		}
+    }
+}
+
+artifacts {
+	archives jar
+	archives sourcesJar
+	archives javadocJar
+}
+  
+signing {
+    required { gradle.taskGraph.hasTask(uploadMavenCentral) }
+    sign configurations.archives
+}
+
+task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
+    configuration = configurations.archives
+    doFirst {
+		repositories.mavenDeployer {
+        	beforeDeployment { org.gradle.api.artifacts.maven.MavenDeployment deployment -> signing.signPom(deployment) }
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                authentication(userName: rootProject.sonatypeUsername, password: rootProject.sonatypePassword)
+			}
+            uniqueVersion = true
+            pom.project {
+                name "${project.name}"
+                description "${project.name} developed by Alvazan"
+                modelVersion '4.0.0'
+                groupId 'com.alvazan'
+                artifactId 'playorm'
+                url 'http://alvazan.com'
+                  developers {
+                    developer {
+                       id 'd'
+                       name 'DH'
+					}
+				}
+                licenses {
+                     license {
+                       name 'Mozilla Public License Version 2.0'
+                       url 'http://www.mozilla.org/MPL/2.0/'
+                       distribution 'repo'
+                       }
+                     }
+                scm {
+                     url 'https://github.com/deanhiller/playorm.git'
+                     connection 'scm:git:git@github.com:deanhiller/playorm.git'
+                     developerConnection 'scm:git:git@github.com:deanhiller/playorm.git'
+                }
+            }
+        }
+    }
+}
