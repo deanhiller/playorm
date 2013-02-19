@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.base.Indexing;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
@@ -124,6 +125,8 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 
 	private boolean isNeedPersist(OWNER entity, Object value, Map<Field, Object> fieldToValue) {
 		if(!(entity instanceof NoSqlProxy))
+			return true;
+		else if(Indexing.isForcedIndexing())
 			return true;
 		else if(valuesEqual(fieldToValue, value)) //value is equal to previous value 
 			return false; 
