@@ -56,17 +56,25 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
 		Object originalValue = fieldToValue.get(field);
-		if(originalValue == null)
+		if(valuesEqual(originalValue, value))
 			return;
-		else if(originalValue.equals(value))
-			return; //previous value is the same, yeah, nothing to do here!!!
-			
+
 		byte[] pk = row.getKey();
 		byte[] oldIndexedVal = translateValue(originalValue);
 		
 		List<IndexData> indexList = row.getIndexToRemove();
 		
 		addToList(info, oldIndexedVal, storageType, pk, indexList);
+	}
+
+	private boolean valuesEqual(Object originalValue, Object value) {
+		if(originalValue == null && value == null)
+			return true;
+		else if(originalValue == null)
+			return false;
+		else if(originalValue.equals(value))
+			return true;
+		return false;
 	}
 
 	private void addToList(InfoForIndex<OWNER> info, byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk, List<IndexData> indexList) {
@@ -116,10 +124,8 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		if(!(entity instanceof NoSqlProxy))
 			return true;
 		Object originalValue = fieldToValue.get(field);
-		if(value == null) //new value is null so nothing to persist 
-			return false;
-		else if(value.equals(originalValue))
-			return false; //previous value is the same, yeah, nothing to do here!!!
+		if(valuesEqual(originalValue, value)) //value is equal to previous value 
+			return false; 
 		
 		return true;
 	}

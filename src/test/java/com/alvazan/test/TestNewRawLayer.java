@@ -90,7 +90,7 @@ public class TestNewRawLayer {
 		
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
-		Cursor<KeyValue<TypedRow>> cursor = s.createQueryCursor("select * FROM User as u left join Child as c on u.age = c.age", 500).getPrimaryViewCursor();
+		Cursor<KeyValue<TypedRow>> cursor = s.createQueryCursor("select * FROM User as u left join u.age Child as c on u.age = c.age", 500).getPrimaryViewCursor();
 
 		int counter = 0;
 		while(cursor.next()) {

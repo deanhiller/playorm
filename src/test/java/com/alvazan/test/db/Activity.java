@@ -39,8 +39,8 @@ import com.eaio.uuid.UUID;
 	@NoSqlQuery(name="findById", query="select * FROM TABLE as e WHERE e.id=:id"),
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
 	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
-	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date")
-	
+	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date"),
+	@NoSqlQuery(name="findByAccount", query="select * from TABLE as e where e.account = :account")
 })
 public class Activity {
 
@@ -302,5 +302,9 @@ public class Activity {
 		return query.getResultList(0, null);
 	}
 
-	
+	public static List<Activity> findByAccount(NoSqlEntityManager mgr, Account account) {
+		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByAccount");
+		query.setParameter("account", account);
+		return query.getResultList(0, null);		
+	}
 }
