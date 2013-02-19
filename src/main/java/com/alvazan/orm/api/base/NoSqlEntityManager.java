@@ -150,4 +150,5 @@ public interface NoSqlEntityManager {
 	 * database
 	 */
 	public void clearDatabase(boolean recreateMeta);
+	
 }
