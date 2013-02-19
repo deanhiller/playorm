@@ -61,8 +61,8 @@ compileJava {
 }
 compileTestJava.dependsOn 'copyToLib', 'srcbin', 'verifyPackageDesign'
 
-tasks['eclipse'].dependsOn(generateparser) 
-tasks['idea'].dependsOn(generateparser) 
+eclipseClasspath.dependsOn 'generateparser'
+ideaModule.dependsOn 'generateparser' 
 
 task sourcesJar(type: Jar, dependsOn:classes) {
     from sourceSets.main.allSource
