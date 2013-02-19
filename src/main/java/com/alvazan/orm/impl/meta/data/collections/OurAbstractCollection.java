@@ -16,11 +16,9 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.IndiceToVirtual;
 import com.alvazan.orm.api.z8spi.iter.ListWrappingCursor;
-import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
-import com.alvazan.orm.impl.meta.data.Tuple;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLoadCallback {
@@ -63,7 +61,6 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			return;
 		
 		DboTableMeta metaDbo = metaClass.getMetaDbo();
-		DboColumnIdMeta idMeta = metaDbo.getIdColumnMeta();
 		IndiceToVirtual virtKeys = new IndiceToVirtual(metaDbo, new ListWrappingCursor<byte[]>(keys));
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
@@ -74,23 +71,17 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 			if(holder == null)
 				break;
 			KeyValue<Row> kv = holder.getValue();
-			byte[] key = (byte[]) kv.getKey();
-			byte[] nonVirtKey = idMeta.unformVirtRowKey(key);
 			Row row = kv.getValue();
-			Tuple<T> tuple = metaClass.convertIdToProxy(row, session, nonVirtKey, null);
-			if(row == null) {
-				if (!metaDbo.isEmbeddable())
-				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
-						" reference/FK to a row that does not exist in another table.  " +
-						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
+			if(row != null || metaDbo.isEmbeddable()) {
+				Holder<T> h = (Holder) originalHolders.get(counter);
+				T value = h.getValue();
+				if(value instanceof NoSqlProxy) {
+					//inject the row into the proxy object here to load it's fields
+					metaClass.fillInInstance(row, session, value);
+					//((NoSqlProxy)value).__injectData(row);
+				}
 			}
-			Holder<T> h = (Holder) originalHolders.get(counter);
-			T value = h.getValue();
-			if(value instanceof NoSqlProxy) {
-				//inject the row into the proxy object here to load it's fields
-				metaClass.fillInInstance(row, session, value);
-				//((NoSqlProxy)value).__injectData(row);
-			}
+			
 			counter++;
 		}
 		cacheLoaded = true;

@@ -77,11 +77,8 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 			byte[] nonVirtKey = idMeta.unformVirtRowKey(key);
 			Row row = kv.getValue();
 			Tuple<V> tuple = classMeta.convertIdToProxy(row, session, nonVirtKey, null);
-			if(row == null) {
-				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
-						" reference/FK to a row that does not exist in another table.  " +
-						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
-			}
+			if(row == null)
+				continue;
 
 			V proxy = tuple.getProxy();
 			//inject the row into the proxy object here to load it's fields

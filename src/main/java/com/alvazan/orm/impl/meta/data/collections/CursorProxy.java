@@ -156,16 +156,16 @@ public class CursorProxy<T> implements CursorToMany<T> {
 			if(holder == null)
 				break;
 			KeyValue<Row> kv = holder.getValue();
-			byte[] key = (byte[]) kv.getKey();
 			Row row = kv.getValue();
-			Tuple<T> tuple = proxyMeta.convertIdToProxy(row, session, key, null);
-			if(row == null) {
-				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
-						" reference/FK to a row that does not exist in another table.  " +
-						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
+			//Tuple<T> tuple = proxyMeta.convertIdToProxy(row, session, key, null);
+			if(row != null) {
+				T value = proxyList.get(counter);
+				proxyMeta.fillInInstance(row, session, value);				
+//				throw new IllegalStateException("This entity is corrupt(your entity='"+owner+"') and contains a" +
+//						" reference/FK to a row that does not exist in another table.  " +
+//						"It refers to another entity with pk="+tuple.getEntityId()+" which does not exist");
 			}
-			T value = proxyList.get(counter);
-			proxyMeta.fillInInstance(row, session, value);
+
 			counter++;
 		}
 	}

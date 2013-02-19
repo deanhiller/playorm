@@ -39,6 +39,11 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 	}
 	
 	@Override
+	public String toString() {
+		return "MetaEmbeddedSimple [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType().getName()+ "), columnName=" + columnName + "]";
+	}
+	
+	@Override
 	public void translateFromColumn(Row row, OWNER entity,
 			NoSqlSession session) {
 		Object proxy;
