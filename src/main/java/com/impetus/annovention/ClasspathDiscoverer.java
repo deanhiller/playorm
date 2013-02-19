@@ -133,13 +133,41 @@ public class ClasspathDiscoverer extends Discoverer {
 	private Enumeration<URL> loadPersistenceFiles(ClassLoader cl) {
 		try {
 			Enumeration<URL> resources = cl.getResources("nosql/Persistence.class");
-			return resources;
+			//grrrrr, temporary hack as ecipse can't take two Persistence.java one in src/main/java and one in src/main/test
+			//while a JVM can do just fine with that.
+			Enumeration<URL> xmlFiles = cl.getResources("nosql/Persistence2.class");
+			
+			return new ProxyEnum(resources, xmlFiles);
 		} catch(IOException e) {
 			throw new RuntimeException("some kind of bug", e);
 		}
 		
 	}
 
+	private static class ProxyEnum implements Enumeration<URL> {
+
+		private Enumeration<URL> resources;
+		private Enumeration<URL> xmlFiles;
+
+		public ProxyEnum(Enumeration<URL> resources, Enumeration<URL> xmlFiles) {
+			this.resources = resources;
+			this.xmlFiles = xmlFiles;
+		}
+
+		@Override
+		public boolean hasMoreElements() {
+			return resources.hasMoreElements() || xmlFiles.hasMoreElements();
+		}
+
+		@Override
+		public URL nextElement() {
+			if(resources.hasMoreElements())
+				return resources.nextElement();
+			return xmlFiles.nextElement();
+		}
+		
+	}
+	
 	/* @see com.impetus.annovention.Discoverer#getFilter() */
 	public final Filter getFilter() {
 		return filter;

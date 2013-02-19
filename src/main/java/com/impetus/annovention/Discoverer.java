@@ -138,8 +138,14 @@ public abstract class Discoverer {
      * @param cl 
      */
     public final void discover(ClassLoader cl) {
+    	Set<String> processedAlready = new HashSet<String>();
+    	
         URL[] resources = findResources(cl);
         for (URL resource : resources) {
+        	if(processedAlready.contains(resource.getPath()))
+        		continue;
+        	
+        	processedAlready.add(resource.getPath());
             try {
                 ResourceIterator itr = getResourceIterator(resource, getFilter());
                 
