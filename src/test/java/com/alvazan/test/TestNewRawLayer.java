@@ -25,6 +25,8 @@ import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
+import com.alvazan.test.db.Child;
+import com.alvazan.test.db.User;
 
 public class TestNewRawLayer {
 
@@ -81,6 +83,72 @@ public class TestNewRawLayer {
 		row.addColumn(name, new byte[] { value} , null);
 	}
 
+	//@Test
+	public void testAdvancedJoinClause() {
+		//let's add some good data to the table for the join stuff....
+		fillInData();
+		
+		NoSqlTypedSession s = mgr.getTypedSession();
+		
+		Cursor<KeyValue<TypedRow>> cursor = s.createQueryCursor("select * FROM User as u left join Child as c on u.age = c.age", 500).getPrimaryViewCursor();
+
+		int counter = 0;
+		while(cursor.next()) {
+			counter++;
+		}
+		Assert.assertEquals(4, counter);
+	}
+
+	private void fillInData() {
+		User user1 = new User();
+		user1.setAge(5);
+		user1.setName("dean");
+		mgr.put(user1);
+		
+		Child child1 = new Child();
+		child1.setAge(5);
+		child1.setName("bob1");
+		mgr.put(child1);
+		
+		Child child2 = new Child();
+		child2.setAge(5);
+		child2.setName("dean2");
+		mgr.put(child2);
+		
+		Child child3 = new Child();
+		child3.setAge(6);
+		child3.setName("none");
+		mgr.put(child3);
+		
+		User user2 = new User();
+		user2.setAge(8);
+		user2.setName("joe");
+		mgr.put(user2);
+		
+		User user3 = new User();
+		user3.setAge(8);
+		user3.setName("joe2");
+		mgr.put(user3);
+		
+		Child child4 = new Child();
+		child4.setAge(8);
+		child4.setName("joe3");
+		mgr.put(child4);
+		
+		User user4 = new User();
+		user4.setAge(10);
+		user4.setName("nochild");
+		
+		mgr.put(user4);
+		
+		Child child5 = new Child();
+		child5.setAge(20);
+		child5.setName("someone");
+		mgr.put(child5);
+		
+		mgr.flush();
+	}
+	
 	@Test
 	public void testBasicChangeToIndex() {
 		log.info("testBasicChangeToIndex");
