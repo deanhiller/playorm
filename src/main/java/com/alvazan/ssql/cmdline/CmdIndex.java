@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
@@ -20,7 +21,7 @@ import com.alvazan.orm.api.z8spi.meta.TypedRow;
 public class CmdIndex {
 	private static final Logger log = LoggerFactory.getLogger(CmdIndex.class);
 	private static final int BATCH_SIZE = 200;
-	private static final int TIME_TO_REPORT = 10000;
+	//private static final int TIME_TO_REPORT = 10000;
 	
 	public void reindex(String cmd, NoSqlEntityManager mgr) {
 		String oldCommand = cmd.substring(8);
@@ -242,15 +243,33 @@ public class CmdIndex {
 		}
 		
 		DboTableMeta meta = mgr.find(DboTableMeta.class, cf);
-		if(meta == null) {
-			throw new InvalidCommand("Column family meta not found="+cf);
+		if (meta == null) {
+			System.out.println("Column family meta not found for " + cf);
+			System.out.println("You can select from following tables:");
+			QueryResult result = mgr.getTypedSession().createQueryCursor("select * from DboTableMeta", 100);
+			Cursor<List<TypedRow>> cursor = result.getAllViewsCursor();
+			while (cursor.next()) {
+				List<TypedRow> joinedRow = cursor.getCurrent();
+				for (TypedRow r : joinedRow) {
+					System.out.println(r.getRowKeyString());
+				}
+			}
+			System.out.println("");
+			throw new InvalidCommand("Column family meta not found for " + cf);
 		}
 		
 		DboColumnMeta colMeta = meta.getColumnMeta(field);
 		if(colMeta == null) {
 			colMeta = meta.getIdColumnMeta();
-			if(!(colMeta != null && colMeta.getColumnName().equals(field)))
-			throw new InvalidCommand("Column="+field+" not found on table="+cf);
+			if(!(colMeta != null && colMeta.getColumnName().equals(field))) {
+				System.out.println("Column= "+field+" not found on table "+cf);
+				System.out.println("You can view index for following columns:");
+				for(DboColumnMeta colMetaOther : meta.getIndexedColumns()) {
+					System.out.println(colMetaOther.getColumnName());
+				}
+				System.out.println("");
+				throw new InvalidCommand("Column= "+field+" not found on table "+cf);
+			}
 		}
 		
 		data.setColFamily(cf);
