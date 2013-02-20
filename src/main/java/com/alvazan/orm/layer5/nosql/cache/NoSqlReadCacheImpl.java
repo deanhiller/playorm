@@ -125,7 +125,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	public void cacheRow(DboTableMeta colFamily, byte[] key, Row r) {
-		//NOTE: Do we want to change Map<TheKey, Row> to Map<TheKey, Holder<Row>> so we can cache null rows?
+		//NOTE: We cache null rows as on a user.getYYYEntites(), the loaded entities may be null though the user
+		//get a List<YYYEntity> and all are there but he can check if they are really there with
+		//mgr.checkRowExists(entity) and that will just hit the cache
 		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = new RowHolder<Row>(key, r); //r may be null so we are caching null here
 		cache.put(k, holder);

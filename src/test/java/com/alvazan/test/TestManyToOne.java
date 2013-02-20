@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -107,6 +109,61 @@ public class TestManyToOne {
 	}
 	
 	@Test
+	public void testIndexWithToOne() {
+		Account acc = new Account();
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		mgr.put(acc);
+		
+		Account acc2 = new Account();
+		acc2.setName("account2");
+		acc2.setUsers(5.0f);
+		mgr.put(acc2);
+		
+		Activity act1 = new Activity("act1");
+		act1.setAccount(acc);
+		act1.setName("asdfsdf");
+		act1.setNumTimes(3);
+		mgr.put(act1);
+		
+		Activity act2 = new Activity("act2");
+		act2.setAccount(acc);
+		act2.setName("dean");
+		mgr.put(act2);
+		
+		Activity act3 = new Activity("act3");
+		act3.setAccount(null);
+		act3.setName("no account");
+		mgr.put(act3);
+		
+		Activity act4 = new Activity("act4");
+		act4.setAccount(acc2);
+		act4.setName("prevAcc2");		
+		mgr.put(act4);
+		mgr.flush();
+		
+		Activity actX = mgr.find(Activity.class, act3.getId());
+		actX.setNumTimes(9);
+		actX.setAccount(acc);
+		mgr.put(actX);
+		
+		Activity act = mgr.find(Activity.class, act4.getId());
+		act.setNumTimes(2);
+		mgr.put(act);
+		mgr.flush();
+		
+		List<Activity> activities = Activity.findByAccount(mgr, acc);
+		Assert.assertEquals(3, activities.size());
+		
+		List<Activity> acts2 = Activity.findByAccount(mgr, null);
+		Assert.assertEquals(0, acts2.size());
+		
+		List<Activity> acts3 = Activity.findByAccount(mgr, acc2);
+		Assert.assertEquals(1, acts3.size());
+		
+	}
+	
+	@Test
 	public void testFillInKeyMethod() {
 		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
@@ -132,7 +189,7 @@ public class TestManyToOne {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testToOneWithUUID() {
 		Account acc1 = new Account();
 		acc1.setId("acc1");

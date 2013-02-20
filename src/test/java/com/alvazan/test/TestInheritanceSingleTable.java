@@ -140,10 +140,12 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)many).getDescription());
 		
 		mgr.remove(abs);
+		mgr.flush();
 		abs = mgr.find(InheritanceSuper.class, common.getId());
 		Assert.assertNull(abs);
 		
 		mgr.remove(many);
+		mgr.flush();
 		many = mgr.find(InheritanceSuper.class, toMany.getId());
 		Assert.assertNull(many);
 	}

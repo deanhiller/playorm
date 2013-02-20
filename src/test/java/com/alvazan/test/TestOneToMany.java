@@ -590,6 +590,48 @@ public class TestOneToMany {
 	}
 
 	@Test
+	public void testEmptyRowCase() {
+		Account acc = new Account("acc1");
+		acc.setName(ACCOUNT_NAME);
+		acc.setUsers(5.0f);
+		mgr.fillInWithKey(acc);
+		Activity act1 = new Activity("act1");
+		act1.setAccount(acc);
+		act1.setName("dean");
+		act1.setNumTimes(3);
+		mgr.put(act1);
+		
+		Activity act2 = new Activity("act2");
+		act2.setAccount(acc);
+		act2.setName("dean");
+		act2.setNumTimes(4);
+		mgr.put(act2);
+		
+		acc.addActivity(act1);
+		acc.addActivity(act2);
+		
+		mgr.put(acc);
+		
+		mgr.flush();
+		mgr.clear();
+
+		mgr.remove(act2); 
+		mgr.flush();
+		mgr.clear();
+		
+		//At this point we have corrupted our database, but we can check that
+		Account account = mgr.find(Account.class, acc.getId());
+		List<Activity> activities = account.getActivities();
+		
+		Activity nonExist = activities.get(0);
+		if(!nonExist.getId().equals(act2.getId()))
+			nonExist = activities.get(1);
+		
+		Activity activity = mgr.find(Activity.class, act2.getId());
+		Assert.assertNull(activity);
+	}
+	
+	@Test
 	public void testEmbeddedSimple() {
 		Email sub = new Email();
 		sub.setId("sub");

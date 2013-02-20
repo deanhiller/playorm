@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.base.Indexing;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
@@ -55,18 +56,28 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		RowToPersist row = info.getRow();
 		Map<Field, Object> fieldToValue = info.getFieldToValue();
 		//if we are here, we are indexed, BUT if fieldToValue is null, then it is a brand new entity and not a proxy
-		Object originalValue = fieldToValue.get(field);
-		if(originalValue == null)
+		if(valuesEqual(fieldToValue, value))
 			return;
-		else if(originalValue.equals(value))
-			return; //previous value is the same, yeah, nothing to do here!!!
-			
+
+		Object originalValue = fieldToValue.get(field);
 		byte[] pk = row.getKey();
 		byte[] oldIndexedVal = translateValue(originalValue);
 		
 		List<IndexData> indexList = row.getIndexToRemove();
 		
 		addToList(info, oldIndexedVal, storageType, pk, indexList);
+	}
+
+	private boolean valuesEqual(Map<Field, Object> fieldToValue, Object value) {
+		Object originalValue = fieldToValue.get(field);
+		originalValue = unwrapIfNeeded(originalValue);
+		if(originalValue == null && value == null)
+			return true;
+		else if(originalValue == null)
+			return false;
+		else if(originalValue.equals(value))
+			return true;
+		return false;
 	}
 
 	private void addToList(InfoForIndex<OWNER> info, byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk, List<IndexData> indexList) {
@@ -115,11 +126,10 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	private boolean isNeedPersist(OWNER entity, Object value, Map<Field, Object> fieldToValue) {
 		if(!(entity instanceof NoSqlProxy))
 			return true;
-		Object originalValue = fieldToValue.get(field);
-		if(value == null) //new value is null so nothing to persist 
-			return false;
-		else if(value.equals(originalValue))
-			return false; //previous value is the same, yeah, nothing to do here!!!
+		else if(Indexing.isForcedIndexing())
+			return true;
+		else if(valuesEqual(fieldToValue, value)) //value is equal to previous value 
+			return false; 
 		
 		return true;
 	}
