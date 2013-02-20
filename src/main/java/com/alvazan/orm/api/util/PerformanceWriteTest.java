@@ -106,7 +106,7 @@ public class PerformanceWriteTest {
 		
 		for(int i = 0; i < numColumns; i++) {
 			DboColumnCommonMeta col = new DboColumnCommonMeta();
-			col.setup(table, "col"+i, long.class, false, false, false);
+			col.setup(table, "col"+i, long.class, false, false);
 			
 			mgr.put(col);
 		}

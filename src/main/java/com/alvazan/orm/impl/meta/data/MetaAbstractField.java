@@ -136,13 +136,9 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 	private IndexData createAddIndexData(String columnFamily,
 			byte[] byteVal, StorageTypeEnum storageType, byte[] pk, PartitionTypeInfo info) {
 		IndexData data = new IndexData();
-		if (!getMetaDbo().isIndexedByKey())
-			data.setColumnFamilyName(getMetaDbo().getIndexTableName());
-		else
-			data.setColumnFamilyName(this.getColumnName() + "To"
-					+ this.getMetaDbo().getOwner().getColumnFamily());
-		String indexRowKey = getMetaDbo().getIndexRowKey(info.getPartitionBy(),
-				info.getPartitionId());
+		String colFamily = getMetaDbo().getIndexTableName();
+		data.setColumnFamilyName(colFamily);
+		String indexRowKey = getMetaDbo().getIndexRowKey(info.getPartitionBy(), info.getPartitionId());
 		data.setRowKey(indexRowKey);
 		data.getIndexColumn().setIndexedValue(byteVal);
 		data.getIndexColumn().setPrimaryKey(pk);

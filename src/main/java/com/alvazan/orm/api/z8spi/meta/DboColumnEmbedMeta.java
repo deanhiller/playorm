@@ -15,7 +15,7 @@ public class DboColumnEmbedMeta extends DboColumnMeta {
 	private DboTableMeta fkToColumnFamily;
 	
 	public void setup(DboTableMeta t, String colName, DboTableMeta fkToTable) {
-		super.setup(t, colName, false, false);
+		super.setup(t, colName, false);
 		this.fkToColumnFamily = fkToTable;
 	}
 	
