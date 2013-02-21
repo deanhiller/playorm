@@ -66,18 +66,21 @@ ideaModule.dependsOn 'generateparser'
 
 task sourcesJar(type: Jar, dependsOn:classes) {
     from sourceSets.main.allSource
+    from "license.txt"
     classifier 'sources'
     extension 'jar'
 }
 
 task javadocJar(type: Jar, dependsOn:javadoc) {
     from javadoc.destinationDir
+    from "license.txt"
     classifier 'javadoc'
     extension 'jar'
 }
 
 task srcbin(type: Jar, dependsOn:javadoc) {
     from sourceSets.main.allSource
+    from "license.txt"
     from 'output/classes/main'
     classifier 'srcbin'
 }
@@ -100,6 +103,7 @@ task copyToLib (dependsOn: 'createfile', type: Copy ) {
 	
 jar {  
 	exclude('**/t*/d*')
+	from "license.txt"
 }
  
 task createfile << {
@@ -142,6 +146,8 @@ signing {
     sign configurations.archives
 }
 
+signArchives.dependsOn 'dist'
+
 task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
     configuration = configurations.archives
     doFirst {
@@ -178,5 +184,24 @@ task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
                 }
             }
         }
+    }
+}
+
+task dist(type:Zip) {
+    into('plugin') {
+        from 'src/resources/play2plugin'
+    }
+    into('javadoc') {
+        from 'output/docs/javadoc'
+    }
+    into('lib') {
+        from 'output/libs/'
+        from configurations.runtime
+    }
+    into('examples') {
+        from 'examples/'
+    }
+    into('bin') {
+        from 'tools/'
     }
 }

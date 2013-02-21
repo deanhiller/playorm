@@ -9,6 +9,7 @@ set CLASSPATH=
 
 REM For each jar in the lib directory call append to build the CLASSPATH variable.
 for %%i in ("..\output\jardist\*.jar") do call :append "%%i"
+for %%j in ("..\lib\*.jar") do call :append "%%j"
 
 goto okClasspath
 
