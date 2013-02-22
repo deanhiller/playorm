@@ -8,7 +8,7 @@ REM Ensure that any user defined CLASSPATH variables are not used on startup
 set CLASSPATH=
 
 REM For each jar in the lib directory call append to build the CLASSPATH variable.
-for %%i in ("..\output\jardist\*.jar") do call :append "%%i"
+for %%i in ("..\..\..\output\jardist\*.jar") do call :append "%%i"
 
 goto okClasspath
 
@@ -18,7 +18,7 @@ goto :eof
 
 :okClasspath
 REM Include the \classes directory so it works in development
-set PLAYORM_CLASSPATH="..\bin";%CLASSPATH%;
+set PLAYORM_CLASSPATH="..\..\..\bin";%CLASSPATH%;
 
 SET A_PORT=8000
 SET A_DBG=-Xdebug -Xrunjdwp:transport=dt_socket,address=127.0.0.1:8000,suspend=y
