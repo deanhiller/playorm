@@ -11,6 +11,10 @@ for jar in ../output/jardist/*.jar; do
     CLASSPATH=$CLASSPATH:$jar
 done
 
+for jar in ../lib/*.jar; do
+    CLASSPATH=$CLASSPATH:$jar
+done
+
 # Add classes so that it works in development
 CLASSPATH=../bin:$CLASSPATH
 
