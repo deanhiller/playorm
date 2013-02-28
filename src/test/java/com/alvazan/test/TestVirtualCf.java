@@ -118,12 +118,12 @@ public class TestVirtualCf {
 		TypedRow result2 = s2.find("Owner", row2.getRowKey());
 		Assert.assertNull(result2);
 		
-		if (result.getColumn("carOwner") != null) {
+/*		if (result.getColumn("carOwner") != null) {
 			Object fk = result.getColumn("carOwner").getValue();
 			Object rowId = row2.getRowKey();
-			Assert.assertEquals(rowId, fk);
+			//Assert.assertEquals(rowId, fk);
 		}
-		else {
+		else {*/
 			// it is saved as a composite column now so no need to test as above, test as composite	
 			Object rowId = row2.getRowKey();
 			for(TypedColumn c : result.getColumnsAsColl()) {
@@ -134,7 +134,7 @@ public class TestVirtualCf {
 					Assert.assertEquals(rowId.toString(), fkcomposite);
 				}
 			}
-		}
+		//}
 
 		QueryResult qResult = s2.createQueryCursor("select * from MyRaceCar", 50);
 		Cursor<KeyValue<TypedRow>> primView = qResult.getPrimaryViewCursor();
