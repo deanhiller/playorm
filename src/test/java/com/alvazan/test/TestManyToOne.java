@@ -189,7 +189,7 @@ public class TestManyToOne {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testToOneWithUUID() {
 		Account acc1 = new Account();
 		acc1.setId("acc1");
