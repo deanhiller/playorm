@@ -1,3 +1,5 @@
+***While the source code will remain on github, the feature list and documentation has moved to [Buffalosw.com](http://buffalosw.com/products/playorm/)***
+
 ## Support
 
 ***NOTE*** PlayOrm is really PlayONM or object to NoSql mapping as it is more one to one with NoSQL than JPA is utilizing many of the wide row and
