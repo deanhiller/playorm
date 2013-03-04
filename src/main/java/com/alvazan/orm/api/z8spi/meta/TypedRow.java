@@ -137,13 +137,21 @@ public class TypedRow {
 		ByteArray b = new ByteArray(colName);
 		return columns.get(b);
 	}
-	
+
 	public TypedColumn getColumn(String colName) {
 		byte[] nameBytes = StandardConverters.convertToBytes(colName);
 		ByteArray b = new ByteArray(nameBytes);
-		return columns.get(b);
+		TypedColumn col = columns.get(b);
+		if (col == null) {
+			DboColumnMeta meta = metaClass.getColumnMeta(colName);
+			if (meta != null && meta instanceof DboColumnToOneMeta) {
+				DboColumnToOneMeta toOneMeta = (DboColumnToOneMeta) meta;
+				col = toOneMeta.translateRow(this);
+			}
+		}
+		return col;
 	}
-	
+
 	public Collection<TypedColumn> getColumnsAsColl() {
 		return columns.values();
 	}

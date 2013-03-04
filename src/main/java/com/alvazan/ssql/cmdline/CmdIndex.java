@@ -12,8 +12,10 @@ import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToOneMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedColumn;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -85,25 +87,7 @@ public class CmdIndex {
 				changedCounter++;
 			} else {
 				TypedRow val = row.getValue();
-				TypedColumn column = val.getColumn(colName);
-				if (column == null) {
-					//It means column was deleted by user. Doing nothing as of now 
-					continue;
-				}
-
-				Object value = column.getValue();
-
-				if(!valuesEqual(pt.getIndexedValue(), value)) {
-					System.out.println("Entity with rowkey="+pt.getKeyAsString()+" has extra incorrect index point with value="+pt.getIndexedValueAsString()+" correct value should be="+column.getValueAsString());
-					s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionId());
-					
-					IndexColumn col = new IndexColumn();
-					col.setColumnName(colName);
-					col.setPrimaryKey(pt.getRawKey());
-					byte[] indValue = column.getValueRaw();
-					col.setIndexedValue(indValue);
-					IndexPoint newPoint = new IndexPoint(pt.getRowKeyMeta(), col , data.getColumnMeta());
-					s.addIndexPoint(newPoint, data.getPartitionBy(), data.getPartitionId());
+				if (processColumn(s, data, val, pt)) {
 					changedCounter++;
 				}
 			}
@@ -119,6 +103,37 @@ public class CmdIndex {
 		
 		s.flush();
 		return new Counter(rowCounter, changedCounter);
+	}
+
+	private boolean processColumn(NoSqlTypedSession s, ColFamilyData data,TypedRow typedRow,
+			IndexPoint pt) {
+		String colName = data.getColumn();
+		TypedColumn column = typedRow.getColumn(colName);
+		if (column == null) {
+			//It means column was deleted by user. Doing nothing as of now
+			return false;
+		}
+		else {
+			Object value = column.getValue();
+			DboColumnMeta colMeta = data.getColumnMeta();
+			if (value == null && colMeta instanceof DboColumnToOneMeta) {
+				DboColumnToOneMeta one = (DboColumnToOneMeta) colMeta;
+				value = one.convertFromStorage2(column.getCompositeSubName());
+			}
+			if(!valuesEqual(pt.getIndexedValue(), value)) {
+				System.out.println("Entity with rowkey="+pt.getKeyAsString()+" has extra incorrect index point with value="+pt.getIndexedValueAsString()+" correct value should be= "+value);
+				s.removeIndexPoint(pt, data.getPartitionBy(), data.getPartitionId());
+				IndexColumn col = new IndexColumn();
+				col.setColumnName(colName);
+				col.setPrimaryKey(pt.getRawKey());
+				byte[] indValue = StandardConverters.convertToBytes(value);
+				col.setIndexedValue(indValue);
+				IndexPoint newPoint = new IndexPoint(pt.getRowKeyMeta(), col,data.getColumnMeta());
+				s.addIndexPoint(newPoint, data.getPartitionBy(), data.getPartitionId());
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void removeIndexPt(NoSqlTypedSession s, ColFamilyData data,
