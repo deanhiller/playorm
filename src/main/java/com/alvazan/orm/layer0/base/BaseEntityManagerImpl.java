@@ -266,7 +266,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
         	for(DboColumnMeta col : table.getAllColumns()) {
         		tempMgr.put(col);
         	}
-			if (!table.isEmbeddable())
+			if (!table.isEmbeddable() && table.getIdColumnMeta() != null)
 				tempMgr.put(table.getIdColumnMeta());
         	
         	tempMgr.put(table);

@@ -32,6 +32,9 @@ public class MyClassAnnotationDiscoveryListener implements
 			Class<?> clazz = classLoader.loadClass(clazzName);
 			
 			scanClass(clazz);
+			if (clazz.getSuperclass() != java.lang.Object.class) {
+				scanClass(clazz.getSuperclass());
+			}
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		}
