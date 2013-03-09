@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.test.db.InheritanceSub1;
@@ -84,6 +85,13 @@ public class TestInheritanceSingleTable {
 		InheritanceSub1 result = InheritanceSub1.findByName(mgr, common.getName());
 		Assert.assertNotNull(result);
 		Assert.assertEquals(common.getDiff(), result.getDiff());
+
+		// Now test query on an inherited field
+		Query<InheritanceSub1> query = mgr.createNamedQuery(InheritanceSub1.class, "findById");
+		query.setParameter("id", common.getId());
+		InheritanceSub1 result3 = query.getSingleObject();
+		Assert.assertNotNull(result3);
+		Assert.assertEquals(common.getDiff(), result3.getDiff());
 	}
 	
 	@Test
