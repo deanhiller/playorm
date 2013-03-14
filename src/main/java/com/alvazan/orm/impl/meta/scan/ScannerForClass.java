@@ -70,7 +70,7 @@ public class ScannerForClass {
 			scanSingle(classMeta2, metaDbo);
 		}
 		
-		if(classMeta.getIdField() == null && !metaDbo.isEmbeddable())
+		if(classMeta.getIdField() == null && !metaDbo.isEmbeddable() && clazz.getSuperclass() != java.lang.Object.class)
 			throw new IllegalArgumentException("Entity="+classMeta.getMetaClass()+" has no field annotated with @NoSqlId and that is required");
 		
 		metaInfo.addTableNameLookup(classMeta);
@@ -152,7 +152,7 @@ public class ScannerForClass {
 	private void scanForAnnotations(MetaAbstractClass<?> meta) {
 		NoSqlEntity noSqlEntity = meta.getMetaClass().getAnnotation(NoSqlEntity.class);
 		NoSqlEmbeddable embeddable = meta.getMetaClass().getAnnotation(NoSqlEmbeddable.class);
-		String cf;
+		String cf = null;
 		String virtualCf = null;
 		if(noSqlEntity != null) {
 			cf = noSqlEntity.columnfamily();
@@ -167,7 +167,10 @@ public class ScannerForClass {
 			meta.setup(null, virtualCfName, true);
 			return;
 		} else {
-			throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
+			cf = meta.getColumnFamily();
+			if(cf == null)
+				cf = meta.getMetaClass().getSimpleName();
+			//throw new RuntimeException("bug, someone added an annotation but didn't add to this else clause(add else if to this guy)");
 		}
 		
 		NoSqlVirtualCf anno = meta.getMetaClass().getAnnotation(NoSqlVirtualCf.class);
