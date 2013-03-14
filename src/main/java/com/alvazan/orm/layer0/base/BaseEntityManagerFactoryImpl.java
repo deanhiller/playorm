@@ -139,8 +139,6 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 	@SuppressWarnings({ "rawtypes" })
 	public void setupQueryStuff(MetaAbstractClass classMeta) {
 		Class<?> clazz = classMeta.getMetaClass();
-		System.out.println("classMeta.getColumnFamily(): " + classMeta.getColumnFamily());
-		System.out.println("classMeta.getMetaDbo().getColumnFamily():  " + classMeta.getMetaDbo().getColumnFamily());
 		NoSqlQuery annotation = clazz.getAnnotation(NoSqlQuery.class);
 		NoSqlQueries annotation2 = clazz.getAnnotation(NoSqlQueries.class);
 		List<NoSqlQuery> theQueries = new ArrayList<NoSqlQuery>();
