@@ -17,6 +17,10 @@ public abstract class Bootstrap {
 	public static final String CASSANDRA_KEYSPACE = "nosql.cassandra.keyspace";
 	public static final String CASSANDRA_SEEDS = "nosql.cassandra.seeds";
 	
+	public static final String MONGODB_CLUSTERNAME = "nosql.mongodb.clusterName";
+	public static final String MONGODB_KEYSPACE = "nosql.mongodb.keyspace";
+	public static final String MONGODB_SEEDS = "nosql.mongodb.seeds";
+
 	private static final String OUR_IMPL = "com.alvazan.orm.impl.bindings.BootstrapImpl";
 	public static final String SPI_IMPL = "nosql.spi.implementation";
 	
@@ -83,4 +87,13 @@ public abstract class Bootstrap {
 
 	protected abstract void createBestCassandraConfig(Map<String, Object> properties,
 			String clusterName, String keyspace2, String seeds2);
+
+	public static void createAndAddBestMongoDbConfiguration(Map<String, Object> properties, String clusterName, String keyspace, String seeds) {
+		Bootstrap bootstrap = createInstance(OUR_IMPL);
+		bootstrap.createBestMongoDbConfig(properties, clusterName, keyspace, seeds);
+	}
+
+	protected abstract void createBestMongoDbConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2);
+
 }

@@ -32,6 +32,7 @@ dependencies {
 	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.0.1'
 	compile group: 'com.eaio.uuid', name: 'uuid', version: '3.2'
 	compile group: 'joda-time', name: 'joda-time', version: '2.0'
+	compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.10.1'
 	compile 'org.antlr:antlr-runtime:3.2' 
 	antlr3 'org.antlr:antlr:3.2'
 	antcp "ant-contrib:ant-contrib:1.0b3"

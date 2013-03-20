@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum DbTypeEnum {
-	CASSANDRA("cassandra"), IN_MEMORY("inmemory"); 
+	CASSANDRA("cassandra"), IN_MEMORY("inmemory"), MONGODB("mongodb");
 
 	private static final Map<String, DbTypeEnum> LOOKUP = new HashMap<String, DbTypeEnum>();
 	

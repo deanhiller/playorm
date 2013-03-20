@@ -84,9 +84,14 @@ public class PlayOrm {
 		}
 			
 		Map<String, Object> properties = new HashMap<String, Object>();
-		Bootstrap.createAndAddBestCassandraConfiguration(properties , "", bean.getKeyspace(), bean.getSeeds());
+		if(storeType == DbTypeEnum.CASSANDRA) {
+			Bootstrap.createAndAddBestCassandraConfiguration(properties , "", bean.getKeyspace(), bean.getSeeds());
+		}
+		else if (storeType == DbTypeEnum.MONGODB) {
+			Bootstrap.createAndAddBestMongoDbConfiguration(properties ,"", bean.getKeyspace(), bean.getSeeds());
+		}
 		properties.put(Bootstrap.AUTO_CREATE_KEY, "create");
-		
+
 		NoSqlEntityManagerFactory factory = Bootstrap.create(storeType, properties);
 		new PlayOrm(factory).start();
 	}

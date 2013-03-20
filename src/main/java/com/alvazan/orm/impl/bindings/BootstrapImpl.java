@@ -97,5 +97,12 @@ public class BootstrapImpl extends Bootstrap {
 	properties.put(Bootstrap.CASSANDRA_BUILDER, builder);
 	}
 
+	@Override
+	protected void createBestMongoDbConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2) {
+		properties.put(Bootstrap.MONGODB_CLUSTERNAME, clusterName);
+		properties.put(Bootstrap.MONGODB_KEYSPACE, keyspace2);
+		properties.put(Bootstrap.MONGODB_SEEDS, seeds2);
+	}
 
 }
