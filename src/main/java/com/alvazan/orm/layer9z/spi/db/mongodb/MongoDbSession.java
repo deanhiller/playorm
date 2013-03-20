@@ -268,7 +268,8 @@ public class MongoDbSession implements NoSqlRawSession {
 	private void persist(Persist action, MetaLookup ormSession) {
 		String colFamily = action.getColFamily().getColumnFamily();
 		DBCollection table = lookupColFamily(colFamily, ormSession);
-		BasicDBObject doc = findOrCreateRow(table, action.getRowKey());
+		BasicDBObject row = findOrCreateRow(table, action.getRowKey());
+		BasicDBObject doc = new BasicDBObject();
 		for(Column col : action.getColumns()) {
 			Integer theTime = null;
 			Long time = col.getTimestamp();
@@ -279,6 +280,7 @@ public class MongoDbSession implements NoSqlRawSession {
 				value = col.getValue();
 			doc.append(StandardConverters.convertToString(col.getName()), value);
 		}
+		table.findAndModify(row, doc);
 	}
 
 	public BasicDBObject findOrCreateRow(DBCollection table, byte[] key) {
