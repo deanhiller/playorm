@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +47,12 @@ public class MongoDbSession implements NoSqlRawSession {
 	private MongoClient mongoClient;
 	
 	@Inject
+	private Provider<Row> rowProvider;
+
+	@Inject
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
+	private Map<String, Info> cfNameToCassandra = new HashMap<String, Info>();
 	private Map<String, String> virtualToCfName = new HashMap<String, String>();
 
 	public DB getDb() {
@@ -90,7 +95,7 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	@Override
 	public void clearDatabase() {
-		throw new UnsupportedOperationException("Not supported by actual databases.  Only can be used with in-memory db.");
+		mongoClient.dropDatabase(db.getName());
 	}
 
 	@Override
@@ -108,6 +113,7 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	@Override
 	public void close() {
+		mongoClient.close();
 	}
 
 	@Override
@@ -138,8 +144,20 @@ public class MongoDbSession implements NoSqlRawSession {
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			DirectCursor<byte[]> rowKeys, Cache cache, int batchSize,
 			BatchListener list, MetaLookup mgr) {
-		return new CursorReturnsEmptyRows2(rowKeys);
-		//return null;
+		Info info = fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
+		/*if(info == null) {
+			//If there is no column family in mongodb, then we need to return no rows to the user...
+			return new CursorReturnsEmptyRows2(rowKeys);
+		}*/
+		
+/*		ColumnType type = info.getColumnType();
+		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
+			throw new UnsupportedOperationException("Finding on composite type="+colFamily+" not allowed here, you should be using column slice as these rows are HUGE!!!!");
+		}*/
+		
+		CursorKeysToRowsMDB cursor = new CursorKeysToRowsMDB(rowKeys, batchSize, list, rowProvider, colFamily);
+		cursor.setupMore(db, colFamily, info, cache);
+		return cursor;
 	}
 
 	private void persistIndex(PersistIndex action, MetaLookup ormSession) {
@@ -234,7 +252,8 @@ public class MongoDbSession implements NoSqlRawSession {
 			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
 		switch(action.getAction()) {
 		case REMOVE_ENTIRE_ROW:
-			//table.remove(action.getRowKey());
+			DBObject row = table.findOne(action.getRowKey());
+			table.remove(row);
 			break;
 		case REMOVE_COLUMNS_FROM_ROW:
 			removeColumns(action, table);
@@ -245,24 +264,18 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private void removeColumns(Remove action, DBCollection table) {
-/*		Row row = table.g.getRow(action.getRowKey());
-		if(row == null)
-			return;
-		
-		for(byte[] name : action.getColumns()) {
-			row.remove(name);
-		}*/
+		for (byte[] name : action.getColumns()) {
+			DBObject row = table.findOne(name);
+			table.remove(row);
+		}
 	}
 
 	private void removeColumn(RemoveColumn action, MetaLookup ormSession) {
 
 		String colFamily = action.getColFamily().getColumnFamily();
 		DBCollection table = lookupColFamily(colFamily, ormSession);
-/*		Row row = table.getRow(action.getRowKey());
-		if(row == null)
-			return;
-		byte[] name = action.getColumn();
-			row.remove(name);*/
+		DBObject row = table.findOne(action.getColumn());
+		table.remove(row);
 	}
 
 	private void persist(Persist action, MetaLookup ormSession) {
@@ -271,27 +284,26 @@ public class MongoDbSession implements NoSqlRawSession {
 		BasicDBObject row = findOrCreateRow(table, action.getRowKey());
 		BasicDBObject doc = new BasicDBObject();
 		for(Column col : action.getColumns()) {
-			Integer theTime = null;
-			Long time = col.getTimestamp();
-			if(time != null)
-				theTime = (int)time.longValue();
 			byte[] value = new byte[0];
 			if(col.getValue() != null)
 				value = col.getValue();
-			doc.append(StandardConverters.convertToString(col.getName()), value);
+			doc.append(StandardConverters.convertFromBytes(String.class, col.getName()), value);
 		}
 		table.findAndModify(row, doc);
 	}
 
 	public BasicDBObject findOrCreateRow(DBCollection table, byte[] key) {
-		//ByteArray array = new ByteArray(key);
 		DBObject row = table.findOne(key);
 		if(row == null) {
 			BasicDBObject basicRow = new BasicDBObject();
 			basicRow.append("_id", key);
 			table.insert(basicRow);
-			return basicRow;			
+			return basicRow;
 		}
 		else return (BasicDBObject)row;		
+	}
+
+	private Info fetchColumnFamilyInfo(String string, MetaLookup mgr) {
+		return new Info();
 	}
 }
