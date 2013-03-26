@@ -145,10 +145,10 @@ public class MongoDbSession implements NoSqlRawSession {
 			DirectCursor<byte[]> rowKeys, Cache cache, int batchSize,
 			BatchListener list, MetaLookup mgr) {
 		Info info = fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
-		/*if(info == null) {
+		if(info == null) {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return new CursorReturnsEmptyRows2(rowKeys);
-		}*/
+		}
 		
 /*		ColumnType type = info.getColumnType();
 		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
@@ -161,25 +161,31 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private void persistIndex(PersistIndex action, MetaLookup ormSession) {
-		String colFamily = action.getIndexCfName();
-		DBCollection table = lookupColFamily(colFamily, ormSession);
+		String indexCfName = action.getIndexCfName();
+		DBCollection table = lookupColFamily(indexCfName, ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-		//IndexedRow row = (IndexedRow) DBCollection.findOrCreateRow(rowKey);
-		//row.addIndexedColumn(column.copy());
+		BasicDBObject row = findOrCreateRow(table, rowKey);
+		BasicDBObject doc = new BasicDBObject();
+		byte[] key = column.getIndexedValue();
+		byte[] value = column.getPrimaryKey();
+		if (key != null) {
+			// Currently not inserting null values and also inserting the values in different ways
+			doc.append(StandardConverters.convertFromBytes(String.class, key),value);
+			// table.findAndModify(row, doc);
+			// The below is the best way to insert a new column
+			table.update(row, new BasicDBObject("$set", doc));
+		}
 	}
-
-
 
 	private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
 		String colFamily = action.getIndexCfName();
 		if (colFamily.equalsIgnoreCase("BytesIndice"))
 			return;
 		DBCollection table = lookupColFamily(colFamily, ormSession);
-		
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-		//IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
+		// IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
 		//row.removeIndexedColumn(column.copy());		
 	}
 	
@@ -300,10 +306,11 @@ public class MongoDbSession implements NoSqlRawSession {
 			table.insert(basicRow);
 			return basicRow;
 		}
-		else return (BasicDBObject)row;		
+		else return (BasicDBObject)row;
 	}
 
 	private Info fetchColumnFamilyInfo(String string, MetaLookup mgr) {
+		//return null;
 		return new Info();
 	}
 }

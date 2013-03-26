@@ -11,14 +11,15 @@ public class MongoDbUtil {
 	static void processColumns(DBObject mdbRow, Row r) {
 		Set<String> columns = mdbRow.keySet();
 		for (String col : columns) {
-			byte[] name = StandardConverters.convertToBytes(col);
-			byte[] val = StandardConverters.convertToBytes(mdbRow.get(col));
-			Column c = new Column();
-			c.setName(name);
-			if (val.length != 0)
-				c.setValue(val);
-
-			r.put(c);
+			if(!col.equalsIgnoreCase("_id")) {
+				byte[] name = StandardConverters.convertToBytes(col);
+				byte[] val = StandardConverters.convertToBytes(mdbRow.get(col));
+				Column c = new Column();
+				c.setName(name);
+				if (val.length != 0)
+					c.setValue(val);
+				r.put(c);
+			}
 		}
 	}
 
