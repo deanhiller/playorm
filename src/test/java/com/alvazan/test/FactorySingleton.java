@@ -50,6 +50,9 @@ public class FactorySingleton {
 		case CASSANDRA:
 			Bootstrap.createAndAddBestCassandraConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
 			break;
+		case MONGODB:
+			Bootstrap.createAndAddBestMongoDbConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
+			break;
 		default:
 			throw new UnsupportedOperationException("not supported yet, server type="+config.getServerType());
 		}

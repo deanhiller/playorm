@@ -139,8 +139,9 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 
 			BasicDBObject query = new BasicDBObject();
 			query.put("_id", new BasicDBObject("$in", keysToLookup));
-			cursor = dbCollection.find(query);
-
+			BasicDBObject orderBy = new BasicDBObject();
+			orderBy.put("_id", 1);
+			cursor = dbCollection.find(query).sort(orderBy).batchSize(batchSize);
 			if (list != null)
 				list.afterFetchingNextBatch(cursor.count());
 		} else {
@@ -156,9 +157,6 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			kv.setKey(mdbRowKey);
 
 			if (!mdbrow.keySet().isEmpty()) {
-				// Astyanax returns a row when there is none BUT we know if
-				// there are 0 columns there is really no row in the database
-				// then
 				Row r = rowProvider.get();
 				r.setKey(mdbRowKey);
 				MongoDbUtil.processColumns(mdbrow, r);
@@ -170,9 +168,7 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			cache.cacheRow(cf, mdbRowKey, kv.getValue());
 		}
 
-		// UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we
-		// provided so, we need to iterate over the whole thing here
-		// into our own List :( :( .
+		// This is copied from Cassandra. Need to check how can we get results in an order.
 
 		List<KeyValue<Row>> finalRes = new ArrayList<KeyValue<Row>>();
 		Iterator<byte[]> keyIter = keysToLookup.iterator();

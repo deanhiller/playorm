@@ -52,7 +52,7 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Inject
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
-	private Map<String, Info> cfNameToCassandra = new HashMap<String, Info>();
+	private Map<String, Info> cfNameToMongodb = new HashMap<String, Info>();
 	private Map<String, String> virtualToCfName = new HashMap<String, String>();
 
 	public DB getDb() {
@@ -131,7 +131,11 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from,
 			Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
-		return null;
+		byte[] rowKey = scan.getRowKey();
+		String indexTableName = scan.getIndexColFamily();
+		CursorOfIndexes cursor = new CursorOfIndexes(rowKey, batchSize, l, rowProvider, indexTableName, from, to);
+		cursor.setupMore(db);
+		return cursor;
 	}
 
 	@Override
@@ -165,17 +169,20 @@ public class MongoDbSession implements NoSqlRawSession {
 		DBCollection table = lookupColFamily(indexCfName, ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-		BasicDBObject row = findOrCreateRow(table, rowKey);
+		//BasicDBObject row = findOrCreateRow(table, rowKey);
 		BasicDBObject doc = new BasicDBObject();
+		doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
 		byte[] key = column.getIndexedValue();
 		byte[] value = column.getPrimaryKey();
 		if (key != null) {
 			// Currently not inserting null values and also inserting the values in different ways
-			doc.append(StandardConverters.convertFromBytes(String.class, key),value);
+			doc.append("k",key);
 			// table.findAndModify(row, doc);
 			// The below is the best way to insert a new column
-			table.update(row, new BasicDBObject("$set", doc));
+			//row.update(row, new BasicDBObject("$set", doc));
 		}
+		doc.append("v", value);
+		table.insert(doc);
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
@@ -185,8 +192,7 @@ public class MongoDbSession implements NoSqlRawSession {
 		DBCollection table = lookupColFamily(colFamily, ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-		// IndexedRow row = (IndexedRow) table.findOrCreateRow(rowKey);
-		//row.removeIndexedColumn(column.copy());		
+	
 	}
 	
 	private DBCollection lookupColFamily(String colFamily, MetaLookup mgr) {
@@ -247,7 +253,12 @@ public class MongoDbSession implements NoSqlRawSession {
 			}
 		}*/
 		table = db.createCollection(colFamily, new BasicDBObject());
-		
+		if (colFamily.equalsIgnoreCase("StringIndice") || colFamily.equalsIgnoreCase("IntegerIndice") || colFamily.equalsIgnoreCase("DecimalIndice")) {
+			BasicDBObject index = new BasicDBObject();
+			index.append("i", 1);
+			index.append("k", 1);
+			table.ensureIndex(index);
+		}
 		return table;
 	}
 
