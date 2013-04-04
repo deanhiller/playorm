@@ -146,8 +146,10 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		List<Object> keys = new ArrayList<Object>();
 		keys.add(key);
 		Cursor<KeyValue<T>> entities = findAll(entityType, keys);
-		entities.next();
-		return entities.getCurrent().getValue();
+		if (entities.next())
+			return entities.getCurrent().getValue();
+		else
+			return null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -257,7 +259,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 
 	void saveMetaData() {
 		BaseEntityManagerImpl tempMgr = this;
-        DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
+        //DboDatabaseMeta existing = tempMgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 //        if(existing != null)
 //        	throw new IllegalStateException("Your property NoSqlEntityManagerFactory.AUTO_CREATE_KEY is set to 'create' which only creates meta data if none exist already but meta already exists");
 		
