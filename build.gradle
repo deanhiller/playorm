@@ -33,6 +33,7 @@ dependencies {
 	compile group: 'com.eaio.uuid', name: 'uuid', version: '3.2'
 	compile group: 'joda-time', name: 'joda-time', version: '2.0'
 	compile group: 'org.mongodb', name: 'mongo-java-driver', version: '2.10.1'
+	compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '1.7.5'
 	compile 'org.antlr:antlr-runtime:3.2' 
 	antlr3 'org.antlr:antlr:3.2'
 	antcp "ant-contrib:ant-contrib:1.0b3"
@@ -68,6 +69,7 @@ ideaModule.dependsOn 'generateparser'
 task sourcesJar(type: Jar, dependsOn:classes) {
     from sourceSets.main.allSource
     from "license.txt"
+    exclude ("logback.xml")
     classifier 'sources'
     extension 'jar'
 }
@@ -83,6 +85,7 @@ task srcbin(type: Jar, dependsOn:javadoc) {
     from sourceSets.main.allSource
     from "license.txt"
     from 'output/classes/main'
+    exclude ("logback.xml")
     classifier 'srcbin'
 }
 
