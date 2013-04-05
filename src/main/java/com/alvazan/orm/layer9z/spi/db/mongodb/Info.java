@@ -8,8 +8,8 @@ public class Info {
 
 	private StorageTypeEnum rowKeyType;
 	private ColumnType columnType;
-	private DBCollection columnFamilyObj;
-	
+	private DBCollection dbObj;
+
 	public ColumnType getColumnType() {
 		return columnType;
 	}
@@ -18,13 +18,12 @@ public class Info {
 		this.columnType = columnType;
 	}
 
-	public void setColumnFamilyObj(DBCollection cf) {
-		this.columnFamilyObj = cf;
+	public void setDbObj(DBCollection cf) {
+		this.dbObj = cf;
 	}
 
-
-	public DBCollection getColumnFamilyObj() {
-		return columnFamilyObj;
+	public DBCollection getDbObj() {
+		return dbObj;
 	}
 
 	public StorageTypeEnum getRowKeyType() {

@@ -4,6 +4,7 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.ColumnType;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -29,8 +31,10 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.mongodb.BasicDBObject;
@@ -38,6 +42,8 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+
+
 
 public class MongoDbSession implements NoSqlRawSession {
 
@@ -52,7 +58,7 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Inject
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
-	private Map<String, Info> cfNameToMongodb = new HashMap<String, Info>();
+	private Map<String, Info> collNameToMongodb = new HashMap<String, Info>();
 	private Map<String, String> virtualToCfName = new HashMap<String, String>();
 
 	public DB getDb() {
@@ -109,6 +115,7 @@ public class MongoDbSession implements NoSqlRawSession {
 		}
 		String keySpace = properties.get(Bootstrap.MONGODB_KEYSPACE).toString();
 		db =  mongoClient.getDB(keySpace);
+		findExistingCollections();
 	}
 
 	@Override
@@ -133,8 +140,9 @@ public class MongoDbSession implements NoSqlRawSession {
 			Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		byte[] rowKey = scan.getRowKey();
 		String indexTableName = scan.getIndexColFamily();
-		CursorOfIndexes cursor = new CursorOfIndexes(rowKey, batchSize, l, rowProvider, indexTableName, from, to);
-		cursor.setupMore(db);
+		DboColumnMeta colMeta = scan.getColumnName();
+		CursorOfIndexes cursor = new CursorOfIndexes(rowKey, batchSize, l, indexTableName, from, to);
+		cursor.setupMore(db, colMeta);
 		return cursor;
 	}
 
@@ -148,17 +156,12 @@ public class MongoDbSession implements NoSqlRawSession {
 	public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily,
 			DirectCursor<byte[]> rowKeys, Cache cache, int batchSize,
 			BatchListener list, MetaLookup mgr) {
-		Info info = fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
+		Info info = fetchDbCollectionInfo(colFamily.getColumnFamily(), mgr);
 		if(info == null) {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return new CursorReturnsEmptyRows2(rowKeys);
 		}
-		
-/*		ColumnType type = info.getColumnType();
-		if(type != ColumnType.ANY_EXCEPT_COMPOSITE) {
-			throw new UnsupportedOperationException("Finding on composite type="+colFamily+" not allowed here, you should be using column slice as these rows are HUGE!!!!");
-		}*/
-		
+
 		CursorKeysToRowsMDB cursor = new CursorKeysToRowsMDB(rowKeys, batchSize, list, rowProvider, colFamily);
 		cursor.setupMore(db, colFamily, info, cache);
 		return cursor;
@@ -169,20 +172,29 @@ public class MongoDbSession implements NoSqlRawSession {
 		DBCollection table = lookupColFamily(indexCfName, ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-		//BasicDBObject row = findOrCreateRow(table, rowKey);
-		BasicDBObject doc = new BasicDBObject();
-		doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
 		byte[] key = column.getIndexedValue();
 		byte[] value = column.getPrimaryKey();
-		if (key != null) {
-			// Currently not inserting null values and also inserting the values in different ways
-			doc.append("k",key);
-			// table.findAndModify(row, doc);
-			// The below is the best way to insert a new column
-			//row.update(row, new BasicDBObject("$set", doc));
+		BasicDBObject doc = findIndexRow(table, rowKey, value);
+		Object keyToPersist = null;
+		if (indexCfName.equalsIgnoreCase("StringIndice")) {
+			keyToPersist = StandardConverters.convertFromBytes(String.class, key);
+		} else if ((indexCfName.equalsIgnoreCase("IntegerIndice"))) {
+			keyToPersist = StandardConverters.convertFromBytes(Integer.class, key);
+		} else if (indexCfName.equalsIgnoreCase("DecimalIndice")) {
+			keyToPersist = StandardConverters.convertFromBytes(Double.class, key);
 		}
-		doc.append("v", value);
-		table.insert(doc);
+		if (doc != null) {
+			//Only edit the row
+				doc.put("k", keyToPersist);
+		} else {
+			doc = new BasicDBObject();
+			// insert a new row
+			doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
+			//doc.append("k",key);
+			doc.put("k", keyToPersist);
+			doc.append("v", value);
+			table.insert(doc);
+		}
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
@@ -192,9 +204,15 @@ public class MongoDbSession implements NoSqlRawSession {
 		DBCollection table = lookupColFamily(colFamily, ormSession);
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
-	
+		byte[] value = column.getPrimaryKey();
+		BasicDBObject doc = findIndexRow(table, rowKey, value);
+		if (doc == null) {
+			log.info("Index: " + column.toString() + " already removed.");
+		} else {
+			table.remove(doc);
+		}
 	}
-	
+
 	private DBCollection lookupColFamily(String colFamily, MetaLookup mgr) {
 		DBCollection table;
 		if(db.collectionExists(colFamily)) {
@@ -218,40 +236,6 @@ public class MongoDbSession implements NoSqlRawSession {
 					" family to create it AND we could not find that data so we can't create it for you");
 		}
 
-		/*SortType sortType;
-		StorageTypeEnum prefixType = cf.getColNamePrefixType();
-		if(prefixType == null) {
-			switch (cf.getNameStorageType()) {
-			case BYTES:
-				sortType = SortType.BYTES;
-				break;
-			case DECIMAL:
-				sortType = SortType.DECIMAL;
-				break;
-			case INTEGER:
-				sortType = SortType.INTEGER;
-				break;
-			case STRING:
-				sortType = SortType.UTF8;
-				break;
-			default:
-				throw new UnsupportedOperationException("type not supported="+cf.getNameStorageType());
-			}
-		} else {
-			switch(prefixType) {
-			case DECIMAL:
-				sortType = SortType.DECIMAL_PREFIX;
-				break;
-			case INTEGER:
-				sortType = SortType.INTEGER_PREFIX;
-				break;
-			case STRING:
-				sortType = SortType.UTF8_PREFIX;
-				break;
-			default:
-				throw new UnsupportedOperationException("type not supported="+prefixType);
-			}
-		}*/
 		table = db.createCollection(colFamily, new BasicDBObject());
 		if (colFamily.equalsIgnoreCase("StringIndice") || colFamily.equalsIgnoreCase("IntegerIndice") || colFamily.equalsIgnoreCase("DecimalIndice")) {
 			BasicDBObject index = new BasicDBObject();
@@ -259,6 +243,11 @@ public class MongoDbSession implements NoSqlRawSession {
 			index.append("k", 1);
 			table.ensureIndex(index);
 		}
+		Info info = new Info();
+		info.setColumnType(null);
+		info.setRowKeyType(null);
+		info.setDbObj(table);
+		collNameToMongodb.put(colFamily.toLowerCase(), info);
 		return table;
 	}
 
@@ -320,8 +309,37 @@ public class MongoDbSession implements NoSqlRawSession {
 		else return (BasicDBObject)row;
 	}
 
-	private Info fetchColumnFamilyInfo(String string, MetaLookup mgr) {
-		//return null;
-		return new Info();
+	public BasicDBObject findIndexRow(DBCollection table, byte[] indexKey, byte[] key) {
+		BasicDBObject basicRow = new BasicDBObject();
+		basicRow.append("i", StandardConverters.convertFromBytes(String.class, indexKey));
+		basicRow.append("v", key);
+		DBObject row = table.findOne(basicRow);
+		if(row == null) {
+			return null;
+		}
+		else return (BasicDBObject)row;
+	}
+
+	private void findExistingCollections() {
+		Set<String> collList = db.getCollectionNames();
+		for (String coll : collList) {
+			Info info = createInfo(coll, null, null);
+			String lowerCaseName = coll.toLowerCase();
+			collNameToMongodb.put(lowerCaseName, info);
+		}
+	}
+
+	public Info createInfo(String dbCollection, ColumnType type, StorageTypeEnum keyType) {
+		// Do we need to implement the types??
+		Info info = new Info();
+		info.setColumnType(type);
+		info.setRowKeyType(keyType);
+		info.setDbObj(db.getCollection(dbCollection));
+		return info;
+	}
+
+	private Info fetchDbCollectionInfo(String tableName, MetaLookup mgr) {
+		Info info = collNameToMongodb.get(tableName.toLowerCase());
+		return info;
 	}
 }

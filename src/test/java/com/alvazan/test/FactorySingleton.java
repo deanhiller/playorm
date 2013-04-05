@@ -21,6 +21,7 @@ public class FactorySingleton {
 		 **************************************************/
 		String clusterName = "PlayCluster";
 		//DbTypeEnum serverType = DbTypeEnum.CASSANDRA;
+		//DbTypeEnum serverType = DbTypeEnum.MONGODB;
 		DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
 		String seeds = "localhost:9160";
 		

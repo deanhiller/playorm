@@ -2,10 +2,13 @@ package com.alvazan.orm.layer9z.spi.db.mongodb;
 
 import java.util.Set;
 
+import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoDbUtil {
@@ -33,10 +36,40 @@ public class MongoDbUtil {
 			c.setPrimaryKey((byte[]) pk);
 		}
 		if (indValue != null) {
-			c.setIndexedValue((byte[]) indValue);
+			c.setIndexedValue(StandardConverters.convertToBytes(indValue));
 		}
 
 		c.setValue(null);
 		return c;
+	}
+
+	public static BasicDBObject createRowQuery(Key from, Key to, DboColumnMeta colMeta) {
+		BasicDBObject query = new BasicDBObject();
+		Object valFrom = null, valTo = null;
+		if (colMeta != null) {
+			if (from != null) {
+				valFrom = colMeta.getStorageType().convertFromNoSql(from.getKey());
+			}
+			if (to != null) {
+				valTo = colMeta.getStorageType().convertFromNoSql(to.getKey());
+			}
+		}
+
+		if (from != null) {
+			if (from.isInclusive())
+				query.append("$gte", valFrom);
+			else
+				query.append("$gt", valFrom);
+		}
+		if (to != null) {
+			if (to.isInclusive())
+				query.append("$lte", valTo);
+			else
+				query.append("$lt", valTo);
+		}
+/*		Need to see if reverse is required here
+ * 		if (reverse)
+			range = range.reverse();*/
+		return query;
 	}
 }

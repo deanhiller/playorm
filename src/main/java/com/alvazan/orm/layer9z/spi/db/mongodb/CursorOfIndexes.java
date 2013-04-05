@@ -1,24 +1,16 @@
 package com.alvazan.orm.layer9z.spi.db.mongodb;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-
-import javax.inject.Provider;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
-import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.Key;
-import com.alvazan.orm.api.z8spi.Row;
-import com.alvazan.orm.api.z8spi.RowHolder;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
-import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.BasicDBObject;
@@ -27,29 +19,30 @@ import com.mongodb.DBObject;
 
 public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 
-	private Info info;
+	//private Info info;
 	private byte[] rowKey;
-	private int batchSize;
+	private Integer batchSize;
 	private BatchListener batchListener;
 	private DB db;
 	private ListIterator<IndexColumn> cachedRows;
-	private Provider<Row> rowProvider;
-	private Cache cache;
+	//private Provider<Row> rowProvider;
+	//private Cache cache;
 	private String indTable;
 	private boolean needToGetBatch;
 	private Key from;
 	private Key to;
+	private DboColumnMeta columnMeta;
 
-	public CursorOfIndexes(byte[] rowKeys, int batchSize,
-			BatchListener list, Provider<Row> rowProvider,
-			String indTable, Key from, Key to) {
-		this.rowProvider = rowProvider;
+	public CursorOfIndexes(byte[] rowKeys, Integer batchSize,
+			BatchListener list,	String indTable, Key from, Key to) {
 		this.rowKey = rowKeys;
 		this.batchSize = batchSize;
 		this.batchListener = list;
 		this.indTable = indTable;
 		this.from = from;
 		this.to = to;
+		this.needToGetBatch = true;
+		this.cachedRows = null;
 	}
 
 	@Override
@@ -62,11 +55,12 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 		return retVal;
 	}
 
-	public void setupMore(DB keyspace) {
+	public void setupMore(DB keyspace, DboColumnMeta colMeta) {
 		if (keyspace == null)
 			throw new IllegalArgumentException(
 					"DB was null");
 		this.db = keyspace;
+		this.columnMeta = colMeta;
 		beforeFirst();
 	}
 
@@ -100,7 +94,6 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 		return new Holder<IndexColumn>(cachedRows.previous());
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadCache() {
 		if (cachedRows != null && cachedRows.hasNext())
 			return; // There are more rows so return and the code will return
@@ -121,16 +114,18 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 				batchListener.beforeFetchingNextBatch();
 
 			BasicDBObject query = new BasicDBObject();
-			//query.put("_id", new BasicDBObject("$in", keysToLookup));
-			//System.out.println("rowKey " + rowKey);
-			//System.out.println("from.getKey() " + from.getKey());
+			BasicDBObject rangeQuery = MongoDbUtil.createRowQuery(from, to, columnMeta);
 			query.put("i", StandardConverters.convertFromBytes(String.class, rowKey));
-			query.append("k", from.getKey());
+			if(!rangeQuery.isEmpty())
+				query.append("k", rangeQuery);
 			BasicDBObject fields = new BasicDBObject();
 			fields.put("_id", -1);
 			fields.append("k", 1);
 			fields.append("v", 1);
-			cursor = dbCollection.find(query, fields).batchSize(batchSize);
+			if (batchSize != null)
+				cursor = dbCollection.find(query, fields).batchSize(batchSize);
+			else
+				cursor = dbCollection.find(query, fields);
 
 			if (batchListener != null)
 				batchListener.afterFetchingNextBatch(cursor.count());
@@ -148,34 +143,53 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 		needToGetBatch = false;
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadCacheBackward() {
 		if (cachedRows != null && cachedRows.hasPrevious())
 			return; // There are more rows so return and the code will return
 					// the next result from cache
 
-		List<RowHolder<Row>> results = new ArrayList<RowHolder<Row>>();
-		List<byte[]> keysToLookup = new ArrayList<byte[]>();
 		DBCursor cursor = null;
-		if (keysToLookup.size() > 0) {
+		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA to ENABLE CACHING
+
+		DBCollection dbCollection = null;
+		if (db != null && db.collectionExists(this.indTable)) {
+			dbCollection = db.getCollection(this.indTable);
+		} else
+			return;
+
+		if (needToGetBatch) {
 			if (batchListener != null)
 				batchListener.beforeFetchingNextBatch();
+			BasicDBObject query = new BasicDBObject();
+			query.put("i", StandardConverters.convertFromBytes(String.class, rowKey));
+			BasicDBObject rangeQuery = MongoDbUtil.createRowQuery(from, to, columnMeta);
+			if(!rangeQuery.isEmpty())
+				query.append("k", rangeQuery);
+			BasicDBObject fields = new BasicDBObject();
+			fields.put("_id", -1);
+			fields.append("k", 1);
+			fields.append("v", 1);
+			if (batchSize != null)
+				cursor = dbCollection.find(query, fields).batchSize(batchSize);
+			else
+				cursor = dbCollection.find(query, fields);
 
+			if (batchListener != null)
+				batchListener.afterFetchingNextBatch(cursor.count());
+
+			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
+			while (cursor.hasNext()) {
+				DBObject mdbrow = cursor.next();
+				IndexColumn indexCol = MongoDbUtil.convertToIndexCol(mdbrow);
+				finalRes.add(indexCol);
+			}
+			cachedRows = finalRes.listIterator();
 		} else {
-			cursor = new DBCursor(null, null, null, null);
+			cursor = new DBCursor(dbCollection, null, null, null);
 		}
-
-		Map<ByteArray, IndexColumn> map = new HashMap<ByteArray, IndexColumn>();
-		while (cursor.hasNext()) {
-			DBObject mongoDoc = cursor.next();
-			IndexColumn kv = new IndexColumn();
-		}
-
-		List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
-		Iterator<byte[]> keyIter = keysToLookup.iterator();
-		cachedRows = finalRes.listIterator();
-		while (cachedRows.hasNext())
-			cachedRows.next();
+		needToGetBatch = false;
+/*		while (cachedRows.hasNext())
+			cachedRows.next();*/
 	}
 
 }

@@ -101,7 +101,6 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		return new Holder<KeyValue<Row>>(cachedRows.previous());
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadCache() {
 		if (cachedRows != null && cachedRows.hasNext())
 			return; // There are more rows so return and the code will return
@@ -190,7 +189,6 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		cachedRows = finalRes.listIterator();
 	}
 
-	@SuppressWarnings("unchecked")
 	private void loadCacheBackward() {
 		if (cachedRows != null && cachedRows.hasPrevious())
 			return; // There are more rows so return and the code will return
@@ -211,40 +209,50 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			results.add(result);
 		}
 
+
 		DBCursor cursor = null;
+		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA FOR ENABLE CACHING
+
+		// DBCollection dbCollection = info.getColumnFamilyObj();
+		DBCollection dbCollection = null;
+		if (db != null && db.collectionExists(cf.getColumnFamily())) {
+			dbCollection = db.getCollection(cf.getColumnFamily());
+		} else
+			return;
+
 		if (keysToLookup.size() > 0) {
 			if (list != null)
 				list.beforeFetchingNextBatch();
-			/*
-			 * ColumnFamily<byte[], byte[]> cf = info.getColumnFamilyObj();
-			 * ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
-			 * RowSliceQuery<byte[], byte[]> slice =
-			 * q2.getKeySlice(keysToLookup);
-			 * 
-			 * OperationResult<Rows<byte[], byte[]>> result = execute(slice);
-			 * 
-			 * Rows<byte[], byte[]> rows = result.getResult(); resultingRows =
-			 * rows.iterator(); if(list != null)
-			 * list.afterFetchingNextBatch(rows.size());
-			 */
+
+			BasicDBObject query = new BasicDBObject();
+			query.put("_id", new BasicDBObject("$in", keysToLookup));
+			BasicDBObject orderBy = new BasicDBObject();
+			orderBy.put("_id", 1);
+			cursor = dbCollection.find(query).sort(orderBy)
+					.batchSize(batchSize);
+
+			if (list != null)
+				list.afterFetchingNextBatch(cursor.size());
 		} else {
-			cursor = new DBCursor(null, null, null, null);
+			cursor = new DBCursor(dbCollection, null, null, null);
 		}
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 		while (cursor.hasNext()) {
-			DBObject mongoDoc = cursor.next();
 			KeyValue<Row> kv = new KeyValue<Row>();
-			/*
-			 * kv.setKey(row.getKey()); if(!mongoDoc.getColumns().isEmpty()) {
-			 * //Astyanax returns a row when there is none BUT we know if there
-			 * are 0 columns there is really no row in the database //then Row r
-			 * = rowProvider.get(); r.setKey(row.getKey());
-			 * //MongoDbUtil.processColumns(row, r); kv.setValue(r); }
-			 * 
-			 * ByteArray b = new ByteArray(row.getKey()); map.put(b, kv);
-			 * cache.cacheRow(cf, row.getKey(), kv.getValue());
-			 */
+			DBObject mdbrow = cursor.next();
+			byte[] mdbRowKey = StandardConverters.convertToBytes(mdbrow.get("_id"));
+			kv.setKey(mdbRowKey);
+			if (!mdbrow.keySet().isEmpty()) {
+				Row r = rowProvider.get();
+				r.setKey(mdbRowKey);
+				MongoDbUtil.processColumns(mdbrow, r);
+				kv.setValue(r);
+			}
+
+			ByteArray b = new ByteArray(mdbRowKey);
+			map.put(b, kv);
+			cache.cacheRow(cf, mdbRowKey, kv.getValue());
 		}
 
 		// UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we
