@@ -270,9 +270,10 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private void removeColumns(Remove action, DBCollection table) {
-		for (byte[] name : action.getColumns()) {
-			DBObject row = table.findOne(name);
-			table.remove(row);
+		DBObject row = table.findOne(action.getRowKey());
+		if (row != null) {
+			for (byte[] name : action.getColumns()) {
+				row.removeField(StandardConverters.convertFromBytes(String.class, name));			}
 		}
 	}
 
@@ -280,8 +281,10 @@ public class MongoDbSession implements NoSqlRawSession {
 
 		String colFamily = action.getColFamily().getColumnFamily();
 		DBCollection table = lookupColFamily(colFamily, ormSession);
-		DBObject row = table.findOne(action.getColumn());
-		table.remove(row);
+		DBObject row = table.findOne(action.getRowKey());
+		if (row != null)
+			row.removeField(StandardConverters.convertFromBytes(String.class, action.getColumn()));
+		//table.remove(row);
 	}
 
 	private void persist(Persist action, MetaLookup ormSession) {
@@ -293,7 +296,8 @@ public class MongoDbSession implements NoSqlRawSession {
 			byte[] value = new byte[0];
 			if(col.getValue() != null)
 				value = col.getValue();
-			doc.append(StandardConverters.convertFromBytes(String.class, col.getName()), value);
+			//doc.append(StandardConverters.convertFromBytes(String.class, col.getName()), value);
+			doc.append(StandardConverters.convertToString(col.getName()), value);
 		}
 		table.findAndModify(row, doc);
 	}

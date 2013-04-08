@@ -19,13 +19,11 @@ import com.mongodb.DBObject;
 
 public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 
-	//private Info info;
 	private byte[] rowKey;
 	private Integer batchSize;
 	private BatchListener batchListener;
 	private DB db;
 	private ListIterator<IndexColumn> cachedRows;
-	//private Provider<Row> rowProvider;
 	//private Cache cache;
 	private String indTable;
 	private boolean needToGetBatch;

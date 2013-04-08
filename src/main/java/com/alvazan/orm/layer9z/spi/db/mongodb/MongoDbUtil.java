@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.mongodb;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 import com.alvazan.orm.api.z8spi.Key;
@@ -16,7 +17,7 @@ public class MongoDbUtil {
 		Set<String> columns = mdbRow.keySet();
 		for (String col : columns) {
 			if(!col.equalsIgnoreCase("_id")) {
-				byte[] name = StandardConverters.convertToBytes(col);
+				byte[] name = StandardConverters.convertFromString(byte[].class, col);
 				byte[] val = StandardConverters.convertToBytes(mdbRow.get(col));
 				Column c = new Column();
 				c.setName(name);
@@ -49,11 +50,14 @@ public class MongoDbUtil {
 		if (colMeta != null) {
 			if (from != null) {
 				valFrom = colMeta.getStorageType().convertFromNoSql(from.getKey());
+				valFrom = checkForBigDecimal(valFrom);
 			}
 			if (to != null) {
 				valTo = colMeta.getStorageType().convertFromNoSql(to.getKey());
+				valTo = checkForBigDecimal(valTo);
 			}
-		}
+		} else
+			return query;
 
 		if (from != null) {
 			if (from.isInclusive())
@@ -72,4 +76,14 @@ public class MongoDbUtil {
 			range = range.reverse();*/
 		return query;
 	}
+
+	public static Object checkForBigDecimal(Object val) {
+		// This is a hack as MongoDb doesn't support BigDecimal. See https://jira.mongodb.org/browse/SCALA-23
+		if (val instanceof BigDecimal) {
+			BigDecimal bigDec = (BigDecimal) val;
+			return bigDec.doubleValue();
+		}
+		return val;
+	}
+
 }
