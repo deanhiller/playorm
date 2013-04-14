@@ -131,11 +131,9 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			dbCollection = db.getCollection(cf.getColumnFamily());
 		} else
 			return;
-
 		if (keysToLookup.size() > 0) {
 			if (list != null)
 				list.beforeFetchingNextBatch();
-
 			BasicDBObject query = new BasicDBObject();
 			query.put("_id", new BasicDBObject("$in", keysToLookup));
 			BasicDBObject orderBy = new BasicDBObject();
@@ -148,24 +146,8 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		}
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-		while (cursor.hasNext()) {
-			DBObject mdbrow = cursor.next();
-			KeyValue<Row> kv = new KeyValue<Row>();
-			byte[] mdbRowKey = StandardConverters.convertToBytes(mdbrow
-					.get("_id"));
-			kv.setKey(mdbRowKey);
 
-			if (!mdbrow.keySet().isEmpty()) {
-				Row r = rowProvider.get();
-				r.setKey(mdbRowKey);
-				MongoDbUtil.processColumns(mdbrow, r);
-				kv.setValue(r);
-			}
-
-			ByteArray b = new ByteArray(mdbRowKey);
-			map.put(b, kv);
-			cache.cacheRow(cf, mdbRowKey, kv.getValue());
-		}
+		fillCache(map, cursor, keysToLookup);
 
 		// This is copied from Cassandra. Need to check how can we get results in an order.
 
@@ -238,22 +220,8 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		}
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-		while (cursor.hasNext()) {
-			KeyValue<Row> kv = new KeyValue<Row>();
-			DBObject mdbrow = cursor.next();
-			byte[] mdbRowKey = StandardConverters.convertToBytes(mdbrow.get("_id"));
-			kv.setKey(mdbRowKey);
-			if (!mdbrow.keySet().isEmpty()) {
-				Row r = rowProvider.get();
-				r.setKey(mdbRowKey);
-				MongoDbUtil.processColumns(mdbrow, r);
-				kv.setValue(r);
-			}
 
-			ByteArray b = new ByteArray(mdbRowKey);
-			map.put(b, kv);
-			cache.cacheRow(cf, mdbRowKey, kv.getValue());
-		}
+		fillCache(map, cursor, keysToLookup);
 
 		// UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we
 		// provided so, we need to iterate over the whole thing here
@@ -279,6 +247,39 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		cachedRows = finalRes.listIterator();
 		while (cachedRows.hasNext())
 			cachedRows.next();
+	}
+
+	private void fillCache(Map<ByteArray, KeyValue<Row>> map, DBCursor cursor,
+			List<byte[]> keysToLookup) {
+		if (cursor.size() == 0) {
+			for (byte[] key : keysToLookup) {
+				KeyValue<Row> kv = new KeyValue<Row>();
+				kv.setKey(key);
+				kv.setValue(null);
+				ByteArray b = new ByteArray(key);
+				map.put(b, kv);
+				cache.cacheRow(cf, key, kv.getValue());
+			}
+		} else {
+			while (cursor.hasNext()) {
+				DBObject mdbrow = cursor.next();
+				KeyValue<Row> kv = new KeyValue<Row>();
+				byte[] mdbRowKey = StandardConverters.convertToBytes(mdbrow
+						.get("_id"));
+				kv.setKey(mdbRowKey);
+
+				if (!mdbrow.keySet().isEmpty()) {
+					Row r = rowProvider.get();
+					r.setKey(mdbRowKey);
+					MongoDbUtil.processColumns(mdbrow, r);
+					kv.setValue(r);
+				}
+
+				ByteArray b = new ByteArray(mdbRowKey);
+				map.put(b, kv);
+				cache.cacheRow(cf, mdbRowKey, kv.getValue());
+			}
+		}
 	}
 
 }

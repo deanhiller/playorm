@@ -83,6 +83,13 @@ public class MongoDbUtil {
 			BigDecimal bigDec = (BigDecimal) val;
 			return bigDec.doubleValue();
 		}
+		if (val instanceof Boolean) {
+			Boolean b = (Boolean) val;
+			if (b)
+				return 1;
+			else
+				return 0;
+		}
 		return val;
 	}
 
