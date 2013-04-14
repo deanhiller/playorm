@@ -1,6 +1,8 @@
 package com.alvazan.orm.layer9z.spi.db.mongodb;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import com.alvazan.orm.api.z8spi.Key;
@@ -91,6 +93,18 @@ public class MongoDbUtil {
 				return 0;
 		}
 		return val;
+	}
+
+	public static BasicDBObject createRowQueryFromValues(List<byte[]> values, DboColumnMeta colMeta) {
+		BasicDBObject query = new BasicDBObject();
+		List<Object> valObjList = new ArrayList<Object>();
+		for (byte[] val : values) {
+			Object valObj = colMeta.getStorageType().convertFromNoSql(val);
+			valObj = checkForBigDecimal(valObj);
+			valObjList.add(valObj);
+		}
+		query.put("$in", valObjList);
+		return query;
 	}
 
 }

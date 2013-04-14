@@ -149,7 +149,12 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo,
 			List<byte[]> values, BatchListener list, MetaLookup mgr) {
-		return null;
+		byte[] rowKey = scanInfo.getRowKey();
+		String indexTableName = scanInfo.getIndexColFamily();
+		DboColumnMeta colMeta = scanInfo.getColumnName();
+		CursorForValues cursor = new CursorForValues(rowKey, list, indexTableName, values);
+		cursor.setupMore(db, colMeta);
+		return cursor;
 	}
 
 	@Override
