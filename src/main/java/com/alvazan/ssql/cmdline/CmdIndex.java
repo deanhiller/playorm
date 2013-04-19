@@ -72,6 +72,7 @@ public class CmdIndex {
 		int rowCounter = 0;
 		int changedCounter = 0;
 		while(indexView2.next()) {
+			rowCounter++;
 			IndexPoint pt = indexView2.getCurrent();
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
@@ -106,7 +107,7 @@ public class CmdIndex {
 					changedCounter++;
 				}
 			}
-			rowCounter++;
+
 			if(changedCounter > 50) {
 				s.flush();
 				//System.out.println("Successfully flushed all previous changes.  row="+rowCounter);
