@@ -99,9 +99,7 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 					// the next result from cache
 
 		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA to ENABLE CACHING
 
-		// DBCollection dbCollection = info.getColumnFamilyObj();
 		DBCollection dbCollection = null;
 		if (db != null && db.collectionExists(this.indTable)) {
 			dbCollection = db.getCollection(this.indTable);
@@ -141,7 +139,6 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 					// the next result from cache
 
 		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA to ENABLE CACHING
 
 		DBCollection dbCollection = null;
 		if (db != null && db.collectionExists(this.indTable)) {
@@ -173,7 +170,7 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 			fillinCache(finalRes, cursor);
 			needToGetBatch = false;
 		}
-/*		while (cachedRows.hasNext())
+	/*	while (cachedRows.hasNext())
 			cachedRows.next();*/
 	}
 
