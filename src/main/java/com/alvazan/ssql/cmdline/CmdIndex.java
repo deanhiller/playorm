@@ -23,6 +23,7 @@ import com.alvazan.orm.api.z8spi.meta.TypedRow;
 public class CmdIndex {
 	private static final Logger log = LoggerFactory.getLogger(CmdIndex.class);
 	private static final int BATCH_SIZE = 200;
+	private Integer totalRowCount = null;
 	//private static final int TIME_TO_REPORT = 10000;
 	
 	public void reindex(String cmd, NoSqlEntityManager mgr) {
@@ -46,7 +47,6 @@ public class CmdIndex {
 		System.out.println("Beginning re-index");
 
 		int totalChanges = 0;
-		int totalRows = 0;
 		int rowCountProcessed = 0;
 		while(true) {
 			Map<Object, KeyValue<TypedRow>> keyToRow = findNextSetOfData(s, cf, indexView);
@@ -56,15 +56,14 @@ public class CmdIndex {
 			}
 			
 			Counter c = processAllColumns(s, data, keyToRow, indexView2);
-			totalRows = c.getRowCounter();
 			totalChanges += c.getChangedCounter();
 			
 			if(rowCountProcessed % 1000 == 0) {
-				System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRows+" totalChanges so far="+totalChanges);
+				System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRowCount+" totalChanges so far="+totalChanges);
 			}
 		}
 		
-		System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRows+" totalChanges="+totalChanges);
+		System.out.println("#Rows processed="+rowCountProcessed+" totalRows to process="+totalRowCount+" totalChanges="+totalChanges);
 	}
 
 	private Counter processAllColumns(NoSqlTypedSession s, ColFamilyData data, Map<Object, KeyValue<TypedRow>> keyToRow,
@@ -75,6 +74,7 @@ public class CmdIndex {
 		int rowCounter = 0;
 		int changedCounter = 0;
 		while(indexView2.next()) {
+			rowCounter++;
 			IndexPoint pt = indexView2.getCurrent();
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
@@ -91,7 +91,7 @@ public class CmdIndex {
 					changedCounter++;
 				}
 			}
-			rowCounter++;
+
 			if(changedCounter > 50) {
 				s.flush();
 				//System.out.println("Successfully flushed all previous changes.  row="+rowCounter);
@@ -101,6 +101,8 @@ public class CmdIndex {
 			}
 		}
 		
+		if(totalRowCount == null)
+			totalRowCount = rowCounter;
 		s.flush();
 		return new Counter(rowCounter, changedCounter);
 	}
