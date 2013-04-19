@@ -28,7 +28,6 @@ import com.mongodb.DBObject;
 
 public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 
-	private Info info;
 	private DirectCursor<byte[]> rowKeys;
 	private int batchSize;
 	private BatchListener list;
@@ -54,7 +53,7 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		String keys = "" + rowKeys;
 		if (rowKeys instanceof List)
 			keys = "List" + keys;
-		String retVal = "CursorKeysToRowsMDB(MongoDBFindRows)[" + tabs + keys
+		String retVal = "CursorKeysToRowsMDB[" + tabs + keys
 				+ tabs + "]";
 		StringLocal.set(tabs.length());
 		return retVal;
@@ -65,7 +64,6 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			throw new IllegalArgumentException(
 					"no params can be null but one was null");
 		this.cf = cf;
-		this.info = info;
 		this.cache = cache;
 		this.db = keyspace;
 		beforeFirst();
@@ -158,7 +156,8 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 				byte[] key = keyIter.next();
 				ByteArray b = new ByteArray(key);
 				KeyValue<Row> kv = map.get(b);
-				finalRes.add(kv);
+				if (kv!=null)
+					finalRes.add(kv);
 			} else {
 				Row row = r.getValue();
 				KeyValue<Row> kv = new KeyValue<Row>();
@@ -234,7 +233,8 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 				byte[] key = keyIter.next();
 				ByteArray b = new ByteArray(key);
 				KeyValue<Row> kv = map.get(b);
-				finalRes.add(kv);
+				if (kv != null)
+					finalRes.add(kv);
 			} else {
 				Row row = r.getValue();
 				KeyValue<Row> kv = new KeyValue<Row>();
@@ -274,10 +274,22 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 					MongoDbUtil.processColumns(mdbrow, r);
 					kv.setValue(r);
 				}
-
 				ByteArray b = new ByteArray(mdbRowKey);
 				map.put(b, kv);
 				cache.cacheRow(cf, mdbRowKey, kv.getValue());
+			}
+			// Now put the remaining keys which are not in MongoDB's cursor.
+			// This is because Cassandra returns all the rows with rowkeys while Mongodb doesn't
+			for (byte[] key : keysToLookup) {
+				ByteArray baKey = new ByteArray(key);
+				if (!map.containsKey(baKey)) {
+					KeyValue<Row> kv = new KeyValue<Row>();
+					kv.setKey(key);
+					kv.setValue(null);
+					// ByteArray b = new ByteArray(key);
+					map.put(baKey, kv);
+					cache.cacheRow(cf, key, kv.getValue());
+				}
 			}
 		}
 	}

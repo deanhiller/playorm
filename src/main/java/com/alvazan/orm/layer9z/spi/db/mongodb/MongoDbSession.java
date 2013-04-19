@@ -128,11 +128,19 @@ public class MongoDbSession implements NoSqlRawSession {
 		
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
 			byte[] from, byte[] to, Integer batchSize, BatchListener l,
 			MetaLookup mgr) {
-		return null;
+		Info info = fetchDbCollectionInfo(colFamily.getColumnFamily(), mgr);
+		if(info == null) {
+			//If there is no column family in mongodb, then we need to return no rows to the user...
+			return null;
+		}
+
+		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(colFamily, l, batchSize, db, rowKey, from, to);
+		return cursor;
 	}
 
 	@Override

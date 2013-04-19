@@ -41,13 +41,14 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 		this.to = to;
 		this.needToGetBatch = true;
 		this.cachedRows = null;
+		beforeFirst();
 	}
 
 	@Override
 	public String toString() {
 		String tabs = StringLocal.getAndAdd();
 		String keys = "" + rowKey;
-		String retVal = "CursorKeysToRowsMDB(MongoDBFindRows)[" + tabs + keys
+		String retVal = "CursorOfIndexes[" + tabs + keys
 				+ tabs + "]";
 		StringLocal.set(tabs.length());
 		return retVal;
@@ -129,16 +130,9 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 				batchListener.afterFetchingNextBatch(cursor.count());
 			
 			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
-			while (cursor.hasNext()) {
-				DBObject mdbrow = cursor.next();
-				IndexColumn indexCol = MongoDbUtil.convertToIndexCol(mdbrow);
-				finalRes.add(indexCol);
-			}
-			cachedRows = finalRes.listIterator();
-		} else {
-			cursor = new DBCursor(dbCollection, null, null, null);
+			fillinCache(finalRes, cursor);
+			needToGetBatch = false;
 		}
-		needToGetBatch = false;
 	}
 
 	private void loadCacheBackward() {
@@ -170,24 +164,30 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 			if (batchSize != null)
 				cursor = dbCollection.find(query, fields).batchSize(batchSize);
 			else
-				cursor = dbCollection.find(query, fields);
+				cursor = dbCollection.find(query, fields).batchSize(100);
 
 			if (batchListener != null)
 				batchListener.afterFetchingNextBatch(cursor.count());
 
 			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
+			fillinCache(finalRes, cursor);
+			needToGetBatch = false;
+		}
+/*		while (cachedRows.hasNext())
+			cachedRows.next();*/
+	}
+
+	private void fillinCache(List<IndexColumn> finalRes, DBCursor cursor) {
+		if (cursor.size() == 0) {
+			cachedRows = new ArrayList<IndexColumn>().listIterator();
+		} else {
 			while (cursor.hasNext()) {
 				DBObject mdbrow = cursor.next();
 				IndexColumn indexCol = MongoDbUtil.convertToIndexCol(mdbrow);
 				finalRes.add(indexCol);
 			}
 			cachedRows = finalRes.listIterator();
-		} else {
-			cursor = new DBCursor(dbCollection, null, null, null);
 		}
-		needToGetBatch = false;
-/*		while (cachedRows.hasNext())
-			cachedRows.next();*/
 	}
 
 }

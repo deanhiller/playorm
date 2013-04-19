@@ -44,7 +44,7 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 	public String toString() {
 		String tabs = StringLocal.getAndAdd();
 		String keys = "" + rowKey;
-		String retVal = "CursorKeysToRowsMDB(MongoDBFindRows)[" + tabs + keys
+		String retVal = "CursorForValues(MongoDB)[" + tabs + keys
 				+ tabs + "]";
 		StringLocal.set(tabs.length());
 		return retVal;
@@ -94,10 +94,8 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 					// the next result from cache
 
 		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA to ENABLE CACHING
-
-		// DBCollection dbCollection = info.getColumnFamilyObj();
 		DBCollection dbCollection = null;
+
 		if (db != null && db.collectionExists(this.indTable)) {
 			dbCollection = db.getCollection(this.indTable);
 		} else
@@ -110,7 +108,6 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 			BasicDBObject query = new BasicDBObject();
 			BasicDBObject rangeQuery = MongoDbUtil.createRowQueryFromValues(
 					values, columnMeta);
-
 			query.put("i",
 					StandardConverters.convertFromBytes(String.class, rowKey));
 			if (!rangeQuery.isEmpty())
@@ -132,10 +129,8 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 				finalRes.add(indexCol);
 			}
 			cachedRows = finalRes.listIterator();
-		} else {
-			cursor = new DBCursor(dbCollection, null, null, null);
+			needToGetBatch = false;
 		}
-		needToGetBatch = false;
 	}
 
 	private void loadCacheBackward() {
@@ -181,10 +176,8 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 				finalRes.add(indexCol);
 			}
 			cachedRows = finalRes.listIterator();
-		} else {
-			cursor = new DBCursor(dbCollection, null, null, null);
+			needToGetBatch = false;
 		}
-		needToGetBatch = false;
 		while (cachedRows.hasNext())
 			cachedRows.next();
 	}
