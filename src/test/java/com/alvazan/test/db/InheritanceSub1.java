@@ -12,6 +12,7 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 @NoSqlDiscriminatorColumn(value="sub1")
 @NoSqlQueries({
    @NoSqlQuery(name="findAll", query="select s from TABLE as s"),
+   @NoSqlQuery(name ="findById", query = "select u from TABLE as u where :id = u.id"),
    @NoSqlQuery(name="findByName", query="select s from TABLE as s where s.name = :name")
 })
 public class InheritanceSub1 extends InheritanceSuper {

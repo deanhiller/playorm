@@ -74,6 +74,14 @@ public class TestPartitioning {
 		query2.setParameter("number", 5);
 		PartitionedSingleTrade trade3FromNullPartition = query2.getSingleObject();
 		Assert.assertEquals(t3.getUnique(), trade3FromNullPartition.getUnique());
+
+		//The Query is
+		//  "PARTITIONS e('securityName',:securityName) select *  FROM TABLE as e"
+
+		Query<PartitionedSingleTrade> query3 = mgr.createNamedQuery(PartitionedSingleTrade.class, "findBySecurityName");
+		query3.setParameter("securityName", "xyz");
+		List<PartitionedSingleTrade> tradeFromSecurityPartition = query3.getResultList(0, null);
+		Assert.assertEquals(1, tradeFromSecurityPartition.size());
 	}
 	
 	@Test

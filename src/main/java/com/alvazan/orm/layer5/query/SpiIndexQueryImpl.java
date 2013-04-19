@@ -79,7 +79,12 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
 			DboTableMeta tableMeta = tableInfo.getTableMeta();
-			DboColumnMeta metaCol = tableMeta.getAnyIndex(indexedColumn);
+			PartitionMeta partitionMeta = tableInfo.getPartition();
+			DboColumnMeta partColMeta = null;
+			if (partitionMeta != null)
+				partColMeta = partitionMeta.getPartitionColumn();
+			DboColumnMeta metaCol = tableMeta.getAnyIndex(indexedColumn, partColMeta);
+
 			ScanInfo scanInfo = createScanInfo(tableInfo, metaCol);
 
 			alreadyJoinedViews.add(tableInfo);

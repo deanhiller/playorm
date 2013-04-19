@@ -21,6 +21,7 @@ public class FactorySingleton {
 		 **************************************************/
 		String clusterName = "PlayCluster";
 		//DbTypeEnum serverType = DbTypeEnum.CASSANDRA;
+		//DbTypeEnum serverType = DbTypeEnum.MONGODB;
 		DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
 		String seeds = "localhost:9160";
 		
@@ -49,6 +50,9 @@ public class FactorySingleton {
 			break;
 		case CASSANDRA:
 			Bootstrap.createAndAddBestCassandraConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
+			break;
+		case MONGODB:
+			Bootstrap.createAndAddBestMongoDbConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
 			break;
 		default:
 			throw new UnsupportedOperationException("not supported yet, server type="+config.getServerType());

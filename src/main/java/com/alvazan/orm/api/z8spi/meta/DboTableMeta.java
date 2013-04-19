@@ -396,7 +396,7 @@ public class DboTableMeta {
 			if(meta.isIndexed())
 				indexedColumnsCache.add(meta);
 		}
-		if(idColumn.isIndexed())
+		if(idColumn != null && idColumn.isIndexed())
 			indexedColumnsCache.add(idColumn);
 			
 		cacheOfPartitionedBy = new ArrayList<DboColumnMeta>();
@@ -407,15 +407,27 @@ public class DboTableMeta {
 	}
 
 
-	public DboColumnMeta getAnyIndex(String indexedColumn) {
+	public DboColumnMeta getAnyIndex(String indexedColumn, DboColumnMeta partColMeta) {
 		initCaches();
 		if(indexedColumnsCache.size() == 0)
 			throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation");
-		
-		if(indexedColumn == null) {
-			//spread load over the index rows .....
-			int index = r.nextInt(indexedColumnsCache.size());
-			return indexedColumnsCache.get(index);
+		int index = 0;
+		if (indexedColumn == null) {
+			// spread load over the index rows .....
+			if (partColMeta == null) {
+				index = r.nextInt(indexedColumnsCache.size());
+				return indexedColumnsCache.get(index);
+			} else {
+				index = r.nextInt(indexedColumnsCache.size());
+				DboColumnMeta colMetaPart = indexedColumnsCache.get(index);
+				while (partColMeta.getColumnName().equals(
+						colMetaPart.getColumnName())) {
+					index = r.nextInt(indexedColumnsCache.size());
+					colMetaPart = indexedColumnsCache.get(index);
+				}
+				return colMetaPart;
+			}
+
 		}
 		
 		DboColumnMeta colMeta = nameToField.get(indexedColumn);

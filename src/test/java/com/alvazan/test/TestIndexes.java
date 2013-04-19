@@ -118,6 +118,10 @@ public class TestIndexes {
 		
 		Activity activityNull = Activity.findSingleResult(mgr, "notinThere");
 		Assert.assertNull(activityNull);
+
+		Activity activityNull2 = mgr.find(Activity.class, "fakekey");
+		Assert.assertNull(activityNull2);
+
 	}
 	
 	@Test

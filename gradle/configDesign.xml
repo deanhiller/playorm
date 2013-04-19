@@ -21,6 +21,7 @@
 <!-- external packages we limit the use of so we can isolate to just one or two packages that depend on this technology -->
 <package name="antlr" package="org.antlr.runtime" subpackages="include"/>
 <package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
+<package name="mongodb" package="com.mongodb" subpackages="include"/>
 <package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
 <package name="args" package="org.kohsuke.args4j"/>
 <package name="logback" package="ch.qos.logback" subpackages="include"/>
@@ -128,7 +129,10 @@
 <package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
 	<depends>allapis</depends>
 </package>
-
+<package name="mongo" package="com.alvazan.orm.layer9z.spi.db.mongodb">
+	<depends>api8</depends>
+	<depends>mongodb</depends>
+</package>
 <package name="monitorapi" package="org.playorm.monitor.api"></package>
 
 <package name="monitorimpl" package="org.playorm.monitor.impl" subpackages="include">

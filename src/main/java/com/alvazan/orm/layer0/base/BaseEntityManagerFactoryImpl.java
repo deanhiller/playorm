@@ -82,8 +82,11 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         discoverer.discover(cl);
         
         for(Class c : classes) {
-        	listener.scanClass(c);
-        }
+			listener.scanClass(c);
+			if (c.getSuperclass() != java.lang.Object.class) {
+				listener.scanClass(c.getSuperclass());
+			}
+		}
         
         if(log.isTraceEnabled()) {
         	URL[] resources = discoverer.findResources(cl);
