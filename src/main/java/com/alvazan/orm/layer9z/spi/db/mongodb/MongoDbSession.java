@@ -196,18 +196,12 @@ public class MongoDbSession implements NoSqlRawSession {
 		} else if (indexCfName.equalsIgnoreCase("DecimalIndice")) {
 			keyToPersist = StandardConverters.convertFromBytes(Double.class, key);
 		}
-		if (doc != null) {
-			//Only edit the row
-				doc.put("k", keyToPersist);
-		} else {
-			doc = new BasicDBObject();
-			// insert a new row
-			doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
-			//doc.append("k",key);
-			doc.put("k", keyToPersist);
-			doc.append("v", value);
-			table.insert(doc);
-		}
+		doc = new BasicDBObject();
+		// insert a new row
+		doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
+		doc.put("k", keyToPersist);
+		doc.append("v", value);
+		table.insert(doc);
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
