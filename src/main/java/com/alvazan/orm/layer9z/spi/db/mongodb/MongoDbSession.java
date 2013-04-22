@@ -196,9 +196,19 @@ public class MongoDbSession implements NoSqlRawSession {
 		} else if (indexCfName.equalsIgnoreCase("DecimalIndice")) {
 			keyToPersist = StandardConverters.convertFromBytes(Double.class, key);
 		}
-		doc = new BasicDBObject();
-		// insert a new row
-		doc.append("i", StandardConverters.convertFromBytes(String.class, rowKey));
+		if (doc != null) {
+			// Check for duplicates
+			Object indValue = doc.get("k");
+			if (indValue != null && !indValue.equals(keyToPersist))
+				insertIndex(table, rowKey, keyToPersist, value);
+		} else
+			insertIndex(table, rowKey, keyToPersist, value);
+	}
+
+	private void insertIndex(DBCollection table, byte[] rowKey,
+			Object keyToPersist, byte[] value) {
+		BasicDBObject doc = new BasicDBObject();
+		doc.append("i",	StandardConverters.convertFromBytes(String.class, rowKey));
 		doc.put("k", keyToPersist);
 		doc.append("v", value);
 		table.insert(doc);

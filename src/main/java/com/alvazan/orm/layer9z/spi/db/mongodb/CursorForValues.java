@@ -19,11 +19,9 @@ import com.mongodb.DBObject;
 public class CursorForValues extends AbstractCursor<IndexColumn> {
 
 	private byte[] rowKey;
-	// private Integer batchSize;
 	private BatchListener batchListener;
 	private DB db;
 	private ListIterator<IndexColumn> cachedRows;
-	// private Cache cache;
 	private String indTable;
 	private boolean needToGetBatch;
 	private DboColumnMeta columnMeta;
@@ -32,7 +30,6 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 	public CursorForValues(byte[] rowKeys, BatchListener list, String indTable,
 			List<byte[]> keys) {
 		this.rowKey = rowKeys;
-		// this.batchSize = batchSize;
 		this.batchListener = list;
 		this.indTable = indTable;
 		this.needToGetBatch = true;
@@ -72,7 +69,7 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> nextImpl() {
-		loadCache();
+		loadCache(false);
 		if (cachedRows == null || !cachedRows.hasNext())
 			return null;
 
@@ -81,14 +78,14 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> previousImpl() {
-		loadCacheBackward();
+		loadCache(true);
 		if (cachedRows == null || !cachedRows.hasPrevious())
 			return null;
 
 		return new Holder<IndexColumn>(cachedRows.previous());
 	}
 
-	private void loadCache() {
+	private void loadCache(boolean reverse) {
 		if (cachedRows != null && cachedRows.hasNext())
 			return; // There are more rows so return and the code will return
 					// the next result from cache
@@ -130,56 +127,12 @@ public class CursorForValues extends AbstractCursor<IndexColumn> {
 			}
 			cachedRows = finalRes.listIterator();
 			needToGetBatch = false;
-		}
-	}
-
-	private void loadCacheBackward() {
-		if (cachedRows != null && cachedRows.hasPrevious())
-			return; // There are more rows so return and the code will return
-					// the next result from cache
-
-		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA to ENABLE CACHING
-
-		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(this.indTable)) {
-			dbCollection = db.getCollection(this.indTable);
-		} else
-			return;
-
-		if (needToGetBatch) {
-			if (batchListener != null)
-				batchListener.beforeFetchingNextBatch();
-			BasicDBObject query = new BasicDBObject();
-			query.put("i",
-					StandardConverters.convertFromBytes(String.class, rowKey));
-			BasicDBObject rangeQuery = MongoDbUtil.createRowQueryFromValues(
-					values, columnMeta);
-
-			if (!rangeQuery.isEmpty())
-				query.append("k", rangeQuery);
-			BasicDBObject fields = new BasicDBObject();
-
-			fields.put("_id", -1);
-			fields.append("k", 1);
-			fields.append("v", 1);
-
-			cursor = dbCollection.find(query, fields);
-
-			if (batchListener != null)
-				batchListener.afterFetchingNextBatch(cursor.count());
-
-			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
-			while (cursor.hasNext()) {
-				DBObject mdbrow = cursor.next();
-				IndexColumn indexCol = MongoDbUtil.convertToIndexCol(mdbrow);
-				finalRes.add(indexCol);
+			if(reverse) {
+				while (cachedRows.hasNext())
+					cachedRows.next();
 			}
-			cachedRows = finalRes.listIterator();
-			needToGetBatch = false;
 		}
-		while (cachedRows.hasNext())
-			cachedRows.next();
+
 	}
 
 }

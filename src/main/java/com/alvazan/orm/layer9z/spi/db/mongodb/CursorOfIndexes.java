@@ -23,8 +23,7 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 	private Integer batchSize;
 	private BatchListener batchListener;
 	private DB db;
-	private ListIterator<IndexColumn> cachedRows;
-	//private Cache cache;
+	private ListIterator<DBObject> cachedRows;
 	private String indTable;
 	private boolean needToGetBatch;
 	private Key from;
@@ -77,23 +76,23 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> nextImpl() {
-		loadCache();
+		loadCache(false);
 		if (cachedRows == null || !cachedRows.hasNext())
 			return null;
-
-		return new Holder<IndexColumn>(cachedRows.next());
+		IndexColumn indexCol = MongoDbUtil.convertToIndexCol(cachedRows.next());
+		return new Holder<IndexColumn>(indexCol);
 	}
 
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<IndexColumn> previousImpl() {
-		loadCacheBackward();
+		loadCache(true);
 		if (cachedRows == null || !cachedRows.hasPrevious())
 			return null;
-
-		return new Holder<IndexColumn>(cachedRows.previous());
+		IndexColumn indexCol = MongoDbUtil.convertToIndexCol(cachedRows.previous());
+		return new Holder<IndexColumn>(indexCol);
 	}
 
-	private void loadCache() {
+	private void loadCache(boolean reverse) {
 		if (cachedRows != null && cachedRows.hasNext())
 			return; // There are more rows so return and the code will return
 					// the next result from cache
@@ -127,61 +126,23 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 			if (batchListener != null)
 				batchListener.afterFetchingNextBatch(cursor.count());
 			
-			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
+			List<DBObject> finalRes = new ArrayList<DBObject>();
 			fillinCache(finalRes, cursor);
 			needToGetBatch = false;
+			if (reverse) {
+				while (cachedRows.hasNext())
+					cachedRows.next();
+			}
 		}
 	}
 
-	private void loadCacheBackward() {
-		if (cachedRows != null && cachedRows.hasPrevious())
-			return; // There are more rows so return and the code will return
-					// the next result from cache
-
-		DBCursor cursor = null;
-
-		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(this.indTable)) {
-			dbCollection = db.getCollection(this.indTable);
-		} else
-			return;
-
-		if (needToGetBatch) {
-			if (batchListener != null)
-				batchListener.beforeFetchingNextBatch();
-			BasicDBObject query = new BasicDBObject();
-			query.put("i", StandardConverters.convertFromBytes(String.class, rowKey));
-			BasicDBObject rangeQuery = MongoDbUtil.createRowQuery(from, to, columnMeta);
-			if(!rangeQuery.isEmpty())
-				query.append("k", rangeQuery);
-			BasicDBObject fields = new BasicDBObject();
-			fields.put("_id", -1);
-			fields.append("k", 1);
-			fields.append("v", 1);
-			if (batchSize != null)
-				cursor = dbCollection.find(query, fields).batchSize(batchSize);
-			else
-				cursor = dbCollection.find(query, fields).batchSize(100);
-
-			if (batchListener != null)
-				batchListener.afterFetchingNextBatch(cursor.count());
-
-			List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
-			fillinCache(finalRes, cursor);
-			needToGetBatch = false;
-		}
-	/*	while (cachedRows.hasNext())
-			cachedRows.next();*/
-	}
-
-	private void fillinCache(List<IndexColumn> finalRes, DBCursor cursor) {
+	private void fillinCache(List<DBObject> finalRes, DBCursor cursor) {
 		if (cursor.size() == 0) {
-			cachedRows = new ArrayList<IndexColumn>().listIterator();
+			cachedRows = new ArrayList<DBObject>().listIterator();
 		} else {
 			while (cursor.hasNext()) {
 				DBObject mdbrow = cursor.next();
-				IndexColumn indexCol = MongoDbUtil.convertToIndexCol(mdbrow);
-				finalRes.add(indexCol);
+				finalRes.add(mdbrow);
 			}
 			cachedRows = finalRes.listIterator();
 		}
