@@ -1,4 +1,4 @@
-package org.playorm.monitor.api;
+package org.playorm.cron.api;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,6 +6,8 @@ import java.util.Map;
 public class PlayOrmMonitor {
 
 	private String id;
+	
+	private Long epochOffset;
 	
 	private long timePeriodMillis;
 	
@@ -37,6 +39,14 @@ public class PlayOrmMonitor {
 	
 	public void removeProperty(String name) {
 		properties.remove(name);
+	}
+
+	public Long getEpochOffset() {
+		return epochOffset;
+	}
+
+	public void setEpochOffset(Long epochOffset) {
+		this.epochOffset = epochOffset;
 	}
 	
 }

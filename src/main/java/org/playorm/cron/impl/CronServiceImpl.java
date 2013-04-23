@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl;
+package org.playorm.cron.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,11 +8,11 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
-import org.playorm.monitor.api.MonitorListener;
-import org.playorm.monitor.api.MonitorService;
-import org.playorm.monitor.api.PlayOrmMonitor;
-import org.playorm.monitor.impl.db.MonitorDbo;
-import org.playorm.monitor.impl.db.WebNodeDbo;
+import org.playorm.cron.api.MonitorListener;
+import org.playorm.cron.api.MonitorService;
+import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.impl.db.MonitorDbo;
+import org.playorm.cron.impl.db.WebNodeDbo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +21,9 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 
-public class MonitorServiceImpl implements MonitorService {
+public class CronServiceImpl implements MonitorService {
 
-	private static final Logger log = LoggerFactory.getLogger(MonitorServiceImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(CronServiceImpl.class);
 	
 	@Inject
 	private ScheduledExecutorService svc;

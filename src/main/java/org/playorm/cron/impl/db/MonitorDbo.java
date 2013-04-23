@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl.db;
+package org.playorm.cron.impl.db;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +31,8 @@ public class MonitorDbo {
 	private List<MonitorProperty> properties = new ArrayList<MonitorProperty>();
 
 	private DateTime lastRun;
+
+	private Long epochOffset;
 	
 	public String getId() {
 		return id;
@@ -67,5 +69,13 @@ public class MonitorDbo {
 
 	public String getRawProperties() {
 		return rawProperties;
+	}
+
+	public Long getEpochOffset() {
+		return epochOffset;
+	}
+
+	public void setEpochOffset(Long epochOffset) {
+		this.epochOffset = epochOffset;
 	}
 }

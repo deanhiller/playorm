@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl;
+package org.playorm.cron.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -7,10 +7,10 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
-import org.playorm.monitor.api.MonitorListener;
-import org.playorm.monitor.api.PlayOrmMonitor;
-import org.playorm.monitor.impl.db.MonitorDbo;
-import org.playorm.monitor.impl.db.WebNodeDbo;
+import org.playorm.cron.api.MonitorListener;
+import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.impl.db.MonitorDbo;
+import org.playorm.cron.impl.db.WebNodeDbo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -106,21 +106,54 @@ public class CheckClusterRunnable implements Runnable {
 	}
 
 	private void processMonitor(NoSqlEntityManager mgr, MonitorDbo monitor) {
-		DateTime time = monitor.getLastRun();
 		DateTime now = new DateTime();
-		log.debug("now="+now+" and lastrun time="+time+" for monitor="+monitor.getId());
-		if(time == null) {
+		boolean shouldRun = calculateShouldRun(mgr, monitor, now);
+		if(shouldRun) 
 			runMonitor(mgr, monitor, now);
-			return;
+		
+
+	}
+	
+	private boolean calculateShouldRun(NoSqlEntityManager mgr, MonitorDbo monitor, DateTime now) {
+		DateTime lastRunTime = monitor.getLastRun();
+		log.debug("now="+now+" and lastrun time="+lastRunTime+" for monitor="+monitor.getId());
+
+		if(lastRunTime == null) {
+			return isInRunWindow(monitor);
 		}
 
+		DateTime nextRunTime = calculateNextRunTime(lastRunTime, monitor);
+		if(now.isAfter(nextRunTime)) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isInRunWindow(MonitorDbo monitor) {
+		if(monitor.getEpochOffset() == null)
+			return true;
+		
+		
+		
+		return false;
+	}
+
+	private DateTime calculateNextRunTime(DateTime lastRunTime, MonitorDbo monitor) {
 		//subtract 1000 or 1 second in case they line up on the minute intervals so we fire every two minutes if
 		//they choose 2 minutes
-		DateTime nextRunTime = time.plus(monitor.getTimePeriodMillis()-1000);
-		if(now.isAfter(nextRunTime)) {
-			runMonitor(mgr, monitor, now);
-		}
+		//if(monitor.getEpochOffset() == null)
+			return lastRunTime.plus(monitor.getTimePeriodMillis()-1000);
+
+		
+//		long epochOffset = monitor.getEpochOffset();
+//		long now = lastRunTime.getMillis();
+//		long range = now-epochOffset;
+//		long multiplier = range / monitor.getTimePeriodMillis();
+//		long nextRunTime = 
+//
+//		return null;
 	}
+
 	private void runMonitor(NoSqlEntityManager mgr, MonitorDbo monitor,
 			DateTime now) {
 		log.debug("run monitor="+monitor.getId());

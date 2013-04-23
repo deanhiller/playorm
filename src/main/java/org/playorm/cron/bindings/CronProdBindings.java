@@ -1,33 +1,42 @@
-package org.playorm.monitor.bindings;
+package org.playorm.cron.bindings;
 
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.playorm.monitor.api.MonitorServiceFactory;
-import org.playorm.monitor.impl.Config;
-import org.playorm.monitor.impl.HashGenerator;
-import org.playorm.monitor.impl.HashGeneratorImpl;
+import org.playorm.cron.api.MonitorServiceFactory;
+import org.playorm.cron.impl.Config;
+import org.playorm.cron.impl.CurrentTime;
+import org.playorm.cron.impl.CurrentTimeImpl;
+import org.playorm.cron.impl.HashGenerator;
+import org.playorm.cron.impl.HashGeneratorImpl;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
 
-public class MonitorProdBindings implements Module {
+public class CronProdBindings implements Module {
 
 	public static final String SCHEDULER = "org.playorm.monitor.scheduler";
 	public static final String HASH_GENERATOR = "org.playorm.monitor.hashGenerator";
+	public static final String CURRENT_TIME = "org.playorm.monitor.currentTime";
 	
 	private ScheduledExecutorService svc;
 	private long rate;
 	private Config config;
 	private HashGenerator generator;
 	
-	public MonitorProdBindings(Map<String, Object> properties) {
+	public CronProdBindings(Map<String, Object> properties) {
 		Object obj = properties.get(SCHEDULER);
 		if(obj == null)
 			svc = Executors.newScheduledThreadPool(1);
 		else
 			svc = (ScheduledExecutorService) obj;
+		
+		Object ttt = properties.get(CURRENT_TIME);
+		if(ttt == null)
+			ttt = new CurrentTimeImpl();
+		else
+			ttt = (CurrentTime)ttt;
 		
 		Object rateObj = properties.get(MonitorServiceFactory.SCAN_RATE_MILLIS);
 		if(!(rateObj instanceof String))

@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl.db;
+package org.playorm.cron.impl.db;
 
 import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlId;

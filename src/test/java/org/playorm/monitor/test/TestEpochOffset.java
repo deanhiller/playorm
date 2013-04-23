@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
 import org.playorm.cron.api.MonitorService;
 import org.playorm.cron.api.MonitorServiceFactory;
 import org.playorm.cron.api.PlayOrmMonitor;
@@ -14,7 +13,7 @@ import org.playorm.cron.bindings.CronProdBindings;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.FactorySingleton;
 
-public class TestBasic {
+public class TestEpochOffset {
 
 	private MonitorService server1Monitor;
 	private MonitorService server2Monitor;
@@ -24,6 +23,7 @@ public class TestBasic {
 	private MockListener listener1;
 	private MockListener listener2;
 	private MockHash mockHash;
+	private Object mockTime;
 
 	@Before
 	public void setup() {
@@ -40,6 +40,7 @@ public class TestBasic {
 		props.put(MonitorServiceFactory.NOSQL_MGR_FACTORY, factory);
 		props.put(CronProdBindings.SCHEDULER, mock);
 		props.put(CronProdBindings.HASH_GENERATOR, mockHash);
+		props.put(CronProdBindings.CURRENT_TIME, mockTime);
 		props.put(MonitorServiceFactory.SCAN_RATE_MILLIS, ""+rate);
 		props.put(MonitorServiceFactory.HOST_UNIQUE_NAME, "host1");
 		server1Monitor = MonitorServiceFactory.create(props);
@@ -60,11 +61,14 @@ public class TestBasic {
 		Assert.assertNull(listener2.getLastFiredMonitor());
 	}
 
-	@Test
-	public void testBasic() throws InterruptedException {
+	//@Test
+	public void testOffsetFromEpoch() throws InterruptedException {
 		PlayOrmMonitor monitor = new PlayOrmMonitor();
-		monitor.setId("asdf");
-		monitor.setTimePeriodMillis(1);
+		monitor.setId("coolMon");
+		long millis = 1000*60*60*3; //offset by 3 hours
+		monitor.setEpochOffset(millis);
+		long oneDay = 1000*60*60*24;
+		monitor.setTimePeriodMillis(oneDay);
 		monitor.addProperty("email", "dean@xsoftware");
 		monitor.addProperty("myName", "dean");
 		server1Monitor.saveMonitor(monitor);
@@ -75,10 +79,8 @@ public class TestBasic {
 		String emailB = m.getProperties().get("email");
 		Assert.assertEquals(email1, emailB);
 		
-		mockHash.addReturnValue(1); //identify the second server and run server 1 then server 2
+		mockHash.addReturnValue(0); //identify the second server and run server 1 then server 2
 		clusterChecker1.run();
-		mockHash.addReturnValue(1);
-		clusterChecker2.run();
 
 		Assert.assertNull(listener1.getLastFiredMonitor());
 		m = listener2.getLastFiredMonitor();

@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl.db;
+package org.playorm.cron.impl.db;
 
 import org.joda.time.DateTime;
 

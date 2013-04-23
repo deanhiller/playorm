@@ -1,21 +1,21 @@
-package org.playorm.monitor.bindings;
+package org.playorm.cron.bindings;
 
 import java.util.Map;
 
-import org.playorm.monitor.api.MonitorService;
-import org.playorm.monitor.api.MonitorServiceFactory;
-import org.playorm.monitor.impl.MonitorServiceImpl;
+import org.playorm.cron.api.MonitorService;
+import org.playorm.cron.api.MonitorServiceFactory;
+import org.playorm.cron.impl.CronServiceImpl;
 
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class MonitorServiceFactoryImpl extends MonitorServiceFactory {
+public class CronServiceFactoryImpl extends MonitorServiceFactory {
 
 	@Override
 	protected MonitorService createService(Map<String, Object> properties) {
-		Injector injector = Guice.createInjector(new MonitorProdBindings(properties));
-		MonitorServiceImpl impl = injector.getInstance(MonitorServiceImpl.class);
+		Injector injector = Guice.createInjector(new CronProdBindings(properties));
+		CronServiceImpl impl = injector.getInstance(CronServiceImpl.class);
 		
 		Object factoryObj = properties.get(MonitorServiceFactory.NOSQL_MGR_FACTORY);
 		if(factoryObj == null) 

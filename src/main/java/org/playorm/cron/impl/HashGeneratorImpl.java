@@ -1,4 +1,4 @@
-package org.playorm.monitor.impl;
+package org.playorm.cron.impl;
 
 public class HashGeneratorImpl implements HashGenerator {
 

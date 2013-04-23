@@ -1,6 +1,6 @@
 package org.playorm.monitor.test;
 
-import org.playorm.monitor.impl.HashGenerator;
+import org.playorm.cron.impl.HashGenerator;
 
 public class MockHash implements HashGenerator {
 

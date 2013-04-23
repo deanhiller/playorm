@@ -133,15 +133,15 @@
 	<depends>api8</depends>
 	<depends>mongodb</depends>
 </package>
-<package name="monitorapi" package="org.playorm.monitor.api"></package>
+<package name="monitorapi" package="org.playorm.cron.api"></package>
 
-<package name="monitorimpl" package="org.playorm.monitor.impl" subpackages="include">
+<package name="monitorimpl" package="org.playorm.cron.impl" subpackages="include">
     <depends>monitorapi</depends>
     <depends>api</depends>
     <depends>api8</depends>
 </package>
 
 <!-- bindings can depend on everything to wire stuff up so needdepends is false -->
-<package name="bindings2" package="org.playorm.monitor.bindings" needdepends="false"/>
+<package name="bindings2" package="org.playorm.cron.bindings" needdepends="false"/>
 
 </design>

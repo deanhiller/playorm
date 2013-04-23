@@ -1,7 +1,7 @@
-package org.playorm.monitor.impl;
+package org.playorm.cron.impl;
 
-import org.playorm.monitor.api.PlayOrmMonitor;
-import org.playorm.monitor.impl.db.MonitorDbo;
+import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.impl.db.MonitorDbo;
 
 public class CopyUtil {
 

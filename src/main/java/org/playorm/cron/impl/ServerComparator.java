@@ -1,8 +1,8 @@
-package org.playorm.monitor.impl;
+package org.playorm.cron.impl;
 
 import java.util.Comparator;
 
-import org.playorm.monitor.impl.db.WebNodeDbo;
+import org.playorm.cron.impl.db.WebNodeDbo;
 
 public class ServerComparator implements Comparator<WebNodeDbo> {
 

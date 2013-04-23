@@ -1,7 +1,7 @@
 package org.playorm.monitor.test;
 
-import org.playorm.monitor.api.MonitorListener;
-import org.playorm.monitor.api.PlayOrmMonitor;
+import org.playorm.cron.api.MonitorListener;
+import org.playorm.cron.api.PlayOrmMonitor;
 
 public class MockListener implements MonitorListener {
 
