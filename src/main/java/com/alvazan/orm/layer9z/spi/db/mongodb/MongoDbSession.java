@@ -1,10 +1,12 @@
 package com.alvazan.orm.layer9z.spi.db.mongodb;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -37,6 +39,7 @@ import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.mongodb.ServerAddress;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
@@ -107,14 +110,27 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Override
 	public void start(Map<String, Object> properties) {
 		properties.keySet();
+		String seeds = properties.get(Bootstrap.MONGODB_SEEDS).toString();
 		try {
-			mongoClient = new MongoClient();
+			if (seeds == null)
+				mongoClient = new MongoClient();
+			else if (seeds.contains(",")) {
+				// It has multiple nodes
+				StringTokenizer st = new StringTokenizer(seeds, ",");
+				List<ServerAddress> addrs = new ArrayList<ServerAddress>();
+				while (st.hasMoreElements()) {
+					String serverName = st.nextElement().toString();
+					ServerAddress server = new ServerAddress(serverName);
+					addrs.add(server);
+				}
+				mongoClient = new MongoClient(addrs);
+			} else
+				mongoClient = new MongoClient(seeds);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new RuntimeException(e.getMessage(), e);
 		}
 		String keySpace = properties.get(Bootstrap.MONGODB_KEYSPACE).toString();
-		db =  mongoClient.getDB(keySpace);
+		db = mongoClient.getDB(keySpace);
 		findExistingCollections();
 	}
 

@@ -34,7 +34,7 @@ public class MongoDbUtil {
 		Object indValue = col.get("k");
 		Object pk = col.get("v");
 		IndexColumn c = new IndexColumn();
-		// c.setColumnName(columnName); Will we need this now?
+		// c.setColumnName(columnName); Will we ever need this now?
 		if (pk != null) {
 			c.setPrimaryKey((byte[]) pk);
 		}
@@ -73,9 +73,6 @@ public class MongoDbUtil {
 			else
 				query.append("$lt", valTo);
 		}
-/*		Need to see if reverse is required here
- * 		if (reverse)
-			range = range.reverse();*/
 		return query;
 	}
 
