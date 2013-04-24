@@ -11,6 +11,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.test.db.Account;
 import com.alvazan.test.db.AccountSuper;
 import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
@@ -66,7 +67,7 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(1, size);
 		Assert.assertEquals(common.getDiff(), sub1.getDiff());
 	}
-	
+
 	@Test
 	public void testQueryWithParam() {
 		InheritanceSub1 common = new InheritanceSub1();
@@ -88,8 +89,11 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(common.getDiff(), result.getDiff());
 
 		// Now test query on an inherited field
-		Query<AccountSuper> query = mgr.createNamedQuery(AccountSuper.class, "findByField");
+		Query<Account> query = mgr.createNamedQuery(Account.class, "findByField2");
 		query.setParameter("someField", 10);
+		
+		Query<AccountSuper> query2 = mgr.createNamedQuery(AccountSuper.class, "findByField");
+		query2.setParameter("someField", 10);
 	}
 	
 	@Test

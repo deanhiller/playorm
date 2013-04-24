@@ -30,7 +30,7 @@ public class AccountSuper {
 	public void setIsActive(Boolean indexedColumn) {
 		this.isActive = indexedColumn;
 	}
-	
+
 	public static AccountSuper findByField(NoSqlEntityManager mgr, int field) {
 		Query<AccountSuper> query = mgr.createNamedQuery(AccountSuper.class, "findByField");
 		query.setParameter("someField", field);

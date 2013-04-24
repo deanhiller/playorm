@@ -30,10 +30,12 @@ public class MyClassAnnotationDiscoveryListener implements
 		log.debug("class="+clazzName+" anno="+annotation);
 		try {
 			Class<?> clazz = classLoader.loadClass(clazzName);
-			
+
 			scanClass(clazz);
-			if (clazz.getSuperclass() != java.lang.Object.class) {
-				scanClass(clazz.getSuperclass());
+			
+			while(clazz.getSuperclass() != java.lang.Object.class) {
+				clazz = clazz.getSuperclass();
+				inspectorClass.addClassForQueries(clazz);
 			}
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);

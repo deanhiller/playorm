@@ -22,9 +22,10 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 	@NoSqlQuery(name="findBetween", query="select b from Account as b where b.users >= :begin and (b.name = :name or b.name = :name) and b.users < :end"),
 	@NoSqlQuery(name="findAll", query="select *  from Account as d ORDER BY name DESC"),
 	@NoSqlQuery(name="findAnd", query="select *  FROM Account as a WHERE a.name=:name and a.isActive=:active"),
-	@NoSqlQuery(name="findOr", query="select *  FROM Account as a WHERE a.name=:name or a.isActive=:active")
+	@NoSqlQuery(name="findOr", query="select *  FROM Account as a WHERE a.name=:name or a.isActive=:active"),
+	@NoSqlQuery(name ="findByField2", query = "select u from TABLE as u where :someField = u.someField")
 })
-public class Account extends AccountSuper{
+public class Account extends AccountMiddle{
 
 	@NoSqlId
 	private String id;

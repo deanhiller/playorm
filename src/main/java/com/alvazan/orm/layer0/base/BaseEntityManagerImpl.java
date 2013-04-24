@@ -212,6 +212,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	@Override
 	public <T> Query<T> createNamedQuery(Class<T> forEntity, String namedQuery) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(forEntity);
+		if(metaClass == null)
+			throw new IllegalArgumentException("Class not scanned="+metaClass+" so you may need to add @NoSqlEntity");
 		SpiMetaQuery metaQuery = metaClass.getNamedQuery(forEntity, namedQuery);
 		
 		SpiQueryAdapter spiAdapter = metaQuery.createQueryInstanceFromQuery(session);

@@ -48,6 +48,15 @@ public class ScannerForClass {
 	@Inject
 	private DboDatabaseMeta databaseInfo;
 	
+	public void addClassForQueries(Class<?> clazz) {
+		MetaClassSingle classMeta = (MetaClassSingle)metaInfo.findOrCreate(clazz);
+		DboTableMeta metaDbo = classMeta.getMetaDbo();
+		scanForAnnotations(classMeta);
+		scanSingle(classMeta, metaDbo);
+		metaInfo.addTableNameLookup(classMeta);
+		databaseInfo.addMetaClassDbo(classMeta.getMetaDbo());
+	}
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
 		log.info("scanning class="+clazz);

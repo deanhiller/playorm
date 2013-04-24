@@ -2,7 +2,6 @@ package org.playorm.cron.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,11 +71,11 @@ public class TestEpochOffset {
 		mockHash.addReturnValue(0); //identify the first server and run server 1
 		clusterChecker1.run();
 		Assert.assertNull(listener1.getLastFiredMonitor());
-		
+
 		mockTime.addReturnTime(32600);
 		mockHash.addReturnValue(0); //identify the first server and run server 1
 		clusterChecker1.run();		
-		
+
 		PlayOrmCronJob job = listener1.getLastFiredMonitor();
 		Assert.assertEquals(monitor.getId(), job.getId());
 		
