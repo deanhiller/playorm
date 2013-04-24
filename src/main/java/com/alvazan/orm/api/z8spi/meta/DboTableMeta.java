@@ -387,7 +387,11 @@ public class DboTableMeta {
 		return cacheOfPartitionedBy;
 	}
 
-	private void initCaches() {
+	/**
+	 * Useful for it you plan on accessing this DboTableMeta on another thread where the NoSqlEntityManager no longer exists
+	 * so you can initalize the object first
+	 */
+	public void initCaches() {
 		if(indexedColumnsCache != null)
 			return;
 		
