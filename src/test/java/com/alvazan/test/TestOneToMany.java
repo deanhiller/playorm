@@ -17,10 +17,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.impl.meta.data.collections.CursorProxy;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.Activity;
-import com.alvazan.test.db.Email;
 import com.alvazan.test.db.EmailAccountXref;
-import com.alvazan.test.db.EmbeddedEmail;
-import com.alvazan.test.db.EmbeddedEntityWithNoId;
 import com.alvazan.test.db.SomeEntity;
 import com.alvazan.test.db.User;
 
@@ -508,88 +505,6 @@ public class TestOneToMany {
 	}
 
 	@Test
-	public void testEmbedded() {
-		EmbeddedEmail sub = new EmbeddedEmail();
-		sub.setId("sub");
-		sub.setName("dean");
-		sub.setType("nosqltype");
-		
-		EmbeddedEmail e1 = new EmbeddedEmail();
-		e1.setId("e1");
-		e1.setName("name1");
-		e1.setType("type1");
-		//e1.getEmails().add(sub);
-		
-		EmbeddedEmail e2 = new EmbeddedEmail();
-		e2.setId("e2");
-		e2.setName("name2");
-		e2.setType("type2");
-		
-		User user = new User();
-		List<EmbeddedEmail> listEmails = new ArrayList<EmbeddedEmail>();
-		listEmails.add(e1);
-		listEmails.add(e2);
-		user.setEmails(listEmails);
-		user.setEmail(sub);
-
-		mgr.fillInWithKey(e1);
-		mgr.fillInWithKey(e1);
-		mgr.fillInWithKey(sub);
-		
-		mgr.put(user);
-		mgr.flush();
-		
-		NoSqlEntityManager mgr2 = factory.createEntityManager();
-		User user2 = mgr2.find(User.class, user.getId());
-		
-		//Check single entity
-		EmbeddedEmail emailSub = user2.getEmail();
-		Assert.assertNotNull(emailSub);
-		Assert.assertEquals(sub.getId(), emailSub.getId());
-		Assert.assertEquals(sub.getName(), emailSub.getName());
-		
-		//Check List of entities
-		List<EmbeddedEmail> emails = user2.getEmails();
-
-		EmbeddedEmail email = emails.get(0);
-		Assert.assertNotNull(email);
-		
-		Assert.assertEquals(e1.getId(), email.getId());
-		Assert.assertEquals(e1.getName(), email.getName());
-		
-		EmbeddedEmail email2 = emails.get(1);
-		Assert.assertEquals(e2.getName(), email2.getName());
-
-		// To check if delete is working fine
-		mgr.remove(user);
-		mgr.flush();
-	}
-
-	@Test
-	public void testEmbeddedWithoutId() {
-		// Now check if an Embedded Entity without NoSqlId works or not
-		EmbeddedEntityWithNoId embedWOId = new EmbeddedEntityWithNoId();
-		embedWOId.setId("someid");
-		embedWOId.setName("someName");
-		embedWOId.setType("someType");
-
-		User user = new User();
-		user.setEntityWOId(embedWOId);
-
-		mgr.put(user);
-		mgr.flush();
-
-		NoSqlEntityManager mgr2 = factory.createEntityManager();
-		User user2 = mgr2.find(User.class, user.getId());
-
-		EmbeddedEntityWithNoId embedWOId2 = user2.getEntityWOId();
-		Assert.assertNotNull(embedWOId2);
-		Assert.assertEquals(embedWOId.getId(), embedWOId2.getId());
-		Assert.assertEquals(embedWOId.getName(), embedWOId2.getName());
-		Assert.assertEquals(embedWOId.getType(), embedWOId2.getType());
-	}
-
-	@Test
 	public void testEmptyRowCase() {
 		Account acc = new Account("acc1");
 		acc.setName(ACCOUNT_NAME);
@@ -631,53 +546,6 @@ public class TestOneToMany {
 		Assert.assertNull(activity);
 	}
 	
-	@Test
-	public void testEmbeddedSimple() {
-		Email sub = new Email();
-		sub.setId("sub");
-		sub.setName("dean");
-		
-		sub.getIds().add("one");
-		sub.getIds().add("two");
-		
-		sub.getInts().add(5);
-		sub.getInts().add(8);
-		
-		mgr.put(sub);
-		mgr.flush();
-		
-		NoSqlEntityManager mgr2 = factory.createEntityManager();
-		Email email = mgr2.find(Email.class, sub.getId());
-		NoSqlEntityManager mgr3 = factory.createEntityManager();
-		Email email2 = mgr3.find(Email.class, sub.getId());
-		
-		List<String> ids = email.getIds();
-		Assert.assertEquals("one", ids.get(0));
-		
-		List<Integer> nums = email.getInts();
-		Assert.assertEquals(new Integer(5), nums.get(0));
-		
-		email.getInts().remove(0);
-		email.getIds().remove("one");
-		mgr2.put(email);
-		mgr2.flush();
-		
-		email2.getInts().add(12);
-		email2.getIds().add("zzzz");
-		mgr3.put(email2);
-		mgr3.flush();
-		
-		NoSqlEntityManager mgr4 = factory.createEntityManager();
-		Email emailF = mgr4.find(Email.class, sub.getId());
-		
-		Assert.assertEquals(2, emailF.getInts().size());
-		Assert.assertEquals(2, emailF.getIds().size());
 
-		Assert.assertEquals(new Integer(8), emailF.getInts().get(0));
-		Assert.assertEquals(new Integer(12), emailF.getInts().get(1));
-		
-		Assert.assertEquals("two", emailF.getIds().get(0));
-		Assert.assertEquals("zzzz", emailF.getIds().get(1));
-	}
 
 }

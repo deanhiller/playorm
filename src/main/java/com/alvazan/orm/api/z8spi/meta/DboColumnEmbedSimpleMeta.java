@@ -13,13 +13,18 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 
 	private String collectionType;
 	private String itemType;
+	private String valueType;
 	
 	@SuppressWarnings("rawtypes")
-	public void setup(DboTableMeta t, String colPrefix, Class collectionType, Class itemType) {
+	public void setup(DboTableMeta t, String colPrefix, Class collectionType, Class itemType, Class valueType) {
 		super.setup(t, colPrefix, false);
 		this.collectionType = collectionType.getName();
 		Class newType = translateType(itemType);
 		this.itemType = newType.getName();
+		if(valueType != null) {
+			Class newValType = translateType(valueType);
+			this.valueType = newValType.getName();
+		}
 	}
 	
 	@Override

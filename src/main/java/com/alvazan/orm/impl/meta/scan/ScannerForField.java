@@ -326,9 +326,14 @@ public class ScannerForField {
 	public MetaField processEmbedded(DboTableMeta t, Field field) {
 		NoSqlEmbedded embedded = field.getAnnotation(NoSqlEmbedded.class);
 		Class<?> type = field.getType();
+		Class<?> valType = null;
 		if(type.equals(List.class)) {
 			ParameterizedType genType = (ParameterizedType) field.getGenericType();
 			type = (Class<?>) genType.getActualTypeArguments()[0];
+		} else if(type.equals(Map.class)) {
+			ParameterizedType genType = (ParameterizedType) field.getGenericType();
+			type = (Class<?>) genType.getActualTypeArguments()[0];
+			valType = (Class<?>) genType.getActualTypeArguments()[1];
 		}
 		
 		String colNameOrig = embedded.columnNamePrefix();
@@ -343,18 +348,26 @@ public class ScannerForField {
 			temp.setup(t, field, colName, fkMeta);
 			metaField = temp;
 		} else {
-			Converter converter = lookupConverter(field, type, null);
-			if(converter == null)
-				throw new IllegalArgumentException("We found no converters(customer or standard for type="
-						+type.getSimpleName()+" and this class is not annotated with " +
-								"@NoSqlEmbeddable either.  The field that caused this issue is field="+field);
+			Converter converter = lookupConverter(field, type);
+			Converter valConverter = null;
+			if(valType != null) 
+				valConverter = lookupConverter(field, valType);
 			
 			MetaEmbeddedSimple meta = metaEmbeddedSimpleProvider.get();
-			meta.setup(t, field, colName, converter, type);
+			meta.setup(t, field, colName, converter, valConverter, type, valType);
 			metaField = meta;
 		}
 		
 		return metaField;
+	}
+
+	private Converter lookupConverter(Field field, Class<?> type) {
+		Converter converter = lookupConverter(field, type, null);
+		if(converter == null)
+			throw new IllegalArgumentException("We found no converters(customer or standard for type="
+					+type.getSimpleName()+" and this class is not annotated with " +
+							"@NoSqlEmbeddable either.  The field that caused this issue is field="+field);
+		return converter;
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -1,7 +1,9 @@
 package com.alvazan.test.db;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -21,6 +23,11 @@ public class Email {
 	@NoSqlEmbedded
 	private List<Integer> ints = new ArrayList<Integer>();
 
+	@NoSqlEmbedded
+	private Map<Integer, String> someMap = new HashMap<Integer, String>();
+	@NoSqlEmbedded
+	private Map<String, Integer> keyToVal = new HashMap<String, Integer>();
+	
 /*	@NoSqlEmbedded
 	private Email email;*/
 
@@ -73,6 +80,14 @@ public class Email {
 
 	public void setInts(List<Integer> ints) {
 		this.ints = ints;
+	}
+
+	public Map<Integer, String> getSomeMap() {
+		return someMap;
+	}
+
+	public Map<String, Integer> getKeyToVal() {
+		return keyToVal;
 	}
 	
 }

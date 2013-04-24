@@ -3,6 +3,7 @@ package com.alvazan.orm.impl.meta.data;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +12,7 @@ import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.Converter;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.DboColumnEmbedSimpleMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -20,11 +22,13 @@ import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.impl.meta.data.collections.SimpleAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SimpleList;
+import com.alvazan.orm.impl.meta.data.collections.SimpleMap;
 
 @SuppressWarnings("rawtypes")
 public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 
 	private Converter converter;
+	private Converter valueConverter;
 	private DboColumnEmbedSimpleMeta metaDbo = new DboColumnEmbedSimpleMeta();
 	
 //	public void setup(DboTableMeta tableMeta, Field field2, String colName, Converter converter, boolean isIndexed, boolean isPartitioned) {
@@ -32,10 +36,11 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 //		super.setup(field2, colName);
 //		this.converter = converter;
 //	}
-	public void setup(DboTableMeta t, Field field, String colName, Converter converter, Class<?> type) {
+	public void setup(DboTableMeta t, Field field, String colName, Converter converter, Converter valConverter, Class<?> type, Class<?> valueType) {
 		super.setup(field, colName);
-		metaDbo.setup(t, colName, field.getType(), type);
+		metaDbo.setup(t, colName, field.getType(), type, valueType);
 		this.converter = converter;
+		this.valueConverter = valConverter;
 	}
 	
 	@Override
@@ -63,14 +68,36 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
 		List<byte[]> values = MetaToManyField.parseColNamePostfix(columnName, row);
-		return null;
+		throw new UnsupportedOperationException("not yet supported");
 	}
 
 	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
-		List<byte[]> values = MetaToManyField.parseColNamePostfix(columnName, row);
-		return null;
+		byte[] bytes = StandardConverters.convertToBytes(columnName);
+		Collection<Column> columns = row.columnByPrefix(bytes);
+
+		Map<byte[], byte[]> theCols = new HashMap<byte[], byte[]>();
+		//NOTE: Current implementation is just like a Set not a List in that it
+		//cannot have repeats right now.  We could take the approach the column name
+		//would be <prefix><index><pk> such that duplicates are allowed and when loaded
+		//we would have to keep the index in the proxy so if removed, we could put the col name
+		//back together so we could remove it and add the new one.  This is very complex though when 
+		//it comes to removing one item and shifting all other column names by one(ie. lots of removes/adds)
+		//so for now, just make everything Set like.
+		for(Column col : columns) {
+			byte[] colNameData = col.getName();
+			byte[] value = col.getValue();
+			//strip off the prefix to get the foreign key
+			int pkLen = colNameData.length-bytes.length;
+			byte[] pk = new byte[pkLen];
+			for(int i = bytes.length; i < colNameData.length; i++) {
+				pk[i-bytes.length] =  colNameData[i];
+			}
+			theCols.put(pk, value);
+		}
+
+		return new SimpleMap(converter, valueConverter, theCols);
 	}
 	
 	private List<T> translateFromColumnList(Row row,
@@ -80,12 +107,56 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 		return retVal;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		OWNER entity = info.getEntity();
 		RowToPersist row = info.getRow();
+		if(field.getType().equals(Map.class))
+			translateToColumnMap(entity, row);
+		else
+			translateToColumnList(entity, row);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void translateToColumnMap(OWNER entity, RowToPersist row) {
+		Map values = (Map) ReflectionUtil.fetchFieldValue(entity, field);
+		if (values == null)
+			values = new HashMap();
+		Map toBeAdded = values; //all values in the list get added if not an OurAbstractCollection
+		Collection<T> toBeRemoved = new ArrayList<T>();
+		if(values instanceof SimpleMap) {
+			SimpleMap coll = (SimpleMap)values;
+			toBeRemoved = coll.getToBeRemoved();
+			toBeAdded = coll.getToBeAdded();
+		}
+
+		translateToColumnMapImpl(toBeAdded, row, toBeRemoved);
+	}
+
+	private void translateToColumnMapImpl(Map toBeAdded, RowToPersist row, Collection<T> toBeRemoved) {
+		//removes first
+		for(T p : toBeRemoved) {
+			byte[] name = formTheName(p);
+			row.addEntityToRemove(name);
+		}
 		
+		//now process all the existing columns (we can add same entity as many times as we like and it does not
+		//get duplicated)
+		for(Object key : toBeAdded.keySet()) {
+			Object value = toBeAdded.get(key);
+			
+			byte[] name = formTheName(key);
+			byte[] byteVal = valueConverter.convertToNoSql(value);
+			Column c = new Column();
+			c.setName(name);
+			c.setValue(byteVal);
+			
+			row.getColumns().add(c);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void translateToColumnList(OWNER entity, RowToPersist row) {
 		Collection<T> values = (Collection<T>) ReflectionUtil.fetchFieldValue(entity, field);
 		if (values == null)
 			values = new ArrayList<T>();
