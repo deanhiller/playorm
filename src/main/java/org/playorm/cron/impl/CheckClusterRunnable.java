@@ -7,8 +7,8 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
-import org.playorm.cron.api.MonitorListener;
-import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.api.CronListener;
+import org.playorm.cron.api.PlayOrmCronJob;
 import org.playorm.cron.impl.db.MonitorDbo;
 import org.playorm.cron.impl.db.WebNodeDbo;
 import org.slf4j.Logger;
@@ -27,10 +27,12 @@ public class CheckClusterRunnable implements Runnable {
 	private Config config;
 	@Inject
 	private HashGenerator hashGen;
+	@Inject
+	private CurrentTime time;
 	
 	private NoSqlEntityManagerFactory factory;
 
-	private MonitorListener listener;
+	private CronListener listener;
 
 	@Override
 	public void run() {
@@ -106,7 +108,7 @@ public class CheckClusterRunnable implements Runnable {
 	}
 
 	private void processMonitor(NoSqlEntityManager mgr, MonitorDbo monitor) {
-		DateTime now = new DateTime();
+		DateTime now = time.currentTime();
 		boolean shouldRun = calculateShouldRun(mgr, monitor, now);
 		if(shouldRun) 
 			runMonitor(mgr, monitor, now);
@@ -119,52 +121,70 @@ public class CheckClusterRunnable implements Runnable {
 		log.debug("now="+now+" and lastrun time="+lastRunTime+" for monitor="+monitor.getId());
 
 		if(lastRunTime == null) {
-			return isInRunWindow(monitor);
-		}
-
-		DateTime nextRunTime = calculateNextRunTime(lastRunTime, monitor);
-		if(now.isAfter(nextRunTime)) {
+			return isInRunWindow(monitor, now);
+		} else if(nextRuntimeHasPassed(lastRunTime, monitor, now))
 			return true;
-		}
+
 		return false;
 	}
 
-	private boolean isInRunWindow(MonitorDbo monitor) {
-		if(monitor.getEpochOffset() == null)
-			return true;
-		
-		
-		
-		return false;
-	}
-
-	private DateTime calculateNextRunTime(DateTime lastRunTime, MonitorDbo monitor) {
+	private boolean nextRuntimeHasPassed(DateTime lastRunTime,
+			MonitorDbo monitor, DateTime now) {
 		//subtract 1000 or 1 second in case they line up on the minute intervals so we fire every two minutes if
 		//they choose 2 minutes
-		//if(monitor.getEpochOffset() == null)
-			return lastRunTime.plus(monitor.getTimePeriodMillis()-1000);
+		long timePeriod = monitor.getTimePeriodMillis();
+		if(monitor.getEpochOffset() == null) {
+			DateTime nextRun = lastRunTime.plus(timePeriod-1000);
+			if(now.isAfter(nextRun))
+				return true;
+			return false;
+		}
 
+		DateTime lastShouldRun = monitor.getLastShouldHaveRun();
+		DateTime nextRun = lastShouldRun.plus(timePeriod);
+		if(now.isAfter(nextRun.minus(1000))) {
+			monitor.setLastShouldHaveRun(nextRun);
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isInRunWindow(MonitorDbo monitor, DateTime now) {
+		if(monitor.getEpochOffset() == null) {
+			//If there is no epoch offset, we just start when the server starts 
+			return true;
+		}
 		
-//		long epochOffset = monitor.getEpochOffset();
-//		long now = lastRunTime.getMillis();
-//		long range = now-epochOffset;
-//		long multiplier = range / monitor.getTimePeriodMillis();
-//		long nextRunTime = 
-//
-//		return null;
+		long half = config.getRate() / 2;
+		long nowMillis = now.getMillis();
+		long range = nowMillis - monitor.getEpochOffset();
+		long multiplier = range / monitor.getTimePeriodMillis();
+		long timePoint1 = monitor.getEpochOffset() + multiplier*monitor.getTimePeriodMillis();
+		long timePoint2 = timePoint1+monitor.getTimePeriodMillis();
+		long theTime = timePoint1;
+		if(Math.abs(timePoint2-nowMillis) < Math.abs(timePoint1-nowMillis))
+			theTime = timePoint2;
+		
+		if(Math.abs(nowMillis-theTime) < half) {
+			DateTime t = new DateTime(theTime);
+			monitor.setLastShouldHaveRun(t);
+			return true;
+		}
+
+		return false;
 	}
 
 	private void runMonitor(NoSqlEntityManager mgr, MonitorDbo monitor,
 			DateTime now) {
 		log.debug("run monitor="+monitor.getId());
-		PlayOrmMonitor p = CopyUtil.copy(monitor);
+		PlayOrmCronJob p = CopyUtil.copy(monitor);
 		fireToListener(p);
 		monitor.setLastRun(now);
 		mgr.put(monitor);
 		mgr.flush();
 	}
 
-	private void fireToListener(PlayOrmMonitor monitor) {
+	private void fireToListener(PlayOrmCronJob monitor) {
 		try {
 			listener.monitorFired(monitor);
 		} catch(Exception e) {
@@ -190,7 +210,7 @@ public class CheckClusterRunnable implements Runnable {
 	public void setFactory(NoSqlEntityManagerFactory factory) {
 		this.factory = factory;
 	}
-	public void setListener(MonitorListener listener) {
+	public void setListener(CronListener listener) {
 		this.listener = listener;
 	}
 

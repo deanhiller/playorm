@@ -1,4 +1,4 @@
-package org.playorm.monitor.test;
+package org.playorm.cron.test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,9 +6,9 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.playorm.cron.api.MonitorService;
-import org.playorm.cron.api.MonitorServiceFactory;
-import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.api.CronService;
+import org.playorm.cron.api.CronServiceFactory;
+import org.playorm.cron.api.PlayOrmCronJob;
 import org.playorm.cron.bindings.CronProdBindings;
 
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -16,8 +16,8 @@ import com.alvazan.test.FactorySingleton;
 
 public class TestBasic {
 
-	private MonitorService server1Monitor;
-	private MonitorService server2Monitor;
+	private CronService server1Monitor;
+	private CronService server2Monitor;
 	private Runnable clusterChecker1;
 	private Runnable clusterChecker2;
 	private NoSqlEntityManagerFactory factory;
@@ -37,14 +37,14 @@ public class TestBasic {
 		
 		int rate = 5*60*1000;
 		Map<String, Object> props = new HashMap<String, Object>();
-		props.put(MonitorServiceFactory.NOSQL_MGR_FACTORY, factory);
+		props.put(CronServiceFactory.NOSQL_MGR_FACTORY, factory);
 		props.put(CronProdBindings.SCHEDULER, mock);
 		props.put(CronProdBindings.HASH_GENERATOR, mockHash);
-		props.put(MonitorServiceFactory.SCAN_RATE_MILLIS, ""+rate);
-		props.put(MonitorServiceFactory.HOST_UNIQUE_NAME, "host1");
-		server1Monitor = MonitorServiceFactory.create(props);
-		props.put(MonitorServiceFactory.HOST_UNIQUE_NAME, "host2");
-		server2Monitor = MonitorServiceFactory.create(props);
+		props.put(CronServiceFactory.SCAN_RATE_MILLIS, ""+rate);
+		props.put(CronServiceFactory.HOST_UNIQUE_NAME, "host1");
+		server1Monitor = CronServiceFactory.create(props);
+		props.put(CronServiceFactory.HOST_UNIQUE_NAME, "host2");
+		server2Monitor = CronServiceFactory.create(props);
 		server1Monitor.addListener(listener1);
 		server2Monitor.addListener(listener2);
 		
@@ -62,14 +62,14 @@ public class TestBasic {
 
 	@Test
 	public void testBasic() throws InterruptedException {
-		PlayOrmMonitor monitor = new PlayOrmMonitor();
+		PlayOrmCronJob monitor = new PlayOrmCronJob();
 		monitor.setId("asdf");
 		monitor.setTimePeriodMillis(1);
 		monitor.addProperty("email", "dean@xsoftware");
 		monitor.addProperty("myName", "dean");
 		server1Monitor.saveMonitor(monitor);
 
-		PlayOrmMonitor m = server1Monitor.getMonitor(monitor.getId());
+		PlayOrmCronJob m = server1Monitor.getMonitor(monitor.getId());
 		Assert.assertEquals(monitor.getTimePeriodMillis(), m.getTimePeriodMillis());
 		String email1 = monitor.getProperties().get("email");
 		String emailB = m.getProperties().get("email");

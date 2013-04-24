@@ -1,4 +1,4 @@
-package org.playorm.monitor.test;
+package org.playorm.cron.test;
 
 import java.util.Collection;
 import java.util.List;

@@ -8,9 +8,9 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
-import org.playorm.cron.api.MonitorListener;
-import org.playorm.cron.api.MonitorService;
-import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.api.CronListener;
+import org.playorm.cron.api.CronService;
+import org.playorm.cron.api.PlayOrmCronJob;
 import org.playorm.cron.impl.db.MonitorDbo;
 import org.playorm.cron.impl.db.WebNodeDbo;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 
-public class CronServiceImpl implements MonitorService {
+public class CronServiceImpl implements CronService {
 
 	private static final Logger log = LoggerFactory.getLogger(CronServiceImpl.class);
 	
@@ -52,12 +52,12 @@ public class CronServiceImpl implements MonitorService {
 	}
 
 	@Override
-	public void addListener(MonitorListener listener) {
+	public void addListener(CronListener listener) {
 		clusterRunnable.setListener(listener);
 	}
 
 	@Override
-	public void saveMonitor(PlayOrmMonitor monitor) {
+	public void saveMonitor(PlayOrmCronJob monitor) {
 		MonitorDbo m = CopyUtil.copy(monitor);
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		mgr.put(m, false);
@@ -65,16 +65,16 @@ public class CronServiceImpl implements MonitorService {
 	}
 
 	@Override
-	public PlayOrmMonitor getMonitor(String id) {
+	public PlayOrmCronJob getMonitor(String id) {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		MonitorDbo mon = mgr.find(MonitorDbo.class, id);
 		return CopyUtil.copy(mon);
 	}
 	
-	public List<PlayOrmMonitor> getMonitors(List<String> ids) {
+	public List<PlayOrmCronJob> getMonitors(List<String> ids) {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		Cursor<KeyValue<MonitorDbo>> cursor = mgr.findAll(MonitorDbo.class, ids);
-		List<PlayOrmMonitor> monitors = new ArrayList<PlayOrmMonitor>();
+		List<PlayOrmCronJob> monitors = new ArrayList<PlayOrmCronJob>();
 		while(cursor.next()) {
 			KeyValue<MonitorDbo> kv = cursor.getCurrent();
 			MonitorDbo mon = kv.getValue();

@@ -3,7 +3,7 @@ package org.playorm.cron.api;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayOrmMonitor {
+public class PlayOrmCronJob {
 
 	private String id;
 	

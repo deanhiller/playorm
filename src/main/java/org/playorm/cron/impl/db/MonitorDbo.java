@@ -30,7 +30,14 @@ public class MonitorDbo {
 	@NoSqlEmbedded
 	private List<MonitorProperty> properties = new ArrayList<MonitorProperty>();
 
+	/**
+	 * This is the exact time it actually ran last time
+	 */
 	private DateTime lastRun;
+	/**
+	 * This is the exact time it should have run which is always off by +- the rate of runnable running
+	 */
+	private DateTime lastShouldHaveRun;
 
 	private Long epochOffset;
 	
@@ -56,6 +63,14 @@ public class MonitorDbo {
 
 	public void setLastRun(DateTime lastRun) {
 		this.lastRun = lastRun;
+	}
+
+	public DateTime getLastShouldHaveRun() {
+		return lastShouldHaveRun;
+	}
+
+	public void setLastShouldHaveRun(DateTime lastShouldHaveRun) {
+		this.lastShouldHaveRun = lastShouldHaveRun;
 	}
 
 	public static Cursor<KeyValue<MonitorDbo>> findAll(NoSqlEntityManager mgr) {

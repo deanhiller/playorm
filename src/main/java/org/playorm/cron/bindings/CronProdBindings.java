@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import org.playorm.cron.api.MonitorServiceFactory;
+import org.playorm.cron.api.CronServiceFactory;
 import org.playorm.cron.impl.Config;
 import org.playorm.cron.impl.CurrentTime;
 import org.playorm.cron.impl.CurrentTimeImpl;
@@ -24,6 +24,7 @@ public class CronProdBindings implements Module {
 	private long rate;
 	private Config config;
 	private HashGenerator generator;
+	private CurrentTime time;
 	
 	public CronProdBindings(Map<String, Object> properties) {
 		Object obj = properties.get(SCHEDULER);
@@ -34,17 +35,17 @@ public class CronProdBindings implements Module {
 		
 		Object ttt = properties.get(CURRENT_TIME);
 		if(ttt == null)
-			ttt = new CurrentTimeImpl();
+			time = new CurrentTimeImpl();
 		else
-			ttt = (CurrentTime)ttt;
+			time = (CurrentTime) ttt;
 		
-		Object rateObj = properties.get(MonitorServiceFactory.SCAN_RATE_MILLIS);
+		Object rateObj = properties.get(CronServiceFactory.SCAN_RATE_MILLIS);
 		if(!(rateObj instanceof String))
 			throw new IllegalArgumentException("SCAN_RATE_MILLIS must be a long as a String");
 		String rateStr = (String) rateObj;
 		rate = Long.parseLong(rateStr);
 		
-		String host = (String) properties.get(MonitorServiceFactory.HOST_UNIQUE_NAME);
+		String host = (String) properties.get(CronServiceFactory.HOST_UNIQUE_NAME);
 		
 		config = new Config(rate, host);
 		
@@ -59,5 +60,6 @@ public class CronProdBindings implements Module {
 		binder.bind(HashGenerator.class).toInstance(generator);
 		
 		binder.bind(Config.class).toInstance(config );
+		binder.bind(CurrentTime.class).toInstance(time);
 	}
 }

@@ -2,22 +2,22 @@ package org.playorm.cron.bindings;
 
 import java.util.Map;
 
-import org.playorm.cron.api.MonitorService;
-import org.playorm.cron.api.MonitorServiceFactory;
+import org.playorm.cron.api.CronService;
+import org.playorm.cron.api.CronServiceFactory;
 import org.playorm.cron.impl.CronServiceImpl;
 
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-public class CronServiceFactoryImpl extends MonitorServiceFactory {
+public class CronServiceFactoryImpl extends CronServiceFactory {
 
 	@Override
-	protected MonitorService createService(Map<String, Object> properties) {
+	protected CronService createService(Map<String, Object> properties) {
 		Injector injector = Guice.createInjector(new CronProdBindings(properties));
 		CronServiceImpl impl = injector.getInstance(CronServiceImpl.class);
 		
-		Object factoryObj = properties.get(MonitorServiceFactory.NOSQL_MGR_FACTORY);
+		Object factoryObj = properties.get(CronServiceFactory.NOSQL_MGR_FACTORY);
 		if(factoryObj == null) 
 			throw new IllegalArgumentException("NOSQL_MGR_FACTORY is required and must be set");
 		else if(!(factoryObj instanceof NoSqlEntityManagerFactory))

@@ -1,4 +1,4 @@
-package org.playorm.monitor.test;
+package org.playorm.cron.test;
 
 import org.playorm.cron.impl.HashGenerator;
 

@@ -1,16 +1,17 @@
 package org.playorm.cron.impl;
 
-import org.playorm.cron.api.PlayOrmMonitor;
+import org.playorm.cron.api.PlayOrmCronJob;
 import org.playorm.cron.impl.db.MonitorDbo;
 
 public class CopyUtil {
 
-	public static MonitorDbo copy(PlayOrmMonitor monitor) {
+	public static MonitorDbo copy(PlayOrmCronJob monitor) {
 		if(monitor == null)
 			return null;
 		MonitorDbo m = new MonitorDbo();
 		m.setId(monitor.getId());
 		m.setTimePeriodMillis(monitor.getTimePeriodMillis());
+		m.setEpochOffset(monitor.getEpochOffset());
 		
 		String props = "";
 		for(String key : monitor.getProperties().keySet()) {
@@ -21,12 +22,13 @@ public class CopyUtil {
 		return m;
 	}
 
-	public static PlayOrmMonitor copy(MonitorDbo monitor) {
+	public static PlayOrmCronJob copy(MonitorDbo monitor) {
 		if(monitor == null)
 			return null;
-		PlayOrmMonitor mon = new PlayOrmMonitor();
+		PlayOrmCronJob mon = new PlayOrmCronJob();
 		mon.setId(monitor.getId());
 		mon.setTimePeriodMillis(monitor.getTimePeriodMillis());
+		mon.setEpochOffset(monitor.getEpochOffset());
 		String props = monitor.getRawProperties();
 		String[] propsArray = props.split("\\|");
 		for(String prop : propsArray) {
