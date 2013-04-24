@@ -80,7 +80,16 @@ public class TestEpochOffset {
 		PlayOrmCronJob job = listener1.getLastFiredMonitor();
 		Assert.assertEquals(monitor.getId(), job.getId());
 		
+		mockTime.addReturnTime(39000);
+		mockHash.addReturnValue(0); //identify the first server and run server 1
+		clusterChecker1.run();
+		Assert.assertNull(listener1.getLastFiredMonitor());		
 		
+		mockTime.addReturnTime(50000);
+		mockHash.addReturnValue(0); //identify the first server and run server 1
+		clusterChecker1.run();
 		
+		PlayOrmCronJob job2 = listener1.getLastFiredMonitor();
+		Assert.assertEquals(monitor.getId(), job2.getId());
 	}
 }
