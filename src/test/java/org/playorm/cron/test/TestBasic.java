@@ -3,6 +3,7 @@ package org.playorm.cron.test;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import org.playorm.cron.api.CronServiceFactory;
 import org.playorm.cron.api.PlayOrmCronJob;
 import org.playorm.cron.bindings.CronProdBindings;
 
+import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.FactorySingleton;
 
@@ -59,7 +61,12 @@ public class TestBasic {
 		Assert.assertNull(listener1.getLastFiredMonitor());
 		Assert.assertNull(listener2.getLastFiredMonitor());
 	}
-
+	@After
+	public void clearDatabase() {
+		NoSqlEntityManager other = factory.createEntityManager();
+		other.clearDatabase(true);
+	}
+	
 	@Test
 	public void testBasic() throws InterruptedException {
 		PlayOrmCronJob monitor = new PlayOrmCronJob();
