@@ -238,7 +238,8 @@ public class MongoDbSession implements NoSqlRawSession {
 		byte[] value = column.getPrimaryKey();
 		BasicDBObject doc = findIndexRow(table, rowKey, value);
 		if (doc == null) {
-			log.info("Index: " + column.toString() + " already removed.");
+			if (log.isInfoEnabled())
+				log.info("Index: " + column.toString() + " already removed.");
 		} else {
 			table.remove(doc);
 		}
@@ -263,10 +264,12 @@ public class MongoDbSession implements NoSqlRawSession {
 		if(lookupVirtCf(virtualCf) != null)
 			return;
 
-		log.info("CREATING column family="+virtualCf+" in MongoDb database= "+db);
+		if (log.isInfoEnabled())
+			log.info("CREATING column family="+virtualCf+" in MongoDb database= "+db);
 		
 		DboTableMeta meta = loadFromInMemoryOrDb(virtualCf, ormSession);
-		log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
+		if (log.isInfoEnabled())
+			log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
 
 		createColFamilyInMongoDb(meta);
 	}
@@ -420,11 +423,13 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private DboTableMeta loadFromInMemoryOrDb(String virtCf, MetaLookup lookup) {
-		log.info("looking up meta=" + virtCf
+		if (log.isInfoEnabled())
+			log.info("looking up meta=" + virtCf
 				+ " so we can add table to memory(one time operation)");
 		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(virtCf);
 		if (meta != null) {
-			log.info("found meta=" + virtCf + " locally");
+			if (log.isInfoEnabled())
+				log.info("found meta=" + virtCf + " locally");
 			return meta;
 		}
 
@@ -434,7 +439,8 @@ public class MongoDbSession implements NoSqlRawSession {
 					"We can't load the meta for virtual or real CF="
 							+ virtCf
 							+ " because there is not meta found in DboTableMeta table");
-		log.info("found meta=" + virtCf + " in database");
+		if (log.isInfoEnabled())
+			log.info("found meta=" + virtCf + " in database");
 		return table;
 	}
 
@@ -483,13 +489,15 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	private Info tryToLoadColumnFamilyImpl(String virtCf, MetaLookup lookup) {
 		synchronized (virtCf.intern()) {
-			log.info("Column family NOT found in-memory=" + virtCf + ", CHECK and LOAD from MongoDb if available");
+			if (log.isInfoEnabled())
+				log.info("Column family NOT found in-memory=" + virtCf + ", CHECK and LOAD from MongoDb if available");
 
 			String cfName = virtualToCfName.get(virtCf);
 			if (cfName != null) {
 				Info info = cfNameToMongodb.get(cfName);
 				if (info != null) {
-					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there=" + virtCf + "(realcf=" + cfName + ")");
+					if (log.isInfoEnabled())
+						log.info("NEVER MIND, someone beat us to loading it into memory, it is now there=" + virtCf + "(realcf=" + cfName + ")");
 					return cfNameToMongodb.get(cfName);
 				}
 			}
@@ -501,7 +509,8 @@ public class MongoDbSession implements NoSqlRawSession {
 			String realCfLower = realCf.toLowerCase();
 			Info info = cfNameToMongodb.get(realCfLower);
 			if (info != null) {
-				log.info("Virt CF=" + virtCf + " already exists and real colfamily=" + realCf + " already exists so return it");
+				if (log.isInfoEnabled())
+					log.info("Virt CF=" + virtCf + " already exists and real colfamily=" + realCf + " already exists so return it");
 				// Looks like it already existed
 				String cfLowercase = realCf.toLowerCase();
 				virtualToCfName.put(virtCf, cfLowercase);
@@ -510,13 +519,15 @@ public class MongoDbSession implements NoSqlRawSession {
 
 			// NOW, the schema appears stable, let's get that column family and load it
 			if (db != null && db.collectionExists(realCf)) {
-				log.info("coooool, we found a new column family=" + realCf + "(virt=" + virtCf 	+ ") to load so we are going to load that for you so every future operation is FAST");
+				if (log.isInfoEnabled())
+					log.info("coooool, we found a new column family=" + realCf + "(virt=" + virtCf 	+ ") to load so we are going to load that for you so every future operation is FAST");
 				DBCollection dbCollection = db.getCollection(realCf);
 
 				loadColumnFamily(dbCollection, virtCf, realCf);
 				return lookupVirtCf(virtCf);
 			} else {
-				log.info("Well, we did NOT find any column family=" + realCf
+				if (log.isInfoEnabled())
+					log.info("Well, we did NOT find any column family=" + realCf
 						+ " to load in MongoDb(from virt=" + virtCf + ")");
 				return null;
 			}

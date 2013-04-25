@@ -47,7 +47,8 @@ public class CronServiceImpl implements CronService {
 		mgr.flush();
 		
 		clusterRunnable.setFactory(factory);
-		log.info("running monitor service at rate="+config.getRate()+" milliseconds");
+		if (log.isInfoEnabled())
+			log.info("running monitor service at rate="+config.getRate()+" milliseconds");
 		svc.scheduleAtFixedRate(clusterRunnable, 30000, config.getRate(), TimeUnit.MILLISECONDS);
 	}
 

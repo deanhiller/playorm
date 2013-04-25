@@ -38,7 +38,8 @@ public class CachedMeta {
 	private DboTableMeta loadAllTableData(String colFamily) {
 		//only synchronize on the column family we need to create so we create it once
 		synchronized(colFamily.intern()) {
-			log.info("loading table="+colFamily);
+			if (log.isInfoEnabled())
+				log.info("loading table="+colFamily);
 			DboTableMeta dboTableMeta = cachedMeta.get(colFamily);
 			if(dboTableMeta != null)
 				return dboTableMeta;

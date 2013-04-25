@@ -168,7 +168,8 @@ public class PlayOrm {
 				String justCmd = cmd.trim();
 				processCommand(justCmd);
 			} catch (InvalidCommand e) {
-				log.info("invalid command", e);
+				if (log.isInfoEnabled())
+					log.info("invalid command", e);
 				println("Invalid command: '"+cmd+"'.  Skipping it");
 				if(e.getMessage() != null)
 					println(e.getMessage());

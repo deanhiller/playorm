@@ -101,7 +101,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		//Now we have firstPiece = file:/Users/dhiller2/AAROOT/area1/fullSDI/restApi/lib/nosqlorm.jar
 		String prefix = "jar:"+firstPiece+"!/";
 		URL url = createUrl(prefix);
-		log.info("adding jar file for scanning="+url);
+		if (log.isInfoEnabled())
+			log.info("adding jar file for scanning="+url);
 		list.add(url);
 	}
 
@@ -120,7 +121,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		File classFolder = f.getParentFile().getParentFile();
 
 		URL url = toUrl(classFolder);
-		log.info("adding folder to scan="+url);
+		if (log.isInfoEnabled())
+			log.info("adding folder to scan="+url);
 		list.add(url);
 	}
 

@@ -102,7 +102,8 @@ public class InMemorySession implements NoSqlRawSession {
 		if(table != null)
 			return table;
 		
-		log.info("CREATING column family="+colFamily+" in the in memory nosql store");
+		if (log.isInfoEnabled())
+			log.info("CREATING column family="+colFamily+" in the in memory nosql store");
 			
 		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
 		if(cf == null) {
@@ -110,7 +111,8 @@ public class InMemorySession implements NoSqlRawSession {
 			//those that are modifying meta data themselves
 			//DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 			cf = mgr.find(DboTableMeta.class, colFamily);
-			log.info("cf from db="+cf);
+			if (log.isInfoEnabled())
+				log.info("cf from db="+cf);
 			//cf = db.getMeta(colFamily);
 		}
 		

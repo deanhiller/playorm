@@ -59,7 +59,8 @@ public class ScannerForClass {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
-		log.info("scanning class="+clazz);
+		if (log.isInfoEnabled())
+			log.info("scanning class="+clazz);
 		//NOTE: We scan linearly with NO recursion BUT when we hit an object like Activity.java
 		//that has a reference to Account.java and so the MetaClass of Activity has fields and that
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell

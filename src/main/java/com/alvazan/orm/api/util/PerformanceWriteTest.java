@@ -58,15 +58,18 @@ public class PerformanceWriteTest {
 
 	private synchronized void finished(int threadNum) {
 		numThreadsLeft--;
-		log.info("thread num="+threadNum+" finished.  cnt left="+numThreadsLeft);
-		if(numThreadsLeft == 0)
-			log.info("final count of rows="+totalRowsWritten);
+		if (log.isInfoEnabled()) {
+			log.info("thread num="+threadNum+" finished.  cnt left="+numThreadsLeft);
+			if(numThreadsLeft == 0)
+				log.info("final count of rows="+totalRowsWritten);
+		}
 	}
 	
 	private synchronized void addCount(long count) {
 		totalRowsWritten += count;
-		if(totalRowsWritten % logEveryN == 0) 
-			log.info("total rows written so far="+totalRowsWritten);
+		if (log.isInfoEnabled())
+			if(totalRowsWritten % logEveryN == 0) 
+				log.info("total rows written so far="+totalRowsWritten);
 	}
 	
 	private void start(String host, String clusterName, int timeInMinutes, int numColumns, int logEveryNRows) {
@@ -85,9 +88,11 @@ public class PerformanceWriteTest {
 			exec.execute(r);
 		}
 		
-		log.info("calling shutdown");
+		if (log.isInfoEnabled())
+			log.info("calling shutdown");
 		exec.shutdown();
-		log.info("done calling shutdown");
+		if (log.isInfoEnabled())
+			log.info("done calling shutdown");
 	}
 
 	private DboTableMeta setupMetaData(int numColumns, NoSqlEntityManagerFactory factory) {
@@ -177,7 +182,8 @@ public class PerformanceWriteTest {
 	private class StopTask extends TimerTask {
 		@Override
 		public void run() {
-			log.info("changing shouldRun flag to false so we should be stopping");
+			if (log.isInfoEnabled())
+				log.info("changing shouldRun flag to false so we should be stopping");
 			shouldRun = false;
 		}
 	}

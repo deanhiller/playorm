@@ -98,7 +98,8 @@ public class CheckClusterRunnable implements Runnable {
 	}
 	
 	private void runOurMonitors(NoSqlEntityManager mgr, int numUpWebNodes, int serverNumber) {
-		log.info("num up nodes="+numUpWebNodes+" servernum="+serverNumber);
+		if (log.isInfoEnabled())
+			log.info("num up nodes="+numUpWebNodes+" servernum="+serverNumber);
 		Cursor<KeyValue<MonitorDbo>> cursor = MonitorDbo.findAll(mgr);
 		while(cursor.next()) {
 			KeyValue<MonitorDbo> kv = cursor.getCurrent();
@@ -106,7 +107,8 @@ public class CheckClusterRunnable implements Runnable {
 			String id = val.getId();
 			int hash = id.hashCode();
 			int serverNum = hashGen.generate(hash, numUpWebNodes);
-			log.info("monitor="+val.getId()+" target server num="+serverNum+" our servernum="+serverNumber);
+			if (log.isInfoEnabled())
+				log.info("monitor="+val.getId()+" target server num="+serverNum+" our servernum="+serverNumber);
 			if(serverNum == serverNumber) 
 				processMonitor(mgr, val);
 		}

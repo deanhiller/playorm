@@ -258,7 +258,8 @@ public class CassandraSession implements NoSqlRawSession {
 	public void clearImpl() throws ConnectionException {
 		Cluster cluster = columnFamilies.getCluster();
 		String keyspaceName = columnFamilies.getKeyspaceName();
-		log.info("Clearing keyspace="+keyspaceName+" in cassandra");
+		if (log.isInfoEnabled())
+			log.info("Clearing keyspace="+keyspaceName+" in cassandra");
 		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
 		KeyspaceDefinition ourDef = null;
 		for(KeyspaceDefinition kDef : keyspaces) {
@@ -283,7 +284,8 @@ public class CassandraSession implements NoSqlRawSession {
 		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
+			if (log.isInfoEnabled())
+				log.info("query was run on column family that does not yet exist="+colFamily);
 			return new EmptyCursor<Column>();
 		}
 
@@ -324,7 +326,8 @@ public class CassandraSession implements NoSqlRawSession {
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
+			if (log.isInfoEnabled())
+				log.info("query was run on column family that does not yet exist="+colFamily);
 			return new EmptyCursor<IndexColumn>();
 		}
 		
@@ -348,7 +351,8 @@ public class CassandraSession implements NoSqlRawSession {
 		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
-			log.info("query was run on column family that does not yet exist="+colFamily);
+			if (log.isInfoEnabled())
+				log.info("query was run on column family that does not yet exist="+colFamily);
 			return new EmptyCursor<IndexColumn>();
 		}
 		

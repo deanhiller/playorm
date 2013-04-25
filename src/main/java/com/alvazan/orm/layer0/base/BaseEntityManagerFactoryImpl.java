@@ -101,14 +101,16 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         	setupQueryStuff(meta);
         }
         
-        log.info("Finished scanning classes, saving meta data");
+        if (log.isInfoEnabled())
+			log.info("Finished scanning classes, saving meta data");
         isScanned = true;
         
         BaseEntityManagerImpl tempMgr = (BaseEntityManagerImpl) createEntityManager();
         tempMgr.saveMetaData();
         
         cache.init(this);
-        log.info("Finished saving meta data, complelety done initializing");
+        if (log.isInfoEnabled())
+			log.info("Finished saving meta data, complelety done initializing");
 	}
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -127,7 +129,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 		
 		inspectorField.setCustomConverters(converters);
 		
-		log.info("Begin scanning for jars with nosql.Persistence.class");
+		if (log.isInfoEnabled())
+			log.info("Begin scanning for jars with nosql.Persistence.class");
 		
         List<Class> classToScan = (List<Class>) properties.get(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY);
         
@@ -153,7 +156,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
 
 		//log.info("Parsing queries for entity="+classMeta.getMetaClass());
 		for(NoSqlQuery query : theQueries) {
-			log.info("["+classMeta.getMetaClass().getSimpleName()+"]parsing query="+query.name()+" query="+query.query());
+			if (log.isInfoEnabled())
+				log.info("["+classMeta.getMetaClass().getSimpleName()+"]parsing query="+query.name()+" query="+query.query());
 			SpiMetaQuery metaQuery = createQueryAndAdd(classMeta, query);
 			classMeta.addQuery(query.name(), metaQuery);
 		}

@@ -127,7 +127,8 @@ public class ColumnFamilyHelper {
 		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 		
 		findExistingColumnFamilies(keySpaceMeta);
-		log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+cfNameToCassandra.keySet()+"\nNOTE: WE WILL CREATE " +
+		if (log.isInfoEnabled())
+			log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+cfNameToCassandra.keySet()+"\nNOTE: WE WILL CREATE " +
 				"new column families automatically as you save entites that have no column family");
 	}
 
@@ -273,7 +274,8 @@ public class ColumnFamilyHelper {
 			if(cfName != null) {
 				Info info = cfNameToCassandra.get(cfName);
 				if(info != null) {
-					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+virtCf+"(realcf="+cfName+")");
+					if (log.isInfoEnabled())
+						log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+virtCf+"(realcf="+cfName+")");
 					return cfNameToCassandra.get(cfName);
 				}
 			}
@@ -285,7 +287,8 @@ public class ColumnFamilyHelper {
 			String realCfLower = realCf.toLowerCase();
 			Info info = cfNameToCassandra.get(realCfLower);
 			if(info != null) {
-				log.info("Virt CF="+virtCf+" already exists and real colfamily="+realCf+" already exists so return it");
+				if (log.isInfoEnabled())
+					log.info("Virt CF="+virtCf+" already exists and real colfamily="+realCf+" already exists so return it");
 				//Looks like it already existed
 				String cfLowercase = realCf.toLowerCase();
 				virtualToCfName.put(virtCf, cfLowercase);
@@ -299,10 +302,12 @@ public class ColumnFamilyHelper {
 			KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
 			ColumnFamilyDefinition def = keySpaceMeta.getColumnFamily(realCf);
 			if(def == null) {
-				log.info("Well, we did NOT find any column family="+realCf+" to load in cassandra(from virt="+virtCf+")");
+				if (log.isInfoEnabled())
+					log.info("Well, we did NOT find any column family="+realCf+" to load in cassandra(from virt="+virtCf+")");
 				return null;
 			} 
-			log.info("coooool, we found a new column family="+realCf+"(virt="+virtCf+") to load so we are going to load that for you so every future operation is FAST");
+			if (log.isInfoEnabled())
+				log.info("coooool, we found a new column family="+realCf+"(virt="+virtCf+") to load so we are going to load that for you so every future operation is FAST");
 			loadColumnFamily(def, virtCf, realCf);
 			
 			return lookupVirtCf(virtCf);
@@ -310,17 +315,20 @@ public class ColumnFamilyHelper {
 	}
 
 	private DboTableMeta loadFromInMemoryOrDb(String virtCf, MetaLookup lookup) {
-		log.info("looking up meta="+virtCf+" so we can add table to memory(one time operation)");
+		if (log.isInfoEnabled())
+			log.info("looking up meta="+virtCf+" so we can add table to memory(one time operation)");
 		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(virtCf);
 		if(meta != null) {
-			log.info("found meta="+virtCf+" locally");
+			if (log.isInfoEnabled())
+				log.info("found meta="+virtCf+" locally");
 			return meta;
 		}
 		
 		DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
 		if(table == null)
 			throw new IllegalArgumentException("We can't load the meta for virtual or real CF="+virtCf+" because there is not meta found in DboTableMeta table");
-		log.info("found meta="+virtCf+" in database");
+		if (log.isInfoEnabled())
+			log.info("found meta="+virtCf+" in database");
 		return table;
 	}
 
@@ -344,10 +352,12 @@ public class ColumnFamilyHelper {
 			return;
 
 		String keysp = keyspace.getKeyspaceName();
-		log.info("CREATING column family="+virtualCf+" in cassandra keyspace="+keysp);
+		if (log.isInfoEnabled())
+			log.info("CREATING column family="+virtualCf+" in cassandra keyspace="+keysp);
 		
 		DboTableMeta meta = loadFromInMemoryOrDb(virtualCf, ormSession);
-		log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
+		if (log.isInfoEnabled())
+			log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
 
 		createColFamilyInCassandra(meta);
 	}
@@ -356,12 +366,14 @@ public class ColumnFamilyHelper {
 		String keysp = keyspace.getKeyspaceName();
 		String cfName = meta.getRealColumnFamily().toLowerCase();
 		String colFamily = meta.getRealColumnFamily();
-		log.info("CREATING colfamily="+cfName+" in keyspace="+keysp);
+		if (log.isInfoEnabled())
+			log.info("CREATING colfamily="+cfName+" in keyspace="+keysp);
 		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
 			    .setName(colFamily)
 			    .setKeyspace(keysp);
 
-		log.info("keyspace="+def.getKeyspace()+" col family="+def.getName());
+		if (log.isInfoEnabled())
+			log.info("keyspace="+def.getKeyspace()+" col family="+def.getName());
 		StorageTypeEnum rowKeyType = meta.getIdColumnMeta().getStorageType();
 		ColumnType colType = ColumnType.ANY_EXCEPT_COMPOSITE;
 		if(meta.isVirtualCf()) {
@@ -448,10 +460,12 @@ public class ColumnFamilyHelper {
 	
 	public void waitForNodesToBeUpToDate(OperationResult<SchemaChangeResult> result, long timeout)
 			throws ConnectionException {
-		if(result != null && result.getResult() != null)
-			log.info("LOOP until all nodes have same schema version id="+result.getResult().getSchemaId()+" OR timeout in "+timeout+" milliseconds");
-		else
-			log.info("LOOP until all nodes have same schema version OR timeout in "+timeout+" milliseconds");
+		if (log.isInfoEnabled()) {
+			if(result != null && result.getResult() != null)
+				log.info("LOOP until all nodes have same schema version id="+result.getResult().getSchemaId()+" OR timeout in "+timeout+" milliseconds");
+			else
+				log.info("LOOP until all nodes have same schema version OR timeout in "+timeout+" milliseconds");
+		}
 		
 		long currentTime = System.currentTimeMillis();
 		while(true) {
