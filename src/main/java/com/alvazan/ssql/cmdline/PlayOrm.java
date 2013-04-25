@@ -142,7 +142,8 @@ public class PlayOrm {
 					try {
 						process(currentStatement);
 					} catch (Exception exp) {
-						log.warn("Exception occurred", exp);
+						if (log.isWarnEnabled())
+							log.warn("Exception occurred", exp);
 						println("Sorry, we ran into a bug, recovering now so you can continue using command line");
 						println("playorm >> ");
 					}
@@ -154,7 +155,8 @@ public class PlayOrm {
 				}
 			}
 		} catch (IOException exp) {
-			log.warn("Exception occurred", exp);
+			if (log.isWarnEnabled())
+				log.warn("Exception occurred", exp);
 		}
 	}
 

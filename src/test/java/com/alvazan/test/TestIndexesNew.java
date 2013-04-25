@@ -35,7 +35,8 @@ public class TestIndexesNew {
 		try {
 			other.clearDatabase(true);
 		} catch(Exception e) {
-			log.warn("Could not clean up properly", e);
+			if (log.isWarnEnabled())
+				log.warn("Could not clean up properly", e);
 		}
 	}
 	

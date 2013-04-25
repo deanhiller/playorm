@@ -41,7 +41,8 @@ public class PerformanceWriteTest {
 	
 	public static void main(String[] args) {
 		if(args.length != 5) {
-			log.warn("Run java com.alvazan.orm.api.base.util.PerformanceWriteTest <host> <clusterName> <timeInSeconds> <numColumnsInTable> <logEveryNthTime>");
+			if (log.isWarnEnabled())
+				log.warn("Run java com.alvazan.orm.api.base.util.PerformanceWriteTest <host> <clusterName> <timeInSeconds> <numColumnsInTable> <logEveryNthTime>");
 			return;
 		}
 

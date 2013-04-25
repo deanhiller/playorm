@@ -41,7 +41,8 @@ public class CheckClusterRunnable implements Runnable {
 				log.debug("firing cluster runnable");
 			runImpl();
 		} catch(Exception e) {
-			log.warn("Exception", e);
+			if (log.isWarnEnabled())
+				log.warn("Exception", e);
 		}
 	}
 	public void runImpl() {
@@ -197,7 +198,8 @@ public class CheckClusterRunnable implements Runnable {
 		try {
 			listener.monitorFired(monitor);
 		} catch(Exception e) {
-			log.warn("Listener threw an exception, check your client code for a bug(we catch, log and continue)", e);
+			if (log.isWarnEnabled())
+				log.warn("Listener threw an exception, check your client code for a bug(we catch, log and continue)", e);
 		}
 	}
 	

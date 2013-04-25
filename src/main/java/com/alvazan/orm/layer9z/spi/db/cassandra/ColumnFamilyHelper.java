@@ -474,13 +474,15 @@ public class ColumnFamilyHelper {
 			if(describeSchemaVersions.size() == 1) {
 				String key = describeSchemaVersions.keySet().iterator().next();
 				if(result !=null && result.getResult()!= null && !key.equals(result.getResult().getSchemaId())) {
-					log.warn("BUG, in cassandra? id we upgraded schema to="+result.getResult().getSchemaId()+" but the schema on all nodes is now="+key);
+					if (log.isWarnEnabled())
+						log.warn("BUG, in cassandra? id we upgraded schema to="+result.getResult().getSchemaId()+" but the schema on all nodes is now="+key);
 				}
 				if (result !=null && result.getResult()!= null)
 					assert result.getResult().getSchemaId() == null || key.equals(result.getResult().getSchemaId()) : "The key and id should be equal!!!! as it is updating to our schema";
 				break;
 			} else if(now >= currentTime+timeout) {
-				log.warn("All nodes are still not up to date, but we have already waited 30 seconds!!! so we are returning");
+				if (log.isWarnEnabled())
+					log.warn("All nodes are still not up to date, but we have already waited 30 seconds!!! so we are returning");
 				break;
 			}
 			
@@ -496,12 +498,14 @@ public class ColumnFamilyHelper {
 		try {
 			clusterContext.shutdown();
 		} catch(Exception e) {
-			log.warn("Could not shutdown properly", e);
+			if (log.isWarnEnabled())
+				log.warn("Could not shutdown properly", e);
 		}
 		try {
 			context.shutdown();
 		} catch(Exception e) {
-			log.warn("Could not shutdown properly", e);
+			if (log.isWarnEnabled())
+				log.warn("Could not shutdown properly", e);
 		}
 	}
 }
