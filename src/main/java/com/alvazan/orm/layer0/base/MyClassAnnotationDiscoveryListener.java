@@ -27,7 +27,8 @@ public class MyClassAnnotationDiscoveryListener implements
 
 	@Override
 	public void discovered(String clazzName, String annotation) {
-		log.debug("class="+clazzName+" anno="+annotation);
+		if(log.isDebugEnabled())
+			log.debug("class="+clazzName+" anno="+annotation);
 		try {
 			Class<?> clazz = classLoader.loadClass(clazzName);
 

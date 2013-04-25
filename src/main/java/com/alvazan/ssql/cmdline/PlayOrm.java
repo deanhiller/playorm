@@ -159,7 +159,8 @@ public class PlayOrm {
 	}
 
 	private void process(String newLine) {
-		log.debug("processing line="+newLine);
+		if(log.isDebugEnabled())
+			log.debug("processing line="+newLine);
 		String[] commands = newLine.split(";");
 		
 		for(String cmd : commands) {

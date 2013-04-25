@@ -252,7 +252,8 @@ public class MongoDbSession implements NoSqlRawSession {
 			if(log.isInfoEnabled())
 				log.info("Total time to CREATE column family in MongoDb and wait for all nodes to update="+total);
 		} catch(Exception e) {
-			log.trace("maybe someone else created at same time, so hold off on throwing exception", e);
+			if(log.isTraceEnabled())
+				log.trace("maybe someone else created at same time, so hold off on throwing exception", e);
 			return e;
 		}
 		return null;

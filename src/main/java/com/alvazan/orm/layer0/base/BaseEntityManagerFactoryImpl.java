@@ -91,7 +91,8 @@ public class BaseEntityManagerFactoryImpl implements NoSqlEntityManagerFactory {
         if(log.isTraceEnabled()) {
         	URL[] resources = discoverer.findResources(cl);
         	for(URL res : resources) {
-        		log.trace("jar="+res);
+        		if(log.isTraceEnabled())
+        			log.trace("jar="+res);
         	}
         }
         

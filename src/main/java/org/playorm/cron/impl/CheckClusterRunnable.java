@@ -37,7 +37,8 @@ public class CheckClusterRunnable implements Runnable {
 	@Override
 	public void run() {
 		try {
-			log.debug("firing cluster runnable");
+			if(log.isDebugEnabled())
+				log.debug("firing cluster runnable");
 			runImpl();
 		} catch(Exception e) {
 			log.warn("Exception", e);
@@ -55,13 +56,16 @@ public class CheckClusterRunnable implements Runnable {
 			KeyValue<WebNodeDbo> kv = cursor.getCurrent();
 			WebNodeDbo val = kv.getValue();
 			all.add(val);
-			log.debug("checking node="+val.getWebServerName());
+			if(log.isDebugEnabled())
+				log.debug("checking node="+val.getWebServerName());
 			if(isServerUp(mgr, val)) {
-				log.debug("server is up="+val.getWebServerName());
+				if(log.isDebugEnabled())
+					log.debug("server is up="+val.getWebServerName());
 				servers.add(val);
 			}
 			if(val.getWebServerName().equals(config.getHostName())) {
-				log.debug("saving our node to be up="+val.getWebServerName());
+				if(log.isDebugEnabled())
+					log.debug("saving our node to be up="+val.getWebServerName());
 				saveNodeIsUp(mgr, val);
 			}
 		}
@@ -73,7 +77,8 @@ public class CheckClusterRunnable implements Runnable {
 		for(int i = 0; i < servers.size(); i++) {
 			WebNodeDbo node = servers.get(i);
 			if(node.getWebServerName().equals(config.getHostName())) {
-				log.debug("we are server number="+i+" out of number="+servers.size());
+				if(log.isDebugEnabled())
+					log.debug("we are server number="+i+" out of number="+servers.size());
 				serverNumber = i;
 				break;
 			}
@@ -118,7 +123,8 @@ public class CheckClusterRunnable implements Runnable {
 	
 	private boolean calculateShouldRun(NoSqlEntityManager mgr, MonitorDbo monitor, DateTime now) {
 		DateTime lastRunTime = monitor.getLastRun();
-		log.debug("now="+now+" and lastrun time="+lastRunTime+" for monitor="+monitor.getId());
+		if(log.isDebugEnabled())
+			log.debug("now="+now+" and lastrun time="+lastRunTime+" for monitor="+monitor.getId());
 
 		if(lastRunTime == null) {
 			return isInRunWindow(monitor, now);
@@ -176,7 +182,8 @@ public class CheckClusterRunnable implements Runnable {
 
 	private void runMonitor(NoSqlEntityManager mgr, MonitorDbo monitor,
 			DateTime now) {
-		log.debug("run monitor="+monitor.getId());
+		if(log.isDebugEnabled())
+			log.debug("run monitor="+monitor.getId());
 		PlayOrmCronJob p = CopyUtil.copy(monitor);
 		fireToListener(p);
 		monitor.setLastRun(now);

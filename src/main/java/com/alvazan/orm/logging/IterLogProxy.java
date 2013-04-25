@@ -67,7 +67,8 @@ public class IterLogProxy implements Iterable<byte[]> {
 					String str = meta.getIdColumnMeta().convertTypeToString(obj);
 					realKeys.add(str);
 				} catch(Exception e) {
-					log.trace("Exception occurred", e);
+					if(log.isTraceEnabled())
+						log.trace("Exception occurred", e);
 					realKeys.add("[exception, turn on trace logging]");
 				}
 			}

@@ -430,7 +430,8 @@ public class ScannerSql {
 	private static <T> void compileExpression(ExpressionNode node, InfoForWiring wiring, MetaFacade facade) {
 		CommonTree expression = node.getASTNode();
 		int type = expression.getType();
-		log.debug("where type:" + expression.getType());
+		if(log.isDebugEnabled())
+			log.debug("where type:" + expression.getType());
 		switch (type) {
 		case NoSqlLexer.AND:
 		case NoSqlLexer.OR:

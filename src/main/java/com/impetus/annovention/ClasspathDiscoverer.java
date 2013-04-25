@@ -58,7 +58,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		
 		Enumeration<URL> resources = loadPersistenceFiles(cl);
 		
-		log.trace("about to log the jar resources here that contain nosql.Persistence.class...");
+		if(log.isTraceEnabled())
+			log.trace("about to log the jar resources here that contain nosql.Persistence.class...");
 		Set<URL> urlsToScan = new HashSet<URL>();
 		while(resources.hasMoreElements()) {
 			URL url = resources.nextElement();
@@ -66,7 +67,8 @@ public class ClasspathDiscoverer extends Discoverer {
 				continue;
 			
 			urlsToScan.add(url);
-			log.trace("found url with nosql.Persistence.class so scanning enabled on this url="+url);
+			if(log.isTraceEnabled())
+				log.trace("found url with nosql.Persistence.class so scanning enabled on this url="+url);
 		}
 		
 		if(urlsToScan.size() == 0)
