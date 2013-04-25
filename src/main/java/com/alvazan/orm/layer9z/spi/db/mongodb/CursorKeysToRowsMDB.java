@@ -32,6 +32,7 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 	private int batchSize;
 	private BatchListener list;
 	private DB db;
+	private Info info;
 	private ListIterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;
 	private Cache cache;
@@ -66,6 +67,7 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 		this.cf = cf;
 		this.cache = cache;
 		this.db = keyspace;
+		this.info = info;
 		beforeFirst();
 	}
 
@@ -121,12 +123,9 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 
 		}
 		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA FOR ENABLE CACHING
-
-		// DBCollection dbCollection = info.getColumnFamilyObj();
 		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(cf.getColumnFamily())) {
-			dbCollection = db.getCollection(cf.getColumnFamily());
+		if (info.getDbObj() != null) {
+			dbCollection = info.getDbObj();
 		} else
 			return;
 		if (keysToLookup.size() > 0) {
@@ -190,14 +189,10 @@ public class CursorKeysToRowsMDB extends AbstractCursor<KeyValue<Row>> {
 			results.add(result);
 		}
 
-
 		DBCursor cursor = null;
-		// / NEED TO CHANGE THIS CODE LIKE CASSANDRA FOR ENABLE CACHING
-
-		// DBCollection dbCollection = info.getColumnFamilyObj();
 		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(cf.getColumnFamily())) {
-			dbCollection = db.getCollection(cf.getColumnFamily());
+		if (info.getDbObj() != null) {
+			dbCollection = info.getDbObj();
 		} else
 			return;
 
