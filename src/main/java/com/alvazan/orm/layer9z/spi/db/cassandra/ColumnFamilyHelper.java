@@ -273,9 +273,9 @@ public class ColumnFamilyHelper {
 			String cfName = virtualToCfName.get(virtCf);
 			if(cfName != null) {
 				Info info = cfNameToCassandra.get(cfName);
+				if (info != null && log.isInfoEnabled())
+					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+virtCf+"(realcf="+cfName+")");
 				if(info != null) {
-					if (log.isInfoEnabled())
-						log.info("NEVER MIND, someone beat us to loading it into memory, it is now there="+virtCf+"(realcf="+cfName+")");
 					return cfNameToCassandra.get(cfName);
 				}
 			}
@@ -473,9 +473,8 @@ public class ColumnFamilyHelper {
 			long now = System.currentTimeMillis();
 			if(describeSchemaVersions.size() == 1) {
 				String key = describeSchemaVersions.keySet().iterator().next();
-				if(result !=null && result.getResult()!= null && !key.equals(result.getResult().getSchemaId())) {
-					if (log.isWarnEnabled())
-						log.warn("BUG, in cassandra? id we upgraded schema to="+result.getResult().getSchemaId()+" but the schema on all nodes is now="+key);
+				if(log.isWarnEnabled() && result !=null && result.getResult()!= null && !key.equals(result.getResult().getSchemaId())) {
+					log.warn("BUG, in cassandra? id we upgraded schema to="+result.getResult().getSchemaId()+" but the schema on all nodes is now="+key);
 				}
 				if (result !=null && result.getResult()!= null)
 					assert result.getResult().getSchemaId() == null || key.equals(result.getResult().getSchemaId()) : "The key and id should be equal!!!! as it is updating to our schema";

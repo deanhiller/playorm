@@ -52,9 +52,8 @@ public class AddLogContextPlugin extends PlayPlugin {
 		
 		Request current = Request.current();
 		if(current != null) {
-			if (log.isInfoEnabled())
-				if(isProduction || (!current.path.startsWith("/public")))
-					log.info("---begin request="+current.method+":"+current.path);
+			if(log.isInfoEnabled() && isProduction || (!current.path.startsWith("/public")))
+				log.info("---begin request="+current.method+":"+current.path);
 		}
 	}
 
@@ -85,9 +84,8 @@ public class AddLogContextPlugin extends PlayPlugin {
 			Request current = Request.current();
 			long total = System.currentTimeMillis() - start;
 			startTime.set(null);
-			if (log.isInfoEnabled())
-				if(isProduction || (!current.path.startsWith("/public")))
-					log.info("---ended request="+current.method+":"+current.path+" total time="+total+" ms");
+			if(log.isInfoEnabled() && isProduction || (!current.path.startsWith("/public")))
+				log.info("---ended request="+current.method+":"+current.path+" total time="+total+" ms");
 		}
 		
 		MDC.put("sessionid", "");

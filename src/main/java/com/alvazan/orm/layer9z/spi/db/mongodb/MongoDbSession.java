@@ -496,8 +496,7 @@ public class MongoDbSession implements NoSqlRawSession {
 			if (cfName != null) {
 				Info info = cfNameToMongodb.get(cfName);
 				if (info != null) {
-					if (log.isInfoEnabled())
-						log.info("NEVER MIND, someone beat us to loading it into memory, it is now there=" + virtCf + "(realcf=" + cfName + ")");
+					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there=" + virtCf + "(realcf=" + cfName + ")");
 					return cfNameToMongodb.get(cfName);
 				}
 			}
