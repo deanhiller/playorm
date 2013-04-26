@@ -7,6 +7,8 @@ public class PlayOrmCronJob {
 
 	private String id;
 	
+	private String type;
+	
 	private Long epochOffset;
 	
 	private long timePeriodMillis;
@@ -47,6 +49,14 @@ public class PlayOrmCronJob {
 
 	public void setEpochOffset(Long epochOffset) {
 		this.epochOffset = epochOffset;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 }

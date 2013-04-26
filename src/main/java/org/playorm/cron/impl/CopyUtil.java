@@ -12,7 +12,7 @@ public class CopyUtil {
 		m.setId(monitor.getId());
 		m.setTimePeriodMillis(monitor.getTimePeriodMillis());
 		m.setEpochOffset(monitor.getEpochOffset());
-		
+		m.setType(monitor.getType());
 		String props = "";
 		for(String key : monitor.getProperties().keySet()) {
 			String value = monitor.getProperties().get(key);
@@ -28,6 +28,7 @@ public class CopyUtil {
 		PlayOrmCronJob mon = new PlayOrmCronJob();
 		mon.setId(monitor.getId());
 		mon.setTimePeriodMillis(monitor.getTimePeriodMillis());
+		mon.setType(monitor.getType());
 		mon.setEpochOffset(monitor.getEpochOffset());
 		String props = monitor.getRawProperties();
 		String[] propsArray = props.split("\\|");

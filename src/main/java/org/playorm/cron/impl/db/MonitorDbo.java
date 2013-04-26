@@ -22,6 +22,8 @@ public class MonitorDbo {
 	@NoSqlId(usegenerator=false)
 	private String id;
 	
+	private String type;
+	
 	@NoSqlIndexed
 	private long timePeriodMillis;
 	
@@ -93,4 +95,13 @@ public class MonitorDbo {
 	public void setEpochOffset(Long epochOffset) {
 		this.epochOffset = epochOffset;
 	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+	
 }
