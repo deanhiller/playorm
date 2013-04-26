@@ -59,7 +59,8 @@ public class ScannerForClass {
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void addClass(Class<?> clazz) {
-		log.info("scanning class="+clazz);
+		if (log.isInfoEnabled())
+			log.info("scanning class="+clazz);
 		//NOTE: We scan linearly with NO recursion BUT when we hit an object like Activity.java
 		//that has a reference to Account.java and so the MetaClass of Activity has fields and that
 		//field needs a reference to the MetaClass of Account.  To solve this, it creates a shell
@@ -243,7 +244,7 @@ public class ScannerForClass {
 
 		if(metaClass.getIdField() != null) {
 			Field existingField = metaClass.getIdField().getField();
-			if(field.equals(existingField)) {
+			if(field.equals(existingField) && log.isWarnEnabled()) {
 				log.warn("We avoided double scanning a class="+metaClass.getClass()+" Everything will still work fine, but please send us the stack trace so we can see why this is happening", new RuntimeException().fillInStackTrace());
 				log.warn("The first entry into this method was=", metaClass.getFirstTrace());
 				return true; // we already processed it

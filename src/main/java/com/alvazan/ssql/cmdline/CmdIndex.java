@@ -79,7 +79,8 @@ public class CmdIndex {
 			
 			KeyValue<TypedRow> row = keyToRow.get(pt.getKey());
 			if(row == null) {
-				log.debug("row is null for key="+pt.getKey());
+				if(log.isDebugEnabled())
+					log.debug("row is null for key="+pt.getKey());
 				//We are iterating over two views in batch mode soooo
 				//one batch may not have any of the keys of the other batch.  This is very normal
 			} else if(row.getException() != null || row.getValue() == null) {

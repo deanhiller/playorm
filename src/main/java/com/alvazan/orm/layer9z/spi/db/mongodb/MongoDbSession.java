@@ -46,8 +46,6 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
-
-
 public class MongoDbSession implements NoSqlRawSession {
 
 	private static final Logger log = LoggerFactory.getLogger(MongoDbSession.class);
@@ -61,7 +59,7 @@ public class MongoDbSession implements NoSqlRawSession {
 	@Inject
 	private DboDatabaseMeta dbMetaFromOrmOnly;
 	
-	private Map<String, Info> collNameToMongodb = new HashMap<String, Info>();
+	private Map<String, Info> cfNameToMongodb = new HashMap<String, Info>();
 	private Map<String, String> virtualToCfName = new HashMap<String, String>();
 
 	public DB getDb() {
@@ -154,7 +152,6 @@ public class MongoDbSession implements NoSqlRawSession {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return null;
 		}
-
 		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(colFamily, l, batchSize, db, rowKey, from, to);
 		return cursor;
 	}
@@ -190,7 +187,6 @@ public class MongoDbSession implements NoSqlRawSession {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return new CursorReturnsEmptyRows2(rowKeys);
 		}
-
 		CursorKeysToRowsMDB cursor = new CursorKeysToRowsMDB(rowKeys, batchSize, list, rowProvider, colFamily);
 		cursor.setupMore(db, colFamily, info, cache);
 		return cursor;
@@ -198,7 +194,8 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	private void persistIndex(PersistIndex action, MetaLookup ormSession) {
 		String indexCfName = action.getIndexCfName();
-		DBCollection table = lookupColFamily(indexCfName, ormSession);
+		Info info = lookupOrCreate2(indexCfName, ormSession);
+		DBCollection table = info.getDbObj();
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		byte[] key = column.getIndexedValue();
@@ -234,59 +231,75 @@ public class MongoDbSession implements NoSqlRawSession {
 		String colFamily = action.getIndexCfName();
 		if (colFamily.equalsIgnoreCase("BytesIndice"))
 			return;
-		DBCollection table = lookupColFamily(colFamily, ormSession);
+		Info info = fetchDbCollectionInfo(colFamily, ormSession);
+		DBCollection table = info.getDbObj();
 		byte[] rowKey = action.getRowKey();
 		IndexColumn column = action.getColumn();
 		byte[] value = column.getPrimaryKey();
 		BasicDBObject doc = findIndexRow(table, rowKey, value);
 		if (doc == null) {
-			log.info("Index: " + column.toString() + " already removed.");
+			if (log.isInfoEnabled())
+				log.info("Index: " + column.toString() + " already removed.");
 		} else {
 			table.remove(doc);
 		}
 	}
 
-	private DBCollection lookupColFamily(String colFamily, MetaLookup mgr) {
-		DBCollection table;
-		if(db.collectionExists(colFamily)) {
-			table = db.getCollection(colFamily);
-			return table;
+	private synchronized Exception createColFamily(String virtualCf, MetaLookup ormSession) {
+		try {
+			long start = System.currentTimeMillis();
+			createColFamilyImpl(virtualCf, ormSession);
+			long total = System.currentTimeMillis() - start;
+			if(log.isInfoEnabled())
+				log.info("Total time to CREATE column family in MongoDb and wait for all nodes to update="+total);
+		} catch(Exception e) {
+			if(log.isTraceEnabled())
+				log.trace("maybe someone else created at same time, so hold off on throwing exception", e);
+			return e;
 		}
+		return null;
+	}
+
+	private synchronized void createColFamilyImpl(String virtualCf, MetaLookup ormSession) {
+		if(lookupVirtCf(virtualCf) != null)
+			return;
+
+		if (log.isInfoEnabled())
+			log.info("CREATING column family="+virtualCf+" in MongoDb database= "+db);
 		
-		log.info("CREATING column family="+colFamily+" in the MongDB nosql store");
-			
-		DboTableMeta cf = dbMetaFromOrmOnly.getMeta(colFamily);
-		if(cf == null) {
-			//check the database now for the meta since it was not found in the ORM meta data.  This is for
-			//those that are modifying meta data themselves
-			//DboDatabaseMeta db = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
-			cf = mgr.find(DboTableMeta.class, colFamily);
-			log.info("cf from db="+cf);
-		}
+		DboTableMeta meta = loadFromInMemoryOrDb(virtualCf, ormSession);
+		if (log.isInfoEnabled())
+			log.info("CREATING REAL cf="+meta.getRealColumnFamily()+" (virtual CF="+meta.getRealVirtual()+")");
 
-		if(cf == null) {
-			throw new IllegalStateException("Column family='"+colFamily+"' was not found AND we looked up meta data for this column" +
-					" family to create it AND we could not find that data so we can't create it for you");
-		}
+		createColFamilyInMongoDb(meta);
+	}
 
-		table = db.createCollection(colFamily, new BasicDBObject());
-		if (colFamily.equalsIgnoreCase("StringIndice") || colFamily.equalsIgnoreCase("IntegerIndice") || colFamily.equalsIgnoreCase("DecimalIndice")) {
+	private void createColFamilyInMongoDb(DboTableMeta meta) {
+		String colFamily = meta.getRealColumnFamily();
+		// final check before creating
+		if (db!=null && db.collectionExists(colFamily))
+			return;
+		DBCollection table = db.createCollection(colFamily, new BasicDBObject());
+		if (colFamily.equalsIgnoreCase("StringIndice")
+				|| colFamily.equalsIgnoreCase("IntegerIndice")
+				|| colFamily.equalsIgnoreCase("DecimalIndice")) {
 			BasicDBObject index = new BasicDBObject();
 			index.append("i", 1);
 			index.append("k", 1);
 			table.ensureIndex(index);
 		}
-		Info info = new Info();
-		info.setColumnType(null);
-		info.setRowKeyType(null);
-		info.setDbObj(table);
-		collNameToMongodb.put(colFamily.toLowerCase(), info);
-		return table;
+		String virtual = meta.getColumnFamily();
+		String realCf = meta.getRealColumnFamily();
+		String realCfLower = realCf.toLowerCase();
+		Info info = createInfo(realCf, null, null);
+		virtualToCfName.put(virtual, realCfLower);
+		cfNameToMongodb.put(realCfLower, info);
 	}
 
 	private void remove(Remove action, MetaLookup ormSession) {
 		String colFamily = action.getColFamily().getColumnFamily();
-		DBCollection table = lookupColFamily(colFamily, ormSession);
+		Info info = fetchDbCollectionInfo(colFamily, ormSession);
+		DBCollection table = info.getDbObj();
 		if(action.getAction() == null)
 			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
 		switch(action.getAction()) {
@@ -316,7 +329,8 @@ public class MongoDbSession implements NoSqlRawSession {
 	private void removeColumn(RemoveColumn action, MetaLookup ormSession) {
 
 		String colFamily = action.getColFamily().getColumnFamily();
-		DBCollection table = lookupColFamily(colFamily, ormSession);
+		Info info = fetchDbCollectionInfo(colFamily, ormSession);
+		DBCollection table = info.getDbObj();
 		DBObject row = table.findOne(action.getRowKey());
 		BasicDBObject docToRemove = new BasicDBObject();
 		docToRemove.put(StandardConverters.convertToString(action.getColumn()), 1);
@@ -326,7 +340,8 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	private void persist(Persist action, MetaLookup ormSession) {
 		String colFamily = action.getColFamily().getColumnFamily();
-		DBCollection table = lookupColFamily(colFamily, ormSession);
+		Info info = lookupOrCreate2(colFamily, ormSession);
+		DBCollection table = info.getDbObj();
 		BasicDBObject row = findOrCreateRow(table, action.getRowKey());
 		BasicDBObject doc = new BasicDBObject();
 		for(Column col : action.getColumns()) {
@@ -361,15 +376,19 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private void findExistingCollections() {
-		Set<String> collList = db.getCollectionNames();
-		for (String coll : collList) {
-			Info info = createInfo(coll, null, null);
-			String lowerCaseName = coll.toLowerCase();
-			collNameToMongodb.put(lowerCaseName, info);
+		Set<String> collectionList = db.getCollectionNames();
+		for (String coll : collectionList) {
+			addExistingCollections(coll);
 		}
 	}
 
-	public Info createInfo(String dbCollection, ColumnType type, StorageTypeEnum keyType) {
+	private void addExistingCollections(String collectionName) {
+			Info info = createInfo(collectionName, null, null);
+			String lowerCaseName = collectionName.toLowerCase();
+			cfNameToMongodb.put(lowerCaseName, info);
+	}
+
+	private Info createInfo(String dbCollection, ColumnType type, StorageTypeEnum keyType) {
 		// Do we need to implement the types??
 		Info info = new Info();
 		info.setColumnType(type);
@@ -379,7 +398,139 @@ public class MongoDbSession implements NoSqlRawSession {
 	}
 
 	private Info fetchDbCollectionInfo(String tableName, MetaLookup mgr) {
-		Info info = collNameToMongodb.get(tableName.toLowerCase());
+		Info info = lookupVirtCf(tableName);
+		if(info != null)
+			return info;
+		
+		//in rare circumstances, there may be a new column family that was created by another server we need to load into
+		//memory for ourselves
+		return tryToLoadColumnFamilyVirt(tableName, mgr);
+	}
+
+	private Info lookupVirtCf(String virtualCf) {
+		String cfName = virtualToCfName.get(virtualCf);
+		if (log.isDebugEnabled())
+			log.debug("looking up virtualcf=" + virtualCf + " actual name="
+					+ cfName);
+		if (cfName == null)
+			return null;
+
+		Info info = cfNameToMongodb.get(cfName);
+		if (log.isDebugEnabled())
+			log.debug("virtual=" + virtualCf + " actual name=" + cfName
+					+ " cf info=" + info);
 		return info;
 	}
+
+	private DboTableMeta loadFromInMemoryOrDb(String virtCf, MetaLookup lookup) {
+		if (log.isInfoEnabled())
+			log.info("looking up meta=" + virtCf
+				+ " so we can add table to memory(one time operation)");
+		DboTableMeta meta = dbMetaFromOrmOnly.getMeta(virtCf);
+		if (meta != null) {
+			if (log.isInfoEnabled())
+				log.info("found meta=" + virtCf + " locally");
+			return meta;
+		}
+
+		DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
+		if (table == null)
+			throw new IllegalArgumentException(
+					"We can't load the meta for virtual or real CF="
+							+ virtCf
+							+ " because there is not meta found in DboTableMeta table");
+		if (log.isInfoEnabled())
+			log.info("found meta=" + virtCf + " in database");
+		return table;
+	}
+
+	private void loadColumnFamily(DBCollection def, String virtCf, String realCf) {
+		addExistingCollections(def.getName());
+		virtualToCfName.put(virtCf, realCf);
+	}
+
+	public Info lookupOrCreate2(String virtualCf, MetaLookup ormSession) {
+		// There is a few possibilities here
+		// 1. Another server already created the CF while we were online in
+		// which case we just need to load it into memory
+		// 2. No one has created the CF yet
+
+		// fetch will load from MongoDb if we don't have it in-memory
+		Info origInfo = fetchDbCollectionInfo(virtualCf, ormSession);
+		Exception ee = null;
+		if (origInfo == null) {
+			// no one has created the CF yet so we need to create it.
+			ee = createColFamily(virtualCf, ormSession);
+		}
+
+		// Now check...maybe someone else created it...or we did
+		// successfully....
+		Info info = fetchDbCollectionInfo(virtualCf, ormSession);
+		if (info == null)
+			throw new RuntimeException(
+					"Could not create and could not find virtual or real colfamily="
+							+ virtualCf
+							+ " see chained exception AND it could be your name is not allowed as a valid MongoDb Column Family name",
+					ee);
+		return info;
+	}
+
+
+	private Info tryToLoadColumnFamilyVirt(String virtColFamily,
+			MetaLookup lookup) {
+		long start = System.currentTimeMillis();
+		Info info = tryToLoadColumnFamilyImpl(virtColFamily, lookup);
+		long total = System.currentTimeMillis() - start;
+		if (log.isInfoEnabled())
+			log.info("Total time to LOAD column family meta from MongoDb="
+					+ total);
+		return info;
+	}
+
+	private Info tryToLoadColumnFamilyImpl(String virtCf, MetaLookup lookup) {
+		synchronized (virtCf.intern()) {
+			if (log.isInfoEnabled())
+				log.info("Column family NOT found in-memory=" + virtCf + ", CHECK and LOAD from MongoDb if available");
+
+			String cfName = virtualToCfName.get(virtCf);
+			if (cfName != null) {
+				Info info = cfNameToMongodb.get(cfName);
+				if (info != null) {
+					log.info("NEVER MIND, someone beat us to loading it into memory, it is now there=" + virtCf + "(realcf=" + cfName + ")");
+					return cfNameToMongodb.get(cfName);
+				}
+			}
+
+			DboTableMeta table = loadFromInMemoryOrDb(virtCf, lookup);
+
+			String realCf = table.getRealColumnFamily();
+
+			String realCfLower = realCf.toLowerCase();
+			Info info = cfNameToMongodb.get(realCfLower);
+			if (info != null) {
+				if (log.isInfoEnabled())
+					log.info("Virt CF=" + virtCf + " already exists and real colfamily=" + realCf + " already exists so return it");
+				// Looks like it already existed
+				String cfLowercase = realCf.toLowerCase();
+				virtualToCfName.put(virtCf, cfLowercase);
+				return info;
+			}
+
+			// NOW, the schema appears stable, let's get that column family and load it
+			if (db != null && db.collectionExists(realCf)) {
+				if (log.isInfoEnabled())
+					log.info("coooool, we found a new column family=" + realCf + "(virt=" + virtCf 	+ ") to load so we are going to load that for you so every future operation is FAST");
+				DBCollection dbCollection = db.getCollection(realCf);
+
+				loadColumnFamily(dbCollection, virtCf, realCf);
+				return lookupVirtCf(virtCf);
+			} else {
+				if (log.isInfoEnabled())
+					log.info("Well, we did NOT find any column family=" + realCf
+						+ " to load in MongoDb(from virt=" + virtCf + ")");
+				return null;
+			}
+		}
+	}
+
 }

@@ -64,7 +64,8 @@ public abstract class OurAbstractCollection<T> implements Collection<T>, CacheLo
 		IndiceToVirtual virtKeys = new IndiceToVirtual(metaDbo, new ListWrappingCursor<byte[]>(keys));
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
-		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
+		if (log.isInfoEnabled())
+			log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
 		int counter = 0;
 		while(true) {
 			com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> holder = rows.nextImpl();

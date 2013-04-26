@@ -119,7 +119,7 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 			throw new IllegalArgumentException("CF="+colFamily+" key is null and shouldn't be....(this should be trapped in higher level exception telling us which index is corrupt");
 		TheKey k = new TheKey(colFamily.getColumnFamily(), key);
 		RowHolder<Row> holder = cache.get(k);
-		if(holder != null)
+		if(holder != null && log.isInfoEnabled())
 			log.info("cache hit(need to optimize this even further)");
 		return holder;
 	}

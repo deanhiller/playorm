@@ -119,7 +119,8 @@ public final class JarFileIterator implements ResourceIterator {
             closed = true;
             jarInputStream.close();
         } catch (IOException ioe) {
-        	log.warn("exception on close", ioe);
+        	if (log.isWarnEnabled())
+				log.warn("exception on close", ioe);
         }
     }
 

@@ -41,7 +41,7 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	
 	@Override
 	public void sendChanges(List<Action> actions, MetaLookup ormFromAbove) {
-		if(actions.size() > 10000)
+		if(actions.size() > 10000 && log.isWarnEnabled())
 			log.warn("You sure you want to send 10,000 actions in one flush....consider doing and batches and calling mgr.clear to clear out the cache every batch");
 		long time = 0;
 		if(log.isInfoEnabled()) {
@@ -57,9 +57,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 
 	private void logInformation(List<Action> actions) {
 		try {
-			logInformationImpl(actions);
+			if (log.isInfoEnabled())
+				logInformationImpl(actions);
 		} catch(Exception e) {
-			log.info("[rawlogger] (exception logging save actions, turn on trace to see)");
+			if (log.isInfoEnabled())
+				log.info("[rawlogger] (exception logging save actions, turn on trace to see)");
 		}
 	}
 	
@@ -176,7 +178,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		try {
 			return logColScan2Impl(info, values);
 		} catch(Exception e) {
-			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			if (log.isInfoEnabled())
+				log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 			return info.getIndexColFamily()+" "+info.getEntityColFamily();
 		}		
 	}
@@ -202,9 +205,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			String str = colMeta.convertTypeToString(fromObj);
 			strVals.add(str);
 		}
-		
-		msg+=" finding non-contiguous keys index rowkey="+rowKey+" for keys:"+strVals;
-		log.info("[rawlogger]"+msg);
+		if (log.isInfoEnabled()) {
+			msg+=" finding non-contiguous keys index rowkey="+rowKey+" for keys:"+strVals;
+			log.info("[rawlogger]"+msg);
+		}
 		return cfAndIndex;
 	}
 
@@ -212,7 +216,8 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 		try {
 			return logColScanImpl(info, from, to, batchSize);
 		} catch(Exception e) {
-			log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
+			if (log.isInfoEnabled())
+				log.info("[rawlogger] (Exception trying to log column scan on index cf="+info.getIndexColFamily()+" for cf="+info.getEntityColFamily());
 			return info.getIndexColFamily()+" "+info.getEntityColFamily();
 		}
 	}
@@ -257,8 +262,10 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			range += toStr;
 		}
 		
-		msg+=" scanning index for value in range:"+range+" with batchSize="+batchSize;
-		log.info("[rawlogger]"+msg);
+		if (log.isInfoEnabled()) {
+			msg+=" scanning index for value in range:"+range+" with batchSize="+batchSize;
+			log.info("[rawlogger]"+msg);
+		}
 		return cfAndIndex;
 	}
 	

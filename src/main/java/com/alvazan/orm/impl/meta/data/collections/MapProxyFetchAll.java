@@ -67,7 +67,8 @@ public final class MapProxyFetchAll<K, V> extends HashMap<K, V> implements Cache
 		AbstractCursor<KeyValue<Row>> rows = session.find(metaDbo, virtKeys, false, true, null);
 		String name = getClass().getSimpleName();
 		
-		log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
+		if (log.isInfoEnabled())
+			log.info(name+":just loaded rows for keylist(next convert to proxies)="+keys.size()+" for field="+field);
 		while(true) {
 			Holder<KeyValue<Row>> holder = rows.nextImpl();
 			if(holder == null)

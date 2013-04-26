@@ -56,7 +56,8 @@ public class ParseQueryException extends RuntimeException {
 			if(message2 != null)
 				message += " "+message2;
 		} catch(Exception e) {
-			log.trace("Exception forming exc message", e);
+			if(log.isTraceEnabled())
+				log.trace("Exception forming exc message", e);
 			//could not form message
 			message = "Bug, Could not form error correctly for this one(turn trace log on to see why)="+cause;
 			if(message2 != null)

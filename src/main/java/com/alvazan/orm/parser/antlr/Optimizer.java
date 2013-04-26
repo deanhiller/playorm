@@ -33,7 +33,8 @@ public class Optimizer {
 			if(m.getValue().intValue() <= 1)
 				continue;
 			
-			log.info("optimizing query tree for varname="+m.getKey());
+			if (log.isInfoEnabled())
+				log.info("optimizing query tree for varname="+m.getKey());
 			OptimizeGltLtConversion visitor = new OptimizeGltLtConversion(m.getKey());
 			root = visitor.walkAndFixTree(root, query, facade);
 		}

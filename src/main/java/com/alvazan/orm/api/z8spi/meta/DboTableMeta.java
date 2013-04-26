@@ -129,7 +129,8 @@ public class DboTableMeta {
 		
 		Class[] interfaces = clazz.getInterfaces();
 		for(Class inter : interfaces) {
-			log.info("loggin interface="+inter);
+			if (log.isInfoEnabled())
+				log.info("loggin interface="+inter);
 			logClassLoader("[INTERFACE="+inter+"]", inter.getClassLoader());
 		}
 		
@@ -153,8 +154,10 @@ public class DboTableMeta {
 			logMsg+=cl+",";
 			cl = cl.getParent();
 		}
-		log.info(prefix+"BEGIN BEGIN classloaders that proxies class exists in="+logMsg+"}");
-		log.info(prefix+"END END END END END classloader info");
+		if (log.isInfoEnabled()) {
+			log.info(prefix+"BEGIN BEGIN classloaders that proxies class exists in="+logMsg+"}");
+			log.info(prefix+"END END END END END classloader info");
+		}
 	}
 
 	public String getRealColumnFamily() {

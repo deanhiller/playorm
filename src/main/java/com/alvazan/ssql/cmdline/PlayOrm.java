@@ -142,7 +142,8 @@ public class PlayOrm {
 					try {
 						process(currentStatement);
 					} catch (Exception exp) {
-						log.warn("Exception occurred", exp);
+						if (log.isWarnEnabled())
+							log.warn("Exception occurred", exp);
 						println("Sorry, we ran into a bug, recovering now so you can continue using command line");
 						println("playorm >> ");
 					}
@@ -154,12 +155,14 @@ public class PlayOrm {
 				}
 			}
 		} catch (IOException exp) {
-			log.warn("Exception occurred", exp);
+			if (log.isWarnEnabled())
+				log.warn("Exception occurred", exp);
 		}
 	}
 
 	private void process(String newLine) {
-		log.debug("processing line="+newLine);
+		if(log.isDebugEnabled())
+			log.debug("processing line="+newLine);
 		String[] commands = newLine.split(";");
 		
 		for(String cmd : commands) {
@@ -167,7 +170,8 @@ public class PlayOrm {
 				String justCmd = cmd.trim();
 				processCommand(justCmd);
 			} catch (InvalidCommand e) {
-				log.info("invalid command", e);
+				if (log.isInfoEnabled())
+					log.info("invalid command", e);
 				println("Invalid command: '"+cmd+"'.  Skipping it");
 				if(e.getMessage() != null)
 					println(e.getMessage());

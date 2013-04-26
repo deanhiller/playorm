@@ -81,7 +81,8 @@ public class NoSqlPlugin extends PlayPlugin {
         	props.put((String) entry.getKey(), entry.getValue());
         }
         
-        log.info("Initializing PlayORM...");
+        if (log.isInfoEnabled())
+			log.info("Initializing PlayORM...");
 
         NoSqlEntityManagerFactory factory = Bootstrap.create(props, Play.classloader);
         NoSql.setEntityManagerFactory(factory);
@@ -90,7 +91,8 @@ public class NoSqlPlugin extends PlayPlugin {
 
 	@Override
 	public void onApplicationStop() {
-		log.info("stopping PlayOrm");
+		if (log.isInfoEnabled())
+			log.info("stopping PlayOrm");
 	}
 	
     @Override

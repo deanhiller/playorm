@@ -58,7 +58,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		
 		Enumeration<URL> resources = loadPersistenceFiles(cl);
 		
-		log.trace("about to log the jar resources here that contain nosql.Persistence.class...");
+		if(log.isTraceEnabled())
+			log.trace("about to log the jar resources here that contain nosql.Persistence.class...");
 		Set<URL> urlsToScan = new HashSet<URL>();
 		while(resources.hasMoreElements()) {
 			URL url = resources.nextElement();
@@ -66,7 +67,8 @@ public class ClasspathDiscoverer extends Discoverer {
 				continue;
 			
 			urlsToScan.add(url);
-			log.trace("found url with nosql.Persistence.class so scanning enabled on this url="+url);
+			if(log.isTraceEnabled())
+				log.trace("found url with nosql.Persistence.class so scanning enabled on this url="+url);
 		}
 		
 		if(urlsToScan.size() == 0)
@@ -99,7 +101,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		//Now we have firstPiece = file:/Users/dhiller2/AAROOT/area1/fullSDI/restApi/lib/nosqlorm.jar
 		String prefix = "jar:"+firstPiece+"!/";
 		URL url = createUrl(prefix);
-		log.info("adding jar file for scanning="+url);
+		if (log.isInfoEnabled())
+			log.info("adding jar file for scanning="+url);
 		list.add(url);
 	}
 
@@ -118,7 +121,8 @@ public class ClasspathDiscoverer extends Discoverer {
 		File classFolder = f.getParentFile().getParentFile();
 
 		URL url = toUrl(classFolder);
-		log.info("adding folder to scan="+url);
+		if (log.isInfoEnabled())
+			log.info("adding folder to scan="+url);
 		list.add(url);
 	}
 
