@@ -86,8 +86,11 @@ public class CheckClusterRunnable implements Runnable {
 			}
 		}
 
-		if(serverNumber == -1)
-			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname="+config.getHostName());
+		if(servers.size() <= 0) {
+			log.warn("We are just starting the first server or all servers were down");
+			return;
+		} else if(serverNumber == -1)
+			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname='"+config.getHostName()+"'");
 		
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}
