@@ -77,6 +77,7 @@ public class CheckClusterRunnable implements Runnable {
 		int serverNumber = -1;
 		for(int i = 0; i < servers.size(); i++) {
 			WebNodeDbo node = servers.get(i);
+			String name = node.getWebServerName();
 			if(node.getWebServerName().equals(config.getHostName())) {
 				if(log.isDebugEnabled())
 					log.debug("we are server number="+i+" out of number="+servers.size());
@@ -86,7 +87,7 @@ public class CheckClusterRunnable implements Runnable {
 		}
 
 		if(serverNumber == -1)
-			throw new IllegalStateException("serverNumber not found in list of servers="+all);
+			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname="+config.getHostName());
 		
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}
