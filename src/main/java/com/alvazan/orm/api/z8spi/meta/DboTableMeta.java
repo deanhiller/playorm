@@ -187,7 +187,7 @@ public class DboTableMeta {
 
 	public void setup(String virtualCf, String cf, boolean isEmbeddable) {
 		if(!NAME_PATTERN.matcher(cf).matches())
-			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9\\-]*'");
+			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9]*'");
 
 		if(virtualCf != null) {
 			actualColFamily = cf;
