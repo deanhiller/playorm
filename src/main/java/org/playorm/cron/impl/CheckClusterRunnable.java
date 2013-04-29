@@ -183,7 +183,7 @@ public class CheckClusterRunnable implements Runnable {
 		long theTime = timePoint1;
 		
 		if(log.isDebugEnabled())
-			log.debug("halfrate="+half+" now="+nowMillis+" range="+range+" multiplier="+multiplier+" time1="+timePoint1+" time2="+timePoint2);
+			log.debug("halfrate="+half+" now="+nowMillis+" range="+range+" multiplier="+multiplier+" time1="+timePoint1+" time2="+timePoint2+" period="+monitor.getTimePeriodMillis()+" offset="+monitor.getEpochOffset());
 		if(Math.abs(timePoint2-nowMillis) < Math.abs(timePoint1-nowMillis))
 			theTime = timePoint2;
 		
