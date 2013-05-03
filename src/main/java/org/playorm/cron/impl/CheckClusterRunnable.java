@@ -77,6 +77,7 @@ public class CheckClusterRunnable implements Runnable {
 		int serverNumber = -1;
 		for(int i = 0; i < servers.size(); i++) {
 			WebNodeDbo node = servers.get(i);
+			String name = node.getWebServerName();
 			if(node.getWebServerName().equals(config.getHostName())) {
 				if(log.isDebugEnabled())
 					log.debug("we are server number="+i+" out of number="+servers.size());
@@ -85,8 +86,11 @@ public class CheckClusterRunnable implements Runnable {
 			}
 		}
 
-		if(serverNumber == -1)
-			throw new IllegalStateException("serverNumber not found in list of servers="+all);
+		if(servers.size() <= 0) {
+			log.warn("We are just starting the first server or all servers were down");
+			return;
+		} else if(serverNumber == -1)
+			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname='"+config.getHostName()+"'");
 		
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}
@@ -144,6 +148,8 @@ public class CheckClusterRunnable implements Runnable {
 		long timePeriod = monitor.getTimePeriodMillis();
 		if(monitor.getEpochOffset() == null) {
 			DateTime nextRun = lastRunTime.plus(timePeriod-1000);
+			if(log.isDebugEnabled())
+				log.debug("nextRun="+nextRun+" now="+now);
 			if(now.isAfter(nextRun))
 				return true;
 			return false;
@@ -151,6 +157,8 @@ public class CheckClusterRunnable implements Runnable {
 
 		DateTime lastShouldRun = monitor.getLastShouldHaveRun();
 		DateTime nextRun = lastShouldRun.plus(timePeriod);
+		if(log.isDebugEnabled())
+			log.debug("nextRun="+nextRun+" now="+now+" lastShouldRun="+lastShouldRun);
 		if(now.isAfter(nextRun.minus(1000))) {
 			monitor.setLastShouldHaveRun(nextRun);
 			return true;
@@ -160,6 +168,8 @@ public class CheckClusterRunnable implements Runnable {
 
 	private boolean isInRunWindow(MonitorDbo monitor, DateTime now) {
 		if(monitor.getEpochOffset() == null) {
+			if(log.isDebugEnabled())
+				log.debug("monitor epoch offset="+null);
 			//If there is no epoch offset, we just start when the server starts 
 			return true;
 		}
@@ -171,6 +181,9 @@ public class CheckClusterRunnable implements Runnable {
 		long timePoint1 = monitor.getEpochOffset() + multiplier*monitor.getTimePeriodMillis();
 		long timePoint2 = timePoint1+monitor.getTimePeriodMillis();
 		long theTime = timePoint1;
+		
+		if(log.isDebugEnabled())
+			log.debug("halfrate="+half+" now="+nowMillis+" range="+range+" multiplier="+multiplier+" time1="+timePoint1+" time2="+timePoint2+" period="+monitor.getTimePeriodMillis()+" offset="+monitor.getEpochOffset());
 		if(Math.abs(timePoint2-nowMillis) < Math.abs(timePoint1-nowMillis))
 			theTime = timePoint2;
 		
@@ -180,6 +193,9 @@ public class CheckClusterRunnable implements Runnable {
 			return true;
 		}
 
+		if(log.isDebugEnabled()) {
+			log.debug("theTime="+theTime);
+		}
 		return false;
 	}
 

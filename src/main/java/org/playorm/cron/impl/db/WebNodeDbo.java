@@ -28,7 +28,7 @@ public class WebNodeDbo {
 	
 	@Override
 	public String toString() {
-		return "[webNode="+webServerName+" up="+isUp+" lastSeen="+lastSeen+"]";
+		return "[webNode='"+webServerName+"' up="+isUp+" lastSeen="+lastSeen+"]";
 	}
 
 	public String getWebServerName() {

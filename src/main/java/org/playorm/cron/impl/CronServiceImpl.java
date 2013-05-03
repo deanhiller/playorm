@@ -72,13 +72,14 @@ public class CronServiceImpl implements CronService {
 		mgr.remove(entity);
 		mgr.flush();		
 	}
+	
 	@Override
 	public PlayOrmCronJob getMonitor(String id) {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		MonitorDbo mon = mgr.find(MonitorDbo.class, id);
 		return CopyUtil.copy(mon);
 	}
-	
+
 	public List<PlayOrmCronJob> getMonitors(List<String> ids) {
 		NoSqlEntityManager mgr = factory.createEntityManager();
 		Cursor<KeyValue<MonitorDbo>> cursor = mgr.findAll(MonitorDbo.class, ids);
