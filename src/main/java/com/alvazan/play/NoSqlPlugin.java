@@ -24,8 +24,10 @@ import com.alvazan.play.logging.CassandraAppender;
 public class NoSqlPlugin extends PlayPlugin {
 
 	private static final Logger log = LoggerFactory.getLogger(NoSqlPlugin.class);
-	
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+
+	private static final Map<String, Object> PROPS = new HashMap<String, Object>();
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
     public Object bind(RootParamNode rootParamNode, String name, Class clazz, java.lang.reflect.Type type, Annotation[] annotations) {
         NoSqlEntityManager em = NoSql.em();
@@ -72,19 +74,18 @@ public class NoSqlPlugin extends PlayPlugin {
         	factory.rescan(classes, Play.classloader);
         	return;
         }
-        
-        Map<String, Object> props = new HashMap<String, Object>();
-        props.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
-        props.put(Bootstrap.AUTO_CREATE_KEY, "create");
-        
-        for(java.util.Map.Entry<Object, Object> entry : Play.configuration.entrySet()) {
-        	props.put((String) entry.getKey(), entry.getValue());
-        }
+
+		PROPS.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
+		PROPS.put(Bootstrap.AUTO_CREATE_KEY, "create");
+
+		for (java.util.Map.Entry<Object, Object> entry : Play.configuration.entrySet()) {
+			PROPS.put((String) entry.getKey(), entry.getValue());
+		}
         
         if (log.isInfoEnabled())
 			log.info("Initializing PlayORM...");
 
-        NoSqlEntityManagerFactory factory = Bootstrap.create(props, Play.classloader);
+        NoSqlEntityManagerFactory factory = Bootstrap.create(PROPS, Play.classloader);
         NoSql.setEntityManagerFactory(factory);
         CassandraAppender.setFactory(factory);
 	}
@@ -118,4 +119,8 @@ public class NoSqlPlugin extends PlayPlugin {
     public void invocationFinally() {
     	NoSql.clearContext();
     }
+
+	public static Map<String, Object> getProperties() {
+		return PROPS;
+	}
 }
