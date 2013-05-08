@@ -17,6 +17,8 @@ public class EmbeddedEmail {
 	@NoSqlIndexed
 	private String type;
 
+	private boolean something = true;
+	
 	public String getId() {
 		return id;
 	}
