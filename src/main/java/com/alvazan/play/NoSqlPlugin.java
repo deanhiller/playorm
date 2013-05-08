@@ -17,6 +17,7 @@ import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.base.MetaLayer;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.play.logging.CassandraAppender;
@@ -65,6 +66,8 @@ public class NoSqlPlugin extends PlayPlugin {
 	@Override
 	public void onApplicationStart() {
         List<Class> classes = Play.classloader.getAnnotatedClasses(NoSqlEntity.class);
+        List<Class> classEmbeddables = Play.classloader.getAnnotatedClasses(NoSqlEmbeddable.class);
+        classes.addAll(classEmbeddables);
         if (classes.isEmpty())
             return;
         else if (NoSql.getEntityManagerFactory() != null) {
