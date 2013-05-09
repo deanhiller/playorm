@@ -117,4 +117,7 @@ public class DboColumnEmbedMeta extends DboColumnMeta {
 		return null;
 	}
 
+	public DboTableMeta getFkToColumnFamily() {
+		return fkToColumnFamily;
+	}
 }

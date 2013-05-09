@@ -282,13 +282,14 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		} catch (IllegalAccessException e) {
 			throw new UnsupportedOperationException("There is some problem in creating the proxy");
 		}
+		DboColumnMeta colMeta = this.getMetaDbo();
 		if (classMeta.getIdField() != null) {
 			// first fill the id
-			Object idValue = this.getMetaDbo().convertFromStorage2(rowKey);
+			Object idValue = colMeta.convertFromStorage2(rowKey);
 			ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue);
 
 			// Now extract other columns
-			Object objVal = this.getMetaDbo().convertFromStorage2(rowKey);
+			Object objVal = colMeta.convertFromStorage2(rowKey);
 			String columnsInEmbeddedRowName = getColumnName() + this.getMetaDbo().convertTypeToString(objVal);
 			byte[] embedColumn = StandardConverters.convertToBytes(columnsInEmbeddedRowName);
 			Collection<Column> columnsInRow = row.columnByPrefix(embedColumn);
@@ -299,10 +300,13 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				for (int i = embedColumn.length; i < fullNameCol.length; i++) {
 					fk[i - embedColumn.length] = fullNameCol[i];
 				}
-				Object colVal = this.getMetaDbo().convertFromStorage2(fk);
-				String colName = this.getMetaDbo().convertTypeToString(colVal);
 
-				Object columnValue = this.getMetaDbo().convertFromStorage2(colInRow.getValue());
+				Object colVal = colMeta.convertFromStorage2(fk);
+				String colName = colMeta.convertTypeToString(colVal);
+
+				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).convertFromStorage2(colInRow.getValue());
+
 				if (classMeta.getMetaFieldByCol(null,colName) != null)
 					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
 			}
@@ -317,9 +321,12 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				for(int i = colName.length; i < fullName.length; i++) {
 					embedColumn[i-colName.length] =  fullName[i];
 				}
-				Object colVal = this.getMetaDbo().convertFromStorage2(embedColumn);
-				String columnName = this.getMetaDbo().convertTypeToString(colVal);
-				Object columnValue = this.getMetaDbo().convertFromStorage2(col.getValue());
+				Object colVal = colMeta.convertFromStorage2(embedColumn);
+				String columnName = colMeta.convertTypeToString(colVal);
+
+				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).convertFromStorage2(col.getValue());
+
 				if (classMeta.getMetaFieldByCol(null,columnName) != null)
 					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
 			}

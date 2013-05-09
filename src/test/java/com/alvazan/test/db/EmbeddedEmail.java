@@ -43,4 +43,11 @@ public class EmbeddedEmail {
 		this.type = type;
 	}
 
+	public boolean isSomething() {
+		return something;
+	}
+
+	public void setSomething(boolean something) {
+		this.something = something;
+	}
 }

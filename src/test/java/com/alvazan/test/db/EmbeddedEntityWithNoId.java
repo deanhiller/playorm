@@ -11,6 +11,8 @@ public class EmbeddedEntityWithNoId {
 
 	private String type;
 
+	private boolean something = true;
+
 	public String getId() {
 		return id;
 	}
@@ -35,4 +37,11 @@ public class EmbeddedEntityWithNoId {
 		this.type = type;
 	}
 
+	public boolean isSomething() {
+		return something;
+	}
+
+	public void setSomething(boolean something) {
+		this.something = something;
+	}
 }
