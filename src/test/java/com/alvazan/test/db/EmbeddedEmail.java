@@ -19,6 +19,8 @@ public class EmbeddedEmail {
 
 	private boolean something = true;
 	
+	private int number= 36;
+	
 	public String getId() {
 		return id;
 	}
