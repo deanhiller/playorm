@@ -18,9 +18,9 @@ public class EmbeddedEmail {
 	private String type;
 
 	private boolean something = true;
-	
-	private int number= 36;
-	
+
+	private int number = 36;
+
 	public String getId() {
 		return id;
 	}
@@ -51,5 +51,13 @@ public class EmbeddedEmail {
 
 	public void setSomething(boolean something) {
 		this.something = something;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 }

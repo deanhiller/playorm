@@ -305,10 +305,12 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				String colName = colMeta.convertTypeToString(colVal);
 
 				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).convertFromStorage2(colInRow.getValue());
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
 
-				if (classMeta.getMetaFieldByCol(null,colName) != null)
-					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
+				MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
+
+				if (metaField != null)
+					ReflectionUtil.putFieldValue(newproxy, metaField.getField(), columnValue);
 			}
 		} else {
 			// No Id is present, only fill the columns
@@ -325,7 +327,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				String columnName = colMeta.convertTypeToString(colVal);
 
 				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).convertFromStorage2(col.getValue());
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
 
 				if (classMeta.getMetaFieldByCol(null,columnName) != null)
 					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
