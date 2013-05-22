@@ -23,6 +23,7 @@
 <package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
 <package name="mongodb" package="com.mongodb" subpackages="include"/>
 <package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
+<package name="hbase" package="org.apache.hadoop" subpackages="include"/>
 <package name="args" package="org.kohsuke.args4j"/>
 <package name="logback" package="ch.qos.logback" subpackages="include"/>
 <package name="playframework" package="play" subpackages="include"/>
@@ -125,6 +126,7 @@
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
 	<depends>api8</depends>
+	<depends>hbase</depends>
 </package>
 <package name="inMemDb"    package="com.alvazan.orm.layer9z.spi.db.inmemory">
 	<depends>allapis</depends>

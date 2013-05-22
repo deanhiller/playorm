@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.hadoop;
 
+
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +19,20 @@ import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
+
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.HTablePool;
+
 public class HadoopSession implements NoSqlRawSession {
+
+	/** The conf. */
+	private HBaseConfiguration conf;
+
+	/** The h table pool. */
+	private HTablePool hTablePool;
+
+	/** The pool size. */
+	private int poolSize = 100;
 
 	@Override
 	public void sendChanges(List<Action> actions, MetaLookup ormSession) {
@@ -31,6 +45,12 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public void start(Map<String, Object> properties) {
+		properties.keySet();
+		org.apache.hadoop.conf.Configuration hadoopConf = HBaseConfiguration.create();
+        //hadoopConf.set("hbase.master", Bootstrap.HBASE_SEEDS);
+		hadoopConf.set("hbase.zookeeper.quorum", "localhost");
+		hTablePool = new HTablePool(conf, poolSize);
+
 	}
 
 	@Override
