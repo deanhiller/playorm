@@ -38,6 +38,8 @@ dependencies {
 		exclude group: 'org.codehaus.jackson'
 		exclude group: 'org.apache.maven'
 		exclude group: 'org.apache.maven.scm'
+		exclude group: 'org.slf4j'
+        exclude group: 'log4j'
 		}
 	compile (group: 'org.apache.hadoop', name: 'hadoop-core', version: '1.0.4')
 	compile 'org.antlr:antlr-runtime:3.2'
