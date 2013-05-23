@@ -284,6 +284,34 @@ public class Converters {
 			Long val = (Long)value;
 			return BigInteger.valueOf(val);
 		}
+		@Override
+		public byte[] convertToNoSqlImpl(Object value) {
+			// Cassandra expects an 8-byte Long value, but some versions
+			// of Java produce fewer bytes (eg 6 bytes in Java 1.7.0)
+			// We need to detect when this happens extend the array size
+			// We cannot use Arrays.copyOf(byte[], int newLength) because
+			// this right-pads the new array, but we need a left-padded
+			// array due to being big-endian.
+
+			// How many bytes does Cassandra expect?
+			int targetLength = 8;
+
+			byte[] b1 = super.convertToNoSqlImpl(value);
+
+			// Exit early if we already have an array of the right length
+			if (b1.length == targetLength) return b1;
+
+			// We need to copy the bytes offset by the delta length
+			byte[] b2 = new byte[targetLength];
+
+			// Left pad the array
+			int deltaLength = targetLength - b1.length;
+			for (int y = 0; y < b1.length; y++) {
+				b2[y + deltaLength] = b1[y];
+			}
+
+			return b2;
+		}
 	}
 	
 	public static class FloatConverter extends DecimalConverter {
