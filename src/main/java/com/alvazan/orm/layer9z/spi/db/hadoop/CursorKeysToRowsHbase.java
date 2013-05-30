@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+
 import javax.inject.Provider;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
@@ -15,18 +16,21 @@ import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Scan;
+
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
+import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+
+
 
 public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 
@@ -65,16 +69,8 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 
 	public void setupMore(HTableInterface keyspace, DboTableMeta cf, Info info, Cache cache) {
 		if (cache == null || keyspace == null || cf == null | info == null){
-			System.out.println("cache="+cache);
-			System.out.println("keyspace"+keyspace);
-			System.out.println("cf="+cf);
-			System.out.println("info="+info);
 			throw new IllegalArgumentException(
 					"no params can be null but one was null");}
-		System.out.println("cache1="+cache);
-		System.out.println("keyspace1"+keyspace);
-		System.out.println("cf1="+cf);
-		System.out.println("info1="+info);
 		this.cf = cf;
 		this.cache = cache;
 		this.hTable = keyspace;
@@ -84,9 +80,7 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 
 	@Override
 	public void beforeFirst() {
-		System.out.println("i am in beforefirst");
 		rowKeys.beforeFirst();
-		System.out.println("hello");
 		cachedRows = null;
 	}
 
@@ -99,7 +93,6 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 	@Override
 	public com.alvazan.orm.api.z8spi.iter.AbstractCursor.Holder<KeyValue<Row>> nextImpl() {
 		loadCache();
-		System.out.println("i am in nextImpl");
 		if (cachedRows == null || !cachedRows.hasNext())
 			return null;
 
@@ -135,8 +128,8 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 				results.add(result);
 			}
 
-		}	    
-		Scan cursor = null;
+		}
+		Result[] resultArray = null;
 		HColumnDescriptor dbCollection = null;
 		if (info.getColFamily() != null) {
 			dbCollection = info.getColFamily();
@@ -146,28 +139,25 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 			if (list != null)
 				list.beforeFetchingNextBatch();
 			List<Get> listGet = new ArrayList<Get>();
-			Result query = new Result();
-			for (byte[] keys:keysToLookup) {
+			for (byte[] keys : keysToLookup) {
 				Get get = new Get(keys);
-				get.addFamily(dbCollection.getName());				
-				listGet.add(get);				
+				get.addFamily(dbCollection.getName());
+				listGet.add(get);
 			}
 			try {
-				Result[] resultArray = hTable.get(listGet);
+				resultArray = hTable.get(listGet);
+
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+
 			
 			if (list != null)
 				list.afterFetchingNextBatch(5);
-		} else {
-			Result[] resultArray = null;
 		}
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
-
-		fillCache(map, cursor, keysToLookup);
+		fillCache(map, resultArray, keysToLookup);
 
 		List<KeyValue<Row>> finalRes = new ArrayList<KeyValue<Row>>();
 		Iterator<byte[]> keyIter = keysToLookup.iterator();
@@ -176,7 +166,7 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 				byte[] key = keyIter.next();
 				ByteArray b = new ByteArray(key);
 				KeyValue<Row> kv = map.get(b);
-				if (kv!=null)
+				if (kv != null)
 					finalRes.add(kv);
 			} else {
 				Row row = r.getValue();
@@ -209,41 +199,33 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 
 			results.add(result);
 		}
-
-		Scan cursor = null;
+		Result[] resultArray = null;
 		HColumnDescriptor dbCollection = null;
 		if (info.getColFamily() != null) {
 			dbCollection = info.getColFamily();
 		} else
 			return;
-
 		if (keysToLookup.size() > 0) {
 			if (list != null)
 				list.beforeFetchingNextBatch();
-			
-
-			
-			//query.put("_id", new Result("$in", keysToLookup));
-			//Result orderBy = new Result();
-			//orderBy.put("_id", 1);
-			//cursor = dbCollection.find(query).sort(orderBy)
-			//		.batchSize(batchSize);
-
+			List<Get> listGet = new ArrayList<Get>();
+			for (byte[] keys : keysToLookup) {
+				Get get = new Get(keys);
+				get.addFamily(dbCollection.getName());
+				listGet.add(get);
+			}
+			try {
+				resultArray = hTable.get(listGet);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			if (list != null)
 				list.afterFetchingNextBatch(5);
-		} else {
-			cursor = new Scan();
 		}
-			
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 
-		fillCache(map, cursor, keysToLookup);
-
-		// UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we
-		// provided so, we need to iterate over the whole thing here
-		// into our own List :( :( .
-
+		fillCache(map, resultArray, keysToLookup);
 		List<KeyValue<Row>> finalRes = new ArrayList<KeyValue<Row>>();
 		Iterator<byte[]> keyIter = keysToLookup.iterator();
 		for (RowHolder<Row> r : results) {
@@ -267,9 +249,9 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 			cachedRows.next();
 	}
 
-	private void fillCache(Map<ByteArray, KeyValue<Row>> map, Scan cursor,
-			List<byte[]> keysToLookup) {
-		if (cursor.isGetScan()) {
+	private void fillCache(Map<ByteArray, KeyValue<Row>> map,
+			Result[] resultArray, List<byte[]> keysToLookup) {
+		if (resultArray == null) {
 			for (byte[] key : keysToLookup) {
 				KeyValue<Row> kv = new KeyValue<Row>();
 				kv.setKey(key);
@@ -278,38 +260,33 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 				map.put(b, kv);
 				cache.cacheRow(cf, key, kv.getValue());
 			}
-		} /*else {
-			while (cursor.isGetScan()) {
-				Result mdbrow = cursor.next();
+		} else {
+			for (Result result : resultArray) {
+				List<org.apache.hadoop.hbase.KeyValue> hKeyValue = result.list();
 				KeyValue<Row> kv = new KeyValue<Row>();
-				byte[] mdbRowKey = StandardConverters.convertToBytes(mdbrow
-						.get("_id"));
-				kv.setKey(mdbRowKey);
-
-				if (!mdbrow.keySet().isEmpty()) {
+				if (!hKeyValue.isEmpty()) {
+					kv.setKey(result.getRow());
 					Row r = rowProvider.get();
-					r.setKey(mdbRowKey);
-					MongoDbUtil.processColumns(mdbrow, r);
+					processColumns(hKeyValue, r);
 					kv.setValue(r);
 				}
-				ByteArray b = new ByteArray(mdbRowKey);
+				ByteArray b = new ByteArray(result.getRow());
 				map.put(b, kv);
-				cache.cacheRow(cf, mdbRowKey, kv.getValue());
-			}*/
-			// Now put the remaining keys which are not in MongoDB's cursor.
-			// This is because Cassandra returns all the rows with rowkeys while Mongodb doesn't
-			for (byte[] key : keysToLookup) {
-				ByteArray baKey = new ByteArray(key);
-				if (!map.containsKey(baKey)) {
-					KeyValue<Row> kv = new KeyValue<Row>();
-					kv.setKey(key);
-					kv.setValue(null);
-					// ByteArray b = new ByteArray(key);
-					map.put(baKey, kv);
-					cache.cacheRow(cf, key, kv.getValue());
-				}
+				cache.cacheRow(cf, result.getRow(), kv.getValue());
 			}
 		}
 	}
 
-
+	private void processColumns(List<org.apache.hadoop.hbase.KeyValue> hKeyValue, Row r) {
+		for (org.apache.hadoop.hbase.KeyValue col : hKeyValue) {
+			r.setKey(col.getRow());
+			byte[] name = col.getQualifier();
+			byte[] val = col.getValue();
+			Column c = new Column();
+			c.setName(name);
+			if (val.length != 0)
+				c.setValue(val);
+			r.put(c);
+		}
+	}
+}
