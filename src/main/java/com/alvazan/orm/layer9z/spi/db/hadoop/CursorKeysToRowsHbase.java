@@ -46,13 +46,11 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 	private DboTableMeta cf;
 
 	public CursorKeysToRowsHbase(DirectCursor<byte[]> rowKeys, int batchSize,
-			BatchListener list, Provider<Row> rowProvider,
-			DboTableMeta colFamily) {
+			BatchListener list, Provider<Row> rowProvider) {
 		this.rowProvider = rowProvider;
 		this.rowKeys = rowKeys;
 		this.batchSize = batchSize;
 		this.list = list;
-		this.cf = colFamily;
 	}
 
 	@Override
@@ -67,14 +65,14 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 		return retVal; 
 	}
 
-	public void setupMore(HTableInterface keyspace, DboTableMeta cf, Info info, Cache cache) {
-		if (cache == null || keyspace == null || cf == null | info == null){
+	public void setupMore(HTableInterface keyspace, DboTableMeta colFamily, Info info, Cache cache) {
+		if (cache == null || keyspace == null || info == null){
 			throw new IllegalArgumentException(
 					"no params can be null but one was null");}
-		this.cf = cf;
 		this.cache = cache;
 		this.hTable = keyspace;
 		this.info = info;
+		this.cf = colFamily;
 		beforeFirst();
 	}
 
@@ -264,7 +262,7 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 			for (Result result : resultArray) {
 				List<org.apache.hadoop.hbase.KeyValue> hKeyValue = result.list();
 				KeyValue<Row> kv = new KeyValue<Row>();
-				if (!hKeyValue.isEmpty()) {
+				if (hKeyValue!= null && !hKeyValue.isEmpty()) {
 					kv.setKey(result.getRow());
 					Row r = rowProvider.get();
 					processColumns(hKeyValue, r);

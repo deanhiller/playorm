@@ -26,7 +26,12 @@ import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+
+
+
+
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -116,8 +121,12 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public void clearDatabase() {
-		throw new UnsupportedOperationException(
-				"Not supported by actual databases.  Only can be used with in-memory db.");
+		try {
+			hAdmin.deleteTable(tableDescriptor.getName());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -155,6 +164,12 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public void close() {
+		try {
+			hAdmin.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -172,13 +187,22 @@ public class HadoopSession implements NoSqlRawSession {
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from,
 			Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
-		return null;
+		byte[] rowKey = scan.getRowKey();
+		String indexTableName = scan.getIndexColFamily();
+		DboColumnMeta colMeta = scan.getColumnName();
+		CursorOfHbaseIndexes cursor = new CursorOfHbaseIndexes(rowKey, batchSize, l, indexTableName, from, to);
+		cursor.setupMore(hTable, colMeta);
+		return cursor;
 	}
 
 	@Override
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo,
 			List<byte[]> values, BatchListener list, MetaLookup mgr) {
-		return null;
+		byte[] rowKey = scanInfo.getRowKey();
+		String indexTableName = scanInfo.getIndexColFamily();
+		CursorForHbaseValues cursor = new CursorForHbaseValues(rowKey, list,
+				indexTableName, values, hTable);
+		return cursor;
 	}
 
 	@Override
@@ -190,7 +214,7 @@ public class HadoopSession implements NoSqlRawSession {
 			return new CursorReturnsEmptyRowsHbase(rowKeys);
 		}
 		CursorKeysToRowsHbase cursor = new CursorKeysToRowsHbase(rowKeys,
-				batchSize, list, rowProvider, colFamily);
+				batchSize, list, rowProvider);
 		cursor.setupMore(hTable, colFamily, info, cache);
 		return cursor;
 	}
