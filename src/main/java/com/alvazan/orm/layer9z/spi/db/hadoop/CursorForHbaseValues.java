@@ -8,11 +8,14 @@ import java.util.ListIterator;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.ValueFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
-import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
@@ -29,7 +32,6 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 	public CursorForHbaseValues(byte[] rowKeys, BatchListener list,
 			String indexTableName, List<byte[]> keys, HTableInterface htable) {
 		this.rowKey = rowKeys;
-		System.out.println("rowKeys:" + rowKeys.toString());
 		this.batchListener = list;
 		this.indexTableName = indexTableName;
 		this.needToGetBatch = true;
@@ -84,26 +86,20 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 		if (needToGetBatch) {
 			if (batchListener != null)
 				batchListener.beforeFetchingNextBatch();
-			Result result = null;
+			Result[] result = null;
 			byte[] family = Bytes.toBytes(indexTableName);
 			List<Get> listGet = new ArrayList<Get>();
-			Get get = new Get(rowKey);
 			for (byte[] key : values) {
-				System.out.println("family: "
-						+ StandardConverters.convertFromBytes(String.class,
-								family));
-				System.out.println("rowKey: "
-						+ StandardConverters.convertFromBytes(String.class,
-								rowKey));
-				System.out.println("Key: "
-						+ StandardConverters
-								.convertFromBytes(String.class, key));
-				get.addColumn(family, key);
+				Get get = new Get(rowKey);
+				CompareFilter.CompareOp equal = CompareOp.EQUAL;
+				BinaryComparator endColumn1 = new BinaryComparator(key);
+				ValueFilter filter = new ValueFilter(equal, endColumn1);
+				get.setFilter(filter);
+				get.addFamily(family);
 				listGet.add(get);
 			}
 			try {
-				result = htable.get(get);
-				System.out.println("resultArray:" + result);
+				result = htable.get(listGet);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -117,20 +113,23 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 		}
 	}
 
-	private void fillCache(Result result) {
+	private void fillCache(Result[] results) {
 		List<IndexColumn> finalRes = new ArrayList<IndexColumn>();
-		if (result == null) {
+		if (results == null) {
 			cachedRows = finalRes.listIterator();
 		} else {
-			List<org.apache.hadoop.hbase.KeyValue> hKeyValue = result.list();
-			if (hKeyValue != null && !hKeyValue.isEmpty()) {
-				for (org.apache.hadoop.hbase.KeyValue keyValue : hKeyValue) {
-					IndexColumn indCol = CursorOfHbaseIndexes
-							.convertToIndexCol(keyValue);
-					finalRes.add(indCol);
+			for (Result result : results) {
+				List<org.apache.hadoop.hbase.KeyValue> hKeyValue = result.list();
+				if (hKeyValue != null && !hKeyValue.isEmpty()) {
+					for (org.apache.hadoop.hbase.KeyValue keyValue : hKeyValue) {
+						IndexColumn indCol = CursorOfHbaseIndexes
+								.convertToIndexCol(keyValue);
+						finalRes.add(indCol);
+					}
 				}
+				cachedRows = finalRes.listIterator();
 			}
-			cachedRows = finalRes.listIterator();
+
 		}
 	}
 

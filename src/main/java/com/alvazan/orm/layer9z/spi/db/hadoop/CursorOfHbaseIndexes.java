@@ -10,14 +10,16 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.ColumnRangeFilter;
-import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.ValueFilter;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
-
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
@@ -102,27 +104,20 @@ public class CursorOfHbaseIndexes extends AbstractCursor<IndexColumn> {
 		if (needToGetBatch) {
 			if (batchListener != null)
 				batchListener.beforeFetchingNextBatch();
-
-			byte[] endColumn = null;
-			Filter f = null;
-			byte[] startColumn = null;
 			byte[] family = Bytes.toBytes(indexTableName);
 			Scan scan = new Scan(rowKey, rowKey);
 			scan.addFamily(family);
-			boolean fromInclusive = false, toInclusive = false;
-
+			FilterList list = new FilterList(FilterList.Operator.MUST_PASS_ALL);
 			if (from != null) {
-				startColumn = from.getKey();
+				ValueFilter fromfilter = createFilterFrom();
+				list.addFilter(fromfilter);
 			}
-			if (from.isInclusive()&& from != null)
-				fromInclusive = true;
 			if (to != null) {
-				endColumn = to.getKey();
+				ValueFilter toFilter = createFilterTo();
+				list.addFilter(toFilter);
 			}
-			if (to.isInclusive()&& to != null)
-				toInclusive = true;
-			f = new ColumnRangeFilter(startColumn, fromInclusive, endColumn, toInclusive);
-			scan.setFilter(f);
+			if (!list.getFilters().isEmpty())
+				scan.setFilter(list);
 			if (batchSize != null)
 				scan.setBatch(batchSize); // set this if there could be many columns returned
 			ResultScanner rs;
@@ -153,6 +148,28 @@ public class CursorOfHbaseIndexes extends AbstractCursor<IndexColumn> {
 		}
 	}
 
+	private ValueFilter createFilterFrom() {
+		CompareFilter.CompareOp fromInclusive1 = CompareOp.GREATER;
+		BinaryComparator startColumn = null;
+		if (from != null) {
+			startColumn = new BinaryComparator(from.getKey());
+			if (from.isInclusive())
+				fromInclusive1 = CompareOp.GREATER_OR_EQUAL;
+		}
+		return new ValueFilter(fromInclusive1, startColumn);
+	}
+
+	private ValueFilter createFilterTo() {
+		CompareFilter.CompareOp toInclusive1 = CompareOp.LESS;
+		BinaryComparator endColumn = null;
+		if (to != null) {
+			endColumn = new BinaryComparator(to.getKey());
+			if (to.isInclusive())
+				toInclusive1 = CompareOp.LESS_OR_EQUAL;
+		}
+		return new ValueFilter(toInclusive1, endColumn);
+	}
+
 	private void fillinCache(List<KeyValue> finalRes) {
 		if (finalRes == null) {
 			cachedRows = new ArrayList<KeyValue>().listIterator();
@@ -162,10 +179,9 @@ public class CursorOfHbaseIndexes extends AbstractCursor<IndexColumn> {
 	}
 
 	public static IndexColumn convertToIndexCol(KeyValue col) {
-		byte[] indValue = col.getQualifier();
-		byte[] pk = col.getValue();
+		byte[] pk = col.getQualifier();
+		byte[] indValue = col.getValue();
 		IndexColumn c = new IndexColumn();
-		// c.setColumnName(columnName); Will we ever need this now?
 		if (pk != null) {
 			c.setPrimaryKey(pk);
 		}
@@ -174,5 +190,6 @@ public class CursorOfHbaseIndexes extends AbstractCursor<IndexColumn> {
 		}
 		c.setValue(null);
 		return c;
+
 	}
 }

@@ -30,8 +30,6 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 
-
-
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -106,18 +104,16 @@ public class HadoopSession implements NoSqlRawSession {
 		IndexColumn column = action.getColumn();
 		byte[] key = column.getIndexedValue();
 		byte[] value = column.getPrimaryKey();
-		Result row = findOrCreateRow(hColFamily, rowKey);
-		Put put = new Put(rowKey);
-		put.add(hColFamily.getName(), key, value);
 		try {
+			Put put = new Put(rowKey);
+			put.add(hColFamily.getName(), value, key);
 			hTable.put(put);
 			hTable.flushCommits();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
+
 
 	@Override
 	public void clearDatabase() {
@@ -259,10 +255,8 @@ public class HadoopSession implements NoSqlRawSession {
 			try {
 				if (hAdmin.isTableEnabled(tableName))
 					hAdmin.disableTable(tableName);
-				HColumnDescriptor colDescriptor = new HColumnDescriptor(
-						virtualCf);
-				hAdmin.addColumn(tableDescriptor.getNameAsString(),
-						colDescriptor);
+				HColumnDescriptor colDescriptor = new HColumnDescriptor(virtualCf);
+				hAdmin.addColumn(tableDescriptor.getNameAsString(),colDescriptor);
 				tableDescriptor.addFamily(colDescriptor);
 				info.setColFamily(colDescriptor);
 				hAdmin.enableTable(tableName);
