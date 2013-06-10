@@ -284,7 +284,8 @@ public class Converters {
 			Long val = (Long)value;
 			return BigInteger.valueOf(val);
 		}
-		@Override
+/*		This is issue #83
+        @Override
 		public byte[] convertToNoSqlImpl(Object value) {
 			// Cassandra expects an 8-byte Long value, but some versions
 			// of Java produce fewer bytes (eg 6 bytes in Java 1.7.0)
@@ -311,7 +312,7 @@ public class Converters {
 			}
 
 			return b2;
-		}
+		}*/
 	}
 	
 	public static class FloatConverter extends DecimalConverter {
