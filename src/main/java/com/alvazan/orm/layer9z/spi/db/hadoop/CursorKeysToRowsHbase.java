@@ -272,6 +272,16 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 				map.put(b, kv);
 				cache.cacheRow(cf, result.getRow(), kv.getValue());
 			}
+			for (byte[] key : keysToLookup) {
+				ByteArray baKey = new ByteArray(key);
+				if (!map.containsKey(baKey)) {
+					KeyValue<Row> kv = new KeyValue<Row>();
+					kv.setKey(key);
+					kv.setValue(null);
+					map.put(baKey, kv);
+					cache.cacheRow(cf, key, kv.getValue());
+				}
+			}
 		}
 	}
 

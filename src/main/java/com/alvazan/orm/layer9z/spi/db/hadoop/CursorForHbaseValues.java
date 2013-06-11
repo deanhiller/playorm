@@ -127,9 +127,8 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 						finalRes.add(indCol);
 					}
 				}
-				cachedRows = finalRes.listIterator();
 			}
-
+			cachedRows = finalRes.listIterator();
 		}
 	}
 

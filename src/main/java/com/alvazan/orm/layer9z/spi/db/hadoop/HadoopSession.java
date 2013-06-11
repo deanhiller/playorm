@@ -1,6 +1,8 @@
 package com.alvazan.orm.layer9z.spi.db.hadoop;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.ZooKeeperConnectionException;
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTableInterface;
@@ -82,17 +85,76 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	private void remove(Remove action, MetaLookup ormSession) {
-		// TODO Auto-generated method stub
+		byte[] rowKey = action.getRowKey();
+		if (action.getAction() == null)
+			throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
+		switch (action.getAction()) {
+		case REMOVE_ENTIRE_ROW:
+			Delete delete = new Delete(rowKey);
+			try {
+				hTable.delete(delete);
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+			break;
+		case REMOVE_COLUMNS_FROM_ROW:
+			removeColumns(action, ormSession);
+			break;
+		default:
+			throw new RuntimeException("bug, unknown remove action="
+					+ action.getAction());
+		}
+	}
+
+	private void removeColumns(Remove action, MetaLookup ormSession) {
+		String colFamily = action.getColFamily().getColumnFamily();
+		byte[] family1 = Bytes.toBytes(colFamily);
+		Collection<byte[]> columns = action.getColumns();
+		List<Delete> listDelete = new ArrayList<Delete>();
+		for (byte[] col : columns) {
+			Delete delete = new Delete(action.getRowKey());
+			delete.deleteColumns(family1, col);
+			listDelete.add(delete);
+		}
+		try {
+			hTable.delete(listDelete);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
-		// TODO Auto-generated method stub
-
+		String indexCfName = action.getIndexCfName();
+		if (indexCfName.equalsIgnoreCase("BytesIndice"))
+			return;
+		byte[] family = Bytes.toBytes(indexCfName);
+		byte[] rowKey = action.getRowKey();
+		IndexColumn column = action.getColumn();
+		byte[] value = column.getPrimaryKey();
+		Delete delete = new Delete(rowKey);
+		delete.deleteColumn(family, value);
+		try {
+			hTable.delete(delete);
+			hTable.flushCommits();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void removeColumn(RemoveColumn action, MetaLookup ormSession) {
-		// TODO Auto-generated method stub
+		String colFamily = action.getColFamily().getColumnFamily();
+		byte[] family1 = Bytes.toBytes(colFamily);
+		byte[] c = action.getColumn();
+		Delete delete = new Delete(action.getRowKey());
+		delete.deleteColumns(family1, c);
+		try {
+			hTable.delete(delete);
+			hTable.flushCommits();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -104,11 +166,23 @@ public class HadoopSession implements NoSqlRawSession {
 		IndexColumn column = action.getColumn();
 		byte[] key = column.getIndexedValue();
 		byte[] value = column.getPrimaryKey();
+		Get get = new Get(rowKey);
 		try {
-			Put put = new Put(rowKey);
-			put.add(hColFamily.getName(), value, key);
-			hTable.put(put);
-			hTable.flushCommits();
+			Result result = hTable.get(get);
+			byte[] existing = result.getValue(hColFamily.getName(), value);
+			if (existing != null) {
+				if (!Bytes.equals(existing, key)) {
+					Put put = new Put(rowKey);
+					put.add(hColFamily.getName(), value, key);
+					hTable.put(put);
+					hTable.flushCommits();
+				}
+			} else {
+				Put put = new Put(rowKey);
+				put.add(hColFamily.getName(), value, key);
+				hTable.put(put);
+				hTable.flushCommits();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -118,9 +192,13 @@ public class HadoopSession implements NoSqlRawSession {
 	@Override
 	public void clearDatabase() {
 		try {
-			hAdmin.deleteTable(tableDescriptor.getName());
+			String tableName = tableDescriptor.getNameAsString();
+			HTableDescriptor td = hAdmin.getTableDescriptor(Bytes.toBytes(tableName));
+			if (hAdmin.isTableEnabled(tableName))
+				hAdmin.disableTable(tableName);
+			hAdmin.deleteTable(tableName);
+			hAdmin.createTable(td);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -175,9 +253,13 @@ public class HadoopSession implements NoSqlRawSession {
 
 	@Override
 	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily,
-			byte[] rowKey, byte[] from, byte[] to, Integer batchSize,
-			BatchListener l, MetaLookup mgr) {
-		return null;
+			byte[] rowKey, byte[] from, byte[] to, Integer batchSize,BatchListener l, MetaLookup mgr) {
+		Info info1 = lookupOrCreate(colFamily.getColumnFamily(), mgr);
+		if (info1 == null) {
+			return null;
+		}
+		CursorColumnSliceHbase cursor = new CursorColumnSliceHbase(colFamily,l, batchSize, hTable, rowKey, from, to);
+		return cursor;
 	}
 
 	@Override
