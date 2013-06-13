@@ -9,7 +9,7 @@ public class EmbeddedEmail {
 	private static final String MAIN = "main";
 
 	@NoSqlId
-	private String id;
+	private int idkey;
 
 	@NoSqlIndexed
 	private String name;
@@ -21,12 +21,12 @@ public class EmbeddedEmail {
 
 	private int number = 36;
 
-	public String getId() {
-		return id;
+	public int getIdkey() {
+		return idkey;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setIdkey(int idkey) {
+		this.idkey = idkey;
 	}
 
 	public String getName() {
