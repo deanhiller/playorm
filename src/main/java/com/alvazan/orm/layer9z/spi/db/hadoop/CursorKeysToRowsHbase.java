@@ -12,7 +12,6 @@ import java.util.Map;
 import javax.inject.Provider;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
@@ -38,7 +37,6 @@ public class CursorKeysToRowsHbase extends AbstractCursor<KeyValue<Row>> {
 	private int batchSize;
 	private BatchListener list;
 	private HTableInterface hTable;
-	private HTableDescriptor hTableDescriptor;
 	private Info info;
 	private ListIterator<KeyValue<Row>> cachedRows;
 	private Provider<Row> rowProvider;

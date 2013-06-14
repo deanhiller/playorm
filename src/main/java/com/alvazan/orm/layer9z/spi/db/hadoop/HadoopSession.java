@@ -3,6 +3,7 @@ package com.alvazan.orm.layer9z.spi.db.hadoop;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -29,6 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
 
@@ -60,8 +62,12 @@ public class HadoopSession implements NoSqlRawSession {
 	// private HTable db;
 	@Inject
 	private Provider<Row> rowProvider;
+	@Inject
+	private DboDatabaseMeta dbMetaFromHbaseOrmOnly;
 
 	private HTableDescriptor tableDescriptor;
+	private Map<String, Info> cfNameToHbase = new HashMap<String, Info>();
+	private Map<String, String> virtualToCfHbaseName = new HashMap<String, String>();
 
 	/** The pool size. */
 	private int poolSize = 100;
@@ -302,7 +308,6 @@ public class HadoopSession implements NoSqlRawSession {
 		Info info = lookupOrCreate(colFamily, ormSession);
 		HColumnDescriptor hColFamily = info.getColFamily();
 		byte[] rowKey = action.getRowKey();
-		Result row = findOrCreateRow(hColFamily, rowKey);
 		for (Column col : action.getColumns()) {
 			Put put = new Put(rowKey);
 			byte[] value = new byte[0];
@@ -325,30 +330,6 @@ public class HadoopSession implements NoSqlRawSession {
 		}
 	}
 
-	public Info lookupOrCreate(String virtualCf, MetaLookup ormSession) {
-		Info info = new Info();
-		byte[] family = Bytes.toBytes(virtualCf);
-		String tableName = tableDescriptor.getNameAsString();
-		if (tableDescriptor.hasFamily(family)) {
-			hTablePool.getTable(tableName);
-			HColumnDescriptor colDescriptor = tableDescriptor.getFamily(family);
-			info.setColFamily(colDescriptor);
-		} else {
-			try {
-				if (hAdmin.isTableEnabled(tableName))
-					hAdmin.disableTable(tableName);
-				HColumnDescriptor colDescriptor = new HColumnDescriptor(virtualCf);
-				hAdmin.addColumn(tableDescriptor.getNameAsString(),colDescriptor);
-				tableDescriptor.addFamily(colDescriptor);
-				info.setColFamily(colDescriptor);
-				hAdmin.enableTable(tableName);
-
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		return info;
-	}
 
 	public Result findOrCreateRow(HColumnDescriptor hColFamily, byte[] key) {
 		Get get = new Get(key);
@@ -367,4 +348,163 @@ public class HadoopSession implements NoSqlRawSession {
 		}
 		return r;
 	}
+
+	public Info lookupOrCreate(String virtualCf, MetaLookup ormSession) {
+		Info origInfo = fetchDbCollectionInfo(virtualCf, ormSession);
+		Exception ee = null;
+		if (origInfo == null) {
+			ee = createColFamily(virtualCf, ormSession);
+		}
+		Info info = fetchDbCollectionInfo(virtualCf, ormSession);
+		if (info == null)
+			throw new RuntimeException(
+					"Could not create and could not find virtual or real colfamily="
+							+ virtualCf
+							+ " see chained exception AND it could be your name is not allowed as a valid MongoDb Column Family name",
+					ee);
+		return info;
+	}
+
+	private Info fetchDbCollectionInfo(String tableName, MetaLookup mgr) {
+		Info info = lookupVirtCf(tableName);
+		if (info != null) {
+			return info;
+		}
+		return tryToLoadColumnFamilyVirt(tableName, mgr);
+	}
+
+	private Info tryToLoadColumnFamilyVirt(String virtColFamily,
+			MetaLookup lookup) {
+		Info info = tryToLoadColumnFamilyImpl(virtColFamily, lookup);
+		return info;
+	}
+
+	private Info tryToLoadColumnFamilyImpl(String virtCf, MetaLookup lookup) {
+		synchronized (virtCf.intern()) {
+			String cfName = virtualToCfHbaseName.get(virtCf);
+			if (cfName != null) {
+				Info info = cfNameToHbase.get(cfName);
+				if (info != null) {
+					return cfNameToHbase.get(cfName);
+				}
+			}
+			DboTableMeta table = loadFromInMemoryOrDb(virtCf, lookup);
+			String realCf = table.getRealColumnFamily();
+			String realCfLower = realCf.toLowerCase();
+			Info info = cfNameToHbase.get(realCfLower);
+			String table1 = tableDescriptor.getNameAsString();
+			if (info != null) {
+				String cfLowercase = realCf.toLowerCase();
+				virtualToCfHbaseName.put(virtCf, cfLowercase);
+				return info;
+			}
+			try {
+				if (hAdmin != null && hAdmin.tableExists(table1)) {
+					hTable = hTablePool.getTable(table1);
+					loadColumnFamily(hTable, virtCf, realCf);
+					return lookupVirtCf(virtCf);
+				} else {
+					return null;
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+
+	private void loadColumnFamily(HTableInterface def, String virtCf,
+			String realCf) {
+		addExistingCollections(def);
+		virtualToCfHbaseName.put(virtCf, realCf);
+	}
+
+	private void addExistingCollections(HTableInterface def) {
+		HColumnDescriptor[] columnFamilies;
+		try {
+			columnFamilies = def.getTableDescriptor().getColumnFamilies();
+			for (HColumnDescriptor columnFamily : columnFamilies) {
+				Info info = createInfo(columnFamily, null, null);
+				cfNameToHbase.put(columnFamily.getNameAsString(), info);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private synchronized Exception createColFamily(String virtualCf,
+			MetaLookup ormSession) {
+		try {
+			createColFamilyImpl(virtualCf, ormSession);
+		} catch (Exception e) {
+			return e;
+		}
+		return null;
+	}
+
+	private synchronized void createColFamilyImpl(String virtualCf,
+			MetaLookup ormSession) {
+		if (lookupVirtCf(virtualCf) != null)
+			return;
+		DboTableMeta meta = loadFromInMemoryOrDb(virtualCf, ormSession);
+		createColFamilyInHbase(meta);
+	}
+
+	private void createColFamilyInHbase(DboTableMeta meta) {
+		String colFamily = meta.getRealColumnFamily();
+		byte[] family = Bytes.toBytes(colFamily);
+		String tableName = tableDescriptor.getNameAsString();
+		Info info = new Info();
+		if (tableDescriptor.hasFamily(family)) {
+			hTablePool.getTable(tableName);
+		} else {
+			try {
+				if (hAdmin.isTableEnabled(tableName))
+					hAdmin.disableTable(tableName);
+				HColumnDescriptor colDescriptor = new HColumnDescriptor(
+						colFamily);
+				hAdmin.addColumn(tableName, colDescriptor);
+				tableDescriptor.addFamily(colDescriptor);
+				hAdmin.enableTable(tableName);
+				info = createInfo(colDescriptor, null, null);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		String virtual = meta.getColumnFamily();
+		String realCf = meta.getRealColumnFamily();
+		String realCfLower = realCf.toLowerCase();
+		virtualToCfHbaseName.put(virtual, realCfLower);
+		cfNameToHbase.put(realCfLower, info);
+	}
+
+	private Info createInfo(HColumnDescriptor colFamily, Object type,
+			Object keyType) {
+		Info info = new Info();
+		info.setColFamily(colFamily);
+		return info;
+	}
+
+	private Info lookupVirtCf(String virtualCf) {
+		String cfName = virtualToCfHbaseName.get(virtualCf);
+		if (cfName == null)
+			return null;
+		Info info = cfNameToHbase.get(cfName);
+		return info;
+	}
+
+	private DboTableMeta loadFromInMemoryOrDb(String virtCf, MetaLookup lookup) {
+		DboTableMeta meta = dbMetaFromHbaseOrmOnly.getMeta(virtCf);
+		if (meta != null)
+			return meta;
+		DboTableMeta table = lookup.find(DboTableMeta.class, virtCf);
+		if (table == null)
+			throw new IllegalArgumentException(
+					"We can't load the meta for virtual or real CF="
+							+ virtCf
+							+ " because there is not meta found in DboTableMeta table");
+		return table;
+	}
+
 }
