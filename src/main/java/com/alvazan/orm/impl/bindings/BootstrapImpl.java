@@ -105,4 +105,11 @@ public class BootstrapImpl extends Bootstrap {
 		properties.put(Bootstrap.MONGODB_SEEDS, seeds2);
 	}
 
+	@Override
+	protected void createBestHBaseConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2) {
+		properties.put(Bootstrap.HBASE_CLUSTERNAME, clusterName);
+		properties.put(Bootstrap.HBASE_KEYSPACE, keyspace2);
+		properties.put(Bootstrap.HBASE_SEEDS, seeds2);
+	}
 }

@@ -1,5 +1,6 @@
 package com.alvazan.test.db;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -40,6 +41,7 @@ import com.eaio.uuid.UUID;
 	@NoSqlQuery(name="findByCool", query="select * FROM TABLE as e WHERE e.isCool=:cool"),
 	@NoSqlQuery(name="findAll", query="select * FROM TABLE as e"),
 	@NoSqlQuery(name="findByLocalDateTime", query="select * from TABLE as e where e.date = :date"),
+	@NoSqlQuery(name="findByBigInt", query="select * from TABLE as e where e.bigInt = :bigInt"),
 	@NoSqlQuery(name="findByAccount", query="select * from TABLE as e where e.account = :account")
 })
 public class Activity {
@@ -63,7 +65,10 @@ public class Activity {
 	@NoSqlIndexed
 	private DateTime dateTime;
 
-	@NoSqlIndexed
+    @NoSqlIndexed
+    private BigInteger bigInt;
+
+    @NoSqlIndexed
 	private LocalDate localDate;
 	
 	@NoSqlIndexed
@@ -193,7 +198,15 @@ public class Activity {
 		this.dateTime = dateTime;
 	}
 
-	public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
+    public BigInteger getBigInt() {
+        return this.bigInt;
+    }
+
+    public void setBigInt(BigInteger bigInt) {
+        this.bigInt = bigInt;
+    }
+
+    public static List<Activity> findBetween(NoSqlEntityManager mgr, long from, long to) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findBetween");
 		query.setParameter("begin", from);
 		query.setParameter("to", to);
@@ -241,8 +254,14 @@ public class Activity {
 		query.setParameter("numTimes", numTimes);
 		return query.getResultList(0, null);
 	}
-	
-	public static List<Activity> findByFloat(NoSqlEntityManager mgr, float myFloat) {
+
+    public static List<Activity> findByBigInt(NoSqlEntityManager mgr, BigInteger bigInt) {
+        Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByBigInt");
+        query.setParameter("bigInt", bigInt);
+        return query.getResultList(0, null);
+    }
+
+	   public static List<Activity> findByFloat(NoSqlEntityManager mgr, float myFloat) {
 		Query<Activity> query = mgr.createNamedQuery(Activity.class, "findByFloat");
 		query.setParameter("myFloat", myFloat);
 		return query.getResultList(0, null);

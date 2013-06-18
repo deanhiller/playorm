@@ -40,18 +40,18 @@ public class TestEmbedded {
 	@Test
 	public void testEmbedded() {
 		EmbeddedEmail sub = new EmbeddedEmail();
-		sub.setId("sub");
+		sub.setIdkey(67);
 		sub.setName("dean");
 		sub.setType("nosqltype");
 		
 		EmbeddedEmail e1 = new EmbeddedEmail();
-		e1.setId("e1");
+		e1.setIdkey(65);
 		e1.setName("name1");
 		e1.setType("type1");
 		//e1.getEmails().add(sub);
 		
 		EmbeddedEmail e2 = new EmbeddedEmail();
-		e2.setId("e2");
+		e2.setIdkey(66);
 		e2.setName("name2");
 		e2.setType("type2");
 		
@@ -75,7 +75,7 @@ public class TestEmbedded {
 		//Check single entity
 		EmbeddedEmail emailSub = user2.getEmail();
 		Assert.assertNotNull(emailSub);
-		Assert.assertEquals(sub.getId(), emailSub.getId());
+		Assert.assertEquals(sub.getIdkey(), emailSub.getIdkey());
 		Assert.assertEquals(sub.getName(), emailSub.getName());
 		
 		//Check List of entities
@@ -84,7 +84,7 @@ public class TestEmbedded {
 		EmbeddedEmail email = emails.get(0);
 		Assert.assertNotNull(email);
 		
-		Assert.assertEquals(e1.getId(), email.getId());
+		Assert.assertEquals(e1.getIdkey(), email.getIdkey());
 		Assert.assertEquals(e1.getName(), email.getName());
 		
 		EmbeddedEmail email2 = emails.get(1);

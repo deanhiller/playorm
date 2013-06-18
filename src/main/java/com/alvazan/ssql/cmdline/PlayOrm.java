@@ -90,6 +90,9 @@ public class PlayOrm {
 		else if (storeType == DbTypeEnum.MONGODB) {
 			Bootstrap.createAndAddBestMongoDbConfiguration(properties ,"", bean.getKeyspace(), bean.getSeeds());
 		}
+		else if (storeType == DbTypeEnum.HBASE) {
+			Bootstrap.createAndAddBestHBaseConfiguration(properties ,"", bean.getKeyspace(), bean.getSeeds());
+		}
 		properties.put(Bootstrap.AUTO_CREATE_KEY, "create");
 
 		NoSqlEntityManagerFactory factory = Bootstrap.create(storeType, properties);

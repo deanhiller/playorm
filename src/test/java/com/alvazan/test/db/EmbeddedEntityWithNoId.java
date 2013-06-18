@@ -13,6 +13,8 @@ public class EmbeddedEntityWithNoId {
 
 	private boolean something = true;
 
+	private int number = 23;
+
 	public String getId() {
 		return id;
 	}
@@ -43,5 +45,13 @@ public class EmbeddedEntityWithNoId {
 
 	public void setSomething(boolean something) {
 		this.something = something;
+	}
+
+	public int getNumber() {
+		return number;
+	}
+
+	public void setNumber(int number) {
+		this.number = number;
 	}
 }

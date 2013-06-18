@@ -1,5 +1,6 @@
 package com.alvazan.test;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import junit.framework.Assert;
@@ -83,8 +84,18 @@ public class TestIndexTypes {
 		List<Activity> zero = Activity.findByFloat(mgr, 5.66f);
 		Assert.assertEquals(0, zero.size());		
 	}
-	
-	
+
+    @Test
+    public void testBigInteger() {
+        BigInteger bigInt = BigInteger.valueOf(Long.MAX_VALUE+87);
+        List<Activity> list = Activity.findByBigInt(mgr, bigInt);
+        Assert.assertEquals(1, list.size());
+
+        BigInteger bigInt1 = BigInteger.valueOf(Long.MAX_VALUE+89);
+        List<Activity> zero = Activity.findByBigInt(mgr, bigInt1);
+        Assert.assertEquals(0, zero.size());
+    }
+
 	private void setupRecords() {
 		Activity act = new Activity("act1");
 		act.setName("hello");
@@ -92,6 +103,8 @@ public class TestIndexTypes {
 		act.setUniqueColumn("notunique");
 		act.setNumTimes(5);
 		act.setIsCool(true);
+		BigInteger bigInt = BigInteger.valueOf(Long.MAX_VALUE+87);
+		act.setBigInt(bigInt);
 		time = LocalDateTime.now();
 		act.setDate(time);
 		uid = new UUID();

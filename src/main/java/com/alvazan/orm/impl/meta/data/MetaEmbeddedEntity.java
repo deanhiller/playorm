@@ -98,22 +98,26 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
 	private Object convertIdToProxyComposite(Row row, NoSqlSession session) {
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
-		Collection<Column> columns = row.columnByPrefix(bytes);
 		byte[] rowid = StandardConverters.convertToBytes("Id");
-		if (columns != null && !columns.isEmpty()) {
-			Column column = columns.iterator().next();
-			byte[] fullName = column.getName();
-			int bytesandrowid = bytes.length + rowid.length;
-			// strip off the prefix to get the foreign key
-			int pkLen = fullName.length - bytesandrowid;
-			byte[] pk = new byte[pkLen];
-			for (int i = bytesandrowid; i < fullName.length; i++) {
-				pk[i - bytesandrowid] = fullName[i];
-			}
-			return createProxy(pk, row);
-		} else
-			return null;
-	}
+        int bytesandrowid = bytes.length + rowid.length;
+        byte[] bytesandId = new byte[bytesandrowid];
+        System.arraycopy(bytes, 0, bytesandId, 0, bytes.length);
+        System.arraycopy(rowid, 0, bytesandId, bytes.length, rowid.length);
+        Collection<Column> columns = row.columnByPrefix(bytesandId);
+        if (columns != null && !columns.isEmpty()) {
+            // Id is present
+            Column column = columns.iterator().next();
+            byte[] fullName = column.getName();
+            // strip off the prefix to get the foreign key
+            int pkLen = fullName.length - bytesandrowid;
+            byte[] pk = new byte[pkLen];
+            for (int i = bytesandrowid; i < fullName.length; i++) {
+                pk[i - bytesandrowid] = fullName[i];
+            }
+            return createProxy(pk, row);
+        } else
+            return createProxy(null, row);
+    }
 
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
@@ -283,15 +287,18 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			throw new UnsupportedOperationException("There is some problem in creating the proxy");
 		}
 		DboColumnMeta colMeta = this.getMetaDbo();
-		if (classMeta.getIdField() != null) {
+		if (classMeta.getIdField() != null && (rowKey!=null)) {
 			// first fill the id
-			Object idValue = colMeta.convertFromStorage2(rowKey);
-			ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue);
+			DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
+			Object idValue1 = embedMeta.getFkToColumnFamily().getIdColumnMeta().getStorageType().convertFromNoSql(rowKey);
+			ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue1);
 
 			// Now extract other columns
-			Object objVal = colMeta.convertFromStorage2(rowKey);
-			String columnsInEmbeddedRowName = getColumnName() + this.getMetaDbo().convertTypeToString(objVal);
-			byte[] embedColumn = StandardConverters.convertToBytes(columnsInEmbeddedRowName);
+			byte[] prefix = StandardConverters.convertToBytes(getColumnName());
+			byte[] idBytes = StandardConverters.convertToBytes(idValue1);
+			byte[] embedColumn = new byte[prefix.length + idBytes.length];
+		    System.arraycopy(prefix,0,embedColumn,0         ,prefix.length);
+		    System.arraycopy(idBytes,0,embedColumn,prefix.length,idBytes.length);
 			Collection<Column> columnsInRow = row.columnByPrefix(embedColumn);
 			for (Column colInRow : columnsInRow) {
 				byte[] fullNameCol = colInRow.getName();
@@ -304,11 +311,12 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				Object colVal = colMeta.convertFromStorage2(fk);
 				String colName = colMeta.convertTypeToString(colVal);
 
-				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).convertFromStorage2(colInRow.getValue());
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
 
-				if (classMeta.getMetaFieldByCol(null,colName) != null)
-					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,colName).getField(), columnValue);
+				MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
+
+				if (metaField != null)
+					ReflectionUtil.putFieldValue(newproxy, metaField.getField(), columnValue);
 			}
 		} else {
 			// No Id is present, only fill the columns
@@ -325,7 +333,9 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				String columnName = colMeta.convertTypeToString(colVal);
 
 				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).convertFromStorage2(col.getValue());
+				if (embedMeta.getFkToColumnFamily().getColumnMeta(columnName)==null)
+				    continue;
+				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
 
 				if (classMeta.getMetaFieldByCol(null,columnName) != null)
 					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
@@ -349,10 +359,10 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		return name;
 	}
 
-	private byte[] translateOne(PROXY proxy) {
-		byte[] byteVal = classMeta.convertEntityToId(proxy);
-		return byteVal;
-	}
+    private byte[] translateOne(PROXY proxy) {
+        byte[] byteVal = classMeta.convertEntityToId(proxy);
+        return byteVal;
+    }
 
 	private List<byte[]> parseColNamePostfix(String columnName, Row row) {
 		String columnNameWithPrefix = columnName + "Id";
