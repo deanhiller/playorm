@@ -244,13 +244,14 @@ public class ScannerForClass {
 
 		if(metaClass.getIdField() != null) {
 			Field existingField = metaClass.getIdField().getField();
-			if(field.equals(existingField) && log.isWarnEnabled()) {
+			if(field.equals(existingField)) {
 				log.warn("We avoided double scanning a class="+metaClass.getClass()+" Everything will still work fine, but please send us the stack trace so we can see why this is happening", new RuntimeException().fillInStackTrace());
 				log.warn("The first entry into this method was=", metaClass.getFirstTrace());
 				return true; // we already processed it
 			}
-			else
+			else {
 				throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass.  The two fields are="+field+" and="+existingField);
+			}
 		} else if(log.isDebugEnabled()) {
 			metaClass.setFirstTrace(new RuntimeException("first trace of how we set the id field="+field+" for metaClass="+metaClass).fillInStackTrace());
 		}
