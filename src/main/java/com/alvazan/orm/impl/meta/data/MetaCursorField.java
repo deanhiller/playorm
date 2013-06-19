@@ -146,7 +146,7 @@ public final class MetaCursorField<OWNER, PROXY> extends MetaAbstractField<OWNER
 		data.setRowKey(rowKey);
 		IndexColumn indCol = data.getIndexColumn();
 		indCol.setIndexedValue(byteVal);
-		indCol.setPrimaryKey(key);
+		indCol.setPrimaryKey(byteVal);
 		return data;
 	}
 
