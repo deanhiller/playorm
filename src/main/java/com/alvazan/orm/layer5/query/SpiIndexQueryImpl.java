@@ -233,8 +233,7 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 			List<ParsedNode> keys = root.getChildrenForIn();
 			for (ParsedNode keyNode : keys) {
 				byte[] data = retrieveValue(info, (ExpressionNode) keyNode);
-				byte[] virtualkey = info.getOwner().getIdColumnMeta().formVirtRowKey(data);
-				values.add(virtualkey);
+				values.add(data);
 			}
 			scan = session.scanIndex(scanInfo, values);			
 		} else
