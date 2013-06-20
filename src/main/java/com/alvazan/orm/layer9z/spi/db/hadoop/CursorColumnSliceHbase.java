@@ -8,8 +8,11 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.filter.ColumnRangeFilter;
-import org.apache.hadoop.hbase.filter.Filter;
+import org.apache.hadoop.hbase.filter.BinaryComparator;
+import org.apache.hadoop.hbase.filter.CompareFilter;
+import org.apache.hadoop.hbase.filter.FilterList;
+import org.apache.hadoop.hbase.filter.QualifierFilter;
+import org.apache.hadoop.hbase.filter.CompareFilter.CompareOp;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
@@ -120,8 +123,16 @@ class CursorColumnSliceHbase<T> extends AbstractCursor<T> {
 			byte[] family = Bytes.toBytes(colFamily.getColumnFamily());
 			Scan scan = new Scan(rowKey, rowKey);
 			scan.addFamily(family);
-			Filter f = new ColumnRangeFilter(from, true, to, true);
-			scan.setFilter(f);
+			FilterList list = new FilterList(FilterList.Operator.MUST_PASS_ALL);
+			if (from != null) {
+				QualifierFilter fromfilter = createFilterFrom();
+				list.addFilter(fromfilter);
+			}
+			if (to != null) {
+				QualifierFilter toFilter = createFilterTo();
+				list.addFilter(toFilter);
+			}
+			scan.setFilter(list);
 			if (batchSize != null)
 				scan.setBatch(batchSize); // set this if there could be many columns returned
 			ResultScanner rs;
@@ -141,9 +152,19 @@ class CursorColumnSliceHbase<T> extends AbstractCursor<T> {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+	}
+	private QualifierFilter createFilterFrom() {
+		CompareFilter.CompareOp fromInclusive = CompareOp.GREATER;
+		BinaryComparator startColumn = new BinaryComparator(from);
+		fromInclusive = CompareOp.GREATER_OR_EQUAL;
+		return new QualifierFilter(fromInclusive, startColumn);
+	}
 
-
-
+	private QualifierFilter createFilterTo() {
+		CompareFilter.CompareOp toInclusive = CompareOp.LESS;
+		BinaryComparator endColumn = new BinaryComparator(to);
+		toInclusive = CompareOp.LESS_OR_EQUAL;
+		return new QualifierFilter(toInclusive, endColumn);
 	}
 	/*private ValueFilter createFilterFrom() {
 		CompareFilter.CompareOp fromInclusive1 = CompareOp.GREATER;

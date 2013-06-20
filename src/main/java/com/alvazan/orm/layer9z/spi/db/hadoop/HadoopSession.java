@@ -115,12 +115,15 @@ public class HadoopSession implements NoSqlRawSession {
 
 	private void removeColumns(Remove action, MetaLookup ormSession) {
 		String colFamily = action.getColFamily().getColumnFamily();
-		byte[] family1 = Bytes.toBytes(colFamily);
+		Info info = lookupOrCreate(colFamily, ormSession);
+		HColumnDescriptor hColumnDescriptor = info.getColFamily();
+		String tableName = hColumnDescriptor.getNameAsString();
+		byte[] colFamilyBytes = Bytes.toBytes(tableName);
 		Collection<byte[]> columns = action.getColumns();
 		List<Delete> listDelete = new ArrayList<Delete>();
 		for (byte[] col : columns) {
 			Delete delete = new Delete(action.getRowKey());
-			delete.deleteColumns(family1, col);
+			delete.deleteColumns(colFamilyBytes, col);
 			listDelete.add(delete);
 		}
 		try {
@@ -150,11 +153,13 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	private void removeColumn(RemoveColumn action, MetaLookup ormSession) {
-		String colFamily = action.getColFamily().getColumnFamily();
-		byte[] family1 = Bytes.toBytes(colFamily);
+		Info info = lookupOrCreate(action.getColFamily().getColumnFamily(), ormSession);
+		HColumnDescriptor hColumnDescriptor=info.getColFamily();
+		String tableName = hColumnDescriptor.getNameAsString();
+		byte[] colFamily = Bytes.toBytes(tableName);
 		byte[] c = action.getColumn();
 		Delete delete = new Delete(action.getRowKey());
-		delete.deleteColumns(family1, c);
+		delete.deleteColumns(colFamily, c);
 		try {
 			hTable.delete(delete);
 			hTable.flushCommits();
@@ -214,7 +219,9 @@ public class HadoopSession implements NoSqlRawSession {
 		properties.keySet();
 		org.apache.hadoop.conf.Configuration hadoopConf = HBaseConfiguration
 				.create();
-		hadoopConf.set("hbase.zookeeper.quorum", "localhost");
+		String hbaseSeed = properties.get(Bootstrap.HBASE_SEEDS)
+				.toString();
+		hadoopConf.set("hbase.zookeeper.quorum", hbaseSeed);
 		hTablePool = new HTablePool(conf, poolSize);
 		try {
 			hAdmin = new HBaseAdmin(hadoopConf);
@@ -360,7 +367,7 @@ public class HadoopSession implements NoSqlRawSession {
 			throw new RuntimeException(
 					"Could not create and could not find virtual or real colfamily="
 							+ virtualCf
-							+ " see chained exception AND it could be your name is not allowed as a valid MongoDb Column Family name",
+							+ " see chained exception AND it could be your name is not allowed as a valid Hbase Column Family name",
 					ee);
 		return info;
 	}
