@@ -249,7 +249,7 @@ public class ScannerForClass {
 				log.warn("The first entry into this method was(if this is null, it is because you don't have debug logging enabled!!!)=", metaClass.getFirstTrace());
 				return true; // we already processed it
 			}
-			else {
+			else if(!metaClass.getMetaDbo().isEmbeddable()){
 				throw new IllegalArgumentException("class="+metaClass.getClass()+" has two fields that have @NoSqlId annotation.  One of them may be in a superclass.  The two fields are="+field+" and="+existingField);
 			}
 		} else if(log.isDebugEnabled()) {
