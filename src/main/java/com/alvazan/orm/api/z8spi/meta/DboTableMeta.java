@@ -80,7 +80,7 @@ public class DboTableMeta {
 	private static Class typedRowProxyClass;
 
 	private Boolean isTimeSeries;
-	private Integer timeSeriesPartionSize;
+	private Long timeSeriesPartionSize;
 	
 	static final Pattern NAME_PATTERN;
 	
@@ -476,11 +476,11 @@ public class DboTableMeta {
 			this.isTimeSeries = true;
 	}
 
-	public Integer getTimeSeriesPartionSize() {
+	public Long getTimeSeriesPartionSize() {
 		return timeSeriesPartionSize;
 	}
 
-	public void setTimeSeriesPartionSize(Integer timeSeriesPartionSize) {
+	public void setTimeSeriesPartionSize(Long timeSeriesPartionSize) {
 		this.timeSeriesPartionSize = timeSeriesPartionSize;
 	}
 
