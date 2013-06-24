@@ -79,6 +79,9 @@ public class DboTableMeta {
 	
 	private static Class typedRowProxyClass;
 
+	private Boolean isTimeSeries;
+	private Integer timeSeriesPartionSize;
+	
 	static final Pattern NAME_PATTERN;
 	
 	static {
@@ -458,6 +461,27 @@ public class DboTableMeta {
 		if(indexedColumnsCache.size() > 0 || idColumn.isIndexed())
 			return true;
 		return false;
+	}
+
+	public boolean isTimeSeries() {
+		if(isTimeSeries == null)
+			return false;
+		return isTimeSeries;
+	}
+
+	public void setTimeSeries(boolean isTimeSeries) {
+		if(!isTimeSeries)
+			this.isTimeSeries = null; //use null for false
+		else
+			this.isTimeSeries = true;
+	}
+
+	public Integer getTimeSeriesPartionSize() {
+		return timeSeriesPartionSize;
+	}
+
+	public void setTimeSeriesPartionSize(Integer timeSeriesPartionSize) {
+		this.timeSeriesPartionSize = timeSeriesPartionSize;
 	}
 
 }
