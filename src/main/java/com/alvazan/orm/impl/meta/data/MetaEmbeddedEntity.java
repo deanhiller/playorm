@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.alvazan.orm.api.base.ToOneProvider;
+import com.alvazan.orm.api.base.anno.NoSqlConverter;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -19,6 +20,7 @@ import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.IndexData;
 import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.api.z8spi.action.Column;
+import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
@@ -247,10 +249,16 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		Column c = new Column();
 		byte[] columnName = formTheColumnName(proxy, idValue, singleField);
 		c.setName(columnName);
-		if (value != null) {
-			byte[] columnValue = StandardConverters.convertToBytes(value);
-			c.setValue(columnValue);
-		}
+        if (value != null) {
+            byte[] columnValue = null;
+            NoSqlConverter customConv = singleField.getAnnotation(NoSqlConverter.class);
+            if (customConv != null) {
+                columnValue = getBytesValue(value, customConv);
+            } else {
+                columnValue = StandardConverters.convertToBytes(value);
+            }
+            c.setValue(columnValue);
+        }
 		row.getColumns().add(c);
 	}
 
@@ -308,14 +316,19 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 					fk[i - embedColumn.length] = fullNameCol[i];
 				}
 
-				Object colVal = colMeta.convertFromStorage2(fk);
-				String colName = colMeta.convertTypeToString(colVal);
+                Object colVal = colMeta.convertFromStorage2(fk);
+                String colName = colMeta.convertTypeToString(colVal);
 
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
-
-				MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
-
-				if (metaField != null)
+                // Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
+                Object columnValue = null;
+                MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
+                NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
+                if (customConv != null) {
+                    columnValue = getValue(colInRow.getValue(), customConv);
+                } else {
+                    columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
+                }
+                if (metaField != null)
 					ReflectionUtil.putFieldValue(newproxy, metaField.getField(), columnValue);
 			}
 		} else {
@@ -326,17 +339,24 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 				byte[] fullName = col.getName();
 				int embedColumnLen = fullName.length - colName.length;
 				byte[] embedColumn = new byte[embedColumnLen];
-				for(int i = colName.length; i < fullName.length; i++) {
-					embedColumn[i-colName.length] =  fullName[i];
-				}
-				Object colVal = colMeta.convertFromStorage2(embedColumn);
-				String columnName = colMeta.convertTypeToString(colVal);
+                for (int i = colName.length; i < fullName.length; i++) {
+                    embedColumn[i - colName.length] = fullName[i];
+                }
+                Object colVal = colMeta.convertFromStorage2(embedColumn);
+                String columnName = colMeta.convertTypeToString(colVal);
 
-				DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-				if (embedMeta.getFkToColumnFamily().getColumnMeta(columnName)==null)
-				    continue;
-				Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
-
+                DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
+                if (embedMeta.getFkToColumnFamily().getColumnMeta(columnName) == null)
+                    continue;
+                // Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
+                Object columnValue = null;
+                MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, columnName);
+                NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
+                if (customConv != null) {
+                    columnValue = getValue(col.getValue(), customConv);
+                } else {
+                    columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
+                }
 				if (classMeta.getMetaFieldByCol(null,columnName) != null)
 					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
 			}
@@ -398,8 +418,14 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		}
 		c.setName(columnName);
 		if (value != null) {
-			byte[] columnValue = StandardConverters.convertToBytes(value);
-			c.setValue(columnValue);
+            byte[] columnValue = null;
+            NoSqlConverter customConv = singleField.getAnnotation(NoSqlConverter.class);
+            if (customConv != null) {
+                columnValue = getBytesValue(value, customConv);
+            } else {
+                columnValue = StandardConverters.convertToBytes(value);
+            }
+            c.setValue(columnValue);
 		}
 		row.getColumns().add(c);
 	}
@@ -435,4 +461,15 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		throw new UnsupportedOperationException();
 	}
 
+    private byte[] getBytesValue(Object value, NoSqlConverter customConv) {
+        Class<? extends Converter> convClazz = customConv.converter();
+        Converter converter = ReflectionUtil.create(convClazz);
+        return converter.convertToNoSql(value);
+    }
+
+    private Object getValue(byte[] value, NoSqlConverter customConv) {
+        Class<? extends Converter> convClazz = customConv.converter();
+        Converter converter = ReflectionUtil.create(convClazz);
+        return converter.convertFromNoSql(value);
+    }
 }

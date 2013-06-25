@@ -38,8 +38,11 @@ public class User {
 	@NoSqlEmbedded
 	private EmbeddedEmail email;
 
-	@NoSqlEmbedded
-	private EmbeddedEntityWithNoId entityWOId;
+    @NoSqlEmbedded
+    private EmbeddedEmail2 email2;
+
+    @NoSqlEmbedded
+    private EmbeddedEntityWithNoId entityWOId;
 
 	@NoSqlManyToOne
 	private EntityWithUUIDKey uuidEntity;
@@ -119,7 +122,15 @@ public class User {
 		this.uuidEntity = uuidEntity;
 	}
 
-	public static User findByName(NoSqlEntityManager mgr, String name) {
+    public EmbeddedEmail2 getEmail2() {
+        return this.email2;
+    }
+
+    public void setEmail2(EmbeddedEmail2 email2) {
+        this.email2 = email2;
+    }
+
+    public static User findByName(NoSqlEntityManager mgr, String name) {
 		Query<User> query = mgr.createNamedQuery(User.class, "findByName");
 		query.setParameter("name", name);
 		return query.getSingleObject();
