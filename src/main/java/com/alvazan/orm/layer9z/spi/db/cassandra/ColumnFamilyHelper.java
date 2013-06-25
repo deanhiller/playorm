@@ -391,6 +391,11 @@ public class ColumnFamilyHelper {
 				colType = ColumnType.COMPOSITE_DECIMALPREFIX;
 		}
 		
+		if(meta.isTimeSeries()) {
+			//override for special case of time series data
+			def = def.setComparatorType("IntegerType");
+		}
+
 		addColumnFamily(def);
 		String virtual = meta.getColumnFamily();
 		String realCf = meta.getRealColumnFamily();
