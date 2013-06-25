@@ -14,6 +14,7 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.Email;
 import com.alvazan.test.db.EmbeddedEmail;
+import com.alvazan.test.db.EmbeddedEmail2;
 import com.alvazan.test.db.EmbeddedEntityWithNoId;
 import com.alvazan.test.db.User;
 
@@ -229,4 +230,28 @@ public class TestEmbedded {
 		Map<Integer, String> finalMap = email3.getSomeMap();
 		Assert.assertEquals(1, finalMap.size());
 	}
+
+    // defect #87
+    @Test
+    public void testEmbeddedInheritance() {
+        EmbeddedEmail sub = new EmbeddedEmail();
+        sub.setIdkey(67);
+        sub.setName("dean");
+        sub.setType("nosqltype");
+
+        EmbeddedEmail2 e2 = new EmbeddedEmail2();
+        e2.setIdkey(67);
+        e2.setName("name2");
+        e2.setType("type2");
+
+        User user = new User();
+        user.setEmail2(e2);
+        user.setEmail(sub);
+        mgr.fillInWithKey(e2);
+        mgr.fillInWithKey(sub);
+
+        mgr.put(user);
+        mgr.flush();
+
+    }
 }
