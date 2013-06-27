@@ -109,6 +109,8 @@ public class CheckClusterRunnable implements Runnable {
 		while(cursor.next()) {
 			KeyValue<MonitorDbo> kv = cursor.getCurrent();
 			MonitorDbo val = kv.getValue();
+			if (val == null)
+				continue;
 			String id = val.getId();
 			int hash = id.hashCode();
 			int serverNum = hashGen.generate(hash, numUpWebNodes);

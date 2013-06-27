@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.base.Query;
-import com.alvazan.orm.api.exc.RowNotFoundException;
-import com.alvazan.orm.api.exc.StorageMissingEntitesException;
 import com.alvazan.orm.api.exc.TooManyResultException;
 import com.alvazan.orm.api.exc.TypeMismatchException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -250,22 +248,31 @@ public class TestIndexes {
 				kVal = k;
 		}
 		
-		try {
-			kVal.getValue();
-			Assert.fail("This keyValue has no real value so should throw exception");
-		} catch(RowNotFoundException e) {
-			log.info("this should occur");
-		}
+		
+		PartAccount pa = kVal.getValue();
+		Assert.assertNull(pa);
+		
+				
+//		try {
+//			kVal.getValue();
+//			Assert.fail("This keyValue has no real value so should throw exception");
+//		} catch(RowNotFoundException e) {
+//			log.info("this should occur");
+//		}
 		
 		
+		//Now we DON'T want this to fail, if it fails it means that a single corrupt index will cause 
+		//all findAll calls to blow up, we don't want that:
+		List<PartAccount> paList = PartAccount.findAll(mgr);
+		Assert.assertEquals(paList.size(), 3);
 		//NOTE: Account3 was NOT PUT in the database(or you could say removed but index not updated yet)
-		try {
-			PartAccount.findAll(mgr);
-			Assert.fail("It should fail since account 3 is not in storage");
-		} catch(StorageMissingEntitesException e) {
-			List<PartAccount> foundAccounts = formList(e.getFoundElements());
-			Assert.assertEquals(2, foundAccounts.size());
-		}
+//		try {
+//			PartAccount.findAll(mgr);
+//			Assert.fail("It should fail since account 3 is not in storage");
+//		} catch(StorageMissingEntitesException e) {
+//			List<PartAccount> foundAccounts = formList(e.getFoundElements());
+//			Assert.assertEquals(2, foundAccounts.size());
+//		}
 	}
 
 	private List<PartAccount> formList(Iterable<PartAccount> foundElements) {
