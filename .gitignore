@@ -9,3 +9,5 @@ examples/example/bin
 playorm.iml
 playorm.ipr
 playorm.iws
+.idea
+gradle-app.setting

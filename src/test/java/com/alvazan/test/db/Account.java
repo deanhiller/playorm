@@ -1,7 +1,9 @@
 package com.alvazan.test.db;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.alvazan.orm.api.base.CursorToMany;
 import com.alvazan.orm.api.base.CursorToManyImpl;
@@ -44,7 +46,7 @@ public class Account extends AccountMiddle{
 	private CursorToMany<Activity> activitiesCursor = new CursorToManyImpl<Activity>();
 	
 	@NoSqlOneToMany
-	private List<EmailAccountXref> emails = new ArrayList<EmailAccountXref>();
+	private Set<EmailAccountXref> emails = new HashSet<EmailAccountXref>();
 	
 	public Account() {}
 	
@@ -157,7 +159,7 @@ public class Account extends AccountMiddle{
 		this.emails.add(ref);
 	}
 
-	public List<EmailAccountXref> getEmails() {
+	public Set<EmailAccountXref> getEmails() {
 		return emails;
 	}
 	
