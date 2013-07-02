@@ -20,7 +20,7 @@ public class SetProxyFetchAll<T> extends OurAbstractCollection<T> implements Cac
 	public SetProxyFetchAll(Object owner, NoSqlSession session, MetaAbstractClass<T> classMeta, List<byte[]> keys, Field field) {
 		super(owner, session, classMeta, keys, field);
 		for(byte[] key : keys) {
-			Holder h = new Holder(classMeta, session, key, this);
+			Holder h = new Holder(classMeta, null, key, this);
 			holders.add(h);
 			originalHolders.add(h);
 		}
