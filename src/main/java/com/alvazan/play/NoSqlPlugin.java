@@ -89,6 +89,7 @@ public class NoSqlPlugin extends PlayPlugin {
 			}
 			
 		} catch (ClassNotFoundException e) {
+			log.info("nosql.NoSqlConfigImpl not found so not instantiating and calling configure to do custom configuration of playorm");
 			//ignore then
 		} catch (InstantiationException e) {
 			log.warn("Exception, could not instantiate="+clazz, e);
