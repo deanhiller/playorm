@@ -152,6 +152,11 @@ task verifyPackageDesign(dependsOn: compileJava) << {
     }
 }
 
+def localFile = new File('local.gradle')
+if (localFile.exists()) {
+	apply from: "$rootDir/local.gradle"
+}
+
 artifacts {
 	archives jar
 	archives sourcesJar
