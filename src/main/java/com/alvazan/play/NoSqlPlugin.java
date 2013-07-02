@@ -78,6 +78,24 @@ public class NoSqlPlugin extends PlayPlugin {
         	return;
         }
 
+        Class<?> clazz = null;
+        try {
+			clazz = Class.forName("nosql.NoSqlConfigImpl");
+			if(NoSqlConfig.class.isAssignableFrom(clazz)) {
+				NoSqlConfig config = (NoSqlConfig) clazz.newInstance();
+				config.configure(PROPS);
+			} else {
+				log.warn("We found a class="+clazz+" to use to configure playorm but it did not implement NoSqlConfig interface so we can't use it");
+			}
+			
+		} catch (ClassNotFoundException e) {
+			//ignore then
+		} catch (InstantiationException e) {
+			log.warn("Exception, could not instantiate="+clazz, e);
+		} catch (IllegalAccessException e) {
+			log.warn("Exception, could not instantiate="+clazz, e);
+		}
+        
 		PROPS.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
 		PROPS.put(Bootstrap.AUTO_CREATE_KEY, "create");
 
