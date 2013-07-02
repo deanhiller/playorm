@@ -1,5 +1,8 @@
 package com.alvazan.orm.layer0.base;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.exc.RowNotFoundException;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -10,6 +13,8 @@ import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 
 public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
+
+	private static final Logger log = LoggerFactory.getLogger(CursorRow.class);
 
 	private MetaClass<T> meta;
 	private String query;
@@ -69,8 +74,11 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 			byte[] nonVirtKey = idMeta.unformVirtRowKey((byte[]) key);
 			Object obj = meta.getIdField().translateFromBytes(nonVirtKey);
 			if(query != null) {
+				//for now, log the exception, but do not set it in the keyVal.  This prevents a corrupted index from 
+				//breaking all queries that use that index.
 				RowNotFoundException exc = new RowNotFoundException("Your query="+query+" contained a value with a pk where that entity no longer exists in the nosql store");
-				keyVal.setException(exc);
+				//keyVal.setException(exc);
+				log.warn("Not erroring out, just a warning, there is an index pointing to a non-existant row.  Either the index is corrupt, or the data is not yet consistent, but might be eventually", exc);
 			}
 			keyVal.setKey(obj);
 		} else {

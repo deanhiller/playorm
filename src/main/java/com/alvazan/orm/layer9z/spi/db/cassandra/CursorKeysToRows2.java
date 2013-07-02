@@ -9,6 +9,9 @@ import java.util.Map;
 
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -30,6 +33,8 @@ import com.netflix.astyanax.query.RowSliceQuery;
 
 public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 
+	private static final Logger log = LoggerFactory.getLogger(CursorKeysToRows2.class);
+	
 	private Info info;
 	private DirectCursor<byte[]> rowKeys;
 	private int batchSize;
@@ -127,7 +132,10 @@ public class CursorKeysToRows2 extends AbstractCursor<KeyValue<Row>> {
 			ColumnFamilyQuery<byte[], byte[]> q2 = keyspace.prepareQuery(cf);
 			RowSliceQuery<byte[], byte[]> slice = q2.getKeySlice(keysToLookup);
 			
+			long start = System.currentTimeMillis();
 			OperationResult<Rows<byte[], byte[]>> result = execute(slice);
+			if (log.isDebugEnabled())
+				log.debug("executing slice "+slice+" took "+(System.currentTimeMillis()-start));
 			
 			Rows<byte[], byte[]> rows = result.getResult();		
 			resultingRows = rows.iterator();

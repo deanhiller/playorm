@@ -21,7 +21,7 @@ configurations {
 dependencies {
 	compile group: 'org.antlr', name: 'ST4', version: '4.0.4'
 	compile group: 'junit', name: 'junit', version: '4.9'
-	compile (group: 'com.netflix.astyanax', name: 'astyanax', version: '1.56.18') {
+	compile (group: 'com.netflix.astyanax', name: 'astyanax', version: '1.56.42') {
 		exclude group: 'org.slf4j'
         exclude group: 'log4j'
 	    }         
@@ -90,6 +90,10 @@ task javadocJar(type: Jar, dependsOn:javadoc) {
     extension 'jar'
 }
 
+javadoc {
+	failOnError false
+}
+
 task srcbin(type: Jar, dependsOn:javadoc) {
     from sourceSets.main.allSource
     from "license.txt"
@@ -146,6 +150,11 @@ task verifyPackageDesign(dependsOn: compileJava) << {
 			}			
 		}
     }
+}
+
+def localFile = new File('local.gradle')
+if (localFile.exists()) {
+	apply from: "$rootDir/local.gradle"
 }
 
 artifacts {

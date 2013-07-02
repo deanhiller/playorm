@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
@@ -16,6 +19,8 @@ import com.netflix.astyanax.model.ColumnList;
 import com.netflix.astyanax.query.RowQuery;
 
 class CursorColumnSlice<T> extends AbstractCursor<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(CursorColumnSlice.class);
 
 	private static String columnName;
 	private CreateColumnSliceCallback callback;
@@ -148,7 +153,11 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
+		long start = System.currentTimeMillis();
 		OperationResult<ColumnList<byte[]>> opResult = query.execute();
+		if (log.isDebugEnabled())
+			log.debug("executing query "+query+" took "+(System.currentTimeMillis()-start));
+
 		ColumnList<byte[]> columns = opResult.getResult();
 
 		if(columns.isEmpty())

@@ -298,12 +298,22 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		if (classMeta.getIdField() != null && (rowKey!=null)) {
 			// first fill the id
 			DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-			Object idValue1 = embedMeta.getFkToColumnFamily().getIdColumnMeta().getStorageType().convertFromNoSql(rowKey);
-			ReflectionUtil.putFieldValue(newproxy, classMeta.getIdField().field, idValue1);
+            Object idValue = null;
+            MetaField<PROXY> metaFieldId = classMeta.getIdField();
+            NoSqlConverter customConvId = metaFieldId.getField().getAnnotation(NoSqlConverter.class);
+            byte[] idBytes = null;
+            if (customConvId != null) {
+                idValue = getValue(rowKey, customConvId);
+                idBytes = getBytesValue(idValue, customConvId);
+            } else {
+                idValue = embedMeta.getFkToColumnFamily().getIdColumnMeta().getStorageType().convertFromNoSql(rowKey);
+                idBytes = StandardConverters.convertToBytes(idValue);
+            }
+            if (metaFieldId != null)
+                ReflectionUtil.putFieldValue(newproxy, metaFieldId.getField(),idValue);
 
 			// Now extract other columns
 			byte[] prefix = StandardConverters.convertToBytes(getColumnName());
-			byte[] idBytes = StandardConverters.convertToBytes(idValue1);
 			byte[] embedColumn = new byte[prefix.length + idBytes.length];
 		    System.arraycopy(prefix,0,embedColumn,0         ,prefix.length);
 		    System.arraycopy(idBytes,0,embedColumn,prefix.length,idBytes.length);
@@ -319,7 +329,6 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
                 Object colVal = colMeta.convertFromStorage2(fk);
                 String colName = colMeta.convertTypeToString(colVal);
 
-                // Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(colName).getStorageType().convertFromNoSql(colInRow.getValue());
                 Object columnValue = null;
                 MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
                 NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
@@ -333,38 +342,41 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			}
 		} else {
 			// No Id is present, only fill the columns
-			byte[] colName = StandardConverters.convertToBytes(getColumnName());
-			Collection<Column> columnsWORowKey = row.columnByPrefix(colName);
-			for(Column col : columnsWORowKey) {
-				byte[] fullName = col.getName();
-				int embedColumnLen = fullName.length - colName.length;
-				byte[] embedColumn = new byte[embedColumnLen];
-                for (int i = colName.length; i < fullName.length; i++) {
-                    embedColumn[i - colName.length] = fullName[i];
-                }
-                Object colVal = colMeta.convertFromStorage2(embedColumn);
-                String columnName = colMeta.convertTypeToString(colVal);
-
-                DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
-                if (embedMeta.getFkToColumnFamily().getColumnMeta(columnName) == null)
-                    continue;
-                // Object columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
-                Object columnValue = null;
-                MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, columnName);
-                NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
-                if (customConv != null) {
-                    columnValue = getValue(col.getValue(), customConv);
-                } else {
-                    columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
-                }
-				if (classMeta.getMetaFieldByCol(null,columnName) != null)
-					ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null,columnName).getField(), columnValue);
-			}
+		    createProxy2(colMeta, newproxy, row);
 		}
 		return newproxy;
 	}
 
-	private byte[] formTheNameImpl(String colName, byte[] postFix) {
+    private void createProxy2(DboColumnMeta colMeta, Object newproxy, Row row) {
+        byte[] colName = StandardConverters.convertToBytes(getColumnName());
+        Collection<Column> columnsWORowKey = row.columnByPrefix(colName);
+        for (Column col : columnsWORowKey) {
+            byte[] fullName = col.getName();
+            int embedColumnLen = fullName.length - colName.length;
+            byte[] embedColumn = new byte[embedColumnLen];
+            for (int i = colName.length; i < fullName.length; i++) {
+                embedColumn[i - colName.length] = fullName[i];
+            }
+            Object colVal = colMeta.convertFromStorage2(embedColumn);
+            String columnName = colMeta.convertTypeToString(colVal);
+
+            DboColumnEmbedMeta embedMeta = (DboColumnEmbedMeta) colMeta;
+            if (embedMeta.getFkToColumnFamily().getColumnMeta(columnName) == null)
+                continue;
+            Object columnValue = null;
+            MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, columnName);
+            NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
+            if (customConv != null) {
+                columnValue = getValue(col.getValue(), customConv);
+            } else {
+                columnValue = embedMeta.getFkToColumnFamily().getColumnMeta(columnName).getStorageType().convertFromNoSql(col.getValue());
+            }
+            if (classMeta.getMetaFieldByCol(null, columnName) != null)
+                ReflectionUtil.putFieldValue(newproxy, classMeta.getMetaFieldByCol(null, columnName).getField(), columnValue);
+        }
+    }
+
+    private byte[] formTheNameImpl(String colName, byte[] postFix) {
 		byte[] prefix = StandardConverters.convertToBytes(colName);
 		byte[] rowid = StandardConverters.convertToBytes("Id");
 		byte[] name = new byte[prefix.length + rowid.length + postFix.length];

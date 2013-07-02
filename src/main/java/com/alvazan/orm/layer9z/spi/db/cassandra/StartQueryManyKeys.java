@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.netflix.astyanax.Keyspace;
@@ -18,6 +21,9 @@ import com.netflix.astyanax.serializers.CompositeRangeBuilder;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class StartQueryManyKeys implements StartQueryListener {
 
+	private static final Logger log = LoggerFactory.getLogger(StartQueryManyKeys.class);
+
+	
 	private ScanInfo scanInfo;
 	private List<byte[]> values;
 	private Info info1;
