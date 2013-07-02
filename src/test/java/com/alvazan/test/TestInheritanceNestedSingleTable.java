@@ -69,7 +69,8 @@ public class TestInheritanceNestedSingleTable {
         mgr.put(top);
     }
 
-    private static InheritedNestedA generate(int off) {
+    private static InheritedNestedA generate(int off1) {
+        int off = off1;
         InheritedNestedA top = new InheritedNestedA();
         top.setIdForA(off++);
 

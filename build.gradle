@@ -110,6 +110,10 @@ task javadocJar(type: Jar, dependsOn:javadoc) {
     extension 'jar'
 }
 
+javadoc {
+	failOnError false
+}
+
 task srcbin(type: Jar, dependsOn:javadoc) {
     from sourceSets.main.allSource
     from "license.txt"
