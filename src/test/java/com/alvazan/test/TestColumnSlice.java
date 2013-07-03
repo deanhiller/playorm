@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.Assert;
 
@@ -14,13 +15,17 @@ import org.junit.Test;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z3api.NoSqlTypedSession;
+import com.alvazan.orm.api.z3api.TimeValColumn;
 import com.alvazan.orm.api.z5api.NoSqlSession;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnCommonMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
+import com.alvazan.orm.api.z8spi.meta.TypedRow;
 
 public class TestColumnSlice {
 
@@ -37,7 +42,57 @@ public class TestColumnSlice {
 		NoSqlEntityManager other = factory.createEntityManager();
 		other.clearDatabase(true);
 	}
-	
+
+	@Test
+	public void testTimeSeriesData() {
+		NoSqlTypedSession typedSession = mgr.getTypedSession();
+		String colFamily = "timeSeriesAutoPartition";
+
+		long partitionSize = TimeUnit.MILLISECONDS.convert(30, TimeUnit.DAYS);
+		DboTableMeta tm = new DboTableMeta();
+		tm.setTimeSeries(true);
+		tm.setTimeSeriesPartionSize(partitionSize);
+		tm.setup(colFamily, "realCf", false);
+		tm.setColNameType(long.class);
+
+		DboColumnIdMeta idMeta = new DboColumnIdMeta();
+		idMeta.setup(tm, "time", BigInteger.class, false);
+		
+		DboColumnCommonMeta meta = new DboColumnCommonMeta();
+		meta.setup(tm, "value", BigDecimal.class, false, false);
+
+		mgr.put(idMeta);
+		mgr.put(meta);
+		mgr.put(tm);
+
+		mgr.flush();
+		
+		TypedRow row = typedSession.createTypedRow(colFamily);
+		BigInteger rowKey = new BigInteger("0");
+		row.setRowKey(rowKey);
+		row.addTimeValue(0, new BigDecimal(56));
+		row.addTimeValue(10, new BigDecimal(56));
+		row.addTimeValue(20, new BigDecimal(56));
+		row.addTimeValue(30, new BigDecimal(56));
+		row.addTimeValue(40, new BigDecimal(56));
+		row.addTimeValue(50, new BigDecimal(56));
+		row.addTimeValue(60, new BigDecimal(56));
+		row.addTimeValue(70, new BigDecimal(56));
+		row.addTimeValue(80, new BigDecimal(56));
+		row.addTimeValue(90, new BigDecimal(56));
+		row.addTimeValue(100, new BigDecimal(56));
+
+		typedSession.put(colFamily, row);
+		typedSession.flush();
+		
+		Cursor<TimeValColumn> timeVal = typedSession.timeSeriesSlice(colFamily, rowKey, 40, 60, 200);
+		for(int i = 0; i < 3; i++) {
+			timeVal.next();
+			TimeValColumn current = timeVal.getCurrent();
+			Assert.assertEquals(i*10+40, current.getTime());
+		}
+	}
+
 	@Test
 	public void testDecimalColumnSlice() throws UnsupportedEncodingException {
 		NoSqlSession session = mgr.getSession();

@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer3.typed;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import javax.inject.Inject;
 
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
+import com.alvazan.orm.api.z3api.TimeValColumn;
 import com.alvazan.orm.api.z5api.IndexColumnInfo;
 import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z5api.NoSqlSession;
@@ -367,6 +369,21 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		while(cursor.next())
 			rowCount++;
 		return rowCount;
+	}
+
+	@Override
+	public Cursor<TimeValColumn> timeSeriesSlice(String colFamily,
+			BigInteger rowKey, long start, long end, int batchSize) {
+		DboTableMeta metaClass = cachedMeta.getMeta(colFamily);
+		if(metaClass == null)
+			throw new IllegalArgumentException("DboTableMeta for colFamily="+colFamily+" was not found");
+		byte[] startBytes = metaClass.getIdColumnMeta().convertToStorage2(new BigInteger(""+start));
+		byte[] endBytes = metaClass.getIdColumnMeta().convertToStorage2(new BigInteger(""+end));
+		
+		byte[] rowKeyBytes = metaClass.getIdColumnMeta().convertToStorage2(rowKey);
+		byte[] virtKey = metaClass.getIdColumnMeta().formVirtRowKey(rowKeyBytes);
+		AbstractCursor<Column> curs = session.columnSlice(metaClass, virtKey, startBytes, endBytes, batchSize);
+		return new TimeValCursor<TimeValColumn>(metaClass, curs);
 	}
 
 }

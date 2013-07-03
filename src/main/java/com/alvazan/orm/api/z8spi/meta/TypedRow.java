@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.z8spi.meta;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -26,6 +27,21 @@ public class TypedRow {
 	}
 	
 	public TypedRow(int i) {}
+
+	public void addTimeValue(long time, Object value) {
+		if(!metaClass.isTimeSeries())
+			throw new IllegalStateException("can only call this method if DboTableMeta.isTimeSeries is true");
+		BigInteger bigInt = new BigInteger(""+time);
+		DboColumnIdMeta meta = metaClass.getIdColumnMeta();
+		byte[] colName = meta.convertToStorage2(bigInt);
+		Collection<DboColumnMeta> columns = metaClass.getAllColumns();
+		if(columns.size() > 1) 
+			throw new IllegalStateException("Your meta is corrupt, as timeseries should only have time pk and one value column");
+		
+		DboColumnMeta colMeta = columns.iterator().next();
+		byte[] colVal = colMeta.convertToStorage2(value);
+		addColumn(colName, colVal, null);
+	}
 
 	public void addColumn(DboColumnToManyMeta colMeta, byte[] fullName, byte[] namePrefix, byte[] fk, byte[] value, Long timestamp) {
 		TypedColumn c = new TypedColumn(colMeta, namePrefix, fk, value, timestamp);

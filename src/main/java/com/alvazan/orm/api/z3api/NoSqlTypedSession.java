@@ -1,5 +1,6 @@
 package com.alvazan.orm.api.z3api;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import com.alvazan.orm.api.z5api.IndexPoint;
@@ -65,5 +66,7 @@ public interface NoSqlTypedSession {
 	public void addIndexPoint(IndexPoint pt, String partitionBy, String partitionId);
 
 	public int count(String columnFamily, String indexedColName, Object value);
+
+	public Cursor<TimeValColumn> timeSeriesSlice(String colFamily, BigInteger rowKey, long start, long end, int batchSize);
 
 }
