@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.ColumnType;
+import com.alvazan.orm.api.z8spi.CreateCfCallback;
 import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
@@ -52,6 +53,7 @@ public class ColumnFamilyHelper {
 	private AstyanaxContext<Cluster> clusterContext;
 
 	private AstyanaxContext<Keyspace> context;
+	private CreateCfCallback callback;
 	
 	public Keyspace getKeyspace() {
 		return keyspace;
@@ -91,6 +93,8 @@ public class ColumnFamilyHelper {
 		if(builderObj == null || !(builderObj instanceof Builder))
 			throw new IllegalArgumentException("The property Bootstrap.CASSANDRA_BUILDER was not in the Map or was in Map but was not of type Builder and must be supplied when using Cassandra plugin");
 
+		callback = (CreateCfCallback) properties.get(SpiConstants.CASSANDRA_CF_CREATE_CALLBACK);
+		
 		Builder builder = (Builder) builderObj;
 		clusterContext = builder.buildCluster(ThriftFamilyFactory.getInstance());
 		keyspaceName = clusterContext.getKeyspaceName();
@@ -155,7 +159,7 @@ public class ColumnFamilyHelper {
 		} else if(formName(DecimalType.class, BytesType.class).equals(comparatorType)) {
 			type = ColumnType.COMPOSITE_DECIMALPREFIX;
 		}
-		
+
 		String keyValidationClass = def.getKeyValidationClass();
 		StorageTypeEnum keyType = null;
 		if(UTF8Type.class.getName().equals(keyValidationClass)) {
@@ -365,11 +369,16 @@ public class ColumnFamilyHelper {
 	private void createColFamilyInCassandra(DboTableMeta meta) {
 		String keysp = keyspace.getKeyspaceName();
 		String cfName = meta.getRealColumnFamily().toLowerCase();
+		
 		String colFamily = meta.getRealColumnFamily();
 		if (log.isInfoEnabled())
 			log.info("CREATING colfamily="+cfName+" in keyspace="+keysp);
-		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition()
-			    .setName(colFamily)
+		ColumnFamilyDefinition def = cluster.makeColumnFamilyDefinition();
+		
+		if(callback != null)
+			def = (ColumnFamilyDefinition) callback.modifyColumnFamily(colFamily, def);
+
+		def = def.setName(colFamily)
 			    .setKeyspace(keysp);
 
 		if (log.isInfoEnabled())
