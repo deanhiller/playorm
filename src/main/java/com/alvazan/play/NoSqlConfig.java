@@ -4,6 +4,6 @@ import java.util.Map;
 
 public interface NoSqlConfig {
 
-	public void configure(Map<String, Object> props);
-	
+	void configure(Map<String, Object> props);
+
 }
