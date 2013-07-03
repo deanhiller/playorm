@@ -35,7 +35,7 @@ public class TestInheritanceNestedSingleTable {
 		other.clearDatabase(true);
 	}
 	
-	@Test
+	//@Test
 	public void testSpecificQuery() {
 
         InheritedNestedA top1 = generate(10);
