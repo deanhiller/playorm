@@ -96,7 +96,7 @@ public class NoSqlPlugin extends PlayPlugin {
 		} catch (IllegalAccessException e) {
 			log.warn("Exception, could not instantiate="+clazz, e);
 		}
-        
+
 		PROPS.put(Bootstrap.LIST_OF_EXTRA_CLASSES_TO_SCAN_KEY, classes);
 		PROPS.put(Bootstrap.AUTO_CREATE_KEY, "create");
 
