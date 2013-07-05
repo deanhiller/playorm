@@ -5,7 +5,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
@@ -47,10 +49,12 @@ public class ScannerForClass {
 	private MetaInfo metaInfo;
 	@Inject
 	private DboDatabaseMeta databaseInfo;
-	
+	private Set<Class> alreadyScanned = new HashSet<Class>();
+
 	public void addClassForQueries(Class<?> clazz) {
 		MetaClassSingle classMeta = (MetaClassSingle)metaInfo.findOrCreate(clazz);
 		DboTableMeta metaDbo = classMeta.getMetaDbo();
+		//NOTE: This is causing a double scan since scanSingle was already called on a lot of classes....do we need these calls ....
 		scanForAnnotations(classMeta);
 		scanSingle(classMeta, metaDbo);
 		metaInfo.addTableNameLookup(classMeta);
@@ -117,9 +121,12 @@ public class ScannerForClass {
 	}
 
 	private <T> void scanSingle(MetaClassSingle<T> classMeta, DboTableMeta metaDbo) {
+		if(alreadyScanned.contains(classMeta.getMetaClass()))
+			return;
 		Class<? extends T> proxyClass = createTheProxy(classMeta.getMetaClass());
 		classMeta.setProxyClass(proxyClass);
 		scanFields(classMeta, metaDbo);
+		alreadyScanned.add(classMeta.getMetaClass());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -245,7 +252,7 @@ public class ScannerForClass {
 		if(metaClass.getIdField() != null) {
 			Field existingField = metaClass.getIdField().getField();
 			if(field.equals(existingField)) {
-				log.warn("We avoided double scanning a class="+metaClass.getClass()+" Everything will still work fine, but please send us the stack trace so we can see why this is happening", new RuntimeException().fillInStackTrace());
+				log.warn("We avoided double scanning a class="+metaClass.getMetaClass()+" Everything will still work fine, but please send us the stack trace so we can see why this is happening", new RuntimeException().fillInStackTrace());
 				log.warn("The first entry into this method was(if this is null, it is because you don't have debug logging enabled!!!)=", metaClass.getFirstTrace());
 				return true; // we already processed it
 			}
