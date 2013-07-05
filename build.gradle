@@ -10,8 +10,7 @@ buildDir= "$rootDir/output"
 version = "1.6-SNAPSHOT"
 
 ext.githubProjectName = rootProject.name 
-group = "com.alvazan.${githubProjectName}"
-sourceCompatibility = 1.6
+group = "com.alvazan"
 
 repositories { mavenCentral() }
 
