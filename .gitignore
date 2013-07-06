@@ -11,3 +11,4 @@ playorm.ipr
 playorm.iws
 .idea
 gradle-app.setting
+local.gradle
