@@ -35,6 +35,11 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private MetaAbstractClass<PROXY> classMeta;
 	private Field fieldForKey;
 
+	@Override
+	public String toString() {
+		return "MetaEmbeddedEntity [field='" + field.getDeclaringClass().getName()+"."+field.getName()+"(field type=" +field.getType()+ "), columnName=" + columnName + "]";
+	}
+
 	public void setup(DboTableMeta t, Field field, String colName,
 			MetaAbstractClass<PROXY> fkMeta) {
 		DboTableMeta fkToTable = fkMeta.getMetaDbo();
@@ -331,6 +336,8 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 
                 Object columnValue = null;
                 MetaField<PROXY> metaField = classMeta.getMetaFieldByCol(null, colName);
+                if(metaField == null)
+                	continue; //skip this field sice we don't know this column
                 NoSqlConverter customConv = metaField.getField().getAnnotation(NoSqlConverter.class);
                 if (customConv != null) {
                     columnValue = getValue(colInRow.getValue(), customConv);
