@@ -133,24 +133,30 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		cache.put(k, holder);
 	}
 
-	static class TheKey {
-		private String colFamily;
-		private ByteArray key;
+	static final class TheKey {
+		private final String colFamily;
+		private final ByteArray key;
+        private final int hash;
 		
-		public TheKey(String cf, byte[] key) {
+		TheKey(String cf, byte[] key) {
 			colFamily = cf;
 			this.key = new ByteArray(key);
+            this.hash = calcHash();
 		}
 
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result
-					+ ((colFamily == null) ? 0 : colFamily.hashCode());
-			result = prime * result + ((key == null) ? 0 : key.hashCode());
-			return result;
-		}
+        private int calcHash() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result
+                     + ((colFamily == null) ? 0 : colFamily.hashCode());
+            result = prime * result + ((key == null) ? 0 : key.hashCode());
+            return result;
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
 
 		@Override
 		public boolean equals(Object obj) {
