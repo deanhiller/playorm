@@ -16,9 +16,11 @@ import com.google.inject.name.Names;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
+import com.netflix.astyanax.clock.MicrosecondsAsyncClock;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolType;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
+import com.netflix.astyanax.connectionpool.impl.FixedRetryBackoffStrategy;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.model.ConsistencyLevel;
 
@@ -76,12 +78,14 @@ public class BootstrapImpl extends Bootstrap {
 	    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()      
 	        .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
 	        .setConnectionPoolType(ConnectionPoolType.TOKEN_AWARE)
+		.setClock(new MicrosecondsAsyncClock())
 	    )
 	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
 	        .setMaxConnsPerHost(20)
 	        .setInitConnsPerHost(2)
 	        .setSeeds(seeds2)
 	        .setConnectTimeout(10000)
+		.setRetryBackoffStrategy(new FixedRetryBackoffStrategy(5000, 30000))
 	    )
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
 		
