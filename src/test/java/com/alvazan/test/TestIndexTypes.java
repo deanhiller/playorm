@@ -10,6 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
@@ -18,6 +20,7 @@ import com.eaio.uuid.UUID;
 
 public class TestIndexTypes {
 
+	private static final Logger log = LoggerFactory.getLogger(TestIndexTypes.class);
 	private static NoSqlEntityManagerFactory factory;
 	private NoSqlEntityManager mgr;
 	private LocalDateTime time;
@@ -72,6 +75,9 @@ public class TestIndexTypes {
 		Assert.assertEquals(1, list.size());
 		
 		LocalDateTime t = LocalDateTime.now();
+		
+		Assert.assertFalse("Your processor was too fast, have us add a millisecond sleep", t.equals(time));
+		log.info("time1="+time+" time2="+t);
 		List<Activity> zero = Activity.findByLocalDateTime(mgr, t);
 		Assert.assertEquals(0, zero.size());
 	}
