@@ -74,10 +74,8 @@ public class TestIndexTypes {
 		List<Activity> list = Activity.findByLocalDateTime(mgr, time);
 		Assert.assertEquals(1, list.size());
 		
-		LocalDateTime t = LocalDateTime.now();
+		LocalDateTime t = time.plusMillis(1);
 		
-		Assert.assertFalse("Your processor was too fast, have us add a millisecond sleep", t.equals(time));
-		log.info("time1="+time+" time2="+t);
 		List<Activity> zero = Activity.findByLocalDateTime(mgr, t);
 		Assert.assertEquals(0, zero.size());
 	}
