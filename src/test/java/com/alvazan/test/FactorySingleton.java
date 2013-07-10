@@ -15,15 +15,17 @@ public class FactorySingleton {
 	private static final Logger log = LoggerFactory.getLogger(FactorySingleton.class);
 	private static NoSqlEntityManagerFactory factory;
 	
+	private static DbTypeEnum serverType;
+
 	public static Config getConfigForAllTests() {
 		/**************************************************
 		 * FLIP THIS BIT TO CHANGE FROM CASSANDRA TO ANOTHER ONE
 		 **************************************************/
 		String clusterName = "PlayCluster";
-		//DbTypeEnum serverType = DbTypeEnum.CASSANDRA;
-		//DbTypeEnum serverType = DbTypeEnum.MONGODB;
-		DbTypeEnum serverType = DbTypeEnum.IN_MEMORY;
-		//DbTypeEnum serverType = DbTypeEnum.HBASE;
+		//serverType = DbTypeEnum.CASSANDRA;
+		//serverType = DbTypeEnum.MONGODB;
+		serverType = DbTypeEnum.IN_MEMORY;
+		//serverType = DbTypeEnum.HBASE;
 		String seeds = "localhost:9160";
 		if (serverType.equals(DbTypeEnum.MONGODB))
 			seeds = "localhost:27017";
@@ -68,5 +70,9 @@ public class FactorySingleton {
 		NoSqlEntityManagerFactory factory = Bootstrap.create(config.getServerType(), props, null, null);
 		return factory;
 	}
+
+    public static DbTypeEnum getServerType() {
+        return serverType;
+    }
 	
 }

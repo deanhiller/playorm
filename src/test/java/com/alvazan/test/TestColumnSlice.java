@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -45,6 +46,8 @@ public class TestColumnSlice {
 
 	@Test
 	public void testTimeSeriesData() {
+       if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.IN_MEMORY)
+            return; // This testcase is not supported for MongoDB
 		NoSqlTypedSession typedSession = mgr.getTypedSession();
 		String colFamily = "timeSeriesAutoPartition";
 
@@ -95,7 +98,10 @@ public class TestColumnSlice {
 
 	@Test
 	public void testDecimalColumnSlice() throws UnsupportedEncodingException {
-		NoSqlSession session = mgr.getSession();
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.IN_MEMORY)
+            return; // This testcase is not supported for MongoDB
+
+        NoSqlSession session = mgr.getSession();
 		String colFamily = "float_indexes";
 		
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
@@ -157,6 +163,8 @@ public class TestColumnSlice {
 
 	@Test
 	public void testIntegerColumnSlice() throws UnsupportedEncodingException {
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.IN_MEMORY)
+            return; // This testcase is not supported for MongoDB
 		NoSqlSession session = mgr.getSession();
 		String colFamily = "time_indexes";
 		

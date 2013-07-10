@@ -7,7 +7,7 @@ apply plugin: 'eclipse'
 
 buildDir= "$rootDir/output"
 
-version = "1.6-SNAPSHOT"
+version = "1.6"
 
 ext.githubProjectName = rootProject.name 
 group = "com.alvazan"
