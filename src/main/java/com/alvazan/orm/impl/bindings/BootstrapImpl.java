@@ -15,8 +15,8 @@ import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import com.netflix.astyanax.AstyanaxContext;
 import com.netflix.astyanax.AstyanaxContext.Builder;
-import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.clock.MicrosecondsAsyncClock;
+import com.netflix.astyanax.connectionpool.NodeDiscoveryType;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolType;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
@@ -72,6 +72,25 @@ public class BootstrapImpl extends Bootstrap {
 	@Override
 	protected void createBestCassandraConfig(Map<String, Object> properties,
 			String clusterName, String keyspace2, String seeds2) {
+		ConnectionPoolConfigurationImpl poolConfig = new ConnectionPoolConfigurationImpl("MyConnectionPool")
+        .setMaxConnsPerHost(20)
+        .setInitConnsPerHost(2)
+        .setSeeds(seeds2)
+        .setConnectTimeout(10000)
+        .setRetryBackoffStrategy(new FixedRetryBackoffStrategy(5000, 30000));
+
+		Object port = properties.get(Bootstrap.CASSANDRA_THRIFT_PORT);
+		if(port != null) {
+			int portVal = 9160;
+			if(port instanceof Integer) 
+				portVal = (Integer) port;
+			else if(port instanceof String)
+				portVal = Integer.valueOf((String) port);
+			else
+				throw new RuntimeException(Bootstrap.CASSANDRA_THRIFT_PORT+" key in map has a value of type="+port.getClass()+" but that must be a String or Integer");
+			poolConfig.setPort(portVal);
+		}
+		
 		Builder builder = new AstyanaxContext.Builder()
 	    .forCluster(clusterName)
 	    .forKeyspace(keyspace2)
@@ -80,13 +99,7 @@ public class BootstrapImpl extends Bootstrap {
 	        .setConnectionPoolType(ConnectionPoolType.TOKEN_AWARE)
 		.setClock(new MicrosecondsAsyncClock())
 	    )
-	    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("MyConnectionPool")
-	        .setMaxConnsPerHost(20)
-	        .setInitConnsPerHost(2)
-	        .setSeeds(seeds2)
-	        .setConnectTimeout(10000)
-		.setRetryBackoffStrategy(new FixedRetryBackoffStrategy(5000, 30000))
-	    )
+	    .withConnectionPoolConfiguration(poolConfig)
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
 		
 		
