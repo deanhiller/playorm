@@ -22,7 +22,7 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(CursorColumnSlice.class);
 
-	private static String columnName;
+	private String columnName;
 	private CreateColumnSliceCallback callback;
 	private boolean isComposite;
 	private BatchListener batchListener;
@@ -110,7 +110,7 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 	private Holder<T> buildHolder(com.netflix.astyanax.model.Column<byte[]> col) {
 
 		if(isComposite) {
-			IndexColumn c = convertToIndexCol(col);
+			IndexColumn c = convertToIndexCol(col, columnName);
 			return new Holder<T>((T) c);
 		} else {
 			Object obj = col.getName();
@@ -123,11 +123,11 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		}
 	}
 
-	public static IndexColumn convertToIndexCol(com.netflix.astyanax.model.Column<byte[]> col) {
+	public static IndexColumn convertToIndexCol(com.netflix.astyanax.model.Column<byte[]> col, String colNameStr) {
 		Object colName = col.getName();
 		GenericComposite bigDec = (GenericComposite)colName;
 		IndexColumn c = new IndexColumn();
-		c.setColumnName(columnName);
+		c.setColumnName(colNameStr);
 		c.setPrimaryKey(bigDec.getPk());
 		c.setIndexedValue(bigDec.getIndexedValue());
 		c.setValue(col.getByteArrayValue());

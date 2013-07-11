@@ -50,7 +50,7 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 		loadBatchIfNeeded();
 		if(cachedLastCols != null && cachedLastCols.hasNext()) {
 			Column<byte[]> col = cachedLastCols.next();
-			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col);
+			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col, null);
 			return new Holder<IndexColumn>(indexedCol);
 		}
 		
@@ -66,7 +66,7 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 
 			if(cachedLastCols.hasNext()) {
 				Column<byte[]> col = cachedLastCols.next();
-				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);
+				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col, null);
 	
 				if(batchListener != null)
 					batchListener.afterFetchingNextBatch(columnList.size());
@@ -82,7 +82,7 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 		loadBatchIfNeeded();
 		if(cachedLastCols != null && cachedLastCols.hasPrevious()) {
 			Column<byte[]> col = cachedLastCols.previous();
-			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col);
+			IndexColumn indexedCol = CursorColumnSlice.convertToIndexCol(col, null);
 			return new Holder<IndexColumn>(indexedCol);
 		}
 		
@@ -99,7 +99,7 @@ public class CursorOfFutures extends AbstractCursor<IndexColumn> {
 
 			if(cachedLastCols.hasPrevious()) {
 				Column<byte[]> col = cachedLastCols.previous();
-				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col);
+				IndexColumn indexCol = CursorColumnSlice.convertToIndexCol(col, null);
 	
 				if(batchListener != null)
 					batchListener.afterFetchingNextBatch(columnList.size());
