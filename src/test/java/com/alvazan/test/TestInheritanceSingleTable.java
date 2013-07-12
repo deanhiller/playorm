@@ -289,7 +289,7 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)sub2).getDescription());
 	}
 
-	@Test
+	//@Test
 	public void testCloneable() {
 		Localization l = new Localization();
 		CustomerAttr c = new CustomerAttr();
