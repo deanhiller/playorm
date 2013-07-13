@@ -56,15 +56,22 @@ public class TestEmbedded {
 		e2.setName("name2");
 		e2.setType("type2");
 		
+        EmbeddedEmail e3 = new EmbeddedEmail();
+        e3.setIdkey(68);
+        e3.setName("name3");
+        e3.setType("type3");
+
 		User user = new User();
 		List<EmbeddedEmail> listEmails = new ArrayList<EmbeddedEmail>();
 		listEmails.add(e1);
 		listEmails.add(e2);
+		listEmails.add(e3);
 		user.setEmails(listEmails);
 		user.setEmail(sub);
 
 		mgr.fillInWithKey(e1);
 		mgr.fillInWithKey(e1);
+		mgr.fillInWithKey(e3);
 		mgr.fillInWithKey(sub);
 		
 		mgr.put(user);
@@ -81,6 +88,7 @@ public class TestEmbedded {
 		
 		//Check List of entities
 		List<EmbeddedEmail> emails = user2.getEmails();
+		Assert.assertEquals(3, emails.size());
 
 		EmbeddedEmail email = emails.get(0);
 		Assert.assertNotNull(email);
@@ -89,11 +97,22 @@ public class TestEmbedded {
 		Assert.assertEquals(e1.getName(), email.getName());
 		
 		EmbeddedEmail email2 = emails.get(1);
-		Assert.assertEquals(e2.getName(), email2.getName());
+        Assert.assertEquals(e2.getName(), email2.getName());
 
-		// To check if delete is working fine
-		mgr.remove(user);
-		mgr.flush();
+        // check if deleting embedded stuff is working fine
+        NoSqlEntityManager mgr3 = factory.createEntityManager();
+        user2.getEmails().remove(0);
+        mgr2.put(user2);
+        mgr2.flush();
+
+        NoSqlEntityManager mgr4 = factory.createEntityManager();
+        User user3 = mgr4.find(User.class, user2.getId());
+        List<EmbeddedEmail> emails2 = user3.getEmails();
+        Assert.assertEquals(2, emails2.size());
+
+        // To check if delete is working fine
+        mgr.remove(user2);
+        mgr.flush();
 	}
 
 	@Test

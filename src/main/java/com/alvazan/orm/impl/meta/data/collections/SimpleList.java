@@ -17,6 +17,10 @@ public class SimpleList<T> extends SimpleAbstractCollection<T> implements List<T
 		super(converter, keys);
 	}
 
+    public SimpleList(List<T> keys) {
+        super(keys);
+    }
+
 	public Object clone() throws CloneNotSupportedException {
         SimpleList v = (SimpleList) super.clone();
         SimpleList[] current = this.toArray(new SimpleList[0]);

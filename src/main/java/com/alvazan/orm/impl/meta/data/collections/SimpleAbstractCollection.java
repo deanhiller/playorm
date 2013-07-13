@@ -21,13 +21,22 @@ public abstract class SimpleAbstractCollection<T> implements Collection<T> {
 	protected List<T> values = new ArrayList<T>();
 
     public SimpleAbstractCollection(Converter converter, List<byte[]> values) {
-    	for(byte[] val : values) {
+        //This is for MetaEmbeddedSimple
+        for(byte[] val : values) {
     		T obj = (T) converter.convertFromNoSql(val);
     		this.values.add(obj);
     		originalValues.add(obj);
     	}
 	}
-    
+
+    public SimpleAbstractCollection(List<T> values) {
+        // This is for MetaEmbeddedEntity
+        for (T val : values) {
+            this.values.add(val);
+            originalValues.add(val);
+        }
+    }
+
 	//Callback from one of the proxies to load the entire cache based
 //	//on a hit of getXXXXX (except for getId which doesn't need to go to database)
 //	public void loadCacheIfNeeded() {
