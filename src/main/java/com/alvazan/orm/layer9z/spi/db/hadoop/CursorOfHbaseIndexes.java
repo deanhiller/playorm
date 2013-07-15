@@ -20,6 +20,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
@@ -152,18 +153,35 @@ public class CursorOfHbaseIndexes extends AbstractCursor<IndexColumn> {
 		CompareFilter.CompareOp fromInclusive1 = CompareOp.GREATER;
 		BinaryComparator startColumn = null;
 		if (from != null) {
-			startColumn = new BinaryComparator(from.getKey());
+			if ((indexTableName.equalsIgnoreCase("IntegerIndice")))
+				startColumn = new BinaryComparator(conversionForHbase(from));
+			else
+				startColumn = new BinaryComparator(from.getKey());
 			if (from.isInclusive())
 				fromInclusive1 = CompareOp.GREATER_OR_EQUAL;
 		}
 		return new ValueFilter(fromInclusive1, startColumn);
 	}
 
+	private byte[] conversionForHbase(Key key) {
+		byte[] byteArr = null;
+		if (key != null && key.getKey() != null) {
+			int tempInt = StandardConverters.convertFromBytes(Integer.class,key.getKey());
+			tempInt ^= (1 << 31);
+			byteArr = Bytes.toBytes(tempInt);
+		}
+		return byteArr;
+	}
+
 	private ValueFilter createFilterTo() {
 		CompareFilter.CompareOp toInclusive1 = CompareOp.LESS;
 		BinaryComparator endColumn = null;
 		if (to != null) {
-			endColumn = new BinaryComparator(to.getKey());
+			if ((indexTableName.equalsIgnoreCase("IntegerIndice")))
+				endColumn = new BinaryComparator(conversionForHbase(to));
+			else
+				endColumn = new BinaryComparator(to.getKey());
+
 			if (to.isInclusive())
 				toInclusive1 = CompareOp.LESS_OR_EQUAL;
 		}

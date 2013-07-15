@@ -16,6 +16,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
 
@@ -92,16 +93,17 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 			for (byte[] key : values) {
 				Get get = new Get(rowKey);
 				CompareFilter.CompareOp equal = CompareOp.EQUAL;
-				BinaryComparator endColumn1 = new BinaryComparator(key);
-				ValueFilter filter = new ValueFilter(equal, endColumn1);
-				get.setFilter(filter);
-				get.addFamily(family);
-				listGet.add(get);
+				if (key != null) {
+					BinaryComparator valueComparator = createComparaor(key);
+					ValueFilter filter = new ValueFilter(equal, valueComparator);
+					get.setFilter(filter);
+					get.addFamily(family);
+					listGet.add(get);
+				}
 			}
 			try {
 				result = htable.get(listGet);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			fillCache(result);
@@ -111,6 +113,18 @@ public class CursorForHbaseValues extends AbstractCursor<IndexColumn> {
 					cachedRows.next();
 			}
 		}
+	}
+
+	private BinaryComparator createComparaor(byte[] key) {
+		BinaryComparator valueComparator = null;
+		if ((indexTableName.equalsIgnoreCase("IntegerIndice"))) {
+			int tempInt = StandardConverters.convertFromBytes(Integer.class,key);
+			tempInt ^= (1 << 31);
+			byte[] byteArr = Bytes.toBytes(tempInt);
+			valueComparator = new BinaryComparator(byteArr);
+		} else
+			valueComparator = new BinaryComparator(key);
+		return valueComparator;
 	}
 
 	private void fillCache(Result[] results) {
