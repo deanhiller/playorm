@@ -102,13 +102,25 @@ public class TestEmbedded {
         // check if deleting embedded stuff is working fine
         NoSqlEntityManager mgr3 = factory.createEntityManager();
         user2.getEmails().remove(0);
-        mgr2.put(user2);
-        mgr2.flush();
+        mgr3.put(user2);
+        mgr3.flush();
 
         NoSqlEntityManager mgr4 = factory.createEntityManager();
         User user3 = mgr4.find(User.class, user2.getId());
         List<EmbeddedEmail> emails2 = user3.getEmails();
         Assert.assertEquals(2, emails2.size());
+
+        // check if delete is working by passing object
+        NoSqlEntityManager mgr5 = factory.createEntityManager();
+        User user4 = mgr5.find(User.class, user.getId());
+        user4.getEmails().remove(e3);
+        mgr5.put(user4);
+        mgr5.flush();
+
+        NoSqlEntityManager mgr6 = factory.createEntityManager();
+        User user5 = mgr6.find(User.class, user.getId());
+        List<EmbeddedEmail> emails4 = user5.getEmails();
+        Assert.assertEquals(1, emails4.size());
 
         // To check if delete is working fine
         mgr.remove(user2);
