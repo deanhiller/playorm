@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.test.db.Account;
 import com.alvazan.test.db.AccountSuper;
+import com.alvazan.test.db.CustomerAttr;
 import com.alvazan.test.db.InheritanceSub1;
 import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.InheritanceSuper;
@@ -20,6 +21,7 @@ import com.alvazan.test.db.InheritanceToMany;
 import com.alvazan.test.db.InheritanceToManySpecific;
 import com.alvazan.test.db.InheritanceToOne;
 import com.alvazan.test.db.InheritanceToOneSpecific;
+import com.alvazan.test.db.Localization;
 
 public class TestInheritanceSingleTable {
 
@@ -285,5 +287,22 @@ public class TestInheritanceSingleTable {
 		Assert.assertEquals(toMany.getId(), sub2.getId());
 		Assert.assertEquals(toMany.getNum(), sub2.getNum());
 		Assert.assertEquals(toMany.getDescription(), ((InheritanceSub2)sub2).getDescription());
+	}
+
+	//@Test
+	public void testCloneable() {
+		Localization l = new Localization();
+		CustomerAttr c = new CustomerAttr();
+		c.setRoll(100);
+		l.setAdd("Denver");
+		c.setId("customerattrid");
+		l.setId("localizationid");
+		mgr.put(l);
+		mgr.put(c);
+		mgr.flush();
+		Assert.assertEquals(c.getRoll(), 100);
+		Assert.assertEquals(l.getAdd(), "Denver");
+		Assert.assertEquals(l.getId(), "localizationid");
+		Assert.assertEquals(c.getId(), "customerattrid");
 	}
 }

@@ -25,8 +25,9 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
-import com.alvazan.orm.impl.meta.data.collections.OurAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
+import com.alvazan.orm.impl.meta.data.collections.SimpleAbstractCollection;
+import com.alvazan.orm.impl.meta.data.collections.SimpleList;
 import com.alvazan.orm.impl.meta.data.collections.ToOneProviderProxy;
 
 public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
@@ -152,7 +153,8 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 			Object proxy = createProxy(rowkey, row);
 			retVal.add((PROXY)proxy);
 		}
-		return retVal;
+		List<PROXY> finalList = new SimpleList<PROXY>(retVal);
+		return finalList;
 	}
 
 	@Override
@@ -181,10 +183,10 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		Collection<PROXY> toBeAdded = values;
 		// all values in the list get
 		// added if not an
-		// OurAbstractCollection
+		// SimpleAbstractCollection
 		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
-		if (values instanceof OurAbstractCollection) {
-			OurAbstractCollection<PROXY> coll = (OurAbstractCollection<PROXY>) values;
+		if (values instanceof SimpleAbstractCollection) {
+		    SimpleAbstractCollection<PROXY> coll = (SimpleAbstractCollection<PROXY>) values;
 			toBeRemoved = coll.getToBeRemoved();
 			toBeAdded = coll.getToBeAdded();
 		}

@@ -27,6 +27,7 @@ import com.alvazan.orm.api.z8spi.action.PersistIndex;
 import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
+import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -178,19 +179,31 @@ public class HadoopSession implements NoSqlRawSession {
 		byte[] key = column.getIndexedValue();
 		byte[] value = column.getPrimaryKey();
 		Get get = new Get(rowKey);
+		Object keyToPersist = null;
+		byte[] byteArr = null;
+		if (key != null) {
+			if ((indexCfName.equalsIgnoreCase("IntegerIndice"))) {
+				keyToPersist = StandardConverters.convertFromBytes(Integer.class, key);
+				int tempInt = ((Integer) keyToPersist).intValue();
+				tempInt ^= (1 << 31);
+				byteArr = Bytes.toBytes(tempInt);
+			} else
+				byteArr = key;
+		}
+
 		try {
 			Result result = hTable.get(get);
 			byte[] existing = result.getValue(hColFamily.getName(), value);
 			if (existing != null) {
-				if (!Bytes.equals(existing, key)) {
+				if (!Bytes.equals(existing, byteArr)) {
 					Put put = new Put(rowKey);
-					put.add(hColFamily.getName(), value, key);
+					put.add(hColFamily.getName(), value, byteArr);
 					hTable.put(put);
 					hTable.flushCommits();
 				}
 			} else {
 				Put put = new Put(rowKey);
-				put.add(hColFamily.getName(), value, key);
+				put.add(hColFamily.getName(), value, byteArr);
 				hTable.put(put);
 				hTable.flushCommits();
 			}
