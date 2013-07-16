@@ -22,9 +22,9 @@ public class FactorySingleton {
 		 * FLIP THIS BIT TO CHANGE FROM CASSANDRA TO ANOTHER ONE
 		 **************************************************/
 		String clusterName = "PlayCluster";
-		//serverType = DbTypeEnum.CASSANDRA;
+		serverType = DbTypeEnum.CASSANDRA;
 		//serverType = DbTypeEnum.MONGODB;
-		serverType = DbTypeEnum.IN_MEMORY;
+		//serverType = DbTypeEnum.IN_MEMORY;
 		//serverType = DbTypeEnum.HBASE;
 		String seeds = "localhost:9160";
 		if (serverType.equals(DbTypeEnum.MONGODB))

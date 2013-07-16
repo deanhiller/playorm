@@ -212,13 +212,12 @@ public class TestIndexes {
 	
 	
 	@Test
-	@SuppressWarnings("unchecked")
 	public void testIndexedButNotInNoSqlDatabaseList() {
 		PartAccount acc = new PartAccount();
-		acc.setBusinessName("abc");
+		acc.setBusinessName("dean");
 		mgr.put(acc);
 		PartAccount acc2 = new PartAccount();
-		acc2.setBusinessName("dean");
+		acc2.setBusinessName(acc.getBusinessName());
 		mgr.put(acc2);
 		
 		mgr.flush();
@@ -233,17 +232,18 @@ public class TestIndexes {
 		col.setColumnName("businessName");
 		String key = "nonexistpk";
 		byte[] pk = StandardConverters.convertToBytes(key);
-		byte[] value = StandardConverters.convertToBytes("DeansCoolBusiness");
+		byte[] value = StandardConverters.convertToBytes(acc.getBusinessName());
 		col.setIndexedValue(value);
 		col.setPrimaryKey(pk);
 		session.persistIndex(table, info.getIndexColFamily(), info.getRowKey(), col);
 		
 		mgr.flush();
 		
-		Iterable<KeyValue<PartAccount>> all = PartAccount.findAll2(mgr);
-		
+		Iterable<KeyValue<PartAccount>> all = PartAccount.findWithBizName(mgr, acc.getBusinessName());
+		List keys = new ArrayList();
 		KeyValue<PartAccount> kVal = null;
 		for(KeyValue<PartAccount> k : all) {
+			keys.add(k);
 			if(k.getKey().equals(key))
 				kVal = k;
 		}
@@ -263,8 +263,8 @@ public class TestIndexes {
 		
 		//Now we DON'T want this to fail, if it fails it means that a single corrupt index will cause 
 		//all findAll calls to blow up, we don't want that:
-		List<PartAccount> paList = PartAccount.findAll(mgr);
-		Assert.assertEquals(paList.size(), 3);
+		List<PartAccount> paList = PartAccount.findWithBizNameList(mgr, acc.getBusinessName());
+		Assert.assertEquals(3, paList.size());
 		//NOTE: Account3 was NOT PUT in the database(or you could say removed but index not updated yet)
 //		try {
 //			PartAccount.findAll(mgr);

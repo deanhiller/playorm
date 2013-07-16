@@ -15,7 +15,8 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 
 @NoSqlEntity
 @NoSqlQueries({
-	@NoSqlQuery(name="findAll", query="select *  from TABLE as d")
+	@NoSqlQuery(name="findAll", query="select *  from TABLE as d"),
+	@NoSqlQuery(name="findWithBizName", query="select t from TABLE as t where t.businessName=:name")
 })
 public class PartAccount {
 
@@ -54,6 +55,16 @@ public class PartAccount {
 		this.businessName = businessName;
 	}
 
+	public static Iterable<KeyValue<PartAccount>> findWithBizName(NoSqlEntityManager mgr, String name) {
+		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findWithBizName");
+		query.setParameter("name", name);
+		return query.getResultsIter();
+	}
+	public static List<PartAccount> findWithBizNameList(NoSqlEntityManager mgr, String name) {
+		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findWithBizName");
+		query.setParameter("name", name);
+		return query.getResultList(0, null);
+	}
 	public static Iterable<KeyValue<PartAccount>> findAll2(NoSqlEntityManager mgr) {
 		Query<PartAccount> query = mgr.createNamedQuery(PartAccount.class, "findAll");
 		return query.getResultsIter();		

@@ -103,7 +103,7 @@ public class TestJoins {
 		
 		String sql = "select a from Email as a";
 		NoSqlTypedSession s = mgr.getTypedSession();
-		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		QueryResult result = s.createQueryCursor(sql, 10); // only need last
 		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
 		cursor.afterLast();
 		Assert.assertTrue(cursor.previous());
@@ -144,11 +144,19 @@ public class TestJoins {
 		
 		String sql = "select a from Email as a";
 		NoSqlTypedSession s = mgr.getTypedSession();
-		QueryResult result = s.createQueryCursor(sql, 1); // only need last
+		QueryResult result = s.createQueryCursor(sql, 10); // only need last
 		Cursor<KeyValue<TypedRow>> cursor = result.getPrimaryViewCursor();
 		cursor.beforeFirst();
-		Assert.assertTrue(cursor.next());
-		Assert.assertEquals("email1", cursor.getCurrent().getKey());
+		List<TypedRow> list = new ArrayList<TypedRow>();
+		TypedRow myRow = null;
+		while(cursor.next()) {
+			list.add(cursor.getCurrent().getValue());
+			if("email1".equals(cursor.getCurrent().getKey()))
+				myRow = cursor.getCurrent().getValue();
+		}
+		Assert.assertEquals(3, list.size());
+		
+		Assert.assertEquals("anemail1", myRow.getColumn("name").getValue());
 	}
 	
 	@Test

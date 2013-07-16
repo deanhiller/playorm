@@ -1,5 +1,7 @@
 package com.alvazan.test;
 
+import java.util.List;
+
 import org.junit.Assert;
 
 import org.junit.After;
@@ -9,8 +11,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.test.db.EmailAccountXref;
 import com.alvazan.test.db.TimeSeriesData;
 import com.alvazan.test.db.User;
 
@@ -38,6 +42,21 @@ public class TestIndexesNew {
 			if (log.isWarnEnabled())
 				log.warn("Could not clean up properly", e);
 		}
+	}
+	
+	@Test
+	public void testNoPlayOrmIndexButUseCassandraFindAll() {
+		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
+			return;
+		
+		EmailAccountXref ref = new EmailAccountXref();
+		EmailAccountXref ref2 = new EmailAccountXref();
+		mgr.put(ref);
+		mgr.put(ref2);
+		mgr.flush();
+		
+		List<EmailAccountXref> accounts = EmailAccountXref.findAll(mgr);
+		Assert.assertEquals(2, accounts.size());
 	}
 	
 	@Test

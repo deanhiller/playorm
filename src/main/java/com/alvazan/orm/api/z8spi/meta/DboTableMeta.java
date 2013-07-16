@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.regex.Pattern;
 
 import javassist.util.proxy.MethodFilter;
@@ -69,7 +68,6 @@ public class DboTableMeta {
 
 	private transient List<DboColumnMeta> indexedColumnsCache;
 	private transient List<DboColumnMeta> cacheOfPartitionedBy;
-	private transient Random r = new Random();
 
 	/**
 	 * Some virtual column families are embeddable
@@ -419,20 +417,21 @@ public class DboTableMeta {
 
 	public DboColumnMeta getAnyIndex(String indexedColumn, DboColumnMeta partColMeta) {
 		initCaches();
-		if(indexedColumnsCache.size() == 0)
-			throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation");
+		if(indexedColumnsCache.size() == 0) {
+			if(isVirtualCf())
+				throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation AND your CF is virtual so we have to use an index");
+			//just return the first column since it won't be used anyways...
+			return nameToField.values().iterator().next();
+		}
 		int index = 0;
 		if (indexedColumn == null) {
 			// spread load over the index rows .....
 			if (partColMeta == null) {
-				index = r.nextInt(indexedColumnsCache.size());
 				return indexedColumnsCache.get(index);
 			} else {
-				index = r.nextInt(indexedColumnsCache.size());
 				DboColumnMeta colMetaPart = indexedColumnsCache.get(index);
 				while (partColMeta.getColumnName().equals(
 						colMetaPart.getColumnName())) {
-					index = r.nextInt(indexedColumnsCache.size());
 					colMetaPart = indexedColumnsCache.get(index);
 				}
 				return colMetaPart;

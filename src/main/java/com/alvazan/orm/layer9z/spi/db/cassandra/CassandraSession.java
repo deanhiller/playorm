@@ -29,6 +29,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.ColumnListMutation;
@@ -354,6 +355,18 @@ public class CassandraSession implements NoSqlRawSession {
 			if (log.isInfoEnabled())
 				log.info("query was run on column family that does not yet exist="+colFamily);
 			return new EmptyCursor<IndexColumn>();
+		}
+		
+		//Here we don't bother using an index at all since there is no where clause to begin with
+		//ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to use an index
+		//so check the column type
+		if(!info.getEntityColFamily().isVirtualCf() && from == null && to == null 
+				&& !(info.getColumnName() instanceof DboColumnToManyMeta)) {
+			Keyspace keyspace = columnFamilies.getKeyspace();
+			Info cfInfo = columnFamilies.fetchColumnFamilyInfo(info.getEntityColFamily().getRealColumnFamily(), mgr);
+			ScanCassandraCf scanner = new ScanCassandraCf(info, cfInfo, bListener, batchSize, keyspace);
+			scanner.beforeFirst();
+			return scanner;
 		}
 		
 		String colName = null;
