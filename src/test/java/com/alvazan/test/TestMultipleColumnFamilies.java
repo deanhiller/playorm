@@ -59,7 +59,7 @@ public class TestMultipleColumnFamilies {
 		DboTableMeta meta=null;
 		for(int j=1;j<20;j++){
 		meta= new DboTableMeta();
-		meta.setup(null, name, false);
+		meta.setup(null, name, false, false);
 		metaDb.addMetaClassDbo(meta);
 				
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();

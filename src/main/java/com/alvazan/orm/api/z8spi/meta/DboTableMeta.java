@@ -74,6 +74,7 @@ public class DboTableMeta {
 	 * capital Boolean for backwards compatibility...
 	 */
 	private Boolean isEmbeddable;
+	private Boolean isInheritance;
 	
 	private static Class typedRowProxyClass;
 
@@ -186,7 +187,7 @@ public class DboTableMeta {
 		return isEmbeddable;
 	}
 
-	public void setup(String virtualCf, String cf, boolean isEmbeddable) {
+	public void setup(String virtualCf, String cf, boolean isEmbeddable, Boolean isInheritance) {
 		if(!NAME_PATTERN.matcher(cf).matches())
 			throw new IllegalArgumentException("Table name must match regular expression='[a-zA-Z_][a-zA-Z_0-9]*'");
 
@@ -198,8 +199,15 @@ public class DboTableMeta {
 		}
 		
 		this.isEmbeddable = isEmbeddable;
+		this.isInheritance = isInheritance;
 	}
-	
+
+	public boolean isInheritance() {
+		if(isInheritance == null)
+			return false;
+		return isInheritance;
+	}
+
 	public void setRowKeyMeta(DboColumnIdMeta idMeta) {
 		this.idColumn = idMeta;
 	}

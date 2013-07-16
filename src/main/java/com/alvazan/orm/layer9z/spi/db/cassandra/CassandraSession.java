@@ -361,7 +361,8 @@ public class CassandraSession implements NoSqlRawSession {
 		//ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to use an index
 		//so check the column type
 		if(!info.getEntityColFamily().isVirtualCf() && from == null && to == null 
-				&& !(info.getColumnName() instanceof DboColumnToManyMeta)) {
+				&& !(info.getColumnName() instanceof DboColumnToManyMeta)
+				&& !info.getEntityColFamily().isInheritance()) {
 			Keyspace keyspace = columnFamilies.getKeyspace();
 			Info cfInfo = columnFamilies.fetchColumnFamilyInfo(info.getEntityColFamily().getRealColumnFamily(), mgr);
 			ScanCassandraCf scanner = new ScanCassandraCf(info, cfInfo, bListener, batchSize, keyspace);

@@ -55,7 +55,7 @@ public class TestColumnSlice {
 		DboTableMeta tm = new DboTableMeta();
 		tm.setTimeSeries(true);
 		tm.setTimeSeriesPartionSize(partitionSize);
-		tm.setup(colFamily, "realCf", false);
+		tm.setup(colFamily, "realCf", false, false);
 		tm.setColNameType(long.class);
 
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
@@ -107,7 +107,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setup(null, colFamily, false);
+		tableMeta.setup(null, colFamily, false, false);
 		tableMeta.setColNameType(double.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();
@@ -171,7 +171,7 @@ public class TestColumnSlice {
 		DboDatabaseMeta meta = mgr.find(DboDatabaseMeta.class, DboDatabaseMeta.META_DB_ROWKEY);
 
 		DboTableMeta tableMeta = new DboTableMeta();
-		tableMeta.setup(null, colFamily, false);
+		tableMeta.setup(null, colFamily, false, false);
 		tableMeta.setColNameType(long.class);
 		
 		DboColumnIdMeta idMeta = new DboColumnIdMeta();

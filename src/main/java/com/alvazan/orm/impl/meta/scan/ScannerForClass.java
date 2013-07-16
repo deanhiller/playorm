@@ -113,7 +113,7 @@ public class ScannerForClass {
 		
 		for(Class clazz : annotation.subclassesToScan()) {
 			MetaClassSingle<?> metaSingle = metaClass.findOrCreate(clazz, mainClass);
-			metaSingle.setup(virtualCf, cf, false);
+			metaSingle.setup(virtualCf, cf, false, true);
 			metaSingle.setMetaClass(clazz);
 			metaInfo.addSubclass(clazz, metaClass);
 			scanSingle(metaSingle, metaDbo);
@@ -181,7 +181,7 @@ public class ScannerForClass {
 			String virtualCfName = embeddable.virtualCfName();
 			if("".equals(virtualCfName))
 				virtualCfName = meta.getMetaClass().getSimpleName();
-			meta.setup(null, virtualCfName, true);
+			meta.setup(null, virtualCfName, true, false);
 			return;
 		} else {
 			cf = meta.getColumnFamily();
@@ -198,7 +198,7 @@ public class ScannerForClass {
 			cf = anno.storedInCf();
 		}
 		
-		meta.setup(virtualCf, cf, false);
+		meta.setup(virtualCf, cf, false, false);
 	}
 	
 	private void scanFields(MetaClassSingle<?> meta, DboTableMeta metaDbo) {

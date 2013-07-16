@@ -2,9 +2,8 @@ package com.alvazan.test;
 
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -14,7 +13,11 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
+import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.test.db.EmailAccountXref;
+import com.alvazan.test.db.NonVirtSub1;
+import com.alvazan.test.db.NonVirtSub2;
 import com.alvazan.test.db.TimeSeriesData;
 import com.alvazan.test.db.User;
 
@@ -41,6 +44,29 @@ public class TestIndexesNew {
 		} catch(Exception e) {
 			if (log.isWarnEnabled())
 				log.warn("Could not clean up properly", e);
+		}
+	}
+	
+	@Test
+	public void testInheritanceWithCassandraFindAll() {
+		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
+			return;
+		
+		NonVirtSub1 s1 = new NonVirtSub1();
+		s1.setName("dean");
+		NonVirtSub2 s2 = new NonVirtSub2();
+		s2.setNum(5);
+	
+		mgr.put(s1);
+		mgr.put(s2);
+		
+		mgr.flush();
+		
+		Cursor<KeyValue<NonVirtSub1>> cursor = NonVirtSub1.findAll(mgr);
+		while(cursor.next()) {
+			KeyValue<NonVirtSub1> kv = cursor.getCurrent();
+			NonVirtSub1 sub = kv.getValue();
+			Assert.assertEquals(s1.getName(), s1.getName());
 		}
 	}
 	
