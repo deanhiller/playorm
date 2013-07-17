@@ -359,4 +359,16 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		session.clear();
 	}
 
+	@Override
+	public <T> Cursor<T> allRows(Class<T> baseEntity, String cf, int batchSize) {
+		MetaClass meta = metaInfo.lookupCf(cf);
+		if(meta == null)
+			throw new IllegalArgumentException("A real CF="+cf+" was not found in the meta data");
+		else if(!baseEntity.isAssignableFrom(meta.getMetaClass()))
+			throw new IllegalArgumentException("baseEntity="+baseEntity+" was not a superclass of type="+meta.getMetaClass());
+
+		AbstractCursor<Row> allRows = session.allRows(meta.getMetaDbo(), batchSize);
+		return new CursorRowPlain<T>(session, meta, allRows);
+	}
+
 }

@@ -18,6 +18,7 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.test.db.EmailAccountXref;
 import com.alvazan.test.db.NonVirtSub1;
 import com.alvazan.test.db.NonVirtSub2;
+import com.alvazan.test.db.NonVirtSuper;
 import com.alvazan.test.db.TimeSeriesData;
 import com.alvazan.test.db.User;
 
@@ -48,8 +49,32 @@ public class TestIndexesNew {
 	}
 	
 	@Test
+	public void testAllRowsPolymorphic() {
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+            return;
+        
+		NonVirtSub1 s1 = new NonVirtSub1();
+		s1.setName("dean");
+		NonVirtSub2 s2 = new NonVirtSub2();
+		s2.setNum(5);
+	
+		mgr.put(s1);
+		mgr.put(s2);
+		
+		mgr.flush();
+
+		Cursor<NonVirtSuper> cursor = mgr.allRows(NonVirtSuper.class, "NonVirtSuper", 500);
+		int count = 0;
+		while(cursor.next()) {
+			NonVirtSuper current = cursor.getCurrent();
+			count++;
+		}
+		Assert.assertEquals(2, count);
+	}
+	
+	@Test
 	public void testInheritanceWithCassandraFindAll() {
-        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
             return;
 		
 		NonVirtSub1 s1 = new NonVirtSub1();
@@ -72,7 +97,7 @@ public class TestIndexesNew {
 	
 	@Test
 	public void testNoPlayOrmIndexButUseCassandraFindAll() {
-		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
 			return;
 		
 		EmailAccountXref ref = new EmailAccountXref();
