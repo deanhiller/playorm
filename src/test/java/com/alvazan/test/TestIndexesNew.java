@@ -49,8 +49,8 @@ public class TestIndexesNew {
 	
 	@Test
 	public void testInheritanceWithCassandraFindAll() {
-		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
-			return;
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+            return;
 		
 		NonVirtSub1 s1 = new NonVirtSub1();
 		s1.setName("dean");
@@ -72,7 +72,7 @@ public class TestIndexesNew {
 	
 	@Test
 	public void testNoPlayOrmIndexButUseCassandraFindAll() {
-		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
+		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
 			return;
 		
 		EmailAccountXref ref = new EmailAccountXref();

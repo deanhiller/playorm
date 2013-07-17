@@ -37,6 +37,7 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.mongodb.ServerAddress;
@@ -162,6 +163,17 @@ public class MongoDbSession implements NoSqlRawSession {
 		byte[] rowKey = scan.getRowKey();
 		String indexTableName = scan.getIndexColFamily();
 		DboColumnMeta colMeta = scan.getColumnName();
+		DboTableMeta entityDbCollection = scan.getEntityColFamily();
+
+        // Here we don't bother using an index at all since there is no where clause to begin with
+        // ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to
+        // use an index so check the column type
+        if (!entityDbCollection.isVirtualCf() && from == null && to == null && !(scan.getColumnName() instanceof DboColumnToManyMeta)
+                && !entityDbCollection.isInheritance()) {
+            ScanMongoDbCollection scanner = new ScanMongoDbCollection(batchSize, l, entityDbCollection.getColumnFamily(), db);
+            scanner.beforeFirst();
+            return scanner;
+        }
 		CursorOfIndexes cursor = new CursorOfIndexes(rowKey, batchSize, l, indexTableName, from, to);
 		cursor.setupMore(db, colMeta);
 		return cursor;
