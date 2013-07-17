@@ -8,7 +8,9 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
+import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.impl.meta.data.MetaClass;
+import com.alvazan.orm.impl.meta.data.MetaInfo;
 
 public class CursorRowPlain<T> extends AbstractCursor<T>{
 
@@ -17,18 +19,21 @@ public class CursorRowPlain<T> extends AbstractCursor<T>{
 	private MetaClass<T> meta;
 	private AbstractCursor<Row> cursor;
 	private NoSqlSession session;
+	private MetaInfo metaInfo;
+	private boolean isVirtual;
 	
-	public CursorRowPlain(NoSqlSession session, MetaClass<T> meta2, AbstractCursor<Row> cursor) {
+	public CursorRowPlain(NoSqlSession session, MetaClass<T> meta2, AbstractCursor<Row> cursor, MetaInfo metaInfo, boolean isVirtual) {
 		this.session = session;
 		this.meta = meta2;
 		this.cursor = cursor;
+		this.metaInfo = metaInfo;
+		this.isVirtual = isVirtual;
 	}
 
 	@Override
 	public void beforeFirst() {
 		cursor.beforeFirst();
 	}
-	
 	
 	@Override
 	public void afterLast() {
@@ -41,6 +46,7 @@ public class CursorRowPlain<T> extends AbstractCursor<T>{
 		if(nextImpl == null)
 			return null;
 		Row kv = nextImpl.getValue();
+
 		T result = translateRow(kv);
 		return new Holder<T>(result);
 	}
@@ -56,8 +62,17 @@ public class CursorRowPlain<T> extends AbstractCursor<T>{
 		return new Holder<T>(result);
 	}
 	
+	@SuppressWarnings("unchecked")
 	private T translateRow(Row row) {
-		KeyValue<T> keyVal = meta.translateFromRow(row, session);
+		MetaClass<T> newMeta = meta;
+		KeyValue<T> keyVal;
+		if(isVirtual) {
+			String tableName = DboColumnIdMeta.fetchTableNameIfVirtual(row.getKey());
+			newMeta = metaInfo.getMetaClass(tableName);
+		}
+			
+		keyVal = newMeta.translateFromRow(row, session);
+
 		return keyVal.getValue();
 	}
 

@@ -368,7 +368,8 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 			throw new IllegalArgumentException("baseEntity="+baseEntity+" was not a superclass of type="+meta.getMetaClass());
 
 		AbstractCursor<Row> allRows = session.allRows(meta.getMetaDbo(), batchSize);
-		return new CursorRowPlain<T>(session, meta, allRows);
+		boolean isVirtual = baseEntity.equals(Object.class);
+		return new CursorRowPlain<T>(session, meta, allRows, metaInfo, isVirtual);
 	}
 
 }

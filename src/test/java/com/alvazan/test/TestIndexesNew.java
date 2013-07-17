@@ -15,7 +15,10 @@ import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
+import com.alvazan.test.db.Activity;
 import com.alvazan.test.db.EmailAccountXref;
+import com.alvazan.test.db.InheritanceSub1;
+import com.alvazan.test.db.InheritanceSub2;
 import com.alvazan.test.db.NonVirtSub1;
 import com.alvazan.test.db.NonVirtSub2;
 import com.alvazan.test.db.NonVirtSuper;
@@ -48,6 +51,32 @@ public class TestIndexesNew {
 		}
 	}
 	
+	@Test
+	public void testAllRowsVirtual() {
+        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
+            return;
+
+		InheritanceSub1 sub1 = new InheritanceSub1();
+		sub1.setName("dean");
+		InheritanceSub2 sub2 = new InheritanceSub2();
+		sub2.setNum(5);
+		Activity act = new Activity();
+		act.setId("myid");
+		act.setName("joe");
+		mgr.put(sub1);
+		mgr.put(sub2);
+		mgr.put(act);
+		mgr.flush();
+		
+		Cursor<Object> cursor = mgr.allRows(Object.class, "ourstuff", 500);
+		int count = 0;
+		while(cursor.next()) {
+			Object current = cursor.getCurrent();
+			count++;
+		}
+		Assert.assertEquals(3, count);
+	}
+
 	@Test
 	public void testAllRowsPolymorphic() {
         if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
