@@ -117,4 +117,9 @@ public class NoSqlDevLogger implements NoSqlSession {
 		session.removeColumn(colFamily, rowKey, columnName);
 	}
 
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, int batchSize) {
+		return session.allRows(colFamily, batchSize);
+	}
+
 }

@@ -527,4 +527,9 @@ public class HadoopSession implements NoSqlRawSession {
 		return table;
 	}
 
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup ormSession, int batchSize) {
+		throw new UnsupportedOperationException("not supported yet");
+	}
+
 }

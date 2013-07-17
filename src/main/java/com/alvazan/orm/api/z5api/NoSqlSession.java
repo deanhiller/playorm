@@ -30,6 +30,8 @@ public interface NoSqlSession {
 	 */
 	public NoSqlRawSession getRawSession();
 	
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, int batchSize);
+
 	public void persistIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKey, IndexColumn column);
 	public void removeFromIndex(DboTableMeta colFamily, String indexColFamily, byte[] rowKeyBytes, IndexColumn c);
 	

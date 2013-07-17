@@ -474,4 +474,13 @@ public class CassandraSession implements NoSqlRawSession {
 		columnFamilies.lookupOrCreate2(colFamily, ormSession);
 	}
 
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup mgr, int batchSize) {
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		Info cfInfo = columnFamilies.lookupOrCreate2(colFamily.getColumnFamily(), mgr);
+		ScanCassandraCfAllRows scanner = new ScanCassandraCfAllRows(cfInfo, batchSize, keyspace, rowProvider);
+		scanner.beforeFirst();
+		return scanner;
+	}
+
 }

@@ -45,4 +45,6 @@ public interface NoSqlRawSession {
 
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily);
 
+	AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup mgr, int batchSize);
+
 }

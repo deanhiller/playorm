@@ -283,5 +283,8 @@ public class InMemorySession implements NoSqlRawSession {
 		//eh, who cares, we already create on persist when needed
 	}
 
-
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup ormSession, int batchSize) {
+		throw new UnsupportedOperationException("not supported yet");
+	}
 }

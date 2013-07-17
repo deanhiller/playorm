@@ -182,4 +182,9 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 	@Override
 	public void clear() {
 	}
+
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, int batchSize) {
+		return rawSession.allRows(colFamily, ormSession, batchSize);
+	}
 }
