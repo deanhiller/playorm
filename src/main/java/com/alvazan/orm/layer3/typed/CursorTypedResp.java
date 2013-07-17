@@ -7,6 +7,7 @@ import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.Precondition;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
+import com.alvazan.orm.api.z8spi.iter.StringLocal;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.TypedRow;
@@ -27,6 +28,14 @@ public class CursorTypedResp<T> extends AbstractCursor<KeyValue<TypedRow>> {
 		this.keysIterable = keys;
 		this.rowsIterable = rows;
 		beforeFirst();
+	}
+
+	@Override
+	public String toString() {
+		String tabs = StringLocal.getAndAdd();
+		String retVal = "CursorTypedResp()["+tabs+rowsIterable+tabs+"]";
+		StringLocal.set(tabs.length());
+		return retVal;
 	}
 
 	public CursorTypedResp(DboTableMeta meta2, AbstractCursor<KeyValue<Row>> rows2,
