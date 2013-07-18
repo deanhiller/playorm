@@ -79,9 +79,9 @@ public class TestIndexesNew {
 
 	@Test
 	public void testAllRowsPolymorphic() {
-        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
-            return;
-        
+		if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+			return;
+
 		NonVirtSub1 s1 = new NonVirtSub1();
 		s1.setName("dean");
 		NonVirtSub2 s2 = new NonVirtSub2();
@@ -103,9 +103,7 @@ public class TestIndexesNew {
 	
 	@Test
 	public void testInheritanceWithCassandraFindAll() {
-        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
-            return;
-		
+
 		NonVirtSub1 s1 = new NonVirtSub1();
 		s1.setName("dean");
 		NonVirtSub2 s2 = new NonVirtSub2();
@@ -126,9 +124,7 @@ public class TestIndexesNew {
 	
 	@Test
 	public void testNoPlayOrmIndexButUseCassandraFindAll() {
-		if(FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
-			return;
-		
+
 		EmailAccountXref ref = new EmailAccountXref();
 		EmailAccountXref ref2 = new EmailAccountXref();
 		mgr.put(ref);
