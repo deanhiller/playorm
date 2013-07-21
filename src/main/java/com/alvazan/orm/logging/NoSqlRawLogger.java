@@ -320,6 +320,12 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	public void readMetaAndCreateTable(MetaLookup ormSession, String colFamily) {
 		session.readMetaAndCreateTable(ormSession, colFamily);
 	}
+
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily,
+			MetaLookup ormSession, int batchSize) {
+		return session.allRows(colFamily, ormSession, batchSize);
+	}
 	
 //	@Override
 //	public AbstractCursor<KeyValue<Row>> find(String colFamily,

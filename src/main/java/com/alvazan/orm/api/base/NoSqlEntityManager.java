@@ -150,5 +150,21 @@ public interface NoSqlEntityManager {
 	 * database
 	 */
 	public void clearDatabase(boolean recreateMeta);
-	
+
+	/**
+	 * This method should only be used on small count CF's(less than 5 million or so).  For large count CF's, use map/reduce.
+	 * Be away that millions of rows can take a while to read so this is usually reserved for longer operations.
+	 * 
+	 * Returns all rows in a concrete CF.  If your CF is inheritance(many entity types in one CF), then your baseEntty
+	 * should be the super class.  If you have many virtual tables in a CF(and you have inheritance in some virtual tables or not),
+	 * then your baseEntity should be Object.class.  This method will return the proper types of entitys.  For inheritance base,
+	 * it will return the types based on each rows discriminator column.  For virtual tables, it looks at each row and returns
+	 * the type based on that virtual table so each row coming back would be a different type.
+	 * 
+	 * @param baseEntity
+	 * @param i
+	 * @return
+	 */
+	public <T> Cursor<T> allRows(Class<T> baseEntity, String cf, int batchSize);
+
 }

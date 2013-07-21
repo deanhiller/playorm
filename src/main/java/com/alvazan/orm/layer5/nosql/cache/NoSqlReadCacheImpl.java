@@ -235,4 +235,9 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 		cacheRow(colFamily, rowKey, null);
 	}
 
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, int batchSize) {
+		return session.allRows(colFamily, batchSize);
+	}
+
 }

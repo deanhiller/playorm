@@ -1,5 +1,7 @@
 package com.alvazan.orm.api.z8spi.meta;
 
+import java.util.Arrays;
+
 import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
@@ -45,6 +47,13 @@ public class DboColumnIdMeta extends DboColumnMeta {
 		return realKey;
 	}
 	
+	public static String fetchTableNameIfVirtual(byte[] virtKey) {
+		int tableLen = virtKey[0] & 0xFF;
+		byte[] bytesName = Arrays.copyOfRange(virtKey, 1, tableLen+1);
+		String s = new String(bytesName);
+		return s;
+	}
+
 	private void initCachedKey() {
 		String cf = owner.getColumnFamily();
 		byte[] asBytes = StandardConverters.convertToBytes(cf);

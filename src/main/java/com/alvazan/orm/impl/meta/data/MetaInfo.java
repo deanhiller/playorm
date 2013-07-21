@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -29,6 +31,7 @@ public class MetaInfo {
 	
 	private Map<Class, MetaAbstractClass> classToClassMeta = new HashMap<Class, MetaAbstractClass>();
 	private Map<String, MetaAbstractClass> tableNameToClassMeta = new HashMap<String, MetaAbstractClass>();
+	private Set<MetaClassInheritance> baseClasses = new HashSet<MetaClassInheritance>(); 
 	
 	public MetaClass getMetaClass(Class clazz2) {
 		Class clazz = clazz2; 
@@ -44,6 +47,7 @@ public class MetaInfo {
 
 	public void addSubclass(Class clazz, MetaClassInheritance parent) {
 		classToClassMeta.put(clazz, parent);
+		baseClasses.add(parent);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -86,6 +90,19 @@ public class MetaInfo {
 	public void clearAll() {
 		classToClassMeta.clear();
 		tableNameToClassMeta.clear();
+	}
+	public MetaClass lookupCf(String cf) {
+		for(MetaClassInheritance p : baseClasses) {
+			if(cf.equals(p.getMetaDbo().getRealColumnFamily()))
+				return p;
+		}
+		
+		for(MetaAbstractClass c : classToClassMeta.values()) {
+			if(cf.equals(c.getMetaDbo().getRealColumnFamily()))
+				return c;
+		}
+
+		return null;
 	}
 	
 }

@@ -3,6 +3,7 @@ package com.alvazan.orm.layer9z.spi.db.inmemory;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.alvazan.orm.api.z8spi.Row;
@@ -99,6 +100,9 @@ public class Table {
 		}
 		return t;
 	}
-	
+
+	public Set<ByteArray> findAllKeys() {
+		return keyToRow.keySet();
+	}
 	
 }

@@ -32,6 +32,7 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.ProxyTempCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
@@ -263,6 +264,15 @@ public class InMemorySession implements NoSqlRawSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to,
 			Integer batchSize, BatchListener l, MetaLookup mgr) {
 		Collection<IndexColumn> iter = scanIndexImpl(scan, from, to, batchSize, l);
+		if (!scan.getEntityColFamily().isVirtualCf() && from == null && to == null
+				&& !scan.getEntityColFamily().hasIndexedField()
+				&& !(scan.getColumnName() instanceof DboColumnToManyMeta)
+				&& !scan.getEntityColFamily().isInheritance()) {
+			Table table = database.findTable(scan.getEntityColFamily().getColumnFamily());
+			ScanInMemoryDbCollectin scanner = new ScanInMemoryDbCollectin(batchSize,l, table);
+			scanner.beforeFirst();
+			return scanner;
+		}
 		return new ProxyTempCursor<IndexColumn>(iter);
 	}
 
@@ -283,5 +293,8 @@ public class InMemorySession implements NoSqlRawSession {
 		//eh, who cares, we already create on persist when needed
 	}
 
-
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup ormSession, int batchSize) {
+		throw new UnsupportedOperationException("not supported yet");
+	}
 }

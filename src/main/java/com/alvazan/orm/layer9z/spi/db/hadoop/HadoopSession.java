@@ -31,6 +31,7 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 
@@ -296,6 +297,15 @@ public class HadoopSession implements NoSqlRawSession {
 		DboColumnMeta colMeta = scan.getColumnName();
 		CursorOfHbaseIndexes cursor = new CursorOfHbaseIndexes(rowKey, batchSize, l, indexTableName, from, to);
 		cursor.setupMore(hTable, colMeta);
+		if (!scan.getEntityColFamily().isVirtualCf() && from == null
+				&& to == null
+				&& !(scan.getColumnName() instanceof DboColumnToManyMeta)
+				&& !scan.getEntityColFamily().isInheritance()) {
+			String table = scan.getEntityColFamily().getColumnFamily();
+			ScanHbaseDbCollection scanner = new ScanHbaseDbCollection(batchSize, l,table, hTable);
+			scanner.beforeFirst();
+			return scanner;
+		}
 		return cursor;
 	}
 
@@ -525,6 +535,11 @@ public class HadoopSession implements NoSqlRawSession {
 							+ virtCf
 							+ " because there is not meta found in DboTableMeta table");
 		return table;
+	}
+
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup ormSession, int batchSize) {
+		throw new UnsupportedOperationException("not supported yet");
 	}
 
 }

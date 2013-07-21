@@ -14,22 +14,7 @@ public class TypedColumn {
 	private Long timestamp;
 	private DboColumnMeta columnMeta;
 
-	public TypedColumn(DboColumnToManyMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2) {
-		this(colMeta, prefixName, value, timestamp2);
-		this.subName = postFixName;
-	}
-
-	public TypedColumn(DboColumnEmbedSimpleMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2) {
-		this(colMeta, prefixName, value, timestamp2);
-		this.subName = postFixName;
-	}
-
-	public TypedColumn(DboColumnToOneMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2) {
-		this(colMeta, prefixName, value, timestamp2);
-		this.subName = postFixName;
-	}
-
-	public TypedColumn(DboColumnEmbedMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2 ) {
+	public TypedColumn(DboColumnMeta colMeta, byte[] prefixName, byte[] postFixName, byte[] value, Long timestamp2 ) {
 		this(colMeta, prefixName, value, timestamp2);
 		this.subName = postFixName;
 	}

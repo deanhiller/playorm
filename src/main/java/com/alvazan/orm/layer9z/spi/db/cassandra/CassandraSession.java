@@ -364,7 +364,7 @@ public class CassandraSession implements NoSqlRawSession {
 				&& !(info.getColumnName() instanceof DboColumnToManyMeta)
 				&& !info.getEntityColFamily().isInheritance()) {
 			Keyspace keyspace = columnFamilies.getKeyspace();
-			Info cfInfo = columnFamilies.fetchColumnFamilyInfo(info.getEntityColFamily().getRealColumnFamily(), mgr);
+			Info cfInfo = columnFamilies.lookupOrCreate2(info.getEntityColFamily().getRealColumnFamily(), mgr);
 			ScanCassandraCf scanner = new ScanCassandraCf(info, cfInfo, bListener, batchSize, keyspace);
 			scanner.beforeFirst();
 			return scanner;
@@ -472,6 +472,15 @@ public class CassandraSession implements NoSqlRawSession {
 			log.debug("readMeta and create CF="+colFamily);
 		}
 		columnFamilies.lookupOrCreate2(colFamily, ormSession);
+	}
+
+	@Override
+	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup mgr, int batchSize) {
+		Keyspace keyspace = columnFamilies.getKeyspace();
+		Info cfInfo = columnFamilies.lookupOrCreate2(colFamily.getColumnFamily(), mgr);
+		ScanCassandraCfAllRows scanner = new ScanCassandraCfAllRows(cfInfo, batchSize, keyspace, rowProvider);
+		scanner.beforeFirst();
+		return scanner;
 	}
 
 }
