@@ -11,6 +11,7 @@ import com.alvazan.orm.api.z3api.NoSqlTypedSession;
 import com.alvazan.orm.api.z3api.QueryResult;
 import com.alvazan.orm.api.z5api.IndexPoint;
 import com.alvazan.orm.api.z8spi.KeyValue;
+import com.alvazan.orm.api.z8spi.ScanInfo;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.Cursor;
@@ -36,11 +37,23 @@ public class CmdIndex {
 		String field = data.getColumn();
 		String by = data.getPartitionBy();
 		String id = data.getPartitionId();
+        DboTableMeta meta = data.getTableMeta();
+        DboColumnMeta colMeta = data.getColumnMeta();
+        if (!colMeta.isIndexed()) {
+            // check if it was indexed earlier and now not indexed. If yes, then remove the indices.
+            // Issue #120
+            System.out.println("The column " + field + " is not indexed");
+            ScanInfo info = ScanInfo.createScanInfo(colMeta, by, id);
+            DboTableMeta indexTableMeta = mgr.find(DboTableMeta.class, info.getIndexColFamily());
+            System.out.println("Wait...we are checking if it was indexed earlier and removing all its old indexes.");
+            mgr.getSession().remove(indexTableMeta, info.getRowKey());
+            s.flush();
+            return;
+        }
+
 		Cursor<IndexPoint> indexView = s.indexView(cf, field, by, id);
 		Cursor<IndexPoint> indexView2 = s.indexView(cf, field, by, id);
 		
-		DboTableMeta meta = data.getTableMeta();
-		DboColumnMeta colMeta = data.getColumnMeta();
 		System.out.println("indexed value type="+colMeta.getStorageType());
 		System.out.println("row key type="+meta.getIdColumnMeta().getStorageType());
 		System.out.println("It is safe to kill this process at any time since it only removes duplicates");
