@@ -13,6 +13,9 @@ public class PlayOptions {
     @Option(name="-s", usage="where VAL is Comma delimeted list of seeds with NO spaces such as host1:9160,host2:9160") 
     private String seeds;
 
+    @Option(name="-c",usage="(optional)The Consistency Level which is normally set to CL_QUOROM for X nodes or ONE for a single node install, defaults to CL_QUOROM")
+    private String consistencyLevel;
+
     @Option(name="-v",usage="Turn on verbose logging")
     private boolean isVerbose;
 
@@ -46,6 +49,14 @@ public class PlayOptions {
 
 	public void setVerbose(boolean isVerbose) {
 		this.isVerbose = isVerbose;
+	}
+
+	public String getConsistencyLevel() {
+		return consistencyLevel;
+	}
+
+	public void setConsistencyLevel(String consistencyLevel) {
+		this.consistencyLevel = consistencyLevel;
 	}
 
 }

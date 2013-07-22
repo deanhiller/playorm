@@ -10,7 +10,6 @@ import java.util.Map;
 import jline.ConsoleReader;
 import jline.History;
 
-
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.slf4j.Logger;
@@ -89,6 +88,12 @@ public class PlayOrm {
 			if(vals.length == 2) {
 				log.info("setting port to="+vals[1]);
 				properties.put(Bootstrap.CASSANDRA_THRIFT_PORT, vals[1]);
+			}
+			
+			//default to quorom now...
+			properties.put(Bootstrap.CASSANDRA_DEFAULT_CONSISTENCY_LEVEL, "CL_QUORUM");
+			if(bean.getConsistencyLevel() != null) {
+				properties.put(Bootstrap.CASSANDRA_DEFAULT_CONSISTENCY_LEVEL, bean.getConsistencyLevel());
 			}
 			Bootstrap.createAndAddBestCassandraConfiguration(properties , "", bean.getKeyspace(), bean.getSeeds());
 		}

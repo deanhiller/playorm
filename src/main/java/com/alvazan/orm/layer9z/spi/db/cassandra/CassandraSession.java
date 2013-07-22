@@ -483,4 +483,9 @@ public class CassandraSession implements NoSqlRawSession {
 		return scanner;
 	}
 
+	@Override
+	public Object getDriverHelper() {
+		return columnFamilies;
+	}
+
 }

@@ -297,4 +297,9 @@ public class InMemorySession implements NoSqlRawSession {
 	public AbstractCursor<Row> allRows(DboTableMeta colFamily, MetaLookup ormSession, int batchSize) {
 		throw new UnsupportedOperationException("not supported yet");
 	}
+
+	@Override
+	public Object getDriverHelper() {
+		return database;
+	}
 }

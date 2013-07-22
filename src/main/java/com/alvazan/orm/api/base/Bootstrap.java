@@ -17,6 +17,7 @@ public abstract class Bootstrap {
 	public static final String CASSANDRA_KEYSPACE = "nosql.cassandra.keyspace";
 	public static final String CASSANDRA_SEEDS = "nosql.cassandra.seeds";
 	public static final String CASSANDRA_THRIFT_PORT = "nosql.cassandra.thriftport";
+	public static final String CASSANDRA_DEFAULT_CONSISTENCY_LEVEL = "nosql.cassandra.cl";
 	public static final String CASSANDRA_CF_CREATE_CALLBACK = SpiConstants.CASSANDRA_CF_CREATE_CALLBACK;
 	
 	public static final String MONGODB_CLUSTERNAME = "nosql.mongodb.clusterName";

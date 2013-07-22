@@ -101,17 +101,32 @@ public class BootstrapImpl extends Bootstrap {
 	    )
 	    .withConnectionPoolConfiguration(poolConfig)
 	    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor());
-		
-		
-	if(seeds2.contains(",")) {
-		//for a multi-node cluster, we want the test suite using quorum on writes and
-		//reads so we have no issues...
-		AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
-		config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
-		config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
-		builder = builder.withAstyanaxConfiguration(config);
-	}
-	properties.put(Bootstrap.CASSANDRA_BUILDER, builder);
+
+		String clStr = (String) properties.get(Bootstrap.CASSANDRA_DEFAULT_CONSISTENCY_LEVEL);
+		if(clStr != null) {
+			ConsistencyLevel cl = null;
+			for(ConsistencyLevel l : ConsistencyLevel.values()) {
+				if(l.toString().equals(clStr)) {
+					cl = l;
+					break;
+				}
+			}
+			if(cl == null)
+				throw new IllegalArgumentException("Consistency level must be one of the strings mathcin astyanax ConsistencyLevel.XXXX");
+
+			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
+			config.setDefaultWriteConsistencyLevel(cl);
+			config.setDefaultReadConsistencyLevel(cl);
+			builder = builder.withAstyanaxConfiguration(config);
+		} else if(seeds2.contains(",")) {
+			//for a multi-node cluster, we want the test suite using quorum on writes and
+			//reads so we have no issues...
+			AstyanaxConfigurationImpl config = new AstyanaxConfigurationImpl();
+			config.setDefaultWriteConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			config.setDefaultReadConsistencyLevel(ConsistencyLevel.CL_QUORUM);
+			builder = builder.withAstyanaxConfiguration(config);
+		}
+		properties.put(Bootstrap.CASSANDRA_BUILDER, builder);
 	}
 
 	@Override

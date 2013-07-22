@@ -326,6 +326,11 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 			MetaLookup ormSession, int batchSize) {
 		return session.allRows(colFamily, ormSession, batchSize);
 	}
+
+	@Override
+	public Object getDriverHelper() {
+		return session.getDriverHelper();
+	}
 	
 //	@Override
 //	public AbstractCursor<KeyValue<Row>> find(String colFamily,

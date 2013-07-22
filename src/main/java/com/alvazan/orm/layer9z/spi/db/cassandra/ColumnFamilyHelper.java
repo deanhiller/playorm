@@ -59,6 +59,10 @@ public class ColumnFamilyHelper {
 		return keyspace;
 	}
 
+	public Map<String, Info> getNameToCassandraCf() {
+		return cfNameToCassandra;
+	}
+
 	public void setKeyspace(Keyspace keyspace) {
 		this.keyspace = keyspace;
 	}

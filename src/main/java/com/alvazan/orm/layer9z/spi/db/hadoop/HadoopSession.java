@@ -542,4 +542,9 @@ public class HadoopSession implements NoSqlRawSession {
 		throw new UnsupportedOperationException("not supported yet");
 	}
 
+	@Override
+	public Object getDriverHelper() {
+		throw new UnsupportedOperationException("not supported yet");
+	}
+
 }
