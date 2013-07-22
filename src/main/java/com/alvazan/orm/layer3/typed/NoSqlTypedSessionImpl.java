@@ -214,7 +214,8 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 						+ " not found on meta info for column family="
 						+ columnFamily);
 		}
-		else if(!colMeta.isIndexed())
+		
+		if(!colMeta.isIndexed())
 			throw new IllegalArgumentException("Column="+column+" is not an indexed column");
 		else if(meta.getPartitionedColumns().size() > 1 && partitionBy == null)
 			throw new IllegalArgumentException("Must supply partitionBy parameter BECAUSE this column family="+columnFamily+" is partitioned multiple ways");
