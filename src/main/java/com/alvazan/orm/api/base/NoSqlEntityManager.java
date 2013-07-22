@@ -162,8 +162,9 @@ public interface NoSqlEntityManager {
 	 * the type based on that virtual table so each row coming back would be a different type.
 	 * 
 	 * @param baseEntity
-	 * @param i
-	 * @return
+	 * @param cf
+	 * @param batchSize
+	 * @return A Cursor
 	 */
 	public <T> Cursor<T> allRows(Class<T> baseEntity, String cf, int batchSize);
 
