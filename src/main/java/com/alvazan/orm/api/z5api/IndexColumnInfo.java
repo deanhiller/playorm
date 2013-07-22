@@ -8,6 +8,7 @@ import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
+import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 
 public class IndexColumnInfo {
@@ -76,7 +77,18 @@ public class IndexColumnInfo {
 		}
 		@Override
 		public String toString() {
-			return "meta="+colMeta.getOwner().getColumnFamily()+","+colMeta.getColumnName()+" ind="+col;
+			String cf ="{no existing colMeta}";
+			String colName = "{no existing colMeta}";
+			if(colMeta != null) {
+				cf = "{no existing owner - bug!!!}";
+				colName = colMeta.getColumnName();
+				DboTableMeta owner = colMeta.getOwner();
+				if(owner != null) {
+					cf = owner.getColumnFamily();
+				}
+			}
+
+			return "meta="+cf+","+colName+" ind="+col;
 		}
 	}
 }

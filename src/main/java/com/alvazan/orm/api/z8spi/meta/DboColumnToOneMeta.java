@@ -120,11 +120,11 @@ public class DboColumnToOneMeta extends DboColumnMeta {
 	}
 	
 	public TypedColumn translateRow(TypedRow entity) {
-		String columnName = getColumnName();
+		byte[] columnName = getColumnNameAsBytes();
 		Collection<TypedColumn> columns = entity.getColumnsAsColl();
 		if (columns != null && !columns.isEmpty()) {
 			for (TypedColumn typedCol : columns) {
-				if (typedCol.getName().startsWith(columnName))
+				if(typedCol.isPrefixedWithName(columnName))
 					return typedCol;
 			}
 		}

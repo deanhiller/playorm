@@ -188,4 +188,15 @@ public class TypedColumn {
 		return columnMeta;
 	}
 
+	public boolean isPrefixedWithName(byte[] columnName) {
+		byte[] raw = getNameRaw();
+		if(raw.length < columnName.length)
+			return false;
+		for(int i = 0; i < columnName.length; i++) {
+			if(raw[i] != columnName[i])
+				return false;
+		}
+		return true;
+	}
+
 }
