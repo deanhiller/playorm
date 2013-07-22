@@ -376,6 +376,9 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 
 		AbstractCursor<Row> allRows = session.allRows(meta.getMetaDbo(), batchSize);
 		boolean isVirtual = baseEntity.equals(Object.class);
+		if(meta != null) {
+			isVirtual = meta.getMetaDbo().isVirtualCf();
+		}
 		return new CursorRowPlain<T>(session, meta, allRows, metaInfo, isVirtual);
 	}
 
