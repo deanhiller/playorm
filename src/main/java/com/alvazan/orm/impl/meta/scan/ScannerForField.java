@@ -327,7 +327,7 @@ public class ScannerForField {
 		NoSqlEmbedded embedded = field.getAnnotation(NoSqlEmbedded.class);
 		Class<?> type = field.getType();
 		Class<?> valType = null;
-		if(type.equals(List.class)) {
+		if(type.equals(List.class) || type.equals(Set.class)) {
 			ParameterizedType genType = (ParameterizedType) field.getGenericType();
 			type = (Class<?>) genType.getActualTypeArguments()[0];
 		} else if(type.equals(Map.class)) {
