@@ -85,6 +85,11 @@ public class PlayOrm {
 			
 		Map<String, Object> properties = new HashMap<String, Object>();
 		if(storeType == DbTypeEnum.CASSANDRA) {
+			String[] vals = bean.getSeeds().split(":");
+			if(vals.length == 2) {
+				log.info("setting port to="+vals[1]);
+				properties.put(Bootstrap.CASSANDRA_THRIFT_PORT, vals[1]);
+			}
 			Bootstrap.createAndAddBestCassandraConfiguration(properties , "", bean.getKeyspace(), bean.getSeeds());
 		}
 		else if (storeType == DbTypeEnum.MONGODB) {
