@@ -1,9 +1,7 @@
 package com.alvazan.orm.impl.meta.data.collections;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
 import com.alvazan.orm.api.z8spi.conv.Converter;
