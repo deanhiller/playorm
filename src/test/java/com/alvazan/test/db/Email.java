@@ -2,8 +2,10 @@ package com.alvazan.test.db;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
@@ -27,11 +29,22 @@ public class Email {
 	private Map<Integer, String> someMap = new HashMap<Integer, String>();
 	@NoSqlEmbedded
 	private Map<String, Integer> keyToVal = new HashMap<String, Integer>();
+
+    @NoSqlEmbedded
+    private Set<String> someSet = new HashSet<String>();
 	
 /*	@NoSqlEmbedded
 	private Email email;*/
 
-	@NoSqlIndexed
+	public Set<String> getSomeSet() {
+        return this.someSet;
+    }
+
+    public void setSomeSet(Set<String> someSet) {
+        this.someSet = someSet;
+    }
+
+    @NoSqlIndexed
 	private String name;
 	
 	public String getId() {

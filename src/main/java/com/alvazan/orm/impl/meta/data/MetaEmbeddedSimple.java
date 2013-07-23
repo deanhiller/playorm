@@ -23,6 +23,7 @@ import com.alvazan.orm.api.z8spi.meta.RowToPersist;
 import com.alvazan.orm.impl.meta.data.collections.SimpleAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SimpleList;
 import com.alvazan.orm.impl.meta.data.collections.SimpleMap;
+import com.alvazan.orm.impl.meta.data.collections.SimpleSet;
 
 @SuppressWarnings("rawtypes")
 public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
@@ -67,9 +68,10 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
-		List<byte[]> values = MetaToManyField.parseColNamePostfix(columnName, row);
-		throw new UnsupportedOperationException("not yet supported");
-	}
+        List<byte[]> values = MetaToManyField.parseColNamePostfix(columnName, row);
+        Set<T> retVal = new SimpleSet<T>(converter, values);
+        return retVal;
+    }
 
 	@SuppressWarnings({ "rawtypes" })
 	private Map translateFromColumnMap(Row row,
