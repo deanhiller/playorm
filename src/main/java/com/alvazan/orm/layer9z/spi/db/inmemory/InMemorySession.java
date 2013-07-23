@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -254,9 +255,8 @@ public class InMemorySession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
-		Collection<Column> iter = columnSliceImpl(colFamily, rowKey, from, to, batchSize, l);
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize, BatchListener l, MetaLookup mgr) {
+		Collection<Column> iter = columnSliceImpl(sliceInfo.getColFamily(), sliceInfo.getRowKey(), sliceInfo.getFrom(), sliceInfo.getTo(), batchSize, l);
 		return new ProxyTempCursor<Column>(iter);
 	}
 

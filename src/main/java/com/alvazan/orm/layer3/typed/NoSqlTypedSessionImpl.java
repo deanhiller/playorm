@@ -383,7 +383,7 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 		
 		byte[] rowKeyBytes = metaClass.getIdColumnMeta().convertToStorage2(rowKey);
 		byte[] virtKey = metaClass.getIdColumnMeta().formVirtRowKey(rowKeyBytes);
-		AbstractCursor<Column> curs = session.columnSlice(metaClass, virtKey, startBytes, endBytes, batchSize);
+		AbstractCursor<Column> curs = session.columnSlice(metaClass, virtKey, startBytes, endBytes, batchSize, BigInteger.class);
 		return new TimeValCursor<TimeValColumn>(metaClass, curs);
 	}
 

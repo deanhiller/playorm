@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.ColumnType;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -279,16 +280,19 @@ public class CassandraSession implements NoSqlRawSession {
 
 
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, final byte[] rowKey, final byte[] from, final byte[] to, final Integer batchSize, BatchListener batchListener, MetaLookup mgr) {
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, final Integer batchSize, BatchListener batchListener, MetaLookup mgr) {
 		if(batchSize <= 0)
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
-		final Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily.getColumnFamily(), mgr);
+		final Info info1 = columnFamilies.fetchColumnFamilyInfo(sliceInfo.getColFamily().getColumnFamily(), mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			if (log.isInfoEnabled())
-				log.info("query was run on column family that does not yet exist="+colFamily);
+				log.info("query was run on column family that does not yet exist="+sliceInfo.getColFamily());
 			return new EmptyCursor<Column>();
 		}
+		final byte[] rowKey = sliceInfo.getRowKey();
+		final byte[] from = sliceInfo.getFrom();
+		final byte[] to = sliceInfo.getTo();
 
 		CreateColumnSliceCallback l = new CreateColumnSliceCallback() {
 			

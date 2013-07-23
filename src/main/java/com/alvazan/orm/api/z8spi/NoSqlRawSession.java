@@ -27,7 +27,7 @@ public interface NoSqlRawSession {
 	
 	public void close();
 
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr);
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize, BatchListener l, MetaLookup mgr);
 	
 	/**
 	 * 

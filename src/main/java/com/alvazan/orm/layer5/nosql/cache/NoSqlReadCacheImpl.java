@@ -204,8 +204,8 @@ public class NoSqlReadCacheImpl implements NoSqlSession, Cache {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
-		return session.columnSlice(colFamily, rowKey, from, to, batchSize);
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, Class columnNameType) {
+		return session.columnSlice(colFamily, rowKey, from, to, batchSize, columnNameType);
 	}
 	
 	@Override

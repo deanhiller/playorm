@@ -13,6 +13,7 @@ import javax.inject.Provider;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -279,13 +280,12 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily,
-			byte[] rowKey, byte[] from, byte[] to, Integer batchSize,BatchListener l, MetaLookup mgr) {
-		Info info1 = lookupOrCreate(colFamily.getColumnFamily(), mgr);
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize,BatchListener l, MetaLookup mgr) {
+		Info info1 = lookupOrCreate(sliceInfo.getColFamily().getColumnFamily(), mgr);
 		if (info1 == null) {
 			return null;
 		}
-		CursorColumnSliceHbase cursor = new CursorColumnSliceHbase(colFamily,l, batchSize, hTable, rowKey, from, to);
+		CursorColumnSliceHbase cursor = new CursorColumnSliceHbase(sliceInfo.getColFamily(),l, batchSize, hTable, sliceInfo.getRowKey(), sliceInfo.getFrom(), sliceInfo.getTo());
 		return cursor;
 	}
 

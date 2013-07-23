@@ -98,9 +98,6 @@ public class TestColumnSlice {
 
 	@Test
 	public void testDecimalColumnSlice() throws UnsupportedEncodingException {
-        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.IN_MEMORY)
-            return; // This testcase is not supported for MongoDB
-
         NoSqlSession session = mgr.getSession();
 		String colFamily = "float_indexes";
 		
@@ -148,7 +145,7 @@ public class TestColumnSlice {
 
 		byte[] from = toDecBytes(-250);
 		byte[] to = toDecBytes(12);
-		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2);//(scanInfo, from, to, 2);
+		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2, BigDecimal.class);//(scanInfo, from, to, 2);
 		
 		int counter = 0;
 		while(results.next()) {
@@ -163,8 +160,6 @@ public class TestColumnSlice {
 
 	@Test
 	public void testIntegerColumnSlice() throws UnsupportedEncodingException {
-        if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA || FactorySingleton.getServerType() != DbTypeEnum.IN_MEMORY)
-            return; // This testcase is not supported for MongoDB
 		NoSqlSession session = mgr.getSession();
 		String colFamily = "time_indexes";
 		
@@ -212,7 +207,7 @@ public class TestColumnSlice {
 
 		byte[] from = toIntBytes(-250);
 		byte[] to = toIntBytes(50);
-		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2);
+		Cursor<Column> results = session.columnSlice(tableMeta, rowKey, from, to, 2, BigInteger.class);
 		
 		int counter = 0;
 		while(results.next()) {
