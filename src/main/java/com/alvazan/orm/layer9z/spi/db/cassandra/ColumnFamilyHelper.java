@@ -150,7 +150,8 @@ public class ColumnFamilyHelper {
 	private void loadColumnFamily(ColumnFamilyDefinition def, String virtCf,
 			String realCf) {
 		loadColumnFamilyImpl(def);
-		virtualToCfName.put(virtCf, realCf);
+		String cfLowercase = realCf.toLowerCase();
+		virtualToCfName.put(virtCf, cfLowercase);
 	}
 	
 	private void loadColumnFamilyImpl(ColumnFamilyDefinition def) {
@@ -316,7 +317,7 @@ public class ColumnFamilyHelper {
 			} 
 			if (log.isInfoEnabled())
 				log.info("coooool, we found a new column family="+realCf+"(virt="+virtCf+") to load so we are going to load that for you so every future operation is FAST");
-			loadColumnFamily(def, virtCf, realCf);
+			loadColumnFamily(def, virtCf, realCfLower);
 			
 			return lookupVirtCf(virtCf);
 		}
