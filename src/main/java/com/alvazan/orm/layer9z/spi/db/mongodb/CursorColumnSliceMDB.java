@@ -14,19 +14,16 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
-import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 
 class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
 
-	private DboTableMeta tableName;
+	private DBCollection dbCollection;
 	private BatchListener batchListener;
 	private Integer batchSize;
-	private DB db;
 	private int pointer = -1;
 	private List<DBObject> subList;
 	private Boolean forward = null;
@@ -35,11 +32,10 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
 	private byte[] rowKey;
 	private Class columnNameType;
 	
-	public CursorColumnSliceMDB(ColumnSliceInfo sliceInfo, BatchListener bListener, Integer batchSize, DB keyspace) {
+	public CursorColumnSliceMDB(ColumnSliceInfo sliceInfo, BatchListener bListener, Integer batchSize, DBCollection dbCollection2) {
 		this.batchListener = bListener;
 		this.batchSize = null;
-		this.tableName = sliceInfo.getColFamily();
-		this.db = keyspace;
+		dbCollection = dbCollection2;
 		this.from = sliceInfo.getFrom();
 		this.to = sliceInfo.getTo();
 		this.rowKey = sliceInfo.getRowKey();
@@ -122,17 +118,11 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
 				return;
 			}
 		}
-		System.out.println("Resetting POINTER  " + pointer);
+
 		//reset the point...
 		pointer = -1;
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
-
-		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(tableName.getColumnFamily())) {
-			dbCollection = db.getCollection(tableName.getColumnFamily());
-		} else
-			return;
 
 		DBObject row = dbCollection.findOne(rowKey);
 		if(row == null) {
@@ -164,7 +154,7 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
         for (String field : fieldSet) {
             if (!field.equalsIgnoreCase("_id")) {
                 BigInteger name = StandardConverters.convertFromBytes(BigInteger.class, StandardConverters.convertFromString(byte[].class, field));
-                if (name.compareTo(fromField) > 0 && name.compareTo(toField) < 0) {
+                if (name.compareTo(fromField) >= 0 && name.compareTo(toField) <= 0) {
                     Object value = row.get(field);
                     map.put(name, value);
                 }
@@ -185,7 +175,7 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
         for (String field : fieldSet) {
             if (!field.equalsIgnoreCase("_id")) {
                 BigDecimal name = StandardConverters.convertFromBytes(BigDecimal.class, StandardConverters.convertFromString(byte[].class, field));
-                if (name.compareTo(fromField) > 0 && name.compareTo(toField) < 0) {
+                if (name.compareTo(fromField) >= 0 && name.compareTo(toField) <= 0) {
                     Object value = row.get(field);
                     map.put(name, value);
                 }
@@ -205,7 +195,7 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
         String toField = StandardConverters.convertFromBytes(String.class, to);
         for (String field : fieldSet) {
             if (!field.equalsIgnoreCase("_id")) {
-                if (field.compareTo(fromField) > 0 && field.compareTo(toField) < 0) {
+                if (field.compareTo(fromField) >= 0 && field.compareTo(toField) <= 0) {
                     Object value = row.get(field);
                     map.put(field, value);
                 }
