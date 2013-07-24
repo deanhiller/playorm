@@ -31,16 +31,16 @@ public class Email {
 	private Map<String, Integer> keyToVal = new HashMap<String, Integer>();
 
     @NoSqlEmbedded
-    private Set<String> someSet = new HashSet<String>();
+    private Set<Long> someSet = new HashSet<Long>();
 	
 /*	@NoSqlEmbedded
 	private Email email;*/
 
-	public Set<String> getSomeSet() {
+	public Set<Long> getSomeSet() {
         return this.someSet;
     }
 
-    public void setSomeSet(Set<String> someSet) {
+    public void setSomeSet(Set<Long> someSet) {
         this.someSet = someSet;
     }
 
