@@ -1,41 +1,45 @@
 package com.alvazan.orm.layer9z.spi.db.mongodb;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.alvazan.orm.api.z8spi.BatchListener;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.action.Column;
-import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.StringLocal;
-import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
-import com.mongodb.DB;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+
 class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
 
-	private DboTableMeta tableName;
+	private DBCollection dbCollection;
 	private BatchListener batchListener;
 	private Integer batchSize;
-	private DB db;
 	private int pointer = -1;
 	private List<DBObject> subList;
 	private Boolean forward = null;
 	private byte[] from;
 	private byte[] to;
 	private byte[] rowKey;
+	private Class columnNameType;
 	
-	public CursorColumnSliceMDB(DboTableMeta cfName, BatchListener bListener, Integer batchSize, DB keyspace, byte[] rowKey, byte[] from, byte[] to) {
+	public CursorColumnSliceMDB(ColumnSliceInfo sliceInfo, BatchListener bListener, Integer batchSize, DBCollection dbCollection2) {
 		this.batchListener = bListener;
-		this.batchSize = batchSize;
-		this.tableName = cfName;
-		this.db = keyspace;
-		this.from = from;
-		this.to = to;
-		this.rowKey = rowKey;
+		this.batchSize = null;
+		dbCollection = dbCollection2;
+		this.from = sliceInfo.getFrom();
+		this.to = sliceInfo.getTo();
+		this.rowKey = sliceInfo.getRowKey();
+        this.columnNameType = sliceInfo.getColumnNameType();
 		beforeFirst();
 	}
 
@@ -114,49 +118,92 @@ class CursorColumnSliceMDB<T> extends AbstractCursor<T> {
 				return;
 			}
 		}
-		
+
 		//reset the point...
 		pointer = -1;
 		if(batchListener != null)
 			batchListener.beforeFetchingNextBatch();
-
-		DBCollection dbCollection = null;
-		if (db != null && db.collectionExists(tableName.getColumnFamily())) {
-			dbCollection = db.getCollection(tableName.getColumnFamily());
-		} else
-			return;
 
 		DBObject row = dbCollection.findOne(rowKey);
 		if(row == null) {
 			return;
 		}
 		else {
-			Set<String> fieldSet = row.keySet();
-			//String fromField = StandardConverters.convertToString(from);
-			//String toField = StandardConverters.convertToString(to);
-			//String fromField = StandardConverters.convertFromBytes(String.class, from);
-			//String toField = StandardConverters.convertFromBytes(String.class, to);
-			ByteArray fromField = new ByteArray(from);
-			ByteArray toField = new ByteArray(to);
-			
-/*			for (String field : fieldSet) {				
-				if(!field.equalsIgnoreCase("_id")) {
-					byte[] name = StandardConverters.convertFromString(byte[].class, field);
-					ByteArray fieldname = new ByteArray(name);
-					if (fieldname.compareTo(fromField) >= 0) {
-						if(fieldname.compareTo(toField) <= 0) {
-							Object value = row.get(field);
-							subList.add(new BasicDBObject(field, value));
-						}
-					}
-				}
-			}*/
-		}
+            Set<String> fieldSet = row.keySet();
+            if (BigInteger.class.equals(columnNameType)) {
+                intColumnSlice(fieldSet, row);
+            } else if (BigDecimal.class.equals(columnNameType)) {
+                decimalColumnSlice(fieldSet, row);
+            } else if (String.class.equals(columnNameType)) {
+                stringColumSlice(fieldSet, row);
+            } else 
+                throw new UnsupportedOperationException("Type " + columnNameType.getName() + " is not allowed for ColumnSlice");
+        }
 		if (subList == null) {
 			subList = new ArrayList<DBObject>();
 		}
 		if(batchListener != null)
 			batchListener.afterFetchingNextBatch(subList.size());
 	}
-	
+
+    private void intColumnSlice(Set<String> fieldSet, DBObject row) {
+        subList = new ArrayList<DBObject>();
+        Map<BigInteger, Object> map = new TreeMap<BigInteger, Object>();
+        BigInteger fromField = StandardConverters.convertFromBytes(BigInteger.class, from);
+        BigInteger toField = StandardConverters.convertFromBytes(BigInteger.class, to);
+        for (String field : fieldSet) {
+            if (!field.equalsIgnoreCase("_id")) {
+                BigInteger name = StandardConverters.convertFromBytes(BigInteger.class, StandardConverters.convertFromString(byte[].class, field));
+                if (name.compareTo(fromField) >= 0 && name.compareTo(toField) <= 0) {
+                    Object value = row.get(field);
+                    map.put(name, value);
+                }
+            }
+        }
+        for (BigInteger field : map.keySet()) {
+            String newField = StandardConverters.convertToString(StandardConverters.convertToBytes(field));
+            BasicDBObject dbObject = new BasicDBObject(newField, map.get(field));
+            subList.add(dbObject);
+        }
+    }
+
+    private void decimalColumnSlice(Set<String> fieldSet, DBObject row) {
+        subList = new ArrayList<DBObject>();
+        Map<BigDecimal, Object> map = new TreeMap<BigDecimal, Object>();
+        BigDecimal fromField = StandardConverters.convertFromBytes(BigDecimal.class, from);
+        BigDecimal toField = StandardConverters.convertFromBytes(BigDecimal.class, to);
+        for (String field : fieldSet) {
+            if (!field.equalsIgnoreCase("_id")) {
+                BigDecimal name = StandardConverters.convertFromBytes(BigDecimal.class, StandardConverters.convertFromString(byte[].class, field));
+                if (name.compareTo(fromField) >= 0 && name.compareTo(toField) <= 0) {
+                    Object value = row.get(field);
+                    map.put(name, value);
+                }
+            }
+        }
+        for (BigDecimal field : map.keySet()) {
+            String newField = StandardConverters.convertToString(StandardConverters.convertToBytes(field));
+            BasicDBObject dbObject = new BasicDBObject(newField, map.get(field));
+            subList.add(dbObject);
+        }
+    }
+
+    private void stringColumSlice(Set<String> fieldSet, DBObject row) {
+        subList = new ArrayList<DBObject>();
+        Map<String, Object> map = new TreeMap<String, Object>();
+        String fromField = StandardConverters.convertFromBytes(String.class, from);
+        String toField = StandardConverters.convertFromBytes(String.class, to);
+        for (String field : fieldSet) {
+            if (!field.equalsIgnoreCase("_id")) {
+                if (field.compareTo(fromField) >= 0 && field.compareTo(toField) <= 0) {
+                    Object value = row.get(field);
+                    map.put(field, value);
+                }
+            }
+        }
+        for (String field : map.keySet()) {
+            BasicDBObject dbObject = new BasicDBObject(field, map.get(field));
+            subList.add(dbObject);
+        }
+    }
 }

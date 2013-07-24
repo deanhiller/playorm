@@ -163,8 +163,8 @@ public class TestEmbedded {
 		sub.getInts().add(5);
 		sub.getInts().add(8);
 		
-		sub.getSomeSet().add("oneforset");
-		sub.getSomeSet().add("twoforset");
+		sub.getSomeSet().add(10L);
+		sub.getSomeSet().add(20L);
 
 		mgr.put(sub);
 		mgr.flush();
@@ -182,13 +182,13 @@ public class TestEmbedded {
 		
 		email.getInts().remove(0);
 		email.getIds().remove("one");
-		email.getSomeSet().remove("twoforset");
+		email.getSomeSet().remove(20L);
 		mgr2.put(email);
 		mgr2.flush();
 		
 		email2.getInts().add(12);
 		email2.getIds().add("zzzz");
-		email2.getSomeSet().add("threeforset");
+		email2.getSomeSet().add(30L);
 		mgr3.put(email2);
 		mgr3.flush();
 		
@@ -205,8 +205,8 @@ public class TestEmbedded {
 		Assert.assertEquals("two", emailF.getIds().get(0));
 		Assert.assertEquals("zzzz", emailF.getIds().get(1));
 
-        Assert.assertEquals("oneforset", emailF.getSomeSet().toArray()[0]);
-        Assert.assertEquals("threeforset", emailF.getSomeSet().toArray()[1]);
+        Assert.assertEquals(10L, emailF.getSomeSet().toArray()[0]);
+        Assert.assertEquals(30L, emailF.getSomeSet().toArray()[1]);
 	}
 	
 	@Test

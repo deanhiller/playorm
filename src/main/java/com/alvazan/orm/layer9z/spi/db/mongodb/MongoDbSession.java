@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.base.Bootstrap;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.ColumnType;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
@@ -145,15 +146,14 @@ public class MongoDbSession implements NoSqlRawSession {
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l,
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize, BatchListener l,
 			MetaLookup mgr) {
-		Info info = fetchDbCollectionInfo(colFamily.getColumnFamily(), mgr);
+		Info info = fetchDbCollectionInfo(sliceInfo.getColFamily().getColumnFamily(), mgr);
 		if(info == null) {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return null;
 		}
-		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(colFamily, l, batchSize, db, rowKey, from, to);
+		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(sliceInfo, l, batchSize, info.getDbObj());
 		return cursor;
 	}
 

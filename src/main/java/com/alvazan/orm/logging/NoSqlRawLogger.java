@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.CacheThreadLocal;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -139,15 +140,14 @@ public class NoSqlRawLogger implements NoSqlRawSession {
 	}
 
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey,
-			byte[] from, byte[] to, Integer batchSize, BatchListener l, MetaLookup mgr) {
+	public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize, BatchListener l, MetaLookup mgr) {
 		BatchListener list = l;
 		if(log.isInfoEnabled()) {
-			log.info("[rawlogger] CF="+colFamily+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
+			log.info("[rawlogger] CF="+sliceInfo.getColFamily()+" column slice(we have not meta info for column Slices, use scanIndex maybe?)");
 			list = new LogBatchFetch("basic column slice", l, batchSize, ScanType.COLUMN_SLICE);
 		}
 		
-		AbstractCursor<Column> ret = session.columnSlice(colFamily, rowKey, from, to, batchSize, list, mgr);
+		AbstractCursor<Column> ret = session.columnSlice(sliceInfo, batchSize, list, mgr);
 		
 		return ret;
 	}

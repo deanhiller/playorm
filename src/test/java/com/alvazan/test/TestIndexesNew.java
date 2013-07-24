@@ -79,7 +79,7 @@ public class TestIndexesNew {
 
 	@Test
 	public void testAllRowsPolymorphic() {
-		if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA && FactorySingleton.getServerType() != DbTypeEnum.MONGODB)
+		if (FactorySingleton.getServerType() != DbTypeEnum.CASSANDRA)
 			return;
 
 		NonVirtSub1 s1 = new NonVirtSub1();

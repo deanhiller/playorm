@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.alvazan.orm.api.z5api.NoSqlSession;
+import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
 import com.alvazan.orm.api.z8spi.Key;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.MetaLookup;
@@ -161,8 +162,9 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		rawSession.clearDatabase();
 	}
 	@Override
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize) {
-		return rawSession.columnSlice(colFamily, rowKey, from, to, batchSize, null, ormSession);
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, Class columnNameType) {
+        ColumnSliceInfo sliceInfo = new ColumnSliceInfo(colFamily, rowKey, from, to, columnNameType);
+		return rawSession.columnSlice(sliceInfo, batchSize, null, ormSession);
 	}
 	
 	@Override

@@ -80,7 +80,7 @@ public interface NoSqlSession {
 	public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values);	
 
 	
-	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize);
+	public AbstractCursor<Column> columnSlice(DboTableMeta colFamily, byte[] rowKey, byte[] from, byte[] to, Integer batchSize, Class columnNameType);
 	
 	public void setOrmSessionForMeta(MetaLookup entityMgr);
 
