@@ -5,9 +5,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javassist.util.proxy.MethodFilter;
 import javassist.util.proxy.Proxy;
@@ -49,7 +47,6 @@ public class ScannerForClass {
 	private MetaInfo metaInfo;
 	@Inject
 	private DboDatabaseMeta databaseInfo;
-	private Set<Class> alreadyScanned = new HashSet<Class>();
 
 	public void addClassForQueries(Class<?> clazz) {
 		MetaClassSingle classMeta = (MetaClassSingle)metaInfo.findOrCreate(clazz);
@@ -121,12 +118,15 @@ public class ScannerForClass {
 	}
 
 	private <T> void scanSingle(MetaClassSingle<T> classMeta, DboTableMeta metaDbo) {
-		if(alreadyScanned.contains(classMeta.getMetaClass()))
+		//on a reload in playframework, alreadyScanned contains classes that match...the classes in playorm library actually
+		//but we need to recreate all the meta data and not skip those classes so we add && proxyClass != null here
+		//proxy class is set a few lines down in classMeta.setProxyClass(proxyClass); and if already set we should not be
+		//scanning all it's fields again.
+		if(classMeta.getProxyClass() != null)
 			return;
 		Class<? extends T> proxyClass = createTheProxy(classMeta.getMetaClass());
 		classMeta.setProxyClass(proxyClass);
 		scanFields(classMeta, metaDbo);
-		alreadyScanned.add(classMeta.getMetaClass());
 	}
 	
 	@SuppressWarnings("unchecked")
