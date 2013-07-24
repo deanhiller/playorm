@@ -165,6 +165,7 @@ public class TestEmbedded {
 		
 		sub.getSomeSet().add(10l);
 		sub.getSomeSet().add(20l);
+                sub.getSomeSet().add(-3895931620429800744l);
 
 		mgr.put(sub);
 		mgr.flush();
@@ -207,6 +208,7 @@ public class TestEmbedded {
 
         Assert.assertEquals(10l, emailF.getSomeSet().toArray()[0]);
         Assert.assertEquals(30l, emailF.getSomeSet().toArray()[1]);
+        Assert.assertEquals(-3895931620429800744l, emailF.getSomeSet().toArray()[2]);
 	}
 	
 	@Test
