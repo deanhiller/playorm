@@ -153,7 +153,7 @@ public class MongoDbSession implements NoSqlRawSession {
 			//If there is no column family in mongodb, then we need to return no rows to the user...
 			return null;
 		}
-		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(sliceInfo, l, batchSize, db);
+		CursorColumnSliceMDB cursor = new CursorColumnSliceMDB(sliceInfo, l, batchSize, info.getDbObj());
 		return cursor;
 	}
 
