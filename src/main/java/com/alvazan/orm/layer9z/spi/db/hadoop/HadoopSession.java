@@ -29,6 +29,7 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -285,7 +286,7 @@ public class HadoopSession implements NoSqlRawSession {
 		if (info1 == null) {
 			return null;
 		}
-		CursorColumnSliceHbase cursor = new CursorColumnSliceHbase(sliceInfo.getColFamily(),l, batchSize, hTable, sliceInfo.getRowKey(), sliceInfo.getFrom(), sliceInfo.getTo());
+		CursorColumnSliceHbase cursor = new CursorColumnSliceHbase(sliceInfo, l, batchSize, hTable, info1.getColFamily());
 		return cursor;
 	}
 
@@ -334,23 +335,47 @@ public class HadoopSession implements NoSqlRawSession {
 	}
 
 	private void persist(Persist action, MetaLookup ormSession) {
+		StorageTypeEnum type = action.getColFamily().getNameStorageType();
 		String colFamily = action.getColFamily().getColumnFamily();
 		Info info = lookupOrCreate(colFamily, ormSession);
 		HColumnDescriptor hColFamily = info.getColFamily();
 		byte[] rowKey = action.getRowKey();
-		for (Column col : action.getColumns()) {
-			Put put = new Put(rowKey);
-			byte[] value = new byte[0];
-			if (col.getValue() != null)
-				value = col.getValue();
-			put.add(hColFamily.getName(), col.getName(), value);
-			try {
-				hTable.put(put);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		Put put = new Put(rowKey);
+		try {
+			if (type == StorageTypeEnum.INTEGER) {
+				for (Column col : action.getColumns()) {
+					byte[] qualifier = new byte[0];
+					qualifier = col.getName();
+					int fillipedNumber = StandardConverters.convertFromBytes(
+							Integer.class, qualifier);
+					fillipedNumber ^= (1 << 31);
+					qualifier = Bytes.toBytes(fillipedNumber);
+					byte[] value = new byte[0];
+					if (col.getValue() != null) {
+						value = col.getValue();
+					}
+					put.add(hColFamily.getName(), qualifier, value);
+					hTable.put(put);
+				}
+
+			} else {
+				for (Column col : action.getColumns()) {
+					byte[] qualifier = new byte[0];
+					qualifier = col.getName();
+					byte[] value = new byte[0];
+					if (col.getValue() != null) {
+						value = col.getValue();
+					}
+					put.add(hColFamily.getName(), qualifier, value);
+					hTable.put(put);
+				}
+
 			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 		try {
 			hTable.flushCommits();
 			// hTable.close();
@@ -359,7 +384,6 @@ public class HadoopSession implements NoSqlRawSession {
 			e.printStackTrace();
 		}
 	}
-
 
 	public Result findOrCreateRow(HColumnDescriptor hColFamily, byte[] key) {
 		Get get = new Get(key);
