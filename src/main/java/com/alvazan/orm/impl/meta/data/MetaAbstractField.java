@@ -80,7 +80,7 @@ public abstract class MetaAbstractField<OWNER> implements MetaField<OWNER> {
 		return false;
 	}
 
-	private void addToList(InfoForIndex<OWNER> info, byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk, List<IndexData> indexList) {
+	protected void addToList(InfoForIndex<OWNER> info, byte[] oldIndexedVal, StorageTypeEnum storageType, byte[] pk, List<IndexData> indexList) {
 		//original value and current value differ so we need to remove from the index
 		List<PartitionTypeInfo> partitionTypes = info.getPartitions();
 		for(PartitionTypeInfo part : partitionTypes) {
