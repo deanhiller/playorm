@@ -425,6 +425,8 @@ public class DboTableMeta {
 
 	public DboColumnMeta getAnyIndex(String indexedColumn, DboColumnMeta partColMeta) {
 		initCaches();
+		if(isTimeSeries()) 
+			throw new IllegalArgumentException("The table="+columnFamily+" is a time series table so cannot be queried with indexes or SSQL at this time");
 		if(indexedColumnsCache.size() == 0) {
 			if(isVirtualCf())
 				throw new IllegalArgumentException("The table="+columnFamily+" has no columnes with indexes.  ie. no entity attributes had the @NoSqlIndexed annotation AND your CF is virtual so we have to use an index");
