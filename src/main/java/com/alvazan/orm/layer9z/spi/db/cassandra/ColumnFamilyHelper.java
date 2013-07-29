@@ -471,8 +471,9 @@ public class ColumnFamilyHelper {
 
 	private void addColumnFamily(ColumnFamilyDefinition def) {
 		try {
-			OperationResult<SchemaChangeResult> result = cluster.addColumnFamily(def);
 			long timeout = 300000;
+			waitForNodesToBeUpToDate(null, timeout);
+			OperationResult<SchemaChangeResult> result = cluster.addColumnFamily(def);
 			waitForNodesToBeUpToDate(result, timeout);
 		} catch (ConnectionException e) {
 			throw new RuntimeException(e.getMessage(), e);
