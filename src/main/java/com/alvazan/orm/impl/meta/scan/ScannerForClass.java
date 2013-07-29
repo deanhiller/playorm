@@ -35,6 +35,7 @@ import com.alvazan.orm.impl.meta.data.MetaClassSingle;
 import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
+import com.alvazan.orm.impl.meta.data.MetaMarkerField;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 public class ScannerForClass {
@@ -208,7 +209,11 @@ public class ScannerForClass {
 		for(Field field : fields) {
 			inspectField(meta, metaDbo, field);
 		}
+		if (meta.getMetaFields().size() == 0) {
+			meta.addMetaField(new MetaMarkerField());
+		}
 	}
+
 	private void inspectField(MetaClassSingle<?> metaClass, DboTableMeta metaDbo, Field field) {
 		try {
 			inspectFieldImpl(metaClass, metaDbo, field);

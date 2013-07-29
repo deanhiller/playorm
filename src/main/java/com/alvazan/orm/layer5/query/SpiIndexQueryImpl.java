@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer5.query;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,11 +71,21 @@ public class SpiIndexQueryImpl implements SpiQueryAdapter {
 	public DirectCursor<IndexColumnInfo> getResultList(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		if(alreadyJoinedViews == null || alreadyJoinedViews.size() != 0)
 			throw new IllegalArgumentException("You must pass us a non-null Set that is EMPTY and not null");
-		DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews, indexedColumn);
-		return cursor;
+		try {
+			DirectCursor<IndexColumnInfo> cursor = getResultListImpl(alreadyJoinedViews, indexedColumn);
+			return cursor;
+		} catch(Exception e) {
+			//why, oh why is InvocationTargetException not runtime as I can't catch it here but it was thrown
+			//below!!!! grrrrrrr, curse java checked exceptions
+			if(e instanceof InvocationTargetException && e.getCause() instanceof RuntimeException) {
+				throw (RuntimeException)e.getCause();
+			} else if(e instanceof RuntimeException)
+				throw (RuntimeException)e;
+			throw new RuntimeException(e);
+		}
 	}
 	
-	public DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
+	private DirectCursor<IndexColumnInfo> getResultListImpl(Set<ViewInfo> alreadyJoinedViews, String indexedColumn) {
 		ExpressionNode root = spiMeta.getASTTree();
 		if(root == null) {
 			ViewInfoImpl tableInfo = (ViewInfoImpl) spiMeta.getTargetViews().get(0);
