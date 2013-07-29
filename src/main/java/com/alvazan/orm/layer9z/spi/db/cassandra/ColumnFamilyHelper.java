@@ -124,6 +124,8 @@ public class ColumnFamilyHelper {
 			Map<String, String> map = new HashMap<String, String>();
 			map.put("replication_factor", "3");
 			def.setStrategyOptions(map);
+			if(callback != null)
+				def = (KeyspaceDefinition) callback.configureKeySpace(keyspaceName, def);
 			cluster.addKeyspace(def);
 		}
 		

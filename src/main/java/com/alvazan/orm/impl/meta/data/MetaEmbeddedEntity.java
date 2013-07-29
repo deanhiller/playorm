@@ -25,9 +25,9 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
 import com.alvazan.orm.impl.meta.data.collections.MapProxyFetchAll;
-import com.alvazan.orm.impl.meta.data.collections.SetProxyFetchAll;
 import com.alvazan.orm.impl.meta.data.collections.SimpleAbstractCollection;
 import com.alvazan.orm.impl.meta.data.collections.SimpleList;
+import com.alvazan.orm.impl.meta.data.collections.SimpleSet;
 import com.alvazan.orm.impl.meta.data.collections.ToOneProviderProxy;
 
 public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
@@ -130,9 +130,13 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 	private Object translateFromColumnSet(Row row, OWNER entity,
 			NoSqlSession session) {
 		List<byte[]> keys = parseColNamePostfix(columnName, row);
-		Set<PROXY> retVal = new SetProxyFetchAll<PROXY>(entity, session,
-				classMeta, keys, field);
-		return retVal;
+        List<PROXY> retVal = new ArrayList<PROXY>();
+        for (byte[] rowkey : keys) {
+            Object proxy = createProxy(rowkey, row);
+            retVal.add((PROXY)proxy);
+        }
+        Set<PROXY> finalSet = new SimpleSet<PROXY>(retVal);
+        return finalSet;
 	}
 
 	@SuppressWarnings({ "rawtypes" })
@@ -163,7 +167,7 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		RowToPersist row = info.getRow();
 		if (field.getType().equals(Map.class))
 			translateToColumnMap(entity, row);
-		else if (field.getType().equals(List.class))
+		else if (field.getType().equals(List.class) || field.getType().equals(Set.class) )
 			translateToColumnList(entity, row);
 		else translateToColumn(entity, row);
 	}
@@ -198,8 +202,8 @@ public class MetaEmbeddedEntity<OWNER, PROXY> extends MetaAbstractField<OWNER> {
 		Map mapOfProxies = (Map) ReflectionUtil.fetchFieldValue(entity, field);
 		Collection<PROXY> toBeAdded = mapOfProxies.values();
 		Collection<PROXY> toBeRemoved = new ArrayList<PROXY>();
-		if (mapOfProxies instanceof MapProxyFetchAll) {
-			MapProxyFetchAll mapProxy = (MapProxyFetchAll) mapOfProxies;
+		if (mapOfProxies instanceof SimpleAbstractCollection) {
+		    SimpleAbstractCollection mapProxy = (SimpleAbstractCollection) mapOfProxies;
 			toBeRemoved = mapProxy.getToBeRemoved();
 			toBeAdded = mapProxy.getToBeAdded();
 		}
