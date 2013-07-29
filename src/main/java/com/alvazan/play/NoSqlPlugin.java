@@ -80,7 +80,7 @@ public class NoSqlPlugin extends PlayPlugin {
 
         Class<?> clazz = null;
         try {
-			clazz = Class.forName("nosql.NoSqlConfigImpl");
+        	clazz = Play.classloader.loadClass("nosql.NoSqlConfigImpl");
 			if(NoSqlConfig.class.isAssignableFrom(clazz)) {
 				NoSqlConfig config = (NoSqlConfig) clazz.newInstance();
 				config.configure(PROPS);
