@@ -14,9 +14,9 @@ import com.alvazan.orm.api.z8spi.meta.InfoForIndex;
 public class MetaMarkerField<OWNER> extends MetaAbstractField<OWNER> {
 
 	/** field value */
-	private final static byte[] marker = new byte[0];
+	private final static byte[] MARKER = new byte[0];
 	/** column name */
-	private final static byte[] column = new byte[] { '_' };
+	private final static byte[] COLUMN = new byte[] { '_' };
 
 	@Override
 	public void translateFromColumn(Row column, OWNER entity,
@@ -28,8 +28,8 @@ public class MetaMarkerField<OWNER> extends MetaAbstractField<OWNER> {
 	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
 		Column col = new Column();
-		col.setName(column);
-		col.setValue(marker);
+		col.setName(COLUMN);
+		col.setValue(MARKER);
 		info.getRow().getColumns().add(col);
 	}
 
@@ -41,13 +41,13 @@ public class MetaMarkerField<OWNER> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public byte[] translateValue(Object value) {
-		return marker;
+		return MARKER;
 	}
 
 	@Override
 	public Object fetchField(Object entity) {
 		/* this field is virtual */
-		return marker;
+		return MARKER;
 	}
 
 	@Override
