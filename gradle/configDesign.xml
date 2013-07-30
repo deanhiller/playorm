@@ -32,8 +32,10 @@
 <package name="def" package="nosql"/>
 
 <package name="javassist" package="javassist" subpackages="include"/>
+<package name="jboss-vfs" package="org.jboss.vfs" subpackages="include"/>
 <package name="annotationParser" package="com.impetus.annovention" subpackages="include">
 	<depends>javassist</depends>
+	<depends>jboss-vfs</depends>
 </package>
 
 <package name="exc" package="com.alvazan.orm.api.exc" needdeclarations="false"/>

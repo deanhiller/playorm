@@ -18,15 +18,19 @@ package com.impetus.annovention;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.vfs.VirtualFile;
 
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ClassFile;
@@ -310,6 +314,22 @@ public abstract class Discoverer {
             } else {
             	throw new RuntimeException("bug, how is this not a directory="+f.getAbsolutePath());
             }
+        } else if (url.getProtocol().equals("vfs")) {
+            URLConnection conn = new URL(urlString).openConnection();
+            VirtualFile vf = (VirtualFile) conn.getContent();
+            File contentsFile = vf.getPhysicalFile();
+            File dir = contentsFile.getParentFile();
+            String fileName = vf.getName();
+            File physicalFile = new File(dir, fileName);
+            if (urlString.indexOf("jar") > 0) {
+                // Its a jar
+                InputStream is = new FileInputStream(physicalFile);
+                return new JarFileIterator(is, filter);
+            } else {
+                // Its a directory
+                return new ClassFileIterator(physicalFile, filter);
+            }
+
         } else {
             throw new IOException("Unable to understand protocol: " + resource.getProtocol());
         }

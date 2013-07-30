@@ -82,13 +82,37 @@ public class ClasspathDiscoverer extends Discoverer {
 				processFile(fileInJarOrFolderUrl, list);
 			} else if("jar".equals(protocol)) {
 				processJar(fileInJarOrFolderUrl, list);
-			} else 
+            } else if ("vfs".equals(protocol)) {
+                processVfs(fileInJarOrFolderUrl, list);
+            } else
 				throw new RuntimeException("protocol of="+protocol+" is not supported for loading classfiles, let me know and I can fix that");
 		}
 
 		
 		return list.toArray(new URL[list.size()]);
 	}
+
+    private void processVfs(URL fileInJarOrFolderUrl, List<URL> list) {
+
+        /*
+         * URL is either
+         * vfs:/C:/sw/jboss-eap-6.1/bin/content/EarTesting.war/WEB-INF/lib/playorm-1.7-SNAPSHOT.jar/nosql/Persistence.class in case of Jar 
+         * OR
+         * vfs:/C:/sw/jboss-eap-6.1/bin/content/EarTesting.war/WEB-INF/classes/nosql/Persistence.class in case of a folder
+         */
+
+        String file = fileInJarOrFolderUrl.getFile();
+        int fillength = file.length();
+        String s = "/nosql/Persistence.class";
+        int substringlength = s.length();
+        String ur = file.substring(0, (fillength - substringlength));
+        String prefix = "vfs:" + ur;
+        URL url = createUrl(prefix);
+        if (log.isInfoEnabled())
+            log.info("adding jar file for scanning=" + url);
+        list.add(url);
+
+    }
 
 	private void processJar(URL fileInJarOrFolderUrl, List<URL> list) {
 		String file = fileInJarOrFolderUrl.getFile();
