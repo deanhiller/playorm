@@ -16,7 +16,8 @@ public class RowToPersist {
 	private List<IndexData> indexToAdd = new ArrayList<IndexData>();
 	private List<IndexData> indexToRemove = new ArrayList<IndexData>();
 	private byte[] virtualKey;
-	
+	private int ttl;
+
 	public byte[] getKey() {
 		return key;
 	}
@@ -39,7 +40,6 @@ public class RowToPersist {
 	public void addEntityToRemove(byte[] colName) {
 		columnsToRemove.add(colName);
 	}
-	
 	public void addIndexToPersist(IndexData data) {
 		indexToAdd.add(data);
 	}
@@ -60,5 +60,11 @@ public class RowToPersist {
 	}
 	public byte[] getVirtualKey() {
 		return virtualKey;
+	}
+	public int getTtl() {
+		return ttl;
+	}
+	public void setTtl(int ttl) {
+		this.ttl = ttl;
 	}
 }
