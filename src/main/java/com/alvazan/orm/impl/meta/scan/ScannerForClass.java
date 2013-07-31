@@ -25,6 +25,7 @@ import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlTTL;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
@@ -243,6 +244,8 @@ public class ScannerForClass {
 			metaField = inspectorField.processOneToMany(metaClass, metaDbo, field);
 		else if(field.isAnnotationPresent(NoSqlEmbedded.class))
 			metaField = inspectorField.processEmbedded(metaDbo, field);
+		else if(field.isAnnotationPresent(NoSqlTTL.class))
+			metaField = inspectorField.processTTL(metaDbo, field);
 		else
 			metaField = inspectorField.processColumn(metaDbo, field);
 		

@@ -122,6 +122,10 @@ public class ScannerForField {
 		metaField.setup(t, info, field, columnName, isIndexed);
 		return metaField;
 	}
+	
+	public MetaTTLField processTTL(DboTableMeta t, Field field, MetaAbstractClass<T> metaClass) {
+		
+	}
 
 	private IllegalArgumentException throwInvalidConverter(Field field) {
 		Class type = field.getType();
