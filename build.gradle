@@ -126,8 +126,8 @@ test {
 	classpath = classpath +  files("${projectDir}/src/conf/logback.xml")
 }
 
-configurations.add('sources')
-configurations.add('javadoc')
+configurations.create('sources')
+configurations.create('javadoc')
 configurations.archives {
     extendsFrom configurations.sources
     extendsFrom configurations.javadoc
@@ -247,3 +247,9 @@ task dist(type:Zip) {
         from 'tools/'
     }
 }
+
+task wrapper(type: Wrapper) {
+   gradleVersion = '1.6'
+}
+
+task compile(dependsOn: 'compileJava') { }
