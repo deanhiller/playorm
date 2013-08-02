@@ -1,13 +1,21 @@
 package com.alvazan.orm.api.z8spi.meta;
 
 import com.alvazan.orm.api.z8spi.Row;
+import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
 public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
+	protected void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
+		if (isIndexed == true) 
+			throw new UnsupportedOperationException("Index on TTL column is not supported");
+		super.setup(owner2, colName, isIndexed);
+	}
+
+	@Override
 	public boolean isPartitionedByThisColumn() {
-		/** TTL is metacolumn, can't be used for partitioning */
+		/** TTL is meta column, can't be used for partitioning */
 		return false;
 	}
 
@@ -17,7 +25,7 @@ public class DboColumnTTLMeta extends DboColumnMeta {
 	}
 
 	@Override
-	public Class getClassType() {
+	public Class<?> getClassType() {
 		return Integer.class;
 	}
 
@@ -28,19 +36,25 @@ public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
 	public void translateToColumn(InfoForIndex<TypedRow> info) {
-		// TODO Auto-generated method stub
-		
+		TypedColumn tcol = info.getEntity().getColumn(getColumnNameAsBytes());
+		if (tcol != null) {
+			info.getRow().setTtl(tcol.getValue(Integer.class));
+		}
 	}
 
 	@Override
-	public void translateFromColumn(Row row, TypedRow inst) {
-		// TODO Auto-generated method stub
-		
+	public void translateFromColumn(Row row, TypedRow entity) {
+		if (row.getColumns().size() == 0)
+			return;
+
+		Column column = row.getColumns().iterator().next();
+		Integer ttl = column.getTtl();
+		entity.addColumn(this, getColumnNameAsBytes(), ttl == null? new byte[4] : convertToStorage2(ttl), column.getTimestamp());
 	}
 
 	@Override
 	public String fetchColumnValueAsString(TypedRow row) {
-		// TODO Auto-generated method stub
-		return null;
+		TypedColumn tcol = row.getColumn(getColumnNameAsBytes());
+		return tcol.getValue().toString();
 	}
 }
