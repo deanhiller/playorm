@@ -6,6 +6,7 @@ public class Column {
 	private byte[] name;
 	private byte[] value;
 	private Long timestamp;
+	private Integer ttl;
 
 	public Column() {}
 	
@@ -32,6 +33,13 @@ public class Column {
 	public void setName(byte[] name) {
 		this.name = name;
 	}
+	public Integer getTtl() {
+		return ttl;
+	}
+	public void setTtl(Integer ttl) {
+		this.ttl = ttl;
+	}
+
 	@Override
 	public Object clone() throws CloneNotSupportedException {
 		return super.clone();
