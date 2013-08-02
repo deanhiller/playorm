@@ -7,10 +7,10 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
-	protected void setup(DboTableMeta owner2, String colName, boolean isIndexed) {
-		if (isIndexed == true) 
+	public void setup(DboTableMeta owner2, String colName, boolean indexed) {
+		if ( indexed == true) 
 			throw new UnsupportedOperationException("Index on TTL column is not supported");
-		super.setup(owner2, colName, isIndexed);
+		super.setup(owner2, colName, indexed);
 	}
 
 	@Override
