@@ -48,6 +48,21 @@ public class TestExpire {
 	}
 
 	@Test
+	public void testTTLReadBack() {
+		ExpiringEntity entity = new ExpiringEntity();
+		entity.setId(50);
+		entity.setName("test1");
+		entity.setTtl(5);
+		mgr.put(entity);
+		mgr.flush();
+
+		// read entity back
+		mgr.clear();
+		entity = mgr.find(ExpiringEntity.class, 50L);
+		assertEquals("TTL not read back correctly", 5, entity.getTtl());
+	}
+
+	@Test
 	public void testExpireEntity() throws InterruptedException {
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
