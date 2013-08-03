@@ -103,7 +103,8 @@ public class CassandraSession implements NoSqlRawSession {
 			if(val.length != 0)
 				c.setValue(val);
 			c.setTimestamp(timestamp);
-			
+			c.setTtl(col.getTtl());
+
 			r.put(c);
 		}
 	}
