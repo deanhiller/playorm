@@ -136,6 +136,12 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 
 		byte[] virtKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
+		int ttl = row.getTtl();
+		if (ttl > 0) {
+			for(Column c:row.getColumns()) {
+				c.setTtl(ttl);
+			}
+		}
 		session.put(metaDbo, virtKey, cols);
 	}
 
