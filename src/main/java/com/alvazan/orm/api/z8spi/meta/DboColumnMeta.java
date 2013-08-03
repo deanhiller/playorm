@@ -23,7 +23,8 @@ import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 @NoSqlInheritance(subclassesToScan = { DboColumnCommonMeta.class,
 		DboColumnToOneMeta.class, DboColumnToManyMeta.class,
 		DboColumnIdMeta.class, DboColumnEmbedMeta.class, 
-		DboColumnEmbedSimpleMeta.class }, strategy = NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName = "classType")
+		DboColumnEmbedSimpleMeta.class, DboColumnTTLMeta.class
+		}, strategy = NoSqlInheritanceType.SINGLE_TABLE, discriminatorColumnName = "classType")
 public abstract class DboColumnMeta {
 
 	@NoSqlId(usegenerator = false)
