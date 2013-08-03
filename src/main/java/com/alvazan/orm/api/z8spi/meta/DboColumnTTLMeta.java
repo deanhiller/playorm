@@ -1,9 +1,11 @@
 package com.alvazan.orm.api.z8spi.meta;
 
+import com.alvazan.orm.api.base.anno.NoSqlDiscriminatorColumn;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 
+@NoSqlDiscriminatorColumn(value="ttl")
 public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
