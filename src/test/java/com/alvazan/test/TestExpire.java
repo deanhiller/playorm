@@ -43,7 +43,7 @@ public class TestExpire {
 
 		// read entity back
 		mgr.clear();
-		entity = mgr.find(ExpiringEntity.class, 50);
+		entity = mgr.find(ExpiringEntity.class, 50L);
 		assertNotNull("Entity not persisted", entity);
 	}
 
@@ -59,7 +59,7 @@ public class TestExpire {
 		// wait for entity to expire
 		Thread.sleep(6000);
 		mgr.clear();
-		entity = mgr.find(ExpiringEntity.class, 50);
+		entity = mgr.find(ExpiringEntity.class, 50L);
 		assertNull("Entity not expired", entity);
 	}
 }
