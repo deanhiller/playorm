@@ -51,6 +51,7 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaProxyField;
+import com.alvazan.orm.impl.meta.data.MetaTTLField;
 import com.alvazan.orm.impl.meta.data.MetaToManyField;
 
 @SuppressWarnings("rawtypes")
@@ -64,6 +65,8 @@ public class ScannerForField {
 	@Inject
 	private Provider<MetaCommonField> metaProvider;
 	@Inject
+	private Provider<MetaTTLField> ttlMetaProvider;
+	@Inject
 	private Provider<MetaToManyField> metaListProvider;
 	@Inject
 	private Provider<MetaEmbeddedEntity> metaEmbeddedProvider;
@@ -76,11 +79,6 @@ public class ScannerForField {
 	
 	private Map<Class, Converter> customConverters = new HashMap<Class, Converter>();
 
-	
-	public ScannerForField() {
-
-	}
-	
 	@SuppressWarnings("unchecked")
 	public <T> MetaIdField<T> processId(DboTableMeta t, Field field, MetaAbstractClass<T> metaClass) {
 
@@ -123,8 +121,15 @@ public class ScannerForField {
 		return metaField;
 	}
 	
-	public MetaTTLField processTTL(DboTableMeta t, Field field, MetaAbstractClass<T> metaClass) {
-		
+	public MetaTTLField processTTL(DboTableMeta t, Field field) {
+		Class type = field.getType();
+		if (Integer.class.equals(type) || (int.class.equals(type))) {
+			MetaTTLField rc = ttlMetaProvider.get();
+			rc.setup(t, field, field.getName(), field.isAnnotationPresent(NoSqlIndexed.class));
+			return rc;
+		} 
+		else
+			throw new IllegalArgumentException("TTL field must be int or Integer");
 	}
 
 	private IllegalArgumentException throwInvalidConverter(Field field) {
