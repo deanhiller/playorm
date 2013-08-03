@@ -238,15 +238,11 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			Integer theTime = null;
-			Long time = col.getTimestamp();
-			if(time != null)
-				theTime = (int)time.longValue();
 			byte[] value = new byte[0];
 			if(col.getValue() != null)
 				value = col.getValue();
-			
-			colMutation.putColumn(col.getName(), value, theTime);
+
+			colMutation.putColumn(col.getName(), value, col.getTtl());
 		}
 	}
 
