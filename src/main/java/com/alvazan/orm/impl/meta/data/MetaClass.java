@@ -21,6 +21,8 @@ public interface MetaClass<T> {
 
 	MetaIdField<T> getIdField();
 
+	MetaTTLField <T> getTTLField();
+
 	boolean hasIndexedField(T entity);
 
 	SpiMetaQuery getNamedQuery(Class<? extends T> clazz, String name);
