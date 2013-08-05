@@ -21,7 +21,7 @@ public interface MetaClass<T> {
 
 	MetaIdField<T> getIdField();
 
-	MetaTTLField <T> getTTLField();
+	MetaTTLField <T> getTtlField();
 
 	boolean hasIndexedField(T entity);
 
