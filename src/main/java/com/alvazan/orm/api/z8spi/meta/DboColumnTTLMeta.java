@@ -46,7 +46,7 @@ public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
 	public void translateFromColumn(Row row, TypedRow entity) {
-		if (row.getColumns().size() == 0)
+		if (row.getColumns().isEmpty())
 			return;
 
 		Column column = row.getColumns().iterator().next();
