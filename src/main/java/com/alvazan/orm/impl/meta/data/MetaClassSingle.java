@@ -80,6 +80,8 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		InfoForIndex<T> info = new InfoForIndex<T>(entity, row, getColumnFamily(), fieldToValue, partitions);
 		
 		idField.translateToColumn(info);
+		if (ttlField != null)
+			ttlField.translateToColumn(info);
 
 		for(MetaField<T> m : columnNameToField.values()) {
 			try {
