@@ -81,8 +81,6 @@ public class CmdIndex {
 
 	private Counter processAllColumns(NoSqlTypedSession s, ColFamilyData data, Map<Object, KeyValue<TypedRow>> keyToRow,
 			Cursor<IndexPoint> indexView2) {
-		String colName = data.getColumn();
-		
 		indexView2.beforeFirst();
 		int rowCounter = 0;
 		int changedCounter = 0;
