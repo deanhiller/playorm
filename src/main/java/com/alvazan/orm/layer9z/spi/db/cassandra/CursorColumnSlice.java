@@ -131,6 +131,7 @@ class CursorColumnSlice<T> extends AbstractCursor<T> {
 		c.setPrimaryKey(bigDec.getPk());
 		c.setIndexedValue(bigDec.getIndexedValue());
 		c.setValue(col.getByteArrayValue());
+		c.setTtl(col.getTtl());
 		return c;
 	}
 	
