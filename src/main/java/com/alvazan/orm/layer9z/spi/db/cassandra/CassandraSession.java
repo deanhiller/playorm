@@ -30,6 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnTTLMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Cluster;
@@ -191,8 +192,7 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		Object toPersist = createObjectToUse(action, info);
-		
-		colMutation.putEmptyColumn(toPersist);
+		colMutation.putEmptyColumn(toPersist, action.getRowTtl());
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup mgr, MutationBatch m) {
