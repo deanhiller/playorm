@@ -62,12 +62,14 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 	 */
 	public void fillInInstance(Row row, NoSqlSession session, T inst) {
 		idField.translateFromColumn(row, inst, session);
-		
+		if (ttlField != null)
+			ttlField.translateFromColumn(row, inst, session);
+
 		for(MetaField<T> field : columnNameToField.values()) {
 			field.translateFromColumn(row, inst, session);
 		}
 	}
-	
+
 	public RowToPersist translateToRow(T entity) {
 		RowToPersist row = new RowToPersist();
 		Map<Field, Object> fieldToValue = null;
