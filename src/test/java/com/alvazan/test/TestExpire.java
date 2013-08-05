@@ -52,14 +52,14 @@ public class TestExpire {
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
 		entity.setName("test1");
-		entity.setTtl(5);
+		entity.setTtl(50000);
 		mgr.put(entity);
 		mgr.flush();
 
 		// read entity back
 		mgr.clear();
 		entity = mgr.find(ExpiringEntity.class, 50L);
-		assertEquals("TTL not read back correctly", 5, entity.getTtl());
+		assertEquals("TTL not read back correctly", 50000, entity.getTtl());
 	}
 
 	@Test
