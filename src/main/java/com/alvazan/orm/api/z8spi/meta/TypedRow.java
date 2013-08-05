@@ -17,7 +17,8 @@ public class TypedRow {
 	private DboTableMeta metaClass;
 	private ViewInfo view;
 	private List<byte[]> columnsToBeRemoved = new ArrayList<byte[]>();
-	
+	private Integer ttl;
+
 	public TypedRow() {
 	}
 	
@@ -188,4 +189,11 @@ public class TypedRow {
 		return columnsToBeRemoved;
 	}
 
+	public Integer getRowTtl() {
+		return ttl;
+	}
+
+	public void setRowTtl(Integer ttl) {
+		this.ttl = ttl;
+	}
 }
