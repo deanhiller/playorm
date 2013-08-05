@@ -64,7 +64,7 @@ public class CmdIndex {
 		while(true) {
 			Map<Object, KeyValue<TypedRow>> keyToRow = findNextSetOfData(s, cf, indexView);
 			rowCountProcessed += keyToRow.size();
-			if(keyToRow.size() == 0) {
+			if(keyToRow.isEmpty()) {
 				break; //finished
 			}
 			
