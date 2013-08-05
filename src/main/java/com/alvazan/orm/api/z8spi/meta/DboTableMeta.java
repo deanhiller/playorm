@@ -218,6 +218,10 @@ public class DboTableMeta {
 		this.ttlColumn = ttlmeta;
 	}
 
+	public DboColumnTTLMeta getRowTTLMeta() {
+		return ttlColumn;
+	}
+
 	public void addColumnMeta(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}
