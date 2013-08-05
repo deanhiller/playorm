@@ -119,9 +119,10 @@ public class NoSqlTypedSessionImpl implements NoSqlTypedSession {
 			col.setColumnName(colMeta.getColumnName());
 		col.setIndexedValue(pt.getRawIndexedValue());
 		col.setPrimaryKey(pt.getRawKey());
+		col.setTtl(pt.getTtl());
 		session.persistIndex(cf, indColFamily, rowKey, col);
 	}
-	
+
 	@Override
 	public void remove(String colFamily, TypedRow row) {
 		DboTableMeta metaDbo = cachedMeta.getMeta(colFamily);
