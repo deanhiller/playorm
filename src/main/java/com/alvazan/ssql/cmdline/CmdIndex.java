@@ -119,7 +119,7 @@ public class CmdIndex {
 		return new Counter(rowCounter, changedCounter);
 	}
 
-	private boolean processColumn(NoSqlTypedSession s, ColFamilyData data,TypedRow typedRow,
+	private boolean processColumn(NoSqlTypedSession s, ColFamilyData data, TypedRow typedRow,
 			IndexPoint pt) {
 		String colName = data.getColumn();
 		TypedColumn column = typedRow.getColumn(colName);
@@ -140,6 +140,7 @@ public class CmdIndex {
 				IndexColumn col = new IndexColumn();
 				col.setColumnName(colName);
 				col.setPrimaryKey(pt.getRawKey());
+				col.setTtl(typedRow.getRowTtl());
 				byte[] indValue = StandardConverters.convertToBytes(value);
 				col.setIndexedValue(indValue);
 				IndexPoint newPoint = new IndexPoint(pt.getRowKeyMeta(), col,data.getColumnMeta());
