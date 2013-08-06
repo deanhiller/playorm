@@ -53,6 +53,7 @@ public class Column {
 		//THIS MAKES us perform exactly like cassandra in that a 0 length byte or string is same as null!!!
 		if(value != null && value.length != 0)
 			c.value = value;
+		c.ttl = ttl;
 		return c;
 	}
 
