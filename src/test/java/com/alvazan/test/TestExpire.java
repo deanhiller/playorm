@@ -37,7 +37,7 @@ public class TestExpire {
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
 		entity.setName("test1");
-		entity.setTtl(5);
+		entity.setTtl(50000);
 		mgr.put(entity);
 		mgr.flush();
 
