@@ -139,7 +139,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		List<Column> cols = row.getColumns();
 		int ttl = row.getTtl();
 		if (ttl > 0) {
-			for(Column c:row.getColumns()) {
+			for(Column c:cols) {
 				c.setTtl(ttl);
 			}
 		}
