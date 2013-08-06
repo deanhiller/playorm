@@ -8,7 +8,8 @@ public class IndexColumn {
 	private byte[] primaryKey;
 	private Long timestamp;
 	private byte[] value;
-	
+	private Integer ttl;
+
 	private ByteArray indexedVal;
 	private ByteArray rowKey;
 	
@@ -18,12 +19,10 @@ public class IndexColumn {
 	
 	public IndexColumn() {}
 	
-	
 	@Override
 	public String toString() {
 		return "indexedVal="+indexedVal+" key="+rowKey;
 	}
-
 
 	public IndexColumn copy() {
 		IndexColumn c = new IndexColumn();
@@ -34,6 +33,7 @@ public class IndexColumn {
 		c.timestamp = timestamp;
 		c.value = value;
 		c.columnName = columnName;
+		c.ttl = ttl;
 		return c;
 	}
 	
@@ -78,4 +78,11 @@ public class IndexColumn {
 		return columnName;
 	}
 
+	public Integer getTtl() {
+		return ttl;
+	}
+
+	public void setTtl(Integer ttl) {
+		this.ttl = ttl;
+	}
 }

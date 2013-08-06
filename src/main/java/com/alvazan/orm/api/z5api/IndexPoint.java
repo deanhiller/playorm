@@ -10,12 +10,14 @@ public class IndexPoint {
 	private DboColumnMeta colMeta;
 	private byte[] rowKey;
 	private byte[] indexedValue;
+	private Integer ttl;
 
 	public IndexPoint(DboColumnIdMeta idMeta, IndexColumn col, DboColumnMeta colMeta) {
 		this.idMeta = idMeta;
 		this.colMeta = colMeta;
 		rowKey = col.getPrimaryKey();
 		indexedValue = col.getIndexedValue();
+		ttl = col.getTtl();
 	}
 
 	@Override
@@ -53,5 +55,9 @@ public class IndexPoint {
 
 	public DboColumnIdMeta getRowKeyMeta() {
 		return idMeta;
+	}
+
+	public Integer getTtl() {
+		return ttl;
 	}
 }

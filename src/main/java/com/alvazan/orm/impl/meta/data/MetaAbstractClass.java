@@ -24,6 +24,8 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 	
 	protected MetaIdField<T> idField;
 	
+	protected MetaTTLField<T> ttlField;
+
 	protected Map<String, SpiMetaQuery> queryInfo = new HashMap<String, SpiMetaQuery>();
 
 	private Throwable firstTrace;
@@ -84,6 +86,14 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 
 	public MetaIdField<T> getIdField() {
 		return idField;
+	}
+	
+	public void setTtlField(MetaTTLField<T> field) {
+		this.ttlField = field;
+	}
+	
+	public MetaTTLField<T> getTtlField() {
+		return ttlField;
 	}
 	
 	public DboTableMeta getMetaDbo() {

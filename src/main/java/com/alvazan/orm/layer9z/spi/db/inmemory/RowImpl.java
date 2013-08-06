@@ -2,6 +2,7 @@ package com.alvazan.orm.layer9z.spi.db.inmemory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -16,15 +17,37 @@ import com.alvazan.orm.api.z8spi.conv.ByteArray;
 public class RowImpl implements Row {
 	private byte[] key;
 	private NavigableMap<ByteArray, Column> columns = new TreeMap<ByteArray, Column>();
-	
+	private long expire;
+
 	public RowImpl() {
+		expire = 0L;
 	}
 
 	public RowImpl(TreeMap<ByteArray, Column> map) {
 		this.columns = map;
+		if(!map.isEmpty()) {
+			updateExpire(map.values().iterator().next());
+		}
 	}
-	
-	
+
+	private void updateExpire(Column c) {
+		if (c == null) return;
+
+		Integer ttl = c.getTtl();
+
+		if (ttl != null && ttl > 0)
+			expire = System.currentTimeMillis() + 1000L * ttl;
+		else
+			expire = 0L;
+	}
+
+	public boolean isExpired() {
+		if ( expire > 0 && System.currentTimeMillis() >= expire )
+			return true;
+		else
+			return false;
+	}
+
 	@Override
 	public String toString() {
 		return "rowKey="+new ByteArray(key)+" columns="+columns;
@@ -37,6 +60,7 @@ public class RowImpl implements Row {
 	public byte[] getKey() {
 		return key;
 	}
+
 	/* (non-Javadoc)
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#setKey(byte[])
 	 */
@@ -50,7 +74,10 @@ public class RowImpl implements Row {
 	 */
 	@Override
 	public Collection<Column> getColumns() {
-		return columns.values();
+		if (isExpired())
+			return Collections.emptyList();
+		else
+			return columns.values();
 	}
 
 	/* (non-Javadoc)
@@ -58,9 +85,12 @@ public class RowImpl implements Row {
 	 */
 	@Override
 	public Column getColumn(byte[] key) {
+		if (isExpired())
+			return null;
 		ByteArray bKey = new ByteArray(key);
 		return columns.get(bKey);
 	}
+
 	/* (non-Javadoc)
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#put(byte[], com.alvazan.orm.api.spi3.db.Column)
 	 */
@@ -68,7 +98,9 @@ public class RowImpl implements Row {
 	public void put(Column col) {
 		ByteArray key = new ByteArray(col.getName());
 		columns.put(key, col);
+		updateExpire(col);
 	}
+
 	/* (non-Javadoc)
 	 * @see com.alvazan.orm.layer3.spi.db.inmemory.RowTemp#remove(byte[])
 	 */
@@ -85,7 +117,11 @@ public class RowImpl implements Row {
 	public Collection<IndexColumn> columnSlice(Key from, Key to) {
 		throw new UnsupportedOperationException("bug, this is not an index row");
 	}
+
 	public Collection<Column> columnSlice(byte[] from, byte[] to) {
+		if (isExpired())
+			return Collections.emptyList();
+
 		NavigableMap<ByteArray, Column> map = columns;
 		if(from != null) {
 			ByteArray fromArray = new ByteArray(from);
@@ -115,6 +151,9 @@ public class RowImpl implements Row {
 	 */
 	@Override
 	public Collection<Column> columnByPrefix(byte[] prefix) {
+		if (isExpired())
+			return Collections.emptyList();
+
 		List<Column> prefixed = new ArrayList<Column>();
 		boolean started = false;
 		for(Entry<ByteArray, Column> col : columns.entrySet()) {
@@ -132,6 +171,7 @@ public class RowImpl implements Row {
 		for(Column c : cols) {
 			ByteArray b = new ByteArray(c.getName());
 			columns.put(b, c);
+			updateExpire(c);
 		}
 	}
 
@@ -142,6 +182,7 @@ public class RowImpl implements Row {
 		for(Entry<ByteArray, Column> s : columns.entrySet()) {
 			impl.columns.put(s.getKey(), s.getValue().copy());
 		}
+		impl.expire = expire;
 		return impl;
 	}
 
@@ -152,5 +193,4 @@ public class RowImpl implements Row {
 			columns.remove(b);
 		}
 	}
-
 }

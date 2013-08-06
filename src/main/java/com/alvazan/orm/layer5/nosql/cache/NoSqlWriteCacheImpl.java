@@ -78,6 +78,9 @@ public class NoSqlWriteCacheImpl implements NoSqlSession {
 		persist.setIndexCfName(indexColFamily);
 		persist.setRowKey(rowKey);
 		persist.setColumn(column);
+		Integer ttl = column.getTtl();
+		if (ttl != null)
+			persist.setRowTtl(ttl);
 		actions.add(persist);
 	}
 

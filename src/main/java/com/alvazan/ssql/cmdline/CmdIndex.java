@@ -64,7 +64,7 @@ public class CmdIndex {
 		while(true) {
 			Map<Object, KeyValue<TypedRow>> keyToRow = findNextSetOfData(s, cf, indexView);
 			rowCountProcessed += keyToRow.size();
-			if(keyToRow.size() == 0) {
+			if(keyToRow.isEmpty()) {
 				break; //finished
 			}
 			
@@ -81,8 +81,6 @@ public class CmdIndex {
 
 	private Counter processAllColumns(NoSqlTypedSession s, ColFamilyData data, Map<Object, KeyValue<TypedRow>> keyToRow,
 			Cursor<IndexPoint> indexView2) {
-		String colName = data.getColumn();
-		
 		indexView2.beforeFirst();
 		int rowCounter = 0;
 		int changedCounter = 0;
@@ -121,7 +119,7 @@ public class CmdIndex {
 		return new Counter(rowCounter, changedCounter);
 	}
 
-	private boolean processColumn(NoSqlTypedSession s, ColFamilyData data,TypedRow typedRow,
+	private boolean processColumn(NoSqlTypedSession s, ColFamilyData data, TypedRow typedRow,
 			IndexPoint pt) {
 		String colName = data.getColumn();
 		TypedColumn column = typedRow.getColumn(colName);
@@ -142,6 +140,7 @@ public class CmdIndex {
 				IndexColumn col = new IndexColumn();
 				col.setColumnName(colName);
 				col.setPrimaryKey(pt.getRawKey());
+				col.setTtl(typedRow.getRowTtl());
 				byte[] indValue = StandardConverters.convertToBytes(value);
 				col.setIndexedValue(indValue);
 				IndexPoint newPoint = new IndexPoint(pt.getRowKeyMeta(), col,data.getColumnMeta());

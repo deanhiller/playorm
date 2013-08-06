@@ -87,6 +87,12 @@ public class Table {
 	public Row getRow(byte[] rowKey) {
 		ByteArray key = new ByteArray(rowKey);
 		Row row = keyToRow.get(key);
+		if (row instanceof RowImpl) {
+			if (((RowImpl) row).isExpired()) {
+				keyToRow.remove(key);
+				return null;
+			}
+		}
 		return row;
 	}
 

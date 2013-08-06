@@ -20,11 +20,13 @@ import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
+import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
 import com.alvazan.orm.api.base.anno.NoSqlOneToMany;
 import com.alvazan.orm.api.base.anno.NoSqlOneToOne;
+import com.alvazan.orm.api.base.anno.NoSqlTTL;
 import com.alvazan.orm.api.base.anno.NoSqlTransient;
 import com.alvazan.orm.api.base.anno.NoSqlVirtualCf;
 import com.alvazan.orm.api.z8spi.meta.DboDatabaseMeta;
@@ -36,6 +38,7 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaMarkerField;
+import com.alvazan.orm.impl.meta.data.MetaTTLField;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 public class ScannerForClass {
@@ -231,6 +234,8 @@ public class ScannerForClass {
 		
 		if(processIdFieldWorks(metaClass, metaDbo, field))
 			return;
+		if(processTTLFieldWorks(metaClass, metaDbo, field))
+			return;
 		
 		MetaField metaField;
 		if(field.isAnnotationPresent(NoSqlManyToOne.class))
@@ -270,6 +275,21 @@ public class ScannerForClass {
 
 		MetaIdField idField = inspectorField.processId(metaDbo, field, metaClass);
 		metaClass.setIdField(idField);
+		return true;
+	}
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public boolean processTTLFieldWorks(MetaAbstractClass m, DboTableMeta t, Field field) {
+		if (!field.isAnnotationPresent(NoSqlTTL.class))
+			return false;
+		// check for double TTL annotation
+		if (m.getTtlField() != null) {
+			if (! m.getTtlField().getField().equals(field)) {
+				throw new IllegalArgumentException("You can have only one field with @NoSqlTTL annotation in class: " + m.getClass());
+			}
+		}
+
+		m.setTtlField(inspectorField.processTTL(t, field));
 		return true;
 	}
 
