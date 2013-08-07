@@ -30,6 +30,7 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnTTLMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Cluster;
@@ -103,7 +104,8 @@ public class CassandraSession implements NoSqlRawSession {
 			if(val.length != 0)
 				c.setValue(val);
 			c.setTimestamp(timestamp);
-			
+			c.setTtl(col.getTtl());
+
 			r.put(c);
 		}
 	}
@@ -190,8 +192,7 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnFamily cf = info.getColumnFamilyObj();
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		Object toPersist = createObjectToUse(action, info);
-		
-		colMutation.putEmptyColumn(toPersist);
+		colMutation.putEmptyColumn(toPersist, action.getRowTtl());
 	}
 
 	private void removeIndex(RemoveIndex action, MetaLookup mgr, MutationBatch m) {
@@ -237,15 +238,11 @@ public class CassandraSession implements NoSqlRawSession {
 		ColumnListMutation colMutation = m.withRow(cf, action.getRowKey());
 		
 		for(Column col : action.getColumns()) {
-			Integer theTime = null;
-			Long time = col.getTimestamp();
-			if(time != null)
-				theTime = (int)time.longValue();
 			byte[] value = new byte[0];
 			if(col.getValue() != null)
 				value = col.getValue();
-			
-			colMutation.putColumn(col.getName(), value, theTime);
+
+			colMutation.putColumn(col.getName(), value, col.getTtl());
 		}
 	}
 

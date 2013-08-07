@@ -131,11 +131,18 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 		
 		//NOW for index adds, if it is a new entity or if values change, we persist those values
 		for(IndexData ind : row.getIndexToAdd()) {
+			ind.getIndexColumn().setTtl(row.getTtl());
 			session.persistIndex(metaDbo, ind.getColumnFamilyName(), ind.getRowKeyBytes(), ind.getIndexColumn());
 		}
 
 		byte[] virtKey = row.getVirtualKey();
 		List<Column> cols = row.getColumns();
+		int ttl = row.getTtl();
+		if (ttl > 0) {
+			for(Column c:cols) {
+				c.setTtl(ttl);
+			}
+		}
 		session.put(metaDbo, virtKey, cols);
 	}
 

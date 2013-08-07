@@ -63,6 +63,8 @@ public class DboTableMeta {
 	private Map<String, DboColumnMeta> nameToField = new HashMap<String, DboColumnMeta>();
 	@NoSqlOneToOne
 	private DboColumnIdMeta idColumn;
+	@NoSqlOneToOne
+	private DboColumnTTLMeta ttlColumn;
 
 	private String foreignKeyToExtensions;
 
@@ -212,6 +214,14 @@ public class DboTableMeta {
 		this.idColumn = idMeta;
 	}
 	
+	public void setRowTTLMeta(DboColumnTTLMeta ttlmeta) {
+		this.ttlColumn = ttlmeta;
+	}
+
+	public DboColumnTTLMeta getRowTTLMeta() {
+		return ttlColumn;
+	}
+
 	public void addColumnMeta(DboColumnMeta fieldDbo) {
 		nameToField.put(fieldDbo.getColumnName(), fieldDbo);
 	}

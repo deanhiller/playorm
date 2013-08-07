@@ -32,7 +32,7 @@ public class MetaCommonField<OWNER> extends MetaAbstractField<OWNER> {
 	}
 	
 	public void translateFromColumn(Row row, OWNER entity, NoSqlSession session) {
-		Column column = row.getColumn(getMetaDbo().getColumnNameAsBytes());
+		Column column = row.getColumn(metaDbo.getColumnNameAsBytes());
 		
 		if(column == null) {
 			column = new Column();
