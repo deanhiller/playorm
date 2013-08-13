@@ -30,7 +30,6 @@ import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.iter.EmptyCursor;
-import com.alvazan.orm.api.z8spi.meta.DboColumnTTLMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnToManyMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.netflix.astyanax.Cluster;

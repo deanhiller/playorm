@@ -10,7 +10,7 @@ public class DboColumnTTLMeta extends DboColumnMeta {
 
 	@Override
 	public void setup(DboTableMeta owner2, String colName, boolean indexed) {
-		if ( indexed == true) 
+		if ( indexed) 
 			throw new UnsupportedOperationException("Index on TTL column is not supported");
 		super.setup(owner2, colName, indexed);
 	}

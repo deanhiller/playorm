@@ -20,7 +20,6 @@ import com.alvazan.orm.api.base.anno.NoSqlEmbeddable;
 import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
-import com.alvazan.orm.api.base.anno.NoSqlIndexed;
 import com.alvazan.orm.api.base.anno.NoSqlInheritance;
 import com.alvazan.orm.api.base.anno.NoSqlManyToMany;
 import com.alvazan.orm.api.base.anno.NoSqlManyToOne;
@@ -38,7 +37,6 @@ import com.alvazan.orm.impl.meta.data.MetaField;
 import com.alvazan.orm.impl.meta.data.MetaIdField;
 import com.alvazan.orm.impl.meta.data.MetaInfo;
 import com.alvazan.orm.impl.meta.data.MetaMarkerField;
-import com.alvazan.orm.impl.meta.data.MetaTTLField;
 import com.alvazan.orm.impl.meta.data.NoSqlProxy;
 
 public class ScannerForClass {

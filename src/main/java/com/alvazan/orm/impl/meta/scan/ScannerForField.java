@@ -123,11 +123,16 @@ public class ScannerForField {
 	
 	public MetaTTLField processTTL(DboTableMeta t, Field field) {
 		Class type = field.getType();
-		if (Integer.class.equals(type) || (int.class.equals(type))) {
+		if (Integer.class.equals(type) ) {
 			MetaTTLField rc = ttlMetaProvider.get();
 			rc.setup(t, field, field.getName(), field.isAnnotationPresent(NoSqlIndexed.class));
 			return rc;
-		} 
+		}
+		else if(int.class.equals(type)){
+			MetaTTLField rc = ttlMetaProvider.get();
+			rc.setup(t, field, field.getName(), field.isAnnotationPresent(NoSqlIndexed.class));
+			return rc;
+		}
 		else
 			throw new IllegalArgumentException("TTL field must be int or Integer");
 	}

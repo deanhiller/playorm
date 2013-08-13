@@ -42,10 +42,10 @@ public class RowImpl implements Row {
 	}
 
 	public boolean isExpired() {
-		if ( expire > 0 && System.currentTimeMillis() >= expire )
-			return true;
+		return ( expire > 0 && System.currentTimeMillis() >= expire );
+			/*return true;
 		else
-			return false;
+			return false;*/
 	}
 
 	@Override
