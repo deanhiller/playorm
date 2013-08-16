@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.cassandra;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import com.netflix.astyanax.AstyanaxContext.Builder;
 import com.netflix.astyanax.Cluster;
 import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.connectionpool.OperationResult;
+import com.netflix.astyanax.connectionpool.exceptions.BadRequestException;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
 import com.netflix.astyanax.ddl.ColumnFamilyDefinition;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
@@ -107,16 +109,19 @@ public class ColumnFamilyHelper {
 		
 		clusterContext.start();
 		
-		cluster = clusterContext.getEntity();
+		cluster = clusterContext.getClient();
 		List<KeyspaceDefinition> keyspaces = cluster.describeKeyspaces();
+		List<String> keyspaceNames = new ArrayList<String>();
 		boolean exists = false;
 		for(KeyspaceDefinition kDef : keyspaces) {
+			keyspaceNames.add(kDef.getName());
 			if(keyspaceName.equalsIgnoreCase(kDef.getName())) {
 				exists = true;
 				break;
 			}
 		}
 
+		log.info("your keyspace="+keyspaceName+" keyspaces="+keyspaceNames+" exists="+exists);
 		if(!exists) {
 			KeyspaceDefinition def = cluster.makeKeyspaceDefinition();
 			def.setName(keyspaceName);
@@ -127,15 +132,39 @@ public class ColumnFamilyHelper {
 			if(callback != null)
 				def = (KeyspaceDefinition) callback.configureKeySpace(keyspaceName, def);
 			cluster.addKeyspace(def);
+			log.info("added keyspace="+keyspaceName+" so it now exists");
 		}
 		
 		context = builder.buildKeyspace(ThriftFamilyFactory.getInstance());
 		context.start();
 		
-		keyspace = context.getEntity();
+		keyspace = context.getClient();
 
-		KeyspaceDefinition keySpaceMeta = keyspace.describeKeyspace();
+		//for some reason, the keyspace is not always created fast enough so sleep 3 seconds and try again
+		KeyspaceDefinition keySpaceMeta = null;
+		BadRequestException holdExc = null;
+		for(int i = 0; i < 3; i++) {
+			try {
+				keySpaceMeta = keyspace.describeKeyspace();
+			} catch(BadRequestException e) {
+				if(e.getMessage().contains(keyspaceName)) {
+					log.info("sleeping since we had an exception...will retry. loop count="+i);
+					holdExc = e;
+					try {
+						Thread.sleep(5000);
+					} catch (InterruptedException e1) {
+						throw new RuntimeException(e1);
+					}
+				} else {
+					log.info("bad request exception. msg="+e.getMessage()+" throwing exception up the chain");
+					throw e;
+				}
+			}
+		}
 		
+		if(holdExc != null)
+			throw holdExc;
+
 		findExistingColumnFamilies(keySpaceMeta);
 		if (log.isInfoEnabled())
 			log.info("On keyspace="+keyspace.getKeyspaceName()+"Existing column families="+cfNameToCassandra.keySet()+"\nNOTE: WE WILL CREATE " +
