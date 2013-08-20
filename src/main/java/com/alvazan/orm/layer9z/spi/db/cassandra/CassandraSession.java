@@ -294,7 +294,11 @@ public class CassandraSession implements NoSqlRawSession {
 			
 			@Override
 			public RowQuery<byte[], byte[]> createRowQuery() {
-				RangeBuilder rangeBldr = new RangeBuilder().setStart(from).setEnd(to);
+				RangeBuilder rangeBldr = new RangeBuilder();
+				if(from != null)
+					rangeBldr.setStart(from);
+				if(to != null)
+					rangeBldr.setEnd(to);
 				if(batchSize != null)
 					rangeBldr = rangeBldr.setLimit(batchSize);
 				ByteBufferRange range = rangeBldr.build(); 
