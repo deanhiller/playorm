@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9z.spi.db.hadoop;
+package com.alvazan.orm.layer9z.spi.db.hbase;
 
 import org.apache.hadoop.hbase.HColumnDescriptor;
 

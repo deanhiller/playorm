@@ -126,7 +126,7 @@
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
 </package>
-<package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hadoop">
+<package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hbase">
 	<depends>api8</depends>
 	<depends>hbase</depends>
 </package>

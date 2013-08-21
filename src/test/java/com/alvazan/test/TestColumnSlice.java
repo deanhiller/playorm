@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -95,6 +96,8 @@ public class TestColumnSlice {
 
 	@Test
 	public void testDecimalColumnSlice() throws UnsupportedEncodingException {
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+		            return; // This testcase is not supported for Hbase
         NoSqlSession session = mgr.getSession();
 		String colFamily = "float_indexes";
 		

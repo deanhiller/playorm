@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9z.spi.db.hadoop;
+package com.alvazan.orm.layer9z.spi.db.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -52,7 +52,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-public class HadoopSession implements NoSqlRawSession {
+public class HbaseSession implements NoSqlRawSession {
 
 	/** The conf. */
 	private HBaseConfiguration conf;

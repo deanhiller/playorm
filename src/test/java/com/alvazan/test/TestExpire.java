@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.test.db.ExpiringEntity;
@@ -36,6 +37,8 @@ public class TestExpire {
 
 	@Test
 	public void testPersistWithExpire() throws InterruptedException {
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+            return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
 		entity.setName("test1");
@@ -51,6 +54,8 @@ public class TestExpire {
 
 	@Test
 	public void testTTLReadBack() {
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+            return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
 		entity.setName("test1");
@@ -66,6 +71,8 @@ public class TestExpire {
 
 	@Test
 	public void testExpireEntity() throws InterruptedException {
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+            return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
 		entity.setName("test1");

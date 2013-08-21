@@ -1,4 +1,4 @@
-package com.alvazan.orm.layer9z.spi.db.hadoop;
+package com.alvazan.orm.layer9z.spi.db.hbase;
 
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;

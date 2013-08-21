@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.alvazan.orm.api.base.DbTypeEnum;
 import com.alvazan.orm.api.base.NoSqlEntityManager;
 import com.alvazan.orm.api.base.NoSqlEntityManagerFactory;
 import com.alvazan.orm.api.z3api.NoSqlTypedSession;
@@ -50,6 +51,9 @@ public class TestJoins {
 	
 	@Test
 	public void testViewIndex() {
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE)
+			return; // This testcase is not supported for Hbase
+
 		NoSqlTypedSession s = mgr.getTypedSession();
 		
 		//Here we can pull from a single index to view the index itself. 
