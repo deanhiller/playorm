@@ -23,6 +23,7 @@
 <package name="astyanax" package="com.netflix.astyanax" subpackages="include"/>
 <package name="mongodb" package="com.mongodb" subpackages="include"/>
 <package name="cassandra" package="org.apache.cassandra" subpackages="include"/>
+<package name="cassandracql3" package="com.datastax.driver.core" subpackages="include"/>
 <package name="hbase" package="org.apache.hadoop" subpackages="include"/>
 <package name="args" package="org.kohsuke.args4j"/>
 <package name="logback" package="ch.qos.logback" subpackages="include"/>
@@ -125,6 +126,10 @@
 	<depends>api8</depends>
 	<depends>astyanax</depends>
 	<depends>cassandra</depends>
+</package>
+<package name="cql" package="com.alvazan.orm.layer9z.spi.db.cassandracql3">
+	<depends>api8</depends>
+	<depends>cassandracql3</depends>
 </package>
 <package name="hadoop" package="com.alvazan.orm.layer9z.spi.db.hbase">
 	<depends>api8</depends>

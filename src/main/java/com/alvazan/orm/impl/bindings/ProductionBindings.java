@@ -9,6 +9,7 @@ import com.alvazan.orm.layer0.base.BaseEntityManagerFactoryImpl;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlReadCacheImpl;
 import com.alvazan.orm.layer5.nosql.cache.NoSqlWriteCacheImpl;
 import com.alvazan.orm.layer9z.spi.db.cassandra.CassandraSession;
+import com.alvazan.orm.layer9z.spi.db.cassandracql3.CqlSession;
 import com.alvazan.orm.layer9z.spi.db.hbase.HbaseSession;
 import com.alvazan.orm.layer9z.spi.db.inmemory.InMemorySession;
 import com.alvazan.orm.layer9z.spi.db.mongodb.MongoDbSession;
@@ -63,6 +64,9 @@ public class ProductionBindings implements Module {
 			break;
 		case HBASE:
 			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named(name)).to(HbaseSession.class).asEagerSingleton();
+			break;
+		case CQL:
+			binder.bind(NoSqlRawSession.class).annotatedWith(Names.named(name)).to(CqlSession.class).asEagerSingleton();
 			break;
 		default:
 			throw new RuntimeException("bug, unsupported database type="+type);

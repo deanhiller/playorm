@@ -144,4 +144,12 @@ public class BootstrapImpl extends Bootstrap {
 		properties.put(Bootstrap.HBASE_KEYSPACE, keyspace2);
 		properties.put(Bootstrap.HBASE_SEEDS, seeds2);
 	}
+
+	@Override
+	protected void createBestCqlConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2) {
+		properties.put(Bootstrap.CQL_CLUSTERNAME, clusterName);
+		properties.put(Bootstrap.CQL_KEYSPACE, keyspace2);
+		properties.put(Bootstrap.CQL_SEEDS, seeds2);
+	}
 }

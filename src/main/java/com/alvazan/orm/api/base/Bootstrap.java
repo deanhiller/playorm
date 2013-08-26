@@ -28,6 +28,10 @@ public abstract class Bootstrap {
 	public static final String HBASE_KEYSPACE = "nosql.hbase.keyspace";
 	public static final String HBASE_SEEDS = "nosql.hbase.seeds";
 
+	public static final String CQL_CLUSTERNAME = "nosql.cql.clusterName";
+	public static final String CQL_KEYSPACE = "nosql.cql.keyspace";
+	public static final String CQL_SEEDS = "nosql.cql.seeds";
+
 	private static final String OUR_IMPL = "com.alvazan.orm.impl.bindings.BootstrapImpl";
 	public static final String SPI_IMPL = "nosql.spi.implementation";
 	
@@ -110,5 +114,14 @@ public abstract class Bootstrap {
 
 	protected abstract void createBestHBaseConfig(Map<String, Object> properties,
 			String clusterName, String keyspace2, String seeds2);
+
+	public static void createAndAddBestCqlConfiguration(Map<String, Object> properties, String clusterName, String keyspace, String seeds) {
+		Bootstrap bootstrap = createInstance(OUR_IMPL);
+		bootstrap.createBestHBaseConfig(properties, clusterName, keyspace, seeds);
+	}
+
+	protected abstract void createBestCqlConfig(Map<String, Object> properties,
+			String clusterName, String keyspace2, String seeds2);
+
 
 }
