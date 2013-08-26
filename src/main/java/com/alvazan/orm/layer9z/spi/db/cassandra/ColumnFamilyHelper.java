@@ -282,14 +282,14 @@ public class ColumnFamilyHelper {
 
 	private Info lookupVirtCf(String virtualCf) {
 		String cfName = virtualToCfName.get(virtualCf);
-		if(log.isDebugEnabled())
-			log.debug("looking up virtualcf="+virtualCf+" actual name="+cfName);
+		if(log.isInfoEnabled())
+			log.info("looking up virtualcf="+virtualCf+" actual name="+cfName);
 		if(cfName == null)
 			return null;
 		
 		Info info = cfNameToCassandra.get(cfName);
-		if(log.isDebugEnabled())
-			log.debug("virtual="+virtualCf+" actual name="+cfName+" cf info="+info);
+		if(log.isInfoEnabled())
+			log.info("virtual="+virtualCf+" actual name="+cfName+" cf info="+info);
 		return info;
 	}
 
