@@ -37,7 +37,7 @@ public class TestExpire {
 
 	@Test
 	public void testPersistWithExpire() throws InterruptedException {
-		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE || FactorySingleton.getServerType() == DbTypeEnum.MONGODB)
             return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
@@ -54,7 +54,7 @@ public class TestExpire {
 
 	@Test
 	public void testTTLReadBack() {
-		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+	    if (FactorySingleton.getServerType() == DbTypeEnum.HBASE || FactorySingleton.getServerType() == DbTypeEnum.MONGODB)
             return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
@@ -71,7 +71,7 @@ public class TestExpire {
 
 	@Test
 	public void testExpireEntity() throws InterruptedException {
-		if (FactorySingleton.getServerType() == DbTypeEnum.HBASE )
+	    if (FactorySingleton.getServerType() == DbTypeEnum.HBASE || FactorySingleton.getServerType() == DbTypeEnum.MONGODB)
             return;
 		ExpiringEntity entity = new ExpiringEntity();
 		entity.setId(50);
