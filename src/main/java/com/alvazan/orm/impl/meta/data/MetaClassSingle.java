@@ -153,7 +153,8 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		this.proxyClass = proxyClass;
 	}
 
-	public Class<? extends T> getProxyClass() {
+	@Override
+	public Class<? extends T> getProxyClass(Class<?> type) {
 		return proxyClass;
 	}
 
@@ -166,7 +167,7 @@ public class MetaClassSingle<T> extends MetaAbstractClass<T> {
 		Converter converter = idField.getConverter();
 
 		Object entityId = converter.convertFromNoSql(nonVirtKey);
-		T proxy = idField.convertIdToProxy(session, entityId, cacheLoadCallback);
+		T proxy = idField.convertIdToProxy(session, entityId, cacheLoadCallback, null);
 		t.setEntityId(entityId);
 		t.setProxy(proxy);
 		

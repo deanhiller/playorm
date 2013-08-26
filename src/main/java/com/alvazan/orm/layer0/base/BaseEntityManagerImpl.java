@@ -237,7 +237,7 @@ public class BaseEntityManagerImpl implements NoSqlEntityManager, MetaLookup, Me
 	public <T> T getReference(Class<T> entityType, Object key) {
 		MetaClass<T> metaClass = metaInfo.getMetaClass(entityType);
 		MetaIdField<T> field = metaClass.getIdField();
-		return field.convertIdToProxy(session, key, null);
+		return field.convertIdToProxy(session, key, null, entityType);
 	}
 
 	@Override

@@ -124,7 +124,7 @@ public class ScannerForClass {
 		//but we need to recreate all the meta data and not skip those classes so we add && proxyClass != null here
 		//proxy class is set a few lines down in classMeta.setProxyClass(proxyClass); and if already set we should not be
 		//scanning all it's fields again.
-		if(classMeta.getProxyClass() != null)
+		if(classMeta.getProxyClass(null) != null)
 			return;
 		Class<? extends T> proxyClass = createTheProxy(classMeta.getMetaClass());
 		classMeta.setProxyClass(proxyClass);

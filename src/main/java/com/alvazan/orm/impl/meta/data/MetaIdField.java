@@ -131,17 +131,17 @@ public class MetaIdField<OWNER> extends MetaAbstractField<OWNER> {
 		return method;
 	}
 
-	public OWNER convertIdToProxy(NoSqlSession session, Object entityId, CacheLoadCallback cacheLoadCallback) {
+	public OWNER convertIdToProxy(NoSqlSession session, Object entityId, CacheLoadCallback cacheLoadCallback, Class<?> clazz) {
 		if(entityId == null)
 			return null;
-		OWNER proxy = createProxy(entityId, session, cacheLoadCallback);
+		OWNER proxy = createProxy(entityId, session, cacheLoadCallback, clazz);
 		ReflectionUtil.putFieldValue(proxy, field, entityId);
 		return proxy;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private OWNER createProxy(Object entityId, NoSqlSession session, CacheLoadCallback cacheLoadCallback) {
-		Class<?> subclassProxyClass = metaClass.getProxyClass();
+	private OWNER createProxy(Object entityId, NoSqlSession session, CacheLoadCallback cacheLoadCallback, Class<?> clazz) {
+		Class<?> subclassProxyClass = metaClass.getProxyClass(clazz);
 		Proxy inst = (Proxy) ReflectionUtil.create(subclassProxyClass);
 		inst.setHandler(new NoSqlProxyImpl<OWNER>(session, metaClass, entityId, cacheLoadCallback));
 		return (OWNER) inst;

@@ -137,8 +137,10 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	}
 
 	@Override
-	public Class<? extends T> getProxyClass() {
-		throw new UnsupportedOperationException("not done yet");
+	public Class<? extends T> getProxyClass(Class<?> clazz) {
+		String type = classToType.get(clazz);
+		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
+		return metaSingle.getProxyClass(clazz);
 	}
 
 	@Override

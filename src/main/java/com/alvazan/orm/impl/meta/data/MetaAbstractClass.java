@@ -111,7 +111,7 @@ public abstract class MetaAbstractClass<T> implements MetaClass<T> {
 		queryInfo.put(name, metaQuery);
 	}
 
-	public abstract Class<? extends T> getProxyClass();
+	public abstract Class<? extends T> getProxyClass(Class<?> clazz);
 	public abstract Tuple<T> convertIdToProxy(Row row, NoSqlSession session, byte[] nonVirtKey, CacheLoadCallback cacheLoadCallback);
 	public abstract List<MetaField<T>> getIndexedColumns();
 	public abstract void fillInInstance(Row row, NoSqlSession session, T inst);
