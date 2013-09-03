@@ -13,6 +13,7 @@ import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
+import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.meta.DboColumnEmbedSimpleMeta;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
@@ -37,11 +38,11 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 //		super.setup(field2, colName);
 //		this.converter = converter;
 //	}
-	public void setup(DboTableMeta t, Field field, String colName, Converter converter, Converter valConverter, Class<?> type, Class<?> valueType) {
+	public void setup(DboTableMeta t, Field field, String colName, EmbedInfo embedInfo, boolean isIndexed) {
 		super.setup(field, colName);
-		metaDbo.setup(t, colName, field.getType(), type, valueType);
-		this.converter = converter;
-		this.valueConverter = valConverter;
+		metaDbo.setup(t, colName, field.getType(), embedInfo.getType(), embedInfo.getValueType(), isIndexed);
+		this.converter = embedInfo.getConverter();
+		this.valueConverter = embedInfo.getValConverter();
 	}
 	
 	@Override
@@ -73,7 +74,7 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
         return retVal;
     }
 
-	@SuppressWarnings({ "rawtypes" })
+	@SuppressWarnings("unchecked")
 	private Map translateFromColumnMap(Row row,
 			OWNER entity, NoSqlSession session) {
 		byte[] bytes = StandardConverters.convertToBytes(columnName);
@@ -111,16 +112,16 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 
 	@Override
 	public void translateToColumn(InfoForIndex<OWNER> info) {
-		OWNER entity = info.getEntity();
-		RowToPersist row = info.getRow();
 		if(field.getType().equals(Map.class))
-			translateToColumnMap(entity, row);
+			translateToColumnMap(info);
 		else
-			translateToColumnList(entity, row);
+			translateToColumnList(info);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void translateToColumnMap(OWNER entity, RowToPersist row) {
+	private void translateToColumnMap(InfoForIndex<OWNER> info) {
+        OWNER entity = info.getEntity();
+        RowToPersist row = info.getRow();
 		Map values = (Map) ReflectionUtil.fetchFieldValue(entity, field);
 		if (values == null)
 			values = new HashMap();
@@ -158,7 +159,8 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void translateToColumnList(OWNER entity, RowToPersist row) {
+	private void translateToColumnList(InfoForIndex<OWNER> info) {
+        OWNER entity = info.getEntity();
 		Collection<T> values = (Collection<T>) ReflectionUtil.fetchFieldValue(entity, field);
 		if (values == null)
 			values = new ArrayList<T>();
@@ -170,16 +172,19 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 			toBeAdded = coll.getToBeAdded();
 		}
 
-		translateToColumnImpl(toBeAdded, row, toBeRemoved);
+		translateToColumnImpl(toBeAdded, info, toBeRemoved);
 	}
 
-	private void translateToColumnImpl(Collection<T> toBeAdded, RowToPersist row, Collection<T> toBeRemoved) {
+	private void translateToColumnImpl(Collection<T> toBeAdded, InfoForIndex<OWNER> info, Collection<T> toBeRemoved) {
+        OWNER entity = info.getEntity();
+        RowToPersist row = info.getRow();
 		//removes first
 		for(T p : toBeRemoved) {
 			byte[] name = formTheName(p);
 			row.addEntityToRemove(name);
 		}
-		
+        Object value = ReflectionUtil.fetchFieldValue(entity, field);
+        StorageTypeEnum storageType = metaDbo.getStorageType();
 		//now process all the existing columns (we can add same entity as many times as we like and it does not
 		//get duplicated)
 		for(T val : toBeAdded) {
@@ -188,6 +193,10 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 			c.setName(name);
 			
 			row.getColumns().add(c);
+
+			byte[] byteVal = converter.convertToNoSql(val);
+            addIndexInfo(info, value, byteVal, storageType);
+            removeIndexInfo(info, value, byteVal, storageType);
 		}
 	}
 	
@@ -218,7 +227,7 @@ public class MetaEmbeddedSimple<OWNER, T> extends MetaAbstractField<OWNER> {
 
 	@Override
 	protected Object unwrapIfNeeded(Object value) {
-		throw new UnsupportedOperationException();
+        return value;
 	}
 
 	@Override

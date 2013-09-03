@@ -39,6 +39,7 @@ import com.alvazan.orm.api.z8spi.conv.Converter;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.api.z8spi.meta.ReflectionUtil;
+import com.alvazan.orm.impl.meta.data.EmbedInfo;
 import com.alvazan.orm.impl.meta.data.IdInfo;
 import com.alvazan.orm.impl.meta.data.MetaAbstractClass;
 import com.alvazan.orm.impl.meta.data.MetaClassInheritance;
@@ -349,7 +350,11 @@ public class ScannerForField {
 			type = (Class<?>) genType.getActualTypeArguments()[0];
 			valType = (Class<?>) genType.getActualTypeArguments()[1];
 		}
-		
+
+        boolean isIndexed = false;
+        if (field.isAnnotationPresent(NoSqlIndexed.class))
+            isIndexed = true;
+
 		String colNameOrig = embedded.columnNamePrefix();
 		String colName = field.getName();
 		if(!"".equals(colNameOrig))
@@ -368,7 +373,12 @@ public class ScannerForField {
 				valConverter = lookupConverter(field, valType);
 			
 			MetaEmbeddedSimple meta = metaEmbeddedSimpleProvider.get();
-			meta.setup(t, field, colName, converter, valConverter, type, valType);
+			EmbedInfo embedInfo = new EmbedInfo();
+			embedInfo.setConverter(converter);
+			embedInfo.setType(type);
+			embedInfo.setValConverter(valConverter);
+			embedInfo.setValueType(valType);
+			meta.setup(t, field, colName, embedInfo, isIndexed);
 			metaField = meta;
 		}
 		

@@ -16,8 +16,8 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 	private String valueType;
 	
 	@SuppressWarnings("rawtypes")
-	public void setup(DboTableMeta t, String colPrefix, Class collectionType, Class itemType, Class valueType) {
-		super.setup(t, colPrefix, false);
+	public void setup(DboTableMeta t, String colPrefix, Class collectionType, Class itemType, Class valueType, boolean isIndexed) {
+		super.setup(t, colPrefix, isIndexed);
 		this.collectionType = collectionType.getName();
 		Class newType = translateType(itemType);
 		this.itemType = newType.getName();
@@ -34,13 +34,13 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 
 	@Override
 	public String getIndexTableName() {
-		return null;
+		return getStorageType().getIndexTableName();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class getClassType() {
-		return null;
+	    return classForName(this.itemType);
 	}
 
 	@Override
@@ -101,6 +101,8 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 
 	@Override
 	public String fetchColumnValueAsString(TypedRow row) {
-		return null;
+        TypedColumn typedCol = row.getColumn(getColumnName());
+        Object value = typedCol.getValue();
+        return convertTypeToString(value);
 	}
 }
