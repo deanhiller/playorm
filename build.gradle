@@ -30,7 +30,9 @@ dependencies {
 	compile (group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '1.0.2') {
 		exclude group: 'org.slf4j'
         exclude group: 'log4j'
-	    }
+        exclude group: 'org.codehaus.jackson'
+        exclude group: 'org.apache.cassandra'
+       }
 	compile group: 'org.javassist', name: 'javassist', version: '3.16.1-GA'
 	compile group: 'com.google.inject', name: 'guice', version: '3.0'
 	compile group: 'args4j', name: 'args4j', version: '2.0.16'
