@@ -78,7 +78,7 @@ public class CursorRow<T> extends AbstractCursor<KeyValue<T>>{
 				//breaking all queries that use that index.
 				RowNotFoundException exc = new RowNotFoundException("Your query="+query+" contained a value with a pk where that entity no longer exists in the nosql store");
 				//keyVal.setException(exc);
-				log.warn("Not erroring out, just a warning, there is an index pointing to a non-existant row.  Either the index is corrupt, or the data is not yet consistent, but might be eventually", exc);
+				log.warn("Not erroring out, just a warning, there is an index pointing to a non-existant row.  The index is "+obj+".  Either the index is corrupt, or the data is not yet consistent, but might be eventually", exc);
 			}
 			keyVal.setKey(obj);
 		} else {
