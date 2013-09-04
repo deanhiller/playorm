@@ -353,7 +353,21 @@ public class CassandraSession implements NoSqlRawSession {
 			throw new IllegalArgumentException("batch size must be supplied and be greater than 0");
 		String colFamily = info.getIndexColFamily();
 		byte[] rowKey = info.getRowKey();
-		Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
+
+		//Here we don't bother using an index at all since there is no where clause to begin with
+        //ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to use an index
+        //so check the column type
+        if(!info.getEntityColFamily().isVirtualCf() && from == null && to == null
+                && !(info.getColumnName() instanceof DboColumnToManyMeta)
+                && !info.getEntityColFamily().isInheritance()) {
+            Keyspace keyspace = columnFamilies.getKeyspace();
+            Info cfInfo = columnFamilies.lookupOrCreate2(info.getEntityColFamily().getRealColumnFamily(), mgr);
+            ScanCassandraCf scanner = new ScanCassandraCf(info, cfInfo, bListener, batchSize, keyspace);
+            scanner.beforeFirst();
+            return scanner;
+        }
+
+        Info info1 = columnFamilies.fetchColumnFamilyInfo(colFamily, mgr);
 		if(info1 == null) {
 			//well, if column family doesn't exist, then no entities exist either
 			if (log.isInfoEnabled())
@@ -361,18 +375,7 @@ public class CassandraSession implements NoSqlRawSession {
 			return new EmptyCursor<IndexColumn>();
 		}
 		
-		//Here we don't bother using an index at all since there is no where clause to begin with
-		//ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to use an index
-		//so check the column type
-		if(!info.getEntityColFamily().isVirtualCf() && from == null && to == null 
-				&& !(info.getColumnName() instanceof DboColumnToManyMeta)
-				&& !info.getEntityColFamily().isInheritance()) {
-			Keyspace keyspace = columnFamilies.getKeyspace();
-			Info cfInfo = columnFamilies.lookupOrCreate2(info.getEntityColFamily().getRealColumnFamily(), mgr);
-			ScanCassandraCf scanner = new ScanCassandraCf(info, cfInfo, bListener, batchSize, keyspace);
-			scanner.beforeFirst();
-			return scanner;
-		}
+
 		
 		String colName = null;
 		if(info.getColumnName() != null)
