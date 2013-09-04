@@ -3,9 +3,11 @@ package com.alvazan.orm.api.z8spi.meta;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.alvazan.orm.api.base.anno.NoSqlEmbedded;
 import com.alvazan.orm.api.base.anno.NoSqlEntity;
 import com.alvazan.orm.api.base.anno.NoSqlId;
 import com.alvazan.orm.api.base.anno.NoSqlIndexed;
@@ -46,6 +48,13 @@ public abstract class DboColumnMeta {
 
 	protected transient BaseConverter converter;
 
+	/** 
+	 * Specifically not for playorm but for clients of playorm that want to add meta data
+	 * to the DboTableMeta object
+	 */
+	@NoSqlEmbedded
+	private Map<String, String> extensions = new HashMap<String, String>();
+	
 	public String getId() {
 		return id;
 	}
@@ -366,4 +375,7 @@ public abstract class DboColumnMeta {
 		return false;
 	}
 
+	public Map<String, String> getExtensions() {
+		return extensions;
+	}
 }
