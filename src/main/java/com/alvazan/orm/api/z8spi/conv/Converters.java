@@ -141,6 +141,9 @@ public class Converters {
 		public final Object convertFromNoSql(byte[] value) {
 			if(value == null)
 				return null;
+			else if(value.length == 0)
+				return null;
+
 			return convertFromNoSqlImpl(value);
 		}
 
