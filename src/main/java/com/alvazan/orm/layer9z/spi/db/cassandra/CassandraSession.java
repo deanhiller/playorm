@@ -307,7 +307,14 @@ public class CassandraSession implements NoSqlRawSession {
 
 			@Override
 			public RowQuery<byte[], byte[]> createRowQueryReverse() {
-				RangeBuilder rangeBldr = new RangeBuilder().setStart(to).setEnd(from).setReversed(true);
+				RangeBuilder rangeBldr = new RangeBuilder();
+				if(to != null)
+					rangeBldr.setStart(to);
+				if(from != null)
+					rangeBldr.setEnd(from);
+					
+				rangeBldr.setReversed(true);
+				
 				if(batchSize != null)
 					rangeBldr = rangeBldr.setLimit(batchSize);
 				ByteBufferRange range = rangeBldr.build(); 
