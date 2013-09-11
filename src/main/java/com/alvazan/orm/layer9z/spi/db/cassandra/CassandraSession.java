@@ -38,6 +38,7 @@ import com.netflix.astyanax.Keyspace;
 import com.netflix.astyanax.MutationBatch;
 import com.netflix.astyanax.connectionpool.OperationResult;
 import com.netflix.astyanax.connectionpool.exceptions.ConnectionException;
+import com.netflix.astyanax.connectionpool.exceptions.TokenRangeOfflineException;
 import com.netflix.astyanax.ddl.KeyspaceDefinition;
 import com.netflix.astyanax.ddl.SchemaChangeResult;
 import com.netflix.astyanax.model.ByteBufferRange;
@@ -137,7 +138,12 @@ public class CassandraSession implements NoSqlRawSession {
 		}
 		
 		long time = System.currentTimeMillis();
-		m.execute();
+        try {
+            m.execute();
+        } catch (TokenRangeOfflineException e) {
+            throw new RuntimeException(
+                    "It appears your CL_LEVEL is CL_QUOROM and there are not enough nodes on line to service that request.  Either lower your CL_LEVEL or make sure all nodes are operational");
+        }
 		
 		if(log.isTraceEnabled()) {
 			long total = System.currentTimeMillis()-time;
