@@ -36,7 +36,7 @@ public class CqlSession implements NoSqlRawSession {
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
-    private String keys = "cql60";
+    private String keys = "cql62";
     @Inject
     private Provider<Row> rowProvider;
 
@@ -74,40 +74,24 @@ public class CqlSession implements NoSqlRawSession {
         String table = lookupOrCreate(colFamily, ormSession);
         List<Column> s = action.getColumns();
         byte[] rowkey = action.getRowKey();
+        byte[] nullArray  = StandardConverters.convertToBytes("_n");
 
         for (Column c : s) {
             try {
-                if (c.getValue() != null) {
-                    session.execute("INSERT INTO " + keys + "." + table + " (id, colname,colvalue) VALUES ('"
-                            + StandardConverters.convertFromBytes(String.class, rowkey) + "','"
-                            + StandardConverters.convertFromBytes(String.class, c.getName()) + "','" + ByteBuffer.wrap(c.getValue()) + "');");
+                String colValue = StandardConverters.convertFromBytes(String.class, c.getValue());
+                PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
+                BoundStatement boundStatement = new BoundStatement(statement);
+                if (colValue != null) {
+                    session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowkey),
+                            StandardConverters.convertFromBytes(String.class, c.getName()),
+                            ByteBuffer.wrap(c.getValue())));
                 } else {
-                    session.execute("INSERT INTO " + keys + "." + table + " (id, colname) VALUES ('"
-                            + StandardConverters.convertFromBytes(String.class, rowkey) + "','"
-                            + StandardConverters.convertFromBytes(String.class, c.getName()) + "');");
+                    session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowkey),
+                            StandardConverters.convertFromBytes(String.class, c.getName()), ByteBuffer.wrap(nullArray)));
                 }
 
-                String colValue = StandardConverters.convertFromBytes(String.class, c.getValue());
-                /*
-                 * if (colValue != null) { PreparedStatement statement =
-                 * session.prepare("INSERT INTO " + keys + "." + table +
-                 * "(id, colname, colvalue) VALUES (?, ?, ?)"); BoundStatement boundStatement = new
-                 * BoundStatement(statement);
-                 * 
-                 * session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class
-                 * , rowkey), StandardConverters.convertFromBytes(String.class, c.getName()),
-                 * StandardConverters.convertFromBytes(String.class, c.getValue()))); } else {
-                 * PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table
-                 * + "(id, colname) VALUES (?, ?, ?)"); BoundStatement boundStatement = new
-                 * BoundStatement(statement);
-                 * 
-                 * session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class
-                 * , rowkey), StandardConverters.convertFromBytes(String.class, c.getName()), " "));
-                 * }
-                 */
-
             } catch (Exception e) {
-                System.out.println("Exception:" + e.getMessage());
+                System.out.println(c.getValue() + "Exception:" + e.getMessage());
             }
         }
 
@@ -142,7 +126,6 @@ public class CqlSession implements NoSqlRawSession {
 
     private String lookupOrCreate(String colFamily1, MetaLookup ormSession) {
         if (cluster.getMetadata().getKeyspace(keys).getTable(colFamily1.toLowerCase()) == null) {
-            System.out.println(" CREATING TABLE " + colFamily1);
             try {
                 if (colFamily1.equalsIgnoreCase("StringIndice")) {
                     session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + "colname text," + "colvalue blob,"
@@ -155,7 +138,7 @@ public class CqlSession implements NoSqlRawSession {
                             + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
                 } else {
                     session.execute("CREATE TABLE " + keys + "." + colFamily1
-                            + " (id text, colname text, colvalue text, PRIMARY KEY (id,colname)) WITH COMPACT STORAGE");
+                            + " (id text, colname text, colvalue blob, PRIMARY KEY (id,colname, colvalue)) WITH COMPACT STORAGE");
                 }
 
             } catch (Exception e) {
