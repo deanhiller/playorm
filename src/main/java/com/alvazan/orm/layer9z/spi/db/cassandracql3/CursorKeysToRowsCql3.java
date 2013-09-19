@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.cassandracql3;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -129,34 +130,24 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 	            return;
 		*/
 		ResultSet resultSet = null;
-		System.out.println("HERE 00 " + keysToLookup.size());
 
 		if (keysToLookup.size() > 0) {
-		    System.out.println("HERE 11");
 		    String[] keyStrings = new String[keysToLookup.size()];
 		    int count = 0;
 		    for (byte[] rowKey : keysToLookup) {
 		        keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
 		        count++;
 		    }
-		    System.out.println("COUNT " +count);
+
 			if (list != null)
 				list.beforeFetchingNextBatch();
 	        try {
 	            Clause inClause = QueryBuilder.in("id", keyStrings);
 	            Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
-	            //PreparedStatement statement = session.prepare("SELECT * FROM" + keys + "." + cf.getColumnFamily() + "WHERE  IN (?, ?, ?)");
-	            //BoundStatement boundStatement = new BoundStatement(statement);
 	            resultSet = session.execute(query);
-	            System.out.println(" results:" + resultSet);
 	        } catch (Exception e) {
 	            System.out.println(" Exception:" + e.getMessage());
 	        }
-/*			BasicDBObject query = new BasicDBObject();
-			query.put("_id", new BasicDBObject("$in", keysToLookup));
-			BasicDBObject orderBy = new BasicDBObject();
-			orderBy.put("_id", 1);
-			cursor = dbCollection.find(query).sort(orderBy).batchSize(batchSize);*/
 	/*		if (list != null)
 				list.afterFetchingNextBatch(cursor.count());*/
 		}
@@ -276,9 +267,7 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
         for (com.datastax.driver.core.Row cqlRow : cursor) {
             String rowKey1 = cqlRow.getString("id");
-            System.out.println("rowKey1  " + rowKey1);
             if (rowKey1.equals(rowKey)) {
-                System.out.println("SAME ROW");
                 actualRowList.add(cqlRow);
             } else {
                 if (rowKey != null)
@@ -289,8 +278,6 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
             }
         }
         cqlRows.add(actualRowList);
-        System.out.println("cqlRows size: " + cqlRows.size());
-        System.out.println("actualRowList size: " + actualRowList.size());
         for (List<com.datastax.driver.core.Row> actualRow : cqlRows) {
             KeyValue<Row> kv = new KeyValue<Row>();
             Row r = rowProvider.get();
@@ -300,9 +287,10 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
                 kv.setKey(cqlRowKey);
                 r.setKey(cqlRowKey);
                 byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
-                byte[] val = cqlRow.getBytesUnsafe("colvalue").array();
+                ByteBuffer data = cqlRow.getBytes("colvalue");               
+                byte[] val = new byte[data.remaining()];
+                data.get(val);
                 String strValue = StandardConverters.convertFromBytes(String.class, val);
-                System.out.println("STRVALUE " + strValue);
                 Column c = new Column();
                 c.setName(name);
                 if (!strValue.equals("_n"))
