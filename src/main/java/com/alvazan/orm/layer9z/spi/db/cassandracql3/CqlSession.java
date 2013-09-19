@@ -36,7 +36,7 @@ public class CqlSession implements NoSqlRawSession {
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
-    private String keys = "cql62";
+    private String keys = "cql63";
     @Inject
     private Provider<Row> rowProvider;
 
@@ -180,7 +180,15 @@ public class CqlSession implements NoSqlRawSession {
     @Override
     public AbstractCursor<KeyValue<Row>> find(DboTableMeta colFamily, DirectCursor<byte[]> rowKeys, Cache cache, int batchSize, BatchListener list,
             MetaLookup mgr) {
-        return null;
+        String table = lookupOrCreate(colFamily.getColumnFamily(), mgr);
+        //Info info = fetchDbCollectionInfo(colFamily.getColumnFamily(), mgr);
+        if(table == null) {
+            //If there is no column family in mongodb, then we need to return no rows to the user...
+            return new CursorReturnsEmptyRows2(rowKeys);
+        }
+        CursorKeysToRowsCql3 cursor = new CursorKeysToRowsCql3(rowKeys, batchSize, list, rowProvider, session, keys);
+        cursor.setupMore(colFamily, cache);
+        return cursor;
     }
 
     @Override
