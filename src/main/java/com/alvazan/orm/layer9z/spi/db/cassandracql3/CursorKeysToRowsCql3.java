@@ -15,6 +15,7 @@ import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
+import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
@@ -124,33 +125,27 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
 		}
 		
-/*	      if (info.getDbObj() != null) {
-	            dbCollection = info.getDbObj();
-	        } else
-	            return;
-		*/
 		ResultSet resultSet = null;
 
-		if (keysToLookup.size() > 0) {
-		    String[] keyStrings = new String[keysToLookup.size()];
-		    int count = 0;
-		    for (byte[] rowKey : keysToLookup) {
-		        keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
-		        count++;
-		    }
+        if (keysToLookup.size() > 0) {
+            String[] keyStrings = new String[keysToLookup.size()];
+            int count = 0;
+            for (byte[] rowKey : keysToLookup) {
+                keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                count++;
+            }
 
-			if (list != null)
-				list.beforeFetchingNextBatch();
-	        try {
-	            Clause inClause = QueryBuilder.in("id", keyStrings);
-	            Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
-	            resultSet = session.execute(query);
-	        } catch (Exception e) {
-	            System.out.println(" Exception:" + e.getMessage());
-	        }
-	/*		if (list != null)
-				list.afterFetchingNextBatch(cursor.count());*/
-		}
+            if (list != null)
+                list.beforeFetchingNextBatch();
+            try {
+                Clause inClause = QueryBuilder.in("id", keyStrings);
+                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
+                resultSet = session.execute(query);
+            } catch (Exception e) {
+                System.out.println(" Exception:" + e.getMessage());
+            }
+            if (list != null) list.afterFetchingNextBatch(batchSize);
+        }
 
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 
@@ -198,38 +193,31 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
 			results.add(result);
 		}
+        ResultSet resultSet = null;
 
-		/*DBCursor cursor = null;
-		DBCollection dbCollection = null;
-		if (info.getDbObj() != null) {
-			dbCollection = info.getDbObj();
-		} else
-			return;
+        if (keysToLookup.size() > 0) {
+            String[] keyStrings = new String[keysToLookup.size()];
+            int count = 0;
+            for (byte[] rowKey : keysToLookup) {
+                keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                count++;
+            }
 
-		if (keysToLookup.size() > 0) {
-			if (list != null)
-				list.beforeFetchingNextBatch();
-
-			BasicDBObject query = new BasicDBObject();
-			query.put("_id", new BasicDBObject("$in", keysToLookup));
-			BasicDBObject orderBy = new BasicDBObject();
-			orderBy.put("_id", 1);
-			cursor = dbCollection.find(query).sort(orderBy)
-					.batchSize(batchSize);
-
-			if (list != null)
-				list.afterFetchingNextBatch(cursor.size());
-		} else {
-			cursor = new DBCursor(dbCollection, null, null, null);
-		}*/
-
+            if (list != null)
+                list.beforeFetchingNextBatch();
+            try {
+                Clause inClause = QueryBuilder.in("id", keyStrings);
+                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
+                resultSet = session.execute(query);
+            } catch (Exception e) {
+                System.out.println(" Exception:" + e.getMessage());
+            }
+            if (list != null) list.afterFetchingNextBatch(batchSize);
+        }
 		Map<ByteArray, KeyValue<Row>> map = new HashMap<ByteArray, KeyValue<Row>>();
 
-		//fillCache(map, cursor, keysToLookup);
+        fillCache(map, resultSet, keysToLookup);
 
-		// UNFORTUNATELY, astyanax's result is NOT ORDERED by the keys we
-		// provided so, we need to iterate over the whole thing here
-		// into our own List :( :( .
 
 		List<KeyValue<Row>> finalRes = new ArrayList<KeyValue<Row>>();
 		Iterator<byte[]> keyIter = keysToLookup.iterator();
@@ -254,17 +242,13 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 			cachedRows.next();
 	}
 
-	private void fillCache(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor,
-			List<byte[]> keysToLookup) {
+    private void fillCache(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor, List<byte[]> keysToLookup) {
 
         String rowKey = null;
-        // KeyValue<Row> kv = null;
-        // byte[] cqlRowKey = null;
         List<List<com.datastax.driver.core.Row>> cqlRows = new ArrayList<List<com.datastax.driver.core.Row>>();
         List<com.datastax.driver.core.Row> actualRowList = new ArrayList<com.datastax.driver.core.Row>();
         if (cursor == null)
             return;
-
         for (com.datastax.driver.core.Row cqlRow : cursor) {
             String rowKey1 = cqlRow.getString("id");
             if (rowKey1.equals(rowKey)) {
@@ -287,13 +271,13 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
                 kv.setKey(cqlRowKey);
                 r.setKey(cqlRowKey);
                 byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
-                ByteBuffer data = cqlRow.getBytes("colvalue");               
+                ByteBuffer data = cqlRow.getBytes("colvalue");
                 byte[] val = new byte[data.remaining()];
                 data.get(val);
                 String strValue = StandardConverters.convertFromBytes(String.class, val);
                 Column c = new Column();
                 c.setName(name);
-                if (!strValue.equals("_n"))
+                if (!strValue.equals(SpiConstants.NULL_STRING_FORCQL3))
                     c.setValue(val);
                 r.put(c);
 

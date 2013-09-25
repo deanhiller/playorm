@@ -16,6 +16,7 @@ import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.ScanInfo;
+import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.action.Action;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
@@ -25,6 +26,7 @@ import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
+import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
@@ -36,9 +38,10 @@ public class CqlSession implements NoSqlRawSession {
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
-    private String keys = "cql63";
+    private String keys = "cql70";
     @Inject
     private Provider<Row> rowProvider;
+
 
     @Override
     public void start(Map<String, Object> properties) {
@@ -74,7 +77,7 @@ public class CqlSession implements NoSqlRawSession {
         String table = lookupOrCreate(colFamily, ormSession);
         List<Column> s = action.getColumns();
         byte[] rowkey = action.getRowKey();
-        byte[] nullArray  = StandardConverters.convertToBytes("_n");
+        byte[] nullArray  = StandardConverters.convertToBytes(SpiConstants.NULL_STRING_FORCQL3);
 
         for (Column c : s) {
             try {
@@ -104,11 +107,13 @@ public class CqlSession implements NoSqlRawSession {
         IndexColumn column = action.getColumn();
         byte[] key = column.getIndexedValue();
         byte[] value = column.getPrimaryKey();
-        if (key != null) {
-            try {
+
+        try {
+
+            Object keyObject = null;
+            if (key != null) {
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
                 BoundStatement boundStatement = new BoundStatement(statement);
-                Object keyObject = null;
                 if (indexCfName.equalsIgnoreCase("StringIndice")) {
                     keyObject = StandardConverters.convertFromBytes(String.class, key);
                 } else if (indexCfName.equalsIgnoreCase("IntegerIndice")) {
@@ -117,9 +122,19 @@ public class CqlSession implements NoSqlRawSession {
                     keyObject = StandardConverters.convertFromBytes(Float.class, key);
                 }
                 session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowKey), keyObject, ByteBuffer.wrap(value)));
-            } catch (Exception e) {
-                System.out.println(indexCfName + " Exception:" + e.getMessage());
-            }
+            } else {
+                PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
+                BoundStatement boundStatement = new BoundStatement(statement);
+                if (indexCfName.equalsIgnoreCase("IntegerIndice")) {
+                    boundStatement.setString("id", StandardConverters.convertFromBytes(String.class, rowKey));
+                    boundStatement.setBytesUnsafe("colname", ByteBuffer.wrap(new byte[0]));
+                    boundStatement.setBytes("colvalue", ByteBuffer.wrap(value));
+                    session.execute(boundStatement);
+                } else
+                    session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowKey), "", ByteBuffer.wrap(value)));
+          }
+        } catch (Exception e) {
+            System.out.println(indexCfName + " Exception:" + e.getMessage());
         }
 
     }
@@ -151,13 +166,21 @@ public class CqlSession implements NoSqlRawSession {
 
     @Override
     public void clearDatabase() {
-
+        session.execute("DROP KEYSPACE " + keys);
+        keyspaces = cluster.getMetadata().getKeyspace(keys);
+        if (keyspaces == null) {
+            try {
+                session.execute("CREATE KEYSPACE " + keys + " WITH replication = {'class':'SimpleStrategy', 'replication_factor':3};");
+            } catch (Exception e) {
+                System.out.println("Exception :" + e.getMessage());
+            }
+        }
+        session = cluster.connect(keys);
     }
 
     @Override
     public void close() {
-        // TODO Auto-generated method stub
-
+        //cluster.shutdown();
     }
 
     @Override
@@ -168,13 +191,31 @@ public class CqlSession implements NoSqlRawSession {
 
     @Override
     public AbstractCursor<IndexColumn> scanIndex(ScanInfo scan, Key from, Key to, Integer batchSize, BatchListener l, MetaLookup mgr) {
-        return null;
+        byte[] rowKey = scan.getRowKey();
+        String indexTableName = scan.getIndexColFamily();
+        DboColumnMeta colMeta = scan.getColumnName();
+        DboTableMeta entityDbCollection = scan.getEntityColFamily();
+
+        // Here we don't bother using an index at all since there is no where clause to begin with
+        // ALSO, we don't want this code to be the case if we are doing a CursorToMany which has to
+        // use an index so check the column type
+/*        if (!entityDbCollection.isVirtualCf() && from == null && to == null && !(scan.getColumnName() instanceof DboColumnToManyMeta)
+                && !entityDbCollection.isInheritance()) {
+            ScanMongoDbCollection scanner = new ScanMongoDbCollection(batchSize, l, entityDbCollection.getColumnFamily(), db);
+            scanner.beforeFirst();
+            return scanner;
+        }
+*/
+        CursorOfIndexes cursor = new CursorOfIndexes(rowKey, batchSize, l, indexTableName, from, to);
+        cursor.setupMore(keys, colMeta, session);
+        return cursor;
     }
 
     @Override
     public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr) {
-        // TODO Auto-generated method stub
-        return null;
+        CursorForValues cursor = new CursorForValues(scanInfo, list,
+                values, session, keys);
+        return cursor;
     }
 
     @Override
