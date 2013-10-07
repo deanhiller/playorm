@@ -7,6 +7,9 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.alvazan.orm.api.z8spi.BatchListener;
 import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.ColumnSliceInfo;
@@ -22,6 +25,9 @@ import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
 import com.alvazan.orm.api.z8spi.action.Persist;
 import com.alvazan.orm.api.z8spi.action.PersistIndex;
+import com.alvazan.orm.api.z8spi.action.Remove;
+import com.alvazan.orm.api.z8spi.action.RemoveColumn;
+import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
 import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
@@ -32,9 +38,17 @@ import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.KeyspaceMetadata;
 import com.datastax.driver.core.PreparedStatement;
+import com.datastax.driver.core.Query;
+import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.querybuilder.Clause;
+import com.datastax.driver.core.querybuilder.QueryBuilder;
+import com.datastax.driver.core.querybuilder.Select;
+import com.datastax.driver.core.querybuilder.Select.Where;
 
 public class CqlSession implements NoSqlRawSession {
+    private static final Logger log = LoggerFactory.getLogger(CqlSession.class);
+
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
@@ -67,7 +81,14 @@ public class CqlSession implements NoSqlRawSession {
                 persist((Persist) action, ormSession);
             } else if (action instanceof PersistIndex) {
                 persistIndex((PersistIndex) action, ormSession);
+            } else if(action instanceof Remove) {
+                remove((Remove)action, ormSession);
+            } else if(action instanceof RemoveIndex) {
+                removeIndex((RemoveIndex) action, ormSession);
+            } else if(action instanceof RemoveColumn) {
+                removeColumn((RemoveColumn) action, ormSession);
             }
+
         }
     }
 
@@ -137,6 +158,87 @@ public class CqlSession implements NoSqlRawSession {
             System.out.println(indexCfName + " Exception:" + e.getMessage());
         }
 
+    }
+
+    private void remove(Remove action, MetaLookup ormSession) {
+        String colFamily = action.getColFamily().getColumnFamily();
+        String table = lookupOrCreate(colFamily, ormSession);
+        if (action.getAction() == null)
+            throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
+        switch (action.getAction()) {
+        case REMOVE_ENTIRE_ROW:
+            String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
+            Clause eqClause = QueryBuilder.eq("id", rowKey);
+            Query query = QueryBuilder.delete().from(keys, table).where(eqClause);
+            session.execute(query);
+            break;
+        case REMOVE_COLUMNS_FROM_ROW:
+            removeColumns(action, table);
+            break;
+        default:
+            throw new RuntimeException("bug, unknown remove action=" + action.getAction());
+        }
+    }
+
+    private void removeColumns(Remove action, String table) {
+        String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
+        if (rowKey != null) {
+            for (byte[] name : action.getColumns()) {
+                String colName = StandardConverters.convertFromBytes(String.class, name);
+                removeColumnImpl(rowKey, table, colName);
+            }
+        }
+    }
+
+    private void removeColumn(RemoveColumn action, MetaLookup ormSession) {
+        String colFamily = action.getColFamily().getColumnFamily();
+        String table = lookupOrCreate(colFamily, ormSession);
+        String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
+        if (rowKey != null) {
+            String colName = StandardConverters.convertFromBytes(String.class, action.getColumn());
+            removeColumnImpl(rowKey, table, colName);
+        }
+    }
+
+    private void removeColumnImpl(String rowKey, String table, String colName) {
+        Clause eqClause = QueryBuilder.eq("id", rowKey);
+        Clause eqColClause = QueryBuilder.eq("colname", colName);
+        Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(eqColClause);
+        session.execute(query);
+    }
+
+    private void removeIndex(RemoveIndex action, MetaLookup ormSession) {
+        String colFamily = action.getIndexCfName();
+        if (colFamily.equalsIgnoreCase("BytesIndice"))
+            return;
+        String table = lookupOrCreate(colFamily, ormSession);
+        String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
+        IndexColumn column = action.getColumn();
+        byte[] value = column.getPrimaryKey();
+        boolean exists = findIndexRow(table, rowKey, value);
+        if (!exists) {
+            if (log.isInfoEnabled())
+                log.info("Index: " + column.toString() + " already removed.");
+        } else {
+            Clause eqClause = QueryBuilder.eq("id", rowKey);
+            Clause fkClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(value));
+            Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(fkClause);
+            session.execute(query);
+        }
+    }
+
+    public boolean findIndexRow(String table, String rowKey, byte[] key) {
+        Select selectQuery = QueryBuilder.select().all().from(keys, table).allowFiltering();
+        //Where whereClause = Cql3Util.createRowQuery(from, to, columnMeta, selectQuery, rowKeyString);
+        Where selectWhere = selectQuery.where();
+        Clause rkClause = QueryBuilder.eq("id", rowKey);
+        selectWhere.and(rkClause);
+        Clause keyClause = QueryBuilder.lte("colvalue", ByteBuffer.wrap(key));
+        selectWhere.and(keyClause);
+        Query query = selectWhere.limit(1);
+        //System.out.println("QUERY FOR FINDINDEXROW IS: " + query);
+        ResultSet resultSet = session.execute(query);
+        return !resultSet.isExhausted();
     }
 
     private String lookupOrCreate(String colFamily1, MetaLookup ormSession) {
@@ -213,9 +315,10 @@ public class CqlSession implements NoSqlRawSession {
 
     @Override
     public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr) {
-        CursorForValues cursor = new CursorForValues(scanInfo, list,
-                values, session, keys);
-        return cursor;
+        StartQueryListener listener = new StartQueryManyKeys(keys, scanInfo, session, values, false);
+        //CursorForValues cursor = new CursorForValues(scanInfo, list, values, session, keys, listener);
+        //return cursor;
+        return new CursorOfFutures(listener, list, scanInfo);
     }
 
     @Override
@@ -224,7 +327,7 @@ public class CqlSession implements NoSqlRawSession {
         String table = lookupOrCreate(colFamily.getColumnFamily(), mgr);
         //Info info = fetchDbCollectionInfo(colFamily.getColumnFamily(), mgr);
         if(table == null) {
-            //If there is no column family in mongodb, then we need to return no rows to the user...
+            //If there is no column family in cassandra, then we need to return no rows to the user...
             return new CursorReturnsEmptyRows2(rowKeys);
         }
         CursorKeysToRowsCql3 cursor = new CursorKeysToRowsCql3(rowKeys, batchSize, list, rowProvider, session, keys);
