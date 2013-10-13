@@ -1,5 +1,6 @@
 package com.alvazan.orm.layer9z.spi.db.cassandracql3;
 
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -214,30 +215,42 @@ public class CqlSession implements NoSqlRawSession {
         String table = lookupOrCreate(colFamily, ormSession);
         String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
         IndexColumn column = action.getColumn();
-        byte[] value = column.getPrimaryKey();
-        boolean exists = findIndexRow(table, rowKey, value);
+        byte[] fk = column.getPrimaryKey();
+        byte[] indexedValue = action.getColumn().getIndexedValue();
+        Object indValue = null;
+        if (table.equalsIgnoreCase("StringIndice"))
+            indValue = StandardConverters.convertFromBytes(String.class, indexedValue);
+        else if (table.equalsIgnoreCase("IntegerIndice"))
+            indValue = StandardConverters.convertFromBytes(Integer.class, indexedValue);
+        else if (table.equalsIgnoreCase("DecimalIndice"))
+            indValue = StandardConverters.convertFromBytes(BigDecimal.class, indexedValue);
+        boolean exists = findIndexRow(table, rowKey, fk, indValue);
         if (!exists) {
             if (log.isInfoEnabled())
                 log.info("Index: " + column.toString() + " already removed.");
         } else {
             Clause eqClause = QueryBuilder.eq("id", rowKey);
-            Clause fkClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(value));
-            Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(fkClause);
+            Clause indClause = QueryBuilder.eq("colname", indValue);
+            Clause fkClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(fk));
+            Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(indClause).and(fkClause);
             session.execute(query);
         }
     }
 
-    public boolean findIndexRow(String table, String rowKey, byte[] key) {
+    public boolean findIndexRow(String table, String rowKey, byte[] key, Object indValue) {
         Select selectQuery = QueryBuilder.select().all().from(keys, table).allowFiltering();
         //Where whereClause = Cql3Util.createRowQuery(from, to, columnMeta, selectQuery, rowKeyString);
         Where selectWhere = selectQuery.where();
         Clause rkClause = QueryBuilder.eq("id", rowKey);
         selectWhere.and(rkClause);
-        Clause keyClause = QueryBuilder.lte("colvalue", ByteBuffer.wrap(key));
+        Clause indClause = QueryBuilder.eq("colname", indValue);
+        selectWhere.and(indClause);
+        Clause keyClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(key));
         selectWhere.and(keyClause);
         Query query = selectWhere.limit(1);
-        //System.out.println("QUERY FOR FINDINDEXROW IS: " + query);
+        // System.out.println("QUERY FOR FINDINDEXROW IS: " + query);
         ResultSet resultSet = session.execute(query);
+        // System.out.println("resultSet.isExhausted()" + resultSet.isExhausted());
         return !resultSet.isExhausted();
     }
 
