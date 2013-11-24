@@ -42,7 +42,7 @@ public class Cql3Util {
 		return c;
 	}
 
-	public static Where createRowQuery(Key from, Key to, DboColumnMeta colMeta, Select selectQuery, String rowKey) {
+	public static Where createRowQuery(Key from, Key to, DboColumnMeta colMeta, Select selectQuery, String rowKey, String indTable) {
         Where selectWhere = selectQuery.where();
         Clause rkClause = QueryBuilder.eq("id", rowKey);
         selectWhere.and(rkClause);
@@ -51,11 +51,11 @@ public class Cql3Util {
 		if (colMeta != null) {
 			if (from != null) {
 				valFrom = colMeta.getStorageType().convertFromNoSql(from.getKey());
-                valFrom = checkForBoolean(valFrom);
+                valFrom = checkForBooleanAndNull(valFrom, indTable);
 			}
 			if (to != null) {
 				valTo = colMeta.getStorageType().convertFromNoSql(to.getKey());
-                valTo = checkForBoolean(valTo);
+                valTo = checkForBooleanAndNull(valTo, indTable);
 			}
 		} else
 			return selectWhere;
@@ -101,10 +101,14 @@ public class Cql3Util {
         return selectWhere;
     }
 
-    public static Object checkForBoolean(Object val) {
-        if (val == null)
-            return null;
-        else if (val instanceof Boolean) {
+    public static Object checkForBooleanAndNull(Object val, String indTable) {
+        if (val == null) {
+            if (indTable.equalsIgnoreCase("IntegerIndice")) {
+                return ByteBuffer.wrap(new byte[0]);
+            } else {
+                return "";
+            }
+        } else if (val instanceof Boolean) {
             Boolean b = (Boolean) val;
             if (b)
                 return 1;

@@ -230,7 +230,16 @@ public class CqlSession implements NoSqlRawSession {
                 log.info("Index: " + column.toString() + " already removed.");
         } else {
             Clause eqClause = QueryBuilder.eq("id", rowKey);
-            Clause indClause = QueryBuilder.eq("colname", indValue);
+            Clause indClause = null;
+            if (indValue != null) {
+                indClause = QueryBuilder.eq("colname", indValue);
+            } else {
+                if (table.equalsIgnoreCase("IntegerIndice")) {
+                    indClause = QueryBuilder.eq("colname", ByteBuffer.wrap(new byte[0]));
+                } else {
+                    indClause = QueryBuilder.eq("colname", "");
+                }
+            }
             Clause fkClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(fk));
             Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(indClause).and(fkClause);
             session.execute(query);
@@ -239,37 +248,42 @@ public class CqlSession implements NoSqlRawSession {
 
     public boolean findIndexRow(String table, String rowKey, byte[] key, Object indValue) {
         Select selectQuery = QueryBuilder.select().all().from(keys, table).allowFiltering();
-        //Where whereClause = Cql3Util.createRowQuery(from, to, columnMeta, selectQuery, rowKeyString);
         Where selectWhere = selectQuery.where();
         Clause rkClause = QueryBuilder.eq("id", rowKey);
         selectWhere.and(rkClause);
-        Clause indClause = QueryBuilder.eq("colname", indValue);
+        Clause indClause = null;
+        if (indValue != null) {
+            indClause = QueryBuilder.eq("colname", indValue);
+        } else {
+            if (table.equalsIgnoreCase("IntegerIndice")) {
+                indClause = QueryBuilder.eq("colname", ByteBuffer.wrap(new byte[0]));
+            } else {
+                indClause = QueryBuilder.eq("colname", "");
+            }
+        }
         selectWhere.and(indClause);
         Clause keyClause = QueryBuilder.eq("colvalue", ByteBuffer.wrap(key));
         selectWhere.and(keyClause);
         Query query = selectWhere.limit(1);
-        // System.out.println("QUERY FOR FINDINDEXROW IS: " + query);
         ResultSet resultSet = session.execute(query);
-        // System.out.println("resultSet.isExhausted()" + resultSet.isExhausted());
         return !resultSet.isExhausted();
-    }
+   }
 
     private String lookupOrCreate(String colFamily1, MetaLookup ormSession) {
         if (cluster.getMetadata().getKeyspace(keys).getTable(colFamily1.toLowerCase()) == null) {
             try {
+                String colType = null;
                 if (colFamily1.equalsIgnoreCase("StringIndice")) {
-                    session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + "colname text," + "colvalue blob,"
-                            + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
+                    colType = "colname text,";
                 } else if (colFamily1.equalsIgnoreCase("IntegerIndice")) {
-                    session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + "colname bigint," + "colvalue blob,"
-                            + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
+                    colType = "colname bigint,";
                 } else if (colFamily1.equalsIgnoreCase("DecimalIndice")) {
-                    session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + "colname float," + "colvalue blob,"
-                            + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
+                    colType = "colname float,";
                 } else {
-                    session.execute("CREATE TABLE " + keys + "." + colFamily1
-                            + " (id text, colname text, colvalue blob, PRIMARY KEY (id,colname, colvalue)) WITH COMPACT STORAGE");
+                    colType = "colname text,";
                 }
+                session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + colType + "colvalue blob,"
+                        + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
 
             } catch (Exception e) {
                 System.out.println("Excepion in creating table" + colFamily1 + " creation:" + e.getMessage());

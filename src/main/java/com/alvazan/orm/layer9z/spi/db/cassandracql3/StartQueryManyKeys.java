@@ -53,14 +53,13 @@ public class StartQueryManyKeys implements StartQueryListener {
 
             Object value = null;
             value = columnMeta.getStorageType().convertFromNoSql(val);
-            value = Cql3Util.checkForBoolean(value);
+            value = Cql3Util.checkForBooleanAndNull(value, indTable);
 
             Clause valClause = QueryBuilder.eq("colname", value);
             selectWhere.and(valClause);
 
             Query query = selectWhere.disableTracing();
 
-            System.out.println("QUERY of STARTQUERYMANYKEY IS: " + query);
             Future future = session.executeAsync(query);
             futures.add(future);
         }

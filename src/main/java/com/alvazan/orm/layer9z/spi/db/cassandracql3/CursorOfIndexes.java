@@ -105,14 +105,13 @@ public class CursorOfIndexes extends AbstractCursor<IndexColumn> {
 
             String rowKeyString = StandardConverters.convertFromBytes(String.class, rowKey);
             Select selectQuery = QueryBuilder.select().all().from(keySpace, indTable).allowFiltering();
-            Where whereClause = Cql3Util.createRowQuery(from, to, columnMeta, selectQuery, rowKeyString);
+            Where whereClause = Cql3Util.createRowQuery(from, to, columnMeta, selectQuery, rowKeyString, indTable);
             Query query = null;
 
             if (batchSize != null)
                 query = whereClause.limit(batchSize);
             else
                 query = whereClause.disableTracing();
-            //System.out.println("QUERY IS: " + query);
             resultSet = session.execute(query);
 
             // Need to see where we use this batchListener
