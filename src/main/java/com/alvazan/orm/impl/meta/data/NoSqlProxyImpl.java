@@ -1,5 +1,6 @@
 package com.alvazan.orm.impl.meta.data;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import com.alvazan.orm.api.z8spi.meta.DboColumnIdMeta;
 import com.alvazan.orm.api.z8spi.meta.DboTableMeta;
 import com.alvazan.orm.impl.meta.data.collections.CacheLoadCallback;
 
-public class NoSqlProxyImpl<T> implements MethodHandler {
+public class NoSqlProxyImpl<T> implements MethodHandler, Serializable {
 
 	private static final Logger log = LoggerFactory.getLogger(NoSqlProxyImpl.class);
 	private NoSqlSession session;
