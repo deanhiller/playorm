@@ -30,7 +30,6 @@ import com.alvazan.orm.api.z8spi.action.Remove;
 import com.alvazan.orm.api.z8spi.action.RemoveColumn;
 import com.alvazan.orm.api.z8spi.action.RemoveIndex;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
-import com.alvazan.orm.api.z8spi.conv.StorageTypeEnum;
 import com.alvazan.orm.api.z8spi.iter.AbstractCursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
@@ -53,7 +52,7 @@ public class CqlSession implements NoSqlRawSession {
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
-    private String keys = "cql70";
+    private String keys = "cql72";
     @Inject
     private Provider<Row> rowProvider;
 
@@ -94,7 +93,7 @@ public class CqlSession implements NoSqlRawSession {
     }
 
     private void persist(Persist action, MetaLookup ormSession) {
-        StorageTypeEnum type = action.getColFamily().getNameStorageType();
+        //StorageTypeEnum type = action.getColFamily().getNameStorageType();
         String colFamily = action.getColFamily().getColumnFamily();
         String table = lookupOrCreate(colFamily, ormSession);
         List<Column> s = action.getColumns();
@@ -107,13 +106,20 @@ public class CqlSession implements NoSqlRawSession {
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
                 BoundStatement boundStatement = new BoundStatement(statement);
                 if (colValue != null) {
-                    session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowkey),
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey),
                             StandardConverters.convertFromBytes(String.class, c.getName()),
                             ByteBuffer.wrap(c.getValue())));
-                } else {
-                    session.execute(boundStatement.bind(StandardConverters.convertFromBytes(String.class, rowkey),
+
+/*                    session.execute(boundStatement.bind(StandardConverters.convertToString(rowkey),
+                            StandardConverters.convertToString(c.getName()),
+                            ByteBuffer.wrap(c.getValue())));
+*/                } else {
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey),
                             StandardConverters.convertFromBytes(String.class, c.getName()), ByteBuffer.wrap(nullArray)));
-                }
+                
+/*                    session.execute(boundStatement.bind(StandardConverters.convertToString(rowkey),
+                            StandardConverters.convertToString(c.getName()), ByteBuffer.wrap(nullArray)));
+*/                }
 
             } catch (Exception e) {
                 System.out.println(c.getValue() + "Exception:" + e.getMessage());
@@ -168,8 +174,8 @@ public class CqlSession implements NoSqlRawSession {
             throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
         switch (action.getAction()) {
         case REMOVE_ENTIRE_ROW:
-            String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
-            Clause eqClause = QueryBuilder.eq("id", rowKey);
+            //String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
+            Clause eqClause = QueryBuilder.eq("id", ByteBuffer.wrap(action.getRowKey()));
             Query query = QueryBuilder.delete().from(keys, table).where(eqClause);
             session.execute(query);
             break;
@@ -186,7 +192,7 @@ public class CqlSession implements NoSqlRawSession {
         if (rowKey != null) {
             for (byte[] name : action.getColumns()) {
                 String colName = StandardConverters.convertFromBytes(String.class, name);
-                removeColumnImpl(rowKey, table, colName);
+                removeColumnImpl(action.getRowKey(), table, colName);
             }
         }
     }
@@ -197,12 +203,12 @@ public class CqlSession implements NoSqlRawSession {
         String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
         if (rowKey != null) {
             String colName = StandardConverters.convertFromBytes(String.class, action.getColumn());
-            removeColumnImpl(rowKey, table, colName);
+            removeColumnImpl(action.getRowKey(), table, colName);
         }
     }
 
-    private void removeColumnImpl(String rowKey, String table, String colName) {
-        Clause eqClause = QueryBuilder.eq("id", rowKey);
+    private void removeColumnImpl(byte[] rowKey, String table, String colName) {
+        Clause eqClause = QueryBuilder.eq("id",ByteBuffer.wrap(rowKey));
         Clause eqColClause = QueryBuilder.eq("colname", colName);
         Query query = QueryBuilder.delete().from(keys, table).where(eqClause).and(eqColClause);
         session.execute(query);
@@ -273,6 +279,7 @@ public class CqlSession implements NoSqlRawSession {
         if (cluster.getMetadata().getKeyspace(keys).getTable(colFamily1.toLowerCase()) == null) {
             try {
                 String colType = null;
+                String idType = " (id text,";
                 if (colFamily1.equalsIgnoreCase("StringIndice")) {
                     colType = "colname text,";
                 } else if (colFamily1.equalsIgnoreCase("IntegerIndice")) {
@@ -280,9 +287,10 @@ public class CqlSession implements NoSqlRawSession {
                 } else if (colFamily1.equalsIgnoreCase("DecimalIndice")) {
                     colType = "colname float,";
                 } else {
+                    idType = " (id blob,";
                     colType = "colname text,";
                 }
-                session.execute("CREATE TABLE " + keys + "." + colFamily1 + " (id text," + colType + "colvalue blob,"
+                session.execute("CREATE TABLE " + keys + "." + colFamily1 + idType + colType + "colvalue blob,"
                         + "PRIMARY KEY (id,colname, colvalue)" + ") WITH COMPACT STORAGE");
 
             } catch (Exception e) {

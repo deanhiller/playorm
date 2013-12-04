@@ -128,10 +128,12 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 		ResultSet resultSet = null;
 
         if (keysToLookup.size() > 0) {
-            String[] keyStrings = new String[keysToLookup.size()];
+            //String[] keyStrings = new String[keysToLookup.size()];
+            ByteBuffer[] keyStrings = new ByteBuffer[keysToLookup.size()];
             int count = 0;
             for (byte[] rowKey : keysToLookup) {
-                keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                //keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                keyStrings[count] = ByteBuffer.wrap(rowKey);
                 count++;
             }
 
@@ -196,10 +198,12 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
         ResultSet resultSet = null;
 
         if (keysToLookup.size() > 0) {
-            String[] keyStrings = new String[keysToLookup.size()];
+            //String[] keyStrings = new String[keysToLookup.size()];
+            ByteBuffer[] keyStrings = new ByteBuffer[keysToLookup.size()];
             int count = 0;
             for (byte[] rowKey : keysToLookup) {
-                keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                //keyStrings[count] = StandardConverters.convertFromBytes(String.class, rowKey);
+                keyStrings[count] = ByteBuffer.wrap(rowKey);
                 count++;
             }
 
@@ -244,19 +248,25 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
     private void fillCache(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor, List<byte[]> keysToLookup) {
 
-        String rowKey = null;
+        //String rowKey = null;
+        byte[] rowKey = null;
         List<List<com.datastax.driver.core.Row>> cqlRows = new ArrayList<List<com.datastax.driver.core.Row>>();
         List<com.datastax.driver.core.Row> actualRowList = new ArrayList<com.datastax.driver.core.Row>();
         if (cursor == null)
             return;
         for (com.datastax.driver.core.Row cqlRow : cursor) {
-            String rowKey1 = cqlRow.getString("id");
-            if (rowKey1.equals(rowKey)) {
+            ByteBuffer data = cqlRow.getBytes("id");
+            byte[] val = new byte[data.remaining()];
+            data.get(val);
+
+            
+//            String rowKey1 = cqlRow.getBytes("id");
+            if (val.equals(rowKey)) {
                 actualRowList.add(cqlRow);
             } else {
                 if (rowKey != null)
                     cqlRows.add(actualRowList);
-                rowKey = rowKey1;
+                rowKey = val;
                 actualRowList = new ArrayList<com.datastax.driver.core.Row>();
                 actualRowList.add(cqlRow);
             }
@@ -267,7 +277,12 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
             Row r = rowProvider.get();
             byte[] cqlRowKey = null;
             for (com.datastax.driver.core.Row cqlRow : actualRow) {
-                cqlRowKey = StandardConverters.convertToBytes(cqlRow.getString("id"));
+                //cqlRowKey = StandardConverters.convertToBytes(cqlRow.getString("id"));
+                
+                ByteBuffer cqlRowKeyData = cqlRow.getBytes("id");
+                cqlRowKey = new byte[cqlRowKeyData.remaining()];
+                cqlRowKeyData.get(cqlRowKey);
+
                 kv.setKey(cqlRowKey);
                 r.setKey(cqlRowKey);
                 byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
