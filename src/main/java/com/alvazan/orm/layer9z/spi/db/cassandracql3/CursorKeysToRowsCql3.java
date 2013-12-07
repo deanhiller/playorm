@@ -2,6 +2,7 @@ package com.alvazan.orm.layer9z.spi.db.cassandracql3;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +16,6 @@ import com.alvazan.orm.api.z8spi.Cache;
 import com.alvazan.orm.api.z8spi.KeyValue;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.RowHolder;
-import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.conv.ByteArray;
 import com.alvazan.orm.api.z8spi.conv.StandardConverters;
@@ -141,7 +141,8 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
                 list.beforeFetchingNextBatch();
             try {
                 Clause inClause = QueryBuilder.in("id", keyStrings);
-                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
+                //change the batchsize
+                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(100);
                 resultSet = session.execute(query);
             } catch (Exception e) {
                 System.out.println(" Exception:" + e.getMessage());
@@ -210,8 +211,9 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
             if (list != null)
                 list.beforeFetchingNextBatch();
             try {
+                // CHANGE THE BATCHSIZE
                 Clause inClause = QueryBuilder.in("id", keyStrings);
-                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(batchSize);
+                Query query = QueryBuilder.select().all().from(keys, cf.getColumnFamily()).where(inClause).limit(100);
                 resultSet = session.execute(query);
             } catch (Exception e) {
                 System.out.println(" Exception:" + e.getMessage());
@@ -248,7 +250,6 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
     private void fillCache(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor, List<byte[]> keysToLookup) {
 
-        //String rowKey = null;
         byte[] rowKey = null;
         List<List<com.datastax.driver.core.Row>> cqlRows = new ArrayList<List<com.datastax.driver.core.Row>>();
         List<com.datastax.driver.core.Row> actualRowList = new ArrayList<com.datastax.driver.core.Row>();
@@ -259,9 +260,7 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
             byte[] val = new byte[data.remaining()];
             data.get(val);
 
-            
-//            String rowKey1 = cqlRow.getBytes("id");
-            if (val.equals(rowKey)) {
+            if (Arrays.equals(val, rowKey)) {
                 actualRowList.add(cqlRow);
             } else {
                 if (rowKey != null)
@@ -272,13 +271,12 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
             }
         }
         cqlRows.add(actualRowList);
+
         for (List<com.datastax.driver.core.Row> actualRow : cqlRows) {
             KeyValue<Row> kv = new KeyValue<Row>();
             Row r = rowProvider.get();
             byte[] cqlRowKey = null;
             for (com.datastax.driver.core.Row cqlRow : actualRow) {
-                //cqlRowKey = StandardConverters.convertToBytes(cqlRow.getString("id"));
-                
                 ByteBuffer cqlRowKeyData = cqlRow.getBytes("id");
                 cqlRowKey = new byte[cqlRowKeyData.remaining()];
                 cqlRowKeyData.get(cqlRowKey);
@@ -289,10 +287,9 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
                 ByteBuffer data = cqlRow.getBytes("colvalue");
                 byte[] val = new byte[data.remaining()];
                 data.get(val);
-                String strValue = StandardConverters.convertFromBytes(String.class, val);
                 Column c = new Column();
                 c.setName(name);
-                if (!strValue.equals(SpiConstants.NULL_STRING_FORCQL3))
+                if (val.length != 0)
                     c.setValue(val);
                 r.put(c);
 

@@ -20,7 +20,6 @@ import com.alvazan.orm.api.z8spi.MetaLookup;
 import com.alvazan.orm.api.z8spi.NoSqlRawSession;
 import com.alvazan.orm.api.z8spi.Row;
 import com.alvazan.orm.api.z8spi.ScanInfo;
-import com.alvazan.orm.api.z8spi.SpiConstants;
 import com.alvazan.orm.api.z8spi.action.Action;
 import com.alvazan.orm.api.z8spi.action.Column;
 import com.alvazan.orm.api.z8spi.action.IndexColumn;
@@ -52,7 +51,7 @@ public class CqlSession implements NoSqlRawSession {
     private Session session = null;
     private Cluster cluster = null;
     private KeyspaceMetadata keyspaces = null;
-    private String keys = "cql72";
+    private String keys = "cql74";
     @Inject
     private Provider<Row> rowProvider;
 
@@ -93,33 +92,23 @@ public class CqlSession implements NoSqlRawSession {
     }
 
     private void persist(Persist action, MetaLookup ormSession) {
-        //StorageTypeEnum type = action.getColFamily().getNameStorageType();
         String colFamily = action.getColFamily().getColumnFamily();
         String table = lookupOrCreate(colFamily, ormSession);
         List<Column> s = action.getColumns();
         byte[] rowkey = action.getRowKey();
-        byte[] nullArray  = StandardConverters.convertToBytes(SpiConstants.NULL_STRING_FORCQL3);
 
         for (Column c : s) {
             try {
-                String colValue = StandardConverters.convertFromBytes(String.class, c.getValue());
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
                 BoundStatement boundStatement = new BoundStatement(statement);
-                if (colValue != null) {
-                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey),
-                            StandardConverters.convertFromBytes(String.class, c.getName()),
+                if (c.getValue() != null && c.getValue().length != 0) {
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), StandardConverters.convertFromBytes(String.class, c.getName()),
                             ByteBuffer.wrap(c.getValue())));
 
-/*                    session.execute(boundStatement.bind(StandardConverters.convertToString(rowkey),
-                            StandardConverters.convertToString(c.getName()),
-                            ByteBuffer.wrap(c.getValue())));
-*/                } else {
-                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey),
-                            StandardConverters.convertFromBytes(String.class, c.getName()), ByteBuffer.wrap(nullArray)));
-                
-/*                    session.execute(boundStatement.bind(StandardConverters.convertToString(rowkey),
-                            StandardConverters.convertToString(c.getName()), ByteBuffer.wrap(nullArray)));
-*/                }
+                } else {
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), StandardConverters.convertFromBytes(String.class, c.getName()),
+                            ByteBuffer.wrap(new byte[0])));
+                }
 
             } catch (Exception e) {
                 System.out.println(c.getValue() + "Exception:" + e.getMessage());
