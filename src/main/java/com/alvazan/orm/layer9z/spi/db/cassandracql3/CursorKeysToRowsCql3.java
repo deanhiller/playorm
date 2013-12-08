@@ -249,9 +249,6 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 	}
 
     private void fillCache(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor, List<byte[]> keysToLookup) {
-        byte[] rowKey = null;
-        List<List<com.datastax.driver.core.Row>> cqlRows = new ArrayList<List<com.datastax.driver.core.Row>>();
-        List<com.datastax.driver.core.Row> actualRowList = new ArrayList<com.datastax.driver.core.Row>();
         if (cursor == null) {
             for (byte[] key : keysToLookup) {
                 KeyValue<Row> kv = new KeyValue<Row>();
@@ -262,66 +259,73 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
                 cache.cacheRow(cf, key, kv.getValue());
             }
         } else {
-            for (com.datastax.driver.core.Row cqlRow : cursor) {
-                ByteBuffer data = cqlRow.getBytes("id");
+            fillCacheForCursor(map, cursor, keysToLookup);
+        }
+    }
+
+    private void fillCacheForCursor(Map<ByteArray, KeyValue<Row>> map, ResultSet cursor, List<byte[]> keysToLookup) {
+        byte[] rowKey = null;
+        List<List<com.datastax.driver.core.Row>> cqlRows = new ArrayList<List<com.datastax.driver.core.Row>>();
+        List<com.datastax.driver.core.Row> actualRowList = new ArrayList<com.datastax.driver.core.Row>();
+        for (com.datastax.driver.core.Row cqlRow : cursor) {
+            ByteBuffer data = cqlRow.getBytes("id");
+            byte[] val = new byte[data.remaining()];
+            data.get(val);
+
+            if (Arrays.equals(val, rowKey)) {
+                actualRowList.add(cqlRow);
+            } else {
+                if (rowKey != null)
+                    cqlRows.add(actualRowList);
+                rowKey = val;
+                actualRowList = new ArrayList<com.datastax.driver.core.Row>();
+                actualRowList.add(cqlRow);
+            }
+        }
+        cqlRows.add(actualRowList);
+
+        for (List<com.datastax.driver.core.Row> actualRow : cqlRows) {
+            KeyValue<Row> kv = new KeyValue<Row>();
+            Row r = rowProvider.get();
+            byte[] cqlRowKey = null;
+            for (com.datastax.driver.core.Row cqlRow : actualRow) {
+                ByteBuffer cqlRowKeyData = cqlRow.getBytes("id");
+                cqlRowKey = new byte[cqlRowKeyData.remaining()];
+                cqlRowKeyData.get(cqlRowKey);
+
+                kv.setKey(cqlRowKey);
+                r.setKey(cqlRowKey);
+                byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
+                ByteBuffer data = cqlRow.getBytes("colvalue");
                 byte[] val = new byte[data.remaining()];
                 data.get(val);
+                Column c = new Column();
+                c.setName(name);
+                if (val.length != 0)
+                    c.setValue(val);
+                r.put(c);
 
-                if (Arrays.equals(val, rowKey)) {
-                    actualRowList.add(cqlRow);
-                } else {
-                    if (rowKey != null)
-                        cqlRows.add(actualRowList);
-                    rowKey = val;
-                    actualRowList = new ArrayList<com.datastax.driver.core.Row>();
-                    actualRowList.add(cqlRow);
-                }
+                kv.setValue(r);
+                ByteArray b = new ByteArray(cqlRowKey);
+                map.put(b, kv);
+                cache.cacheRow(cf, cqlRowKey, kv.getValue());
             }
-            cqlRows.add(actualRowList);
-
-            for (List<com.datastax.driver.core.Row> actualRow : cqlRows) {
-                KeyValue<Row> kv = new KeyValue<Row>();
-                Row r = rowProvider.get();
-                byte[] cqlRowKey = null;
-                for (com.datastax.driver.core.Row cqlRow : actualRow) {
-                    ByteBuffer cqlRowKeyData = cqlRow.getBytes("id");
-                    cqlRowKey = new byte[cqlRowKeyData.remaining()];
-                    cqlRowKeyData.get(cqlRowKey);
-
-                    kv.setKey(cqlRowKey);
-                    r.setKey(cqlRowKey);
-                    byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
-                    ByteBuffer data = cqlRow.getBytes("colvalue");
-                    byte[] val = new byte[data.remaining()];
-                    data.get(val);
-                    Column c = new Column();
-                    c.setName(name);
-                    if (val.length != 0)
-                        c.setValue(val);
-                    r.put(c);
-
-                    kv.setValue(r);
-                    ByteArray b = new ByteArray(cqlRowKey);
-                    map.put(b, kv);
-                    cache.cacheRow(cf, cqlRowKey, kv.getValue());
-                }
-            }
-
-            // Now put the remaining keys which are not in CQL3's cursor.
-            // This is because Cassandra returns all the rows with rowkeys while CQL# doesn't
-            for (byte[] key : keysToLookup) {
-                ByteArray baKey = new ByteArray(key);
-                if (!map.containsKey(baKey)) {
-                    KeyValue<Row> kv = new KeyValue<Row>();
-                    kv.setKey(key);
-                    kv.setValue(null);
-                    // ByteArray b = new ByteArray(key);
-                    map.put(baKey, kv);
-                    cache.cacheRow(cf, key, kv.getValue());
-                }
-            }
-
         }
+
+        // Now put the remaining keys which are not in CQL3's cursor.
+        // This is because Cassandra returns all the rows with rowkeys while CQL# doesn't
+        for (byte[] key : keysToLookup) {
+            ByteArray baKey = new ByteArray(key);
+            if (!map.containsKey(baKey)) {
+                KeyValue<Row> kv = new KeyValue<Row>();
+                kv.setKey(key);
+                kv.setValue(null);
+                // ByteArray b = new ByteArray(key);
+                map.put(baKey, kv);
+                cache.cacheRow(cf, key, kv.getValue());
+            }
+        }
+
     }
 
 }
