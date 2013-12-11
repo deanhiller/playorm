@@ -77,20 +77,20 @@ public class CheckClusterRunnable implements Runnable {
 		int serverNumber = -1;
 		for(int i = 0; i < servers.size(); i++) {
 			WebNodeDbo node = servers.get(i);
-			String name = node.getWebServerName();
 			if(node.getWebServerName().equals(config.getHostName())) {
 				if(log.isDebugEnabled())
 					log.debug("we are server number="+i+" out of number="+servers.size());
 				serverNumber = i;
 				break;
-			}
+			} else if(log.isDebugEnabled())
+				log.debug("server name="+node.getWebServerName()+" not match name="+config.getHostName());
 		}
 
 		if(servers.size() <= 0) {
 			log.warn("We are just starting the first server or all servers were down");
 			return;
 		} else if(serverNumber == -1)
-			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname='"+config.getHostName()+"'");
+			throw new IllegalStateException("serverNumber not found in list of servers="+all+" config hostname='"+config.getHostName()+"' serverslist="+servers);
 		
 		runOurMonitors(mgr, servers.size(), serverNumber);
 	}
