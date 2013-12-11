@@ -26,6 +26,7 @@ public class FactorySingleton {
 		//serverType = DbTypeEnum.MONGODB;
 		serverType = DbTypeEnum.IN_MEMORY;
 		//serverType = DbTypeEnum.HBASE;
+		//serverType = DbTypeEnum.CQL;
 		String seeds = "localhost:9160";
 		if (serverType.equals(DbTypeEnum.MONGODB))
 			seeds = "localhost:27017";
@@ -63,6 +64,9 @@ public class FactorySingleton {
 		case HBASE:
 			Bootstrap.createAndAddBestHBaseConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
 			break;
+	     case CQL:
+	            Bootstrap.createAndAddBestCqlConfiguration(props, config.getClusterName(), "PlayOrmKeyspace", config.getSeeds());
+	            break;
 		default:
 			throw new UnsupportedOperationException("not supported yet, server type="+config.getServerType());
 		}
