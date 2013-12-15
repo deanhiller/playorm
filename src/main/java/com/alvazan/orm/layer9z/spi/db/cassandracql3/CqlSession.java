@@ -101,18 +101,35 @@ public class CqlSession implements NoSqlRawSession {
             try {
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
                 BoundStatement boundStatement = new BoundStatement(statement);
+                String colName = StandardConverters.convertFromBytes(String.class, c.getName());
+                checkIfRowExsits(table, rowkey, colName);
                 if (c.getValue() != null && c.getValue().length != 0) {
-                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), StandardConverters.convertFromBytes(String.class, c.getName()),
-                            ByteBuffer.wrap(c.getValue())));
-
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), colName, ByteBuffer.wrap(c.getValue())));
                 } else {
-                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), StandardConverters.convertFromBytes(String.class, c.getName()),
-                            ByteBuffer.wrap(new byte[0])));
+                    session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), colName, ByteBuffer.wrap(new byte[0])));
                 }
 
             } catch (Exception e) {
                 System.out.println(c.getValue() + "Exception:" + e.getMessage());
             }
+        }
+
+    }
+
+    private void checkIfRowExsits(String table, byte[] rowKey, String colName) {
+        Clause rkClause = QueryBuilder.eq("id", ByteBuffer.wrap(rowKey));
+        Clause cnClause = QueryBuilder.eq("colname", colName);
+        try {
+            Query query = QueryBuilder.select().all().from(keys, table).where(rkClause).and(cnClause);
+            ResultSet resultSet = session.execute(query);
+            if (resultSet.isExhausted())
+                return;
+            else {
+                Query delQuery = QueryBuilder.delete().from(keys, table).where(rkClause).and(cnClause);
+                session.execute(delQuery);
+            }
+        } catch (Exception e) {
+            System.out.println(" Exception:" + e.getMessage());
         }
 
     }
