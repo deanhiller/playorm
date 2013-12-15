@@ -51,11 +51,11 @@ public class Cql3Util {
 		if (colMeta != null) {
 			if (from != null) {
 				valFrom = colMeta.getStorageType().convertFromNoSql(from.getKey());
-                valFrom = checkForBooleanAndNull(valFrom, indTable);
+                valFrom = checkForBooleanAndNull(valFrom, indTable, colMeta);
 			}
 			if (to != null) {
 				valTo = colMeta.getStorageType().convertFromNoSql(to.getKey());
-                valTo = checkForBooleanAndNull(valTo, indTable);
+                valTo = checkForBooleanAndNull(valTo, indTable, colMeta);
 			}
 		} else
 			return selectWhere;
@@ -101,13 +101,9 @@ public class Cql3Util {
         return selectWhere;
     }
 
-    public static Object checkForBooleanAndNull(Object val, String indTable) {
+    public static Object checkForBooleanAndNull(Object val, String indTable, DboColumnMeta colMeta) {
         if (val == null) {
-            if (indTable.equalsIgnoreCase("IntegerIndice")) {
-                return ByteBuffer.wrap(new byte[0]);
-            } else {
-                return "";
-            }
+            return checkForNull(indTable, colMeta);
         } else if (val instanceof Boolean) {
             Boolean b = (Boolean) val;
             if (b)
@@ -118,4 +114,15 @@ public class Cql3Util {
         return val;
     }
 
+    public static Object checkForNull(String indTable, DboColumnMeta colMeta) {
+        if (indTable.equalsIgnoreCase("IntegerIndice")) {
+            // One more hack for Boolean
+            if (colMeta.getClassType().getName().equals("java.lang.Boolean"))
+                return 0;
+            else
+                return ByteBuffer.wrap(new byte[0]);
+        } else {
+            return "";
+        }
+    }
 }

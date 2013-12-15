@@ -53,7 +53,7 @@ public class StartQueryManyKeys implements StartQueryListener {
 
             Object value = null;
             value = columnMeta.getStorageType().convertFromNoSql(val);
-            value = Cql3Util.checkForBooleanAndNull(value, indTable);
+            value = Cql3Util.checkForBooleanAndNull(value, indTable, columnMeta);
 
             Clause valClause = QueryBuilder.eq("colname", value);
             selectWhere.and(valClause);

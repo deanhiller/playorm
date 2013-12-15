@@ -1,6 +1,5 @@
 package com.alvazan.orm.layer9z.spi.db.cassandracql3;
 
-import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +100,7 @@ public class CqlSession implements NoSqlRawSession {
             try {
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
                 BoundStatement boundStatement = new BoundStatement(statement);
-                String colName = StandardConverters.convertFromBytes(String.class, c.getName());
+                String colName = StandardConverters.convertToString(c.getName());
                 checkIfRowExsits(table, rowkey, colName);
                 if (c.getValue() != null && c.getValue().length != 0) {
                     session.execute(boundStatement.bind(ByteBuffer.wrap(rowkey), colName, ByteBuffer.wrap(c.getValue())));
@@ -143,7 +142,6 @@ public class CqlSession implements NoSqlRawSession {
         byte[] value = column.getPrimaryKey();
 
         try {
-
             Object keyObject = null;
             if (key != null) {
                 PreparedStatement statement = session.prepare("INSERT INTO " + keys + "." + table + "(id, colname, colvalue) VALUES (?, ?, ?)");
@@ -180,7 +178,6 @@ public class CqlSession implements NoSqlRawSession {
             throw new IllegalArgumentException("action param is missing ActionEnum so we know to remove entire row or just columns in the row");
         switch (action.getAction()) {
         case REMOVE_ENTIRE_ROW:
-            //String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
             Clause eqClause = QueryBuilder.eq("id", ByteBuffer.wrap(action.getRowKey()));
             Query query = QueryBuilder.delete().from(keys, table).where(eqClause);
             session.execute(query);
@@ -197,7 +194,7 @@ public class CqlSession implements NoSqlRawSession {
         String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
         if (rowKey != null) {
             for (byte[] name : action.getColumns()) {
-                String colName = StandardConverters.convertFromBytes(String.class, name);
+                String colName = StandardConverters.convertToString(name);
                 removeColumnImpl(action.getRowKey(), table, colName);
             }
         }
@@ -208,7 +205,7 @@ public class CqlSession implements NoSqlRawSession {
         String table = lookupOrCreate(colFamily, ormSession);
         String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
         if (rowKey != null) {
-            String colName = StandardConverters.convertFromBytes(String.class, action.getColumn());
+            String colName = StandardConverters.convertToString(action.getColumn());
             removeColumnImpl(action.getRowKey(), table, colName);
         }
     }
@@ -224,6 +221,7 @@ public class CqlSession implements NoSqlRawSession {
         String colFamily = action.getIndexCfName();
         if (colFamily.equalsIgnoreCase("BytesIndice"))
             return;
+
         String table = lookupOrCreate(colFamily, ormSession);
         String rowKey = StandardConverters.convertFromBytes(String.class, action.getRowKey());
         IndexColumn column = action.getColumn();
@@ -233,9 +231,9 @@ public class CqlSession implements NoSqlRawSession {
         if (table.equalsIgnoreCase("StringIndice"))
             indValue = StandardConverters.convertFromBytes(String.class, indexedValue);
         else if (table.equalsIgnoreCase("IntegerIndice"))
-            indValue = StandardConverters.convertFromBytes(Integer.class, indexedValue);
+            indValue = StandardConverters.convertFromBytes(Long.class, indexedValue);
         else if (table.equalsIgnoreCase("DecimalIndice"))
-            indValue = StandardConverters.convertFromBytes(BigDecimal.class, indexedValue);
+            indValue = StandardConverters.convertFromBytes(Float.class, indexedValue);
         boolean exists = findIndexRow(table, rowKey, fk, indValue);
         if (!exists) {
             if (log.isInfoEnabled())
@@ -328,8 +326,14 @@ public class CqlSession implements NoSqlRawSession {
 
     @Override
     public AbstractCursor<Column> columnSlice(ColumnSliceInfo sliceInfo, Integer batchSize, BatchListener l, MetaLookup mgr) {
-        // TODO Auto-generated method stub
-        return null;
+        //Info info1 = lookupOrCreate(sliceInfo.getColFamily().getColumnFamily(), mgr);
+        /*if (info1 == null) {
+            return null;
+        }*/
+        String table = lookupOrCreate(sliceInfo.getColFamily().getColumnFamily(), mgr);
+        CursorColumnSliceCql cursor = new CursorColumnSliceCql(sliceInfo, l, batchSize, keys, table, session);
+        return cursor;
+
     }
 
     @Override
@@ -357,8 +361,6 @@ public class CqlSession implements NoSqlRawSession {
     @Override
     public AbstractCursor<IndexColumn> scanIndex(ScanInfo scanInfo, List<byte[]> values, BatchListener list, MetaLookup mgr) {
         StartQueryListener listener = new StartQueryManyKeys(keys, scanInfo, session, values, false);
-        //CursorForValues cursor = new CursorForValues(scanInfo, list, values, session, keys, listener);
-        //return cursor;
         return new CursorOfFutures(listener, list, scanInfo);
     }
 

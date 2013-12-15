@@ -59,7 +59,7 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 		String keys = "" + rowKeys;
 		if (rowKeys instanceof List)
 			keys = "List" + keys;
-		String retVal = "CursorKeysToRowsMDB[" + tabs + keys
+		String retVal = "CursorKeysToRowsCQL3[" + tabs + keys
 				+ tabs + "]";
 		StringLocal.set(tabs.length());
 		return retVal;
@@ -295,7 +295,7 @@ public class CursorKeysToRowsCql3 extends AbstractCursor<KeyValue<Row>> {
 
                 kv.setKey(cqlRowKey);
                 r.setKey(cqlRowKey);
-                byte[] name = StandardConverters.convertToBytes(cqlRow.getString("colname"));
+                byte[] name = StandardConverters.convertFromString(byte[].class, cqlRow.getString("colname"));
                 ByteBuffer data = cqlRow.getBytes("colvalue");
                 byte[] val = new byte[data.remaining()];
                 data.get(val);
