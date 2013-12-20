@@ -28,7 +28,7 @@ dependencies {
         exclude group: 'log4j'
         exclude group: 'org.jboss.netty'
 	    }
-	compile (group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '1.0.2') {
+	compile (group: 'com.datastax.cassandra', name: 'cassandra-driver-core', version: '1.0.5') {
 		exclude group: 'org.slf4j'
         exclude group: 'log4j'
         exclude group: 'org.codehaus.jackson'
