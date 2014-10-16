@@ -31,7 +31,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	 * create.
 	 */
 	private Map<String, MetaClassSingle<T>> dbTypeToMeta = new HashMap<String, MetaClassSingle<T>>();
-	private Map<Class, String> classToType = new HashMap<Class, String>();
+	private Map<String, String> classToType = new HashMap<String, String>();
 	private String discriminatorColumnName;
 	private byte[] discColAsBytes;
 	
@@ -47,7 +47,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		if(clazz.equals(getMetaClass()))
 			return super.getNamedQuery(clazz, name);
 		
-		String type = classToType.get(clazz);
+		String type = classToType.get(clazz.getName());
 		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
 		return metaSingle.getNamedQuery(clazz, name);
 	}
@@ -73,7 +73,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		//whole class heirarchy
 		metaSingle.setSharedMetaDbo(getMetaDbo());
 		dbTypeToMeta.put(columnValue, metaSingle);
-		classToType.put(clazz, columnValue);
+		classToType.put(clazz.getName(), columnValue);
 		return metaSingle;
 	}
 
@@ -83,7 +83,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		if(entity instanceof Proxy) {
 			clazz = entity.getClass().getSuperclass();
 		}
-		String type = classToType.get(clazz);
+		String type = classToType.get(clazz.getName());
 		MetaClassSingle<T> metaClassSingle = dbTypeToMeta.get(type);
 		return metaClassSingle.hasIndexedField(entity);
 	}
@@ -109,7 +109,7 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 		if(entity instanceof Proxy) {
 			clazz = entity.getClass().getSuperclass();
 		}
-		String type = classToType.get(clazz);
+		String type = classToType.get(clazz.getName());
 		MetaClassSingle<T> metaClassSingle = dbTypeToMeta.get(type);
 		RowToPersist translateToRow = metaClassSingle.translateToRow(entity);
 		
@@ -124,21 +124,21 @@ public class MetaClassInheritance<T> extends MetaAbstractClass<T> {
 	@Override
 	public List<IndexData> findIndexRemoves(NoSqlProxy proxy, byte[] rowKey) {
 		Class clazz = proxy.getClass().getSuperclass();
-		String type = classToType.get(clazz);
+		String type = classToType.get(clazz.getName());
 		MetaClassSingle<T> metaClassSingle = dbTypeToMeta.get(type);
 		return metaClassSingle.findIndexRemoves(proxy, rowKey);
 	}
 
 	@Override
 	public MetaField<T> getMetaFieldByCol(Class c, String columnName) {
-		String type = classToType.get(c);
+		String type = classToType.get(c.getName());
 		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
 		return metaSingle.getMetaFieldByCol(c, columnName);
 	}
 
 	@Override
 	public Class<? extends T> getProxyClass(Class<?> clazz) {
-		String type = classToType.get(clazz);
+		String type = classToType.get(clazz.getName());
 		MetaClassSingle<T> metaSingle = dbTypeToMeta.get(type);
 		return metaSingle.getProxyClass(clazz);
 	}

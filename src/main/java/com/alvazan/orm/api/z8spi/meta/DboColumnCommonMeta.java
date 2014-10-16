@@ -14,7 +14,7 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 	
 	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed, boolean isPartitionedBy) {
 		super.setup(owner, colName, isIndexed);
-		Class newType = translateType(valuesType);
+		Class newType = ConverterUtil.translateType(valuesType);
 		this.columnValueType = newType.getName();
 		this.isPartitionedByThisColumn = isPartitionedBy;
 	}
@@ -32,12 +32,12 @@ public class DboColumnCommonMeta extends DboColumnMeta {
 	}
 
 	public Class getClassType() {
-		return classForName(columnValueType);
+		return ConverterUtil.classForName(columnValueType);
 	}
 
 	public StorageTypeEnum getStorageType() {
 		Class fieldType = getClassType();
-		return getStorageType(fieldType);
+		return ConverterUtil.getStorageType(fieldType);
 	}
 
 	public void translateFromColumn(Row row, TypedRow entity) {

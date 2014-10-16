@@ -19,10 +19,10 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 	public void setup(DboTableMeta t, String colPrefix, Class collectionType, Class itemType, Class valueType, boolean isIndexed) {
 		super.setup(t, colPrefix, isIndexed);
 		this.collectionType = collectionType.getName();
-		Class newType = translateType(itemType);
+		Class newType = ConverterUtil.translateType(itemType);
 		this.itemType = newType.getName();
 		if(valueType != null) {
-			Class newValType = translateType(valueType);
+			Class newValType = ConverterUtil.translateType(valueType);
 			this.valueType = newValType.getName();
 		}
 	}
@@ -40,13 +40,13 @@ public class DboColumnEmbedSimpleMeta extends DboColumnMeta {
 	@SuppressWarnings("rawtypes")
 	@Override
 	public Class getClassType() {
-	    return classForName(this.itemType);
+	    return ConverterUtil.classForName(this.itemType);
 	}
 
 	@Override
 	public StorageTypeEnum getStorageType() {
-		Class storageTypeClass = DboColumnMeta.classForName(itemType);
-		StorageTypeEnum storageType = DboColumnMeta.getStorageType(storageTypeClass);
+		Class storageTypeClass = ConverterUtil.classForName(itemType);
+		StorageTypeEnum storageType = ConverterUtil.getStorageType(storageTypeClass);
 		return storageType;
 	}
 

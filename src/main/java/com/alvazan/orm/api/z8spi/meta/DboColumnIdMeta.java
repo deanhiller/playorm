@@ -73,12 +73,12 @@ public class DboColumnIdMeta extends DboColumnMeta {
 	}
 
 	public Class getClassType() {
-		return classForName(columnValueType);
+		return ConverterUtil.classForName(columnValueType);
 	}
 
 	public StorageTypeEnum getStorageType() {
 		Class fieldType = getClassType();
-		return getStorageType(fieldType);
+		return ConverterUtil.getStorageType(fieldType);
 	}
 	
 	public void setup(DboTableMeta owner, String colName, Class valuesType, boolean isIndexed) {
@@ -97,7 +97,7 @@ public class DboColumnIdMeta extends DboColumnMeta {
 		owner.setRowKeyMeta(this);
 		id = owner.getColumnFamily()+":"+getColumnName();
 		
-		Class newType = translateType(valuesType);
+		Class newType = ConverterUtil.translateType(valuesType);
 		this.columnValueType = newType.getName();
 		this.isIndexed = isIndexed;
 	}

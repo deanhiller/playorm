@@ -26,6 +26,7 @@ import com.alvazan.orm.api.z8spi.iter.Cursor;
 import com.alvazan.orm.api.z8spi.iter.DirectCursor;
 import com.alvazan.orm.api.z8spi.meta.DboColumnMeta;
 import com.alvazan.orm.api.z8spi.meta.TypeInfo;
+import com.alvazan.orm.api.z8spi.meta.ConverterUtil;
 import com.alvazan.orm.api.z8spi.meta.ViewInfo;
 import com.alvazan.orm.impl.meta.data.MetaClass;
 import com.alvazan.orm.impl.meta.data.MetaField;
@@ -78,7 +79,7 @@ public class QueryAdapter<T> implements Query<T> {
 		Class fieldType = field.getType();
 		//Are actual type will never be a primitive because of autoboxing.  When the param
 		//is passed in, it becomes an Long, Integer, etc. so we need to convert here
-		Class objectFieldType = DboColumnMeta.convertIfPrimitive(fieldType);
+		Class objectFieldType = ConverterUtil.convertIfPrimitive(fieldType);
 		if(value!=null){
 			Class actualType = value.getClass();
 

@@ -21,6 +21,7 @@ import com.netflix.astyanax.connectionpool.impl.ConnectionPoolConfigurationImpl;
 import com.netflix.astyanax.connectionpool.impl.ConnectionPoolType;
 import com.netflix.astyanax.connectionpool.impl.CountingConnectionPoolMonitor;
 import com.netflix.astyanax.connectionpool.impl.FixedRetryBackoffStrategy;
+import com.netflix.astyanax.connectionpool.impl.SimpleAuthenticationCredentials;
 import com.netflix.astyanax.impl.AstyanaxConfigurationImpl;
 import com.netflix.astyanax.model.ConsistencyLevel;
 
@@ -79,6 +80,12 @@ public class BootstrapImpl extends Bootstrap {
         .setConnectTimeout(10000)
         .setRetryBackoffStrategy(new FixedRetryBackoffStrategy(5000, 30000));
 
+		Object username = properties.get(Bootstrap.CASSANDRA_USERNAME);
+		Object password = properties.get(Bootstrap.CASSANDRA_PASSWORD);
+		if (username != null && password != null) {
+			poolConfig.setAuthenticationCredentials(new SimpleAuthenticationCredentials(""+username, ""+password));
+		}
+		
 		Object port = properties.get(Bootstrap.CASSANDRA_THRIFT_PORT);
 		if(port != null) {
 			int portVal = 9160;

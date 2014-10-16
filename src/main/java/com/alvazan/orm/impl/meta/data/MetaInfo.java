@@ -29,7 +29,7 @@ public class MetaInfo {
 	@Inject
 	private Provider<MetaClassInheritance> inheritanceProvider;
 	
-	private Map<Class, MetaAbstractClass> classToClassMeta = new HashMap<Class, MetaAbstractClass>();
+	private Map<String, MetaAbstractClass> classToClassMeta = new HashMap<String, MetaAbstractClass>();
 	private Map<String, MetaAbstractClass> tableNameToClassMeta = new HashMap<String, MetaAbstractClass>();
 	private Set<MetaClassInheritance> baseClasses = new HashSet<MetaClassInheritance>(); 
 	
@@ -38,7 +38,7 @@ public class MetaInfo {
 		if(NoSqlProxy.class.isAssignableFrom(clazz2)) {
 			clazz = clazz2.getSuperclass();
 		}
-		MetaClass metaClass = classToClassMeta.get(clazz);
+		MetaClass metaClass = classToClassMeta.get(clazz.getName());
 		return metaClass;
 	}
 	public MetaClass getMetaClass(String tableName) {
@@ -46,13 +46,13 @@ public class MetaInfo {
 	}
 
 	public void addSubclass(Class clazz, MetaClassInheritance parent) {
-		classToClassMeta.put(clazz, parent);
+		classToClassMeta.put(clazz.getName(), parent);
 		baseClasses.add(parent);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public MetaAbstractClass<?> findOrCreate(Class clazz) {
-		MetaAbstractClass<?> metaClass = classToClassMeta.get(clazz);
+		MetaAbstractClass<?> metaClass = classToClassMeta.get(clazz.getName());
 		if(metaClass != null)
 			return metaClass;
 
@@ -67,7 +67,7 @@ public class MetaInfo {
 			log.debug("Adding mapping clazz="+clazz+" to type="+metaClass2.getClass().getSimpleName());
 		
 		metaClass2.setMetaClass(clazz);
-		classToClassMeta.put(clazz, metaClass2);
+		classToClassMeta.put(clazz.getName(), metaClass2);
 		
 		return metaClass2;
 	}

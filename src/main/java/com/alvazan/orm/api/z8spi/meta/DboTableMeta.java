@@ -239,12 +239,12 @@ public class DboTableMeta {
 	}
 
 	public void setColNameType(Class c) {
-		Class objType = DboColumnMeta.translateType(c);
+		Class objType = ConverterUtil.translateType(c);
 		this.colNameType = objType.getName();
 	}
 	public StorageTypeEnum getNameStorageType() {
-		Class clazz = DboColumnMeta.classForName(colNameType);
-		return DboColumnMeta.getStorageType(clazz);
+		Class clazz = ConverterUtil.classForName(colNameType);
+		return ConverterUtil.getStorageType(clazz);
 	}
 //	
 //	@SuppressWarnings("rawtypes")
